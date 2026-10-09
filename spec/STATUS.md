@@ -311,8 +311,8 @@ Suggestions for the plan's author, based on what is still open:
    Ember's `ResolverImpl` (the owner/component-resolver part of step 5 moved into PR 4), and 5–10
    were rebased; `.work/W2-glimmer-harness.md` step 10. Tips and full-suite totals (all 0 fail,
    18 skip): 1 `41f1a0199d` 9541, 2 `cb4772c2e1` 9504, 3 `86fe1ea485` 9504 (unchanged),
-   4 `24f7fe5f0a` 9290, 5 `dbe02bf853` 9289, 6 `02c65b1128` 9293, 7 `1935d23361` 9287,
-   8 `7b18d6fddb` 9192, 9 `89ac9d6070` 9193, 10 `df23a8c76d` 9196 (each the old count + 179).
+   4 `8ac18e59e3` 9290, 5 `f77c03a8d4` 9289, 6 `e49cee1db1` 9293, 7 `8be5c5cb72` 9287,
+   8 `41d16395a0` 9192, 9 `edcba6a5cb` 9193, 10 `835eeacb63` 9196 (each the old count + 179).
    So `-10` differs from `test/w2-glimmer-harness` by the owner-type fix, the PR 4 teardown-test
    fix and step 10; the cleanup branches are the reference.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.

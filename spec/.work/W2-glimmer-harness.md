@@ -872,7 +872,7 @@ Save the current tips to the scratchpad first so the old stack can be restored.
       suites get the kinds back (at least has-block, has-block-params, yield, the blocks suite
       `component-invocation`/`emberish-components`, scope; decide for with-dynamic-vars,
       debugger, SSR/rehydration and say why); which 4.1 ledger rows change.
-- [x] 10.2 (done, code `24f7fe5f0a` = `ef4/test-cleanup-4`; see notes) New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
+- [x] 10.2 (done, code `8ac18e59e3` = `ef4/test-cleanup-4`; see notes) New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
       against the old PR 4 run; ledger rows updated (4.1 `collapsed` rows for Curly/Dynamic
       become `kept (real component)`); tests that pinned fake-only classic behavior stay dropped.
 - [x] 10.3 (done, see notes; new tips in STATUS item 6) Rebase PRs 5–10 onto it, one at a time. Each must keep the kinds working through
@@ -1384,7 +1384,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   the duplication: only helpers, `on`, and the modifier/helper-manager suites were true twins.
 - 9.6 (2026-10-08): §09-9.4.1 seam B and §9.4.2 "No `renderTemplate`" describe the result of 9.3;
   STATUS W2-9 row done, PR 10 added to the suggested split. Final suite 9017 / 8999 / 0 / 18.
-- 10.2 (2026-10-09): new PR 4 `24f7fe5f0a` (amends old PR 4 `c37c19cd95` on `ef4/test-cleanup-3`; ref moved). As designed
+- 10.2 (2026-10-09): new PR 4 `8ac18e59e3` (amends old PR 4 `c37c19cd95` on `ef4/test-cleanup-3`; ref moved). As designed
   (10.1), no deviation. Harness: `lib/modes/owner.ts` (`createOwner` = `buildOwner()`, `teardownOwners`); jit delegate owner lazy,
   rehydration delegate two owners + `serverRendered` phase rule; `RenderDelegate.teardown?()`, `RenderTest.teardownDelegate()`,
   `afterEach` hooks in `suite()`/`componentModule()` and in the generation-test module; `TestJitRuntimeResolver.lookupComponent` =
@@ -1416,17 +1416,17 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   greps 0, only the known sourcemap warning, `type-check:internals` clean, `pnpm install --offline --frozen-lockfile` clean,
   per-test diff against the old run = 0 missing and exactly PR 4's 179 new tests (identical sets; from PR 9 on with the
   module `Emberish` renamed `Invocation`, as that PR does). Conflicts, all plumbing:
-  - PR 5 (`dbe02bf853`): conflicts in the harness files PR 4 now also touches (`modes/jit/{delegate,register,registry,
+  - PR 5 (`f77c03a8d4`): conflicts in the harness files PR 4 now also touches (`modes/jit/{delegate,register,registry,
     render,resolver}.ts`, `modes/owner.ts`, the rehydration delegates, `render-delegate.ts`, `module.ts`, `package.json`,
     lock, debug-render-tree test). Resolved by taking old PR 5's version of each (it already had the owner, `ResolverImpl`,
     teardown and the phase rule; `registry.ts`/`render.ts`/`resolver.ts` deleted as in old PR 5) and re-applying the kinds
     delta: `module.ts` fan-out + `kinds` option, `registerCurlyInvokedComponent` + `Curly`/`Dynamic` case in `register.ts`.
     `render-test.ts` and `initial-render-test.ts` merged cleanly. 9289 (old 9110 + 179).
-  - PR 6 (`02c65b1128`): one conflict, `register.ts` (`registerClassicComponent` next to `registerCurlyInvokedComponent`;
+  - PR 6 (`e49cee1db1`): one conflict, `register.ts` (`registerClassicComponent` next to `registerCurlyInvokedComponent`;
     both kept). One plumbing fix PR 6 needed for the kinds: Ember's resolver looks up a `{{component}}` string as given and
     PR 6 dasherizes registrations, so the Dynamic kind's `componentName` is `dasherize(name)` (`test-component`), the same
     rule PR 6 applies to the ~35 string names in tests. 9293 (9114 + 179).
-  - PR 7 (`1935d23361`), PR 8 (`7b18d6fddb`), PR 9 (`89ac9d6070`), PR 10 (`df23a8c76d`, loose-template root through
+  - PR 7 (`8be5c5cb72`), PR 8 (`41d16395a0`), PR 9 (`edcba6a5cb`), PR 10 (`835eeacb63`, loose-template root through
     `renderComponent` + custom manager): no conflict, no change. 9287, 9192, 9193, 9196 (old 9108, 9013, 9014, 9017; +179 each).
   Nothing changed what a test checks, and no behavior difference turned up. Tip delta new `-10` vs old `-10`
   (`8243c6486a`): 12 files, all the kinds delta (`types.ts`, `register.ts`, `render-test.ts`, `module.ts`,
@@ -1453,3 +1453,8 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `@glimmer/component` through Ember's resolver. `xref.py` and `check-citations.py` clean. Refs: all ten
   `ef4/test-cleanup-*` moved (4-10 new, 1-3 unchanged); old tips in the scratchpad `stack-before-step10.txt`; worktree
   back on `test/w2-glimmer-harness`.
+- 10.4 follow-up (2026-10-09): the PR 4 message said all 40 formerly curly-only tests run in all three forms; 39 do (the
+  has-block-params curried-component test renders its own template and runs as Glimmer). PR 4 re-amended with that
+  wording and 5-10 re-picked onto it with byte-identical trees (checked with `rev-parse <ref>^{tree}`), so the runs of
+  10.2/10.3 stand. Final tips: 4 `8ac18e59e3`, 5 `f77c03a8d4`, 6 `e49cee1db1`, 7 `8be5c5cb72`, 8 `41d16395a0`, 9
+  `edcba6a5cb`, 10 `835eeacb63` (hashes above updated to these).
