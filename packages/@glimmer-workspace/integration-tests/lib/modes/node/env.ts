@@ -29,6 +29,10 @@ export class NodeJitRenderDelegate extends JitRenderDelegate {
     options.doc = options.doc || createHTMLDocument();
     super(options);
   }
+
+  protected override get isInteractive(): boolean {
+    return false;
+  }
 }
 
 export class JitSerializationDelegate extends NodeJitRenderDelegate {

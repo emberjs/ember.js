@@ -18,12 +18,14 @@ import {
   OPEN,
   RehydrationDelegate,
   replaceHTML,
+  shiftBlockIds,
   strip,
   suite,
   test,
   toInnerHTML,
   toTextContent,
   trackedContext,
+  withRoot,
 } from '@glimmer-workspace/integration-tests';
 
 class RenderTests extends InitialRenderSuite {
@@ -62,12 +64,26 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     this.assert.strictEqual(clearedNodes.length, nodes, 'cleared nodes');
   }
 
+  // Expected markup that still has the server's block markers (`+b:0` ...) is server output: it
+  // gets the root component's block pair like `assertExactServerOutput`.
+  protected override assertHTML(
+    html: string,
+    elementOrMessage?: SimpleElement | string,
+    message?: string
+  ) {
+    super.assertHTML(
+      html.includes('<!--%+b:0%-->') ? withRoot(html) : html,
+      elementOrMessage,
+      message
+    );
+  }
+
   assertExactServerOutput(_expected: string) {
     let output = expect(
       this.serverOutput,
       'must renderServerSide before calling assertServerOutput'
     );
-    equalTokens(output, _expected);
+    equalTokens(output, withRoot(_expected));
   }
 
   assertServerOutput(..._expected: Content[]) {
@@ -77,6 +93,28 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 
 class Rehydration extends AbstractRehydrationTests {
   static override suiteName = 'rehydration';
+
+  @test
+  'modifiers do not run in the server render but run in the client render'() {
+    let installs: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          installs.push('install');
+        }
+      }
+    );
+
+    let template = '<div {{probe}}>Hi!</div>';
+    this.renderServerSide(template, {});
+    this.assert.deepEqual(installs, [], 'no modifier ran in the server render');
+
+    this.renderClientSide(template, {});
+    this.assert.deepEqual(installs, ['install'], 'the modifier ran in the client render');
+    this.assertHTML('<div>Hi!</div>');
+  }
 
   @test
   'rehydrates into element with pre-existing content'() {
@@ -1022,9 +1060,9 @@ class Rehydration extends AbstractRehydrationTests {
 
 class RehydratingComponents extends AbstractRehydrationTests {
   assertServerComponent(html: string, attrs: object = {}) {
-    let element = assertingElement(this.element.childNodes[2]);
+    let element = assertingElement(this.element.childNodes[3]);
 
-    assertElementShape(element, 'div', attrs, html);
+    assertElementShape(element, 'div', attrs, shiftBlockIds(html));
   }
 
   override renderServerSide(blueprint: ComponentBlueprint, properties: Dict = {}) {

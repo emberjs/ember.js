@@ -12,11 +12,9 @@ import type {
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type Component from '@ember/component';
-import type { Reference } from '@glimmer/reference';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
-import { createConstRef } from '@glimmer/reference';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import createHTMLDocument from '@simple-dom/document';
@@ -39,7 +37,7 @@ import {
 } from '../jit/register';
 import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
-import { TemplateRootState } from '../template-root';
+import { renderLooseTemplate } from '../loose-template';
 import { debugRehydrateTree } from './builder';
 
 export interface RehydrationStats {
@@ -76,8 +74,6 @@ export class RehydrationDelegate implements RenderDelegate {
   /** The tree builder of the most recent client render, for `rehydrationStats`. */
   protected lastClientTree: Nullable<DebugRehydrateTree> = null;
 
-  private self: Nullable<Reference> = null;
-
   constructor(options?: RenderDelegateOptions) {
     let debugRenderTree = options?.debugRenderTree ?? false;
 
@@ -100,7 +96,8 @@ export class RehydrationDelegate implements RenderDelegate {
       this.serverDoc,
       new ResolverImpl(),
       serializeBuilder,
-      debugRenderTree
+      debugRenderTree,
+      false
     );
   }
 
@@ -149,16 +146,14 @@ export class RehydrationDelegate implements RenderDelegate {
   ): string {
     element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
-    let { state } = this.serverRenderer;
 
     // Emulate server-side render
-    state.renderRoot(
-      new TemplateRootState(
-        state,
-        preprocess(template, this.precompileOptions, this.serverOwner),
-        this.getSelf(state.env, context),
-        cursor
-      )
+    renderLooseTemplate(
+      this.serverRenderer,
+      this.serverOwner,
+      preprocess(template, this.precompileOptions, this.serverOwner),
+      context,
+      cursor
     );
 
     this.serverRendered = true;
@@ -166,31 +161,20 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  getSelf(_env: Environment, context: unknown): Reference {
-    if (!this.self) {
-      this.self = createConstRef(context, 'this');
-    }
-
-    return this.self;
-  }
-
   serialize(element: SimpleElement): string {
     return toInnerHTML(element);
   }
 
   renderClientSide(template: string, context: Dict, element: SimpleElement): RenderHandle {
-    let { state } = this.clientRenderer;
-    this.self = null;
-
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    let root = new TemplateRootState(
-      state,
+    let root = renderLooseTemplate(
+      this.clientRenderer,
+      this.clientOwner,
       preprocess(template, this.precompileOptions, this.clientOwner),
-      this.getSelf(state.env, context),
+      context,
       cursor
     );
-    state.renderRoot(root);
 
     this.rehydrationStats = {
       clearedNodes: this.lastClientTree!.clearedNodes,
@@ -201,7 +185,7 @@ export class RehydrationDelegate implements RenderDelegate {
         rerender: () => this.clientRenderer.rerender(),
         destroy: () => root.destroy(),
       },
-      () => root.result!
+      () => root.bounds()
     );
   }
 
