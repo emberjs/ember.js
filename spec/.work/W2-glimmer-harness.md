@@ -864,7 +864,7 @@ description; see STATUS "Next steps" item 6). Build the new commits detached in 
 `/Users/edward/hacking/ember.js-w2`; move each branch ref only after its branch is green.
 Save the current tips to the scratchpad first so the old stack can be restored.
 
-- [ ] 10.1 Design (short, written here): the minimal step-5 subset PR 4 needs (real owner per
+- [x] 10.1 (done, see "10.1 design" below) Design (short, written here): the minimal step-5 subset PR 4 needs (real owner per
       delegate + `ResolverImpl` registrations, from 5.3a/5.3b; whether the old `renderMain`
       runtime can take `ResolverImpl` without 5.2's `BaseRenderer`, or which part of 5.2 must
       come too); how the `Curly` and `Dynamic` blueprints invoke a Glimmer component (args as
@@ -883,6 +883,80 @@ Save the current tips to the scratchpad first so the old stack can be restored.
       change); per-branch suite counts in each message.
 - [ ] 10.5 Correct the ledger "4.1 summary" and "4.1 review" notes; update STATUS and §09 C18
       wording if it says the fan-out was collapsed; move refs; record new hashes.
+
+### 10.1 design
+
+Old tips saved in the scratchpad, `stack-before-step10.txt`.
+
+**Step-5 subset (owner and resolver, no renderer).** The old runtime takes it: `runtimeOptions`
+accepts any `ClassicResolver`, and `renderMain(context, owner, self, …)` takes the owner the VM
+hands to runtime resolution (`{{component this.name}}`), while compile-time resolution uses the
+owner the template factory was instantiated with. So 5.2 (`BaseRenderer`, `TemplateRootState`,
+handles) stays entirely in PR 5. PR 4 takes:
+
+- From 5.3a: `lib/modes/owner.ts` with `createOwner()` (`buildOwner()` from
+  `internal-test-helpers`) and `teardownOwners(...owners)` (`run(() => destroy(owner))`, no
+  `_resetRenderers`: no Ember renderer exists yet). The owner is created lazily, on the first
+  registration or render, so delegates that never register (generation tests, `i-n-u-r-test`)
+  build none. `RenderDelegate.teardown?()`, `RenderTest.teardownDelegate()` and the `afterEach`
+  hooks in `suite()`/`componentModule()` (the 5.2a plumbing). Roots are not destroyed at teardown
+  (they are not tied to the owner without a renderer), so the 5.3a destructor-after-test fixes
+  (`shouldBeVoid`, the two modifier-manager tests, the chaos iterations) are not needed in PR 4.
+- From 5.3b, **components only**: `TestJitRuntimeResolver.lookupComponent(name, owner)` calls
+  Ember's `ResolverImpl.lookupComponent`; every `registerComponent` registers on the owner
+  (`setComponentTemplate` + `owner.register('component:' + name, Class, { instantiate: false })`);
+  templates are instantiated with the delegate's owner (`preprocess(src, opts, owner)`,
+  `renderMain(context, owner, …)`); the registry's component table and `CIRCULAR_OBJECT` go;
+  `createCurriedComponent` = `ResolverImpl.lookupComponent` + `curry`; debug-render-tree's
+  `registerCustomComponent` = `setInternalComponentManager` + `owner.register`; partial
+  rehydration finds classes with `owner.factoryFor`; the rehydration delegate has two owners and
+  the phase rule (both until the server render, then client only). Helpers and modifiers stay in
+  the test registry until PR 5: the kinds do not need them, and moving them would pull the
+  8 `hash` overrides, "Non-native keyword" and "missing helper" changes into PR 4 for no gain.
+- New devDependencies of IT: `@ember/-internals` (deep import of `ResolverImpl`),
+  `internal-test-helpers` (+ lock lines).
+
+**The kinds.** `componentModule` fans an unannotated test out to Glimmer, Curly and Dynamic
+again (`kind: 'glimmer'`/`'templateOnly'` as before; `kind: 'curly'`/`'dynamic'` and
+`skip: <kind>` go, no test needs them after this). All three register the same thing, a real
+`@glimmer/component` subclass whose layout is `<div {layoutAttributes} ...attributes>{layout}</div>`
+(the Glimmer blueprint's layout; `...attributes` is inert for curly callers), so
+`assertComponent` is the same `assertElementShape` for every kind: no `ember-view` wrapper.
+`registerComponent('Curly' | 'Dynamic', …)` registers such a Glimmer component without the
+"no dashes" guard of the Glimmer kind (the curly name is `test-component`).
+
+- Curly: `{{#test-component a=b as |x|}}{template}{{else}}{else}{{/test-component}}`; non-block `{{test-component a=b}}`.
+- Dynamic: the same through `{{#component this.componentName …}}`, `componentName` = the
+  blueprint name (`TestComponent`).
+- Glimmer: angle brackets as in old PR 4, with `else` as `<:default as |…|>…</:default><:else>…</:else>`.
+- Args are named arguments in every kind; layouts read `@x`. `attributes` with a curly kind
+  still throws ("Cannot pass attributes to curly components").
+
+**Suites.** Kinds back (all their blueprint tests, kind-neutral): has-block (the 11 former
+curly-only tests too, including the 7 whose Curly/Dynamic copies old PR 4 deleted as twins),
+has-block-params (all 26 former curly-only tests, the 3 label fixes of 4.2 kept), yield (incl.
+`yield to "inverse"`/`"else"`, deleted as twins in old PR 4), the blocks suite
+(`emberish-components.ts`: its 5 blueprint tests), scope, with-dynamic-vars (dynamic scope must
+cross a curly and a `{{component}}` invocation; 3 tests), SSR `ServerSideComponentSuite` (4
+blueprint tests, cheap, checks the serialized curly/dynamic output). Not back, marked
+`kind: 'glimmer'`: tests that render a string template and invoke no blueprint, where the
+Curly/Dynamic copies were byte-identical runs: debugger's 2 unannotated tests, emberish
+'Element modifier with hooks', has-block-params 'from within a yielded + invoked curried
+component' (as old PR 4). Rehydration (`RehydratingComponents`): not fanned out (suite option
+`kinds: ['glimmer', 'templateOnly']`); 176 of its 202 Curly/Dynamic registrations are the
+inherited `InitialRenderSuite` tests, which render no component, and the 13 own tests need
+per-kind marker-id offsets; curly and `{{component}}` rehydration of real components is what
+the 4 tests of 5.6 (PR 6) pin. Classic-only emberish tests (`attributeBindings`, classic named
+blocks, `...attributes` on a wrapper, ariaRole) stay as old PR 4 has them (ported or dropped).
+
+**Ledger rows that change (4.1).** `collapsed` → `kept (real component)` for the Curly/Dynamic
+rows of has-block, has-block-params, yield, emberish blueprint tests, scope, with-dynamic-vars
+and SSR; `deleted (twin)` → `kept (real component)` for the has-block (7), has-block-params (6)
+and yield (2) rows whose tests come back; `ported` (re-kinded to Glimmer) has-block /
+has-block-params / yield rows → `kept (real component)` (they now run in all three kinds). The
+debugger, 'Element modifier', rehydration rows stay `collapsed`; emberish classic rows stay
+as they are. Expected count of new PR 4: old 9111 + the restored registrations (exact figure
+from the run, explained in the 10.2 note).
 
 ## Findings for the author
 
