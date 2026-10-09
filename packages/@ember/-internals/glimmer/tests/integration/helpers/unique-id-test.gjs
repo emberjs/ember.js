@@ -1,199 +1,144 @@
-import {
-  AbstractTestCase,
-  RenderingTestCase,
-  strip,
-  moduleFor,
-  runTask,
-} from 'internal-test-helpers';
-import { setProperties } from '@ember/object';
-import { uniqueId, invokeHelper } from '@ember/helper';
+import { tracked } from '@glimmer/tracking';
 import { getValue } from '@glimmer/validator';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { find, findAll, render, settled } from '@ember/test-helpers';
+import { uniqueId, invokeHelper } from '@ember/helper';
 
-moduleFor(
-  'Helpers test: {{unique-id}} JS',
-  class extends AbstractTestCase {
-    constructor(assert) {
-      super(assert);
-      this.assert = assert;
+class State {
+  @tracked prefix = 'app';
+}
+
+module('Helpers test: {{unique-id}} JS', function () {
+  test('it can be invoked as a JS function', function (assert) {
+    let first = uniqueId();
+    let second = uniqueId();
+
+    assert.notStrictEqual(
+      first,
+      second,
+      `different invocations of uniqueId should produce different values`
+    );
+  });
+
+  test('it can be invoked via invokeHelper', function (assert) {
+    let first = getValue(invokeHelper({}, uniqueId));
+    let second = getValue(invokeHelper({}, uniqueId));
+
+    assert.notStrictEqual(
+      first,
+      second,
+      `different invocations of uniqueId should produce different values`
+    );
+  });
+});
+
+module('Helpers test: {{unique-id}}', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('it generates a unique id (string) each time', async function (assert) {
+    await render(
+      <template>
+        <p>{{(uniqueId)}}</p><p>{{(uniqueId)}}</p>
+      </template>
+    );
+
+    assert.dom('p').exists({ count: 2 });
+    assert.dom('p:first-of-type').hasAnyText();
+    assert.dom('p:last-of-type').hasAnyText();
+
+    let first = find('p:first-of-type').textContent;
+    let second = find('p:last-of-type').textContent;
+
+    await assert.stableRender();
+
+    assert.notStrictEqual(
+      first,
+      second,
+      `different invocations of {{unique-id}} should produce different values`
+    );
+  });
+
+  test(`when unique-id is used with #let, it remains stable when it's used`, async function (assert) {
+    await render(
+      <template>
+        {{#let (uniqueId) as |id|}}<p>{{id}}</p><p>{{id}}</p>{{/let}}
+      </template>
+    );
+
+    assert.dom('p').exists({ count: 2 });
+    assert.dom('p:first-of-type').hasAnyText();
+    assert.dom('p:last-of-type').hasAnyText();
+
+    let first = find('p:first-of-type').textContent;
+    let second = find('p:last-of-type').textContent;
+
+    await assert.stableRender();
+
+    assert.strictEqual(first, second, `when unique-id is used as a variable, it remains the same`);
+  });
+
+  test(`unique-id doesn't change if it's concatenated with a value that does change`, async function (assert) {
+    function uniquePart(prefix) {
+      let forAttr = find('label').getAttribute('for');
+
+      assert
+        .dom('input')
+        .hasAttribute(
+          'id',
+          forAttr,
+          `the label's 'for' attribute should be the same as the input's 'id' attribute`
+        );
+      assert
+        .dom('label')
+        .hasAttribute('for', new RegExp(`^${prefix}-.+$`), 'the id starts with the prefix');
+
+      return forAttr.slice(prefix.length + 1);
     }
-    ['@test it can be invoked as a JS function']() {
-      let first = uniqueId();
-      let second = uniqueId();
 
-      this.assert.notStrictEqual(
-        first,
-        second,
-        `different invocations of uniqueId should produce different values`
-      );
-    }
-    ['@test it can be invoked via invokeHelper']() {
-      let first = getValue(invokeHelper({}, uniqueId));
-      let second = getValue(invokeHelper({}, uniqueId));
+    let state = new State();
 
-      this.assert.notStrictEqual(
-        first,
-        second,
-        `different invocations of uniqueId should produce different values`
-      );
-    }
-  }
-);
-moduleFor(
-  'Helpers test: {{unique-id}}',
-  class extends RenderingTestCase {
-    ['@test it generates a unique id (string) each time']() {
-      let { first, second } = this.render(`<p>{{unique-id}}</p><p>{{unique-id}}</p>`, () => {
-        let first = this.asElement(this.firstChild);
-        let second = this.asElement(this.nthChild(1));
-
-        return {
-          first: this.asTextContent(first.firstChild),
-          second: this.asTextContent(second.firstChild),
-        };
-      });
-
-      this.assert.notStrictEqual(
-        first,
-        second,
-        `different invocations of {{unique-id}} should produce different values`
-      );
-    }
-
-    [`@test when unique-id is used with #let, it remains stable when it's used`]() {
-      let { first, second } = this.render(
-        strip`
-        {{#let (unique-id) as |id|}}
-          <p>{{id}}</p><p>{{id}}</p>
+    await render(
+      <template>
+        {{#let (uniqueId) as |id|}}
+          <label for='{{state.prefix}}-{{id}}'>Enable Feature</label>
+          <input id='{{state.prefix}}-{{id}}' type='checkbox' />
         {{/let}}
-      `,
-        () => {
-          let first = this.asElement(this.firstChild);
-          let second = this.asElement(this.nthChild(1));
+      </template>
+    );
 
-          return {
-            first: this.asTextContent(first.firstChild),
-            second: this.asTextContent(second.firstChild),
-          };
-        }
-      );
+    let id = uniquePart('app');
 
-      this.assert.strictEqual(
-        first,
-        second,
-        `when unique-id is used as a variable, it remains the same`
-      );
+    await assert.stableRender();
+
+    state.prefix = 'melanie';
+    await settled();
+
+    let newId = uniquePart('melanie');
+
+    assert.strictEqual(
+      id,
+      newId,
+      `the unique-id part of a concatenated attribute shouldn't change just because a dynamic part of it changed`
+    );
+
+    await assert.stableRender();
+  });
+
+  test('it only generates valid selectors', async function (assert) {
+    let iterations = 1000;
+    let items = new Array(iterations).fill(null);
+
+    await render(
+      <template>
+        {{#each items}}<p>{{(uniqueId)}}</p>{{/each}}
+      </template>
+    );
+
+    assert.dom('p').exists({ count: iterations });
+
+    for (let paragraph of findAll('p')) {
+      assert.dom(paragraph).hasText(/^\D/, '{{unique-id}} should produce valid selectors');
     }
-
-    [`@test unique-id doesn't change if it's concatenated with a value that does change`]() {
-      class Elements {
-        constructor(label, input, assert) {
-          this.label = label;
-          this.input = input;
-          this.assert = assert;
-        }
-
-        id(regex) {
-          let forAttr = this.label.getAttribute('for');
-
-          this.assert.strictEqual(
-            forAttr,
-            this.input.getAttribute('id'),
-            `the label's 'for' attribute should be the same as the input's 'id' attribute`
-          );
-
-          let match = forAttr.match(regex);
-
-          this.assert.ok(match, 'the id starts with the prefix');
-
-          return match[1];
-        }
-      }
-
-      let { elements, id } = this.render(
-        strip`
-          {{#let (unique-id) as |id|}}
-            <label for="{{this.prefix}}-{{id}}">Enable Feature</label>
-            <input id="{{this.prefix}}-{{id}}" type="checkbox">
-          {{/let}}`,
-        { prefix: 'app' },
-        () => {
-          let label = this.asElement(this.firstChild, 'label');
-          let input = this.asElement(this.nthChild(1), 'input');
-
-          let elements = new Elements(label, input, this.assert);
-
-          return { elements, id: elements.id(/^app-(.*)$/) };
-        }
-      );
-
-      this.update({ prefix: 'melanie' }, () => {
-        let newId = elements.id(/^melanie-(.*)$/);
-
-        this.assert.strictEqual(
-          id,
-          newId,
-          `the unique-id part of a concatenated attribute shouldn't change just because a dynamic part of it changed`
-        );
-      });
-    }
-
-    ['@test it only generates valid selectors']() {
-      let iterations = 1000;
-      let reNumericStart = /^\d/;
-
-      let template = '<p>{{unique-id}}</p>'.repeat(iterations);
-      super.render(template);
-
-      for (let i = 0; i < iterations; i++) {
-        let textNode = this.nthChild(i).firstChild;
-        let text = textNode.data;
-
-        this.assert.false(
-          reNumericStart.test(text),
-          `{{unique-id}} should produce valid selectors` + text
-        );
-      }
-    }
-
-    render(template, ...rest) {
-      // If there are three parameters to `render`, the second parameter is the
-      // template's arguments.
-      let args = rest.length === 2 ? rest[0] : {};
-      // If there are two parameters to `render`, the second parameter is the
-      // postcondition. Otherwise, the third parameter is the postcondition.
-      let postcondition = rest.length === 2 ? rest[1] : rest[0];
-
-      super.render(template, args);
-      let result = postcondition();
-      this.assertStableRerender();
-      return result;
-    }
-
-    update(args, postcondition) {
-      runTask(() => setProperties(this.context, args));
-      postcondition();
-      this.assertStableRerender();
-    }
-
-    asElement(node, tag) {
-      this.assert.ok(node !== null && node.nodeType === 1);
-
-      if (tag) {
-        this.assert.strictEqual(node.tagName.toLowerCase(), tag, `Element is <${tag}>`);
-      }
-
-      return node;
-    }
-
-    asTextNode(node) {
-      this.assert.ok(node !== null && node.nodeType === 3);
-      return node;
-    }
-
-    asTextContent(node) {
-      let data = this.asTextNode(node).data;
-      this.assert.ok(data.trim().length > 0, `The text node has content`);
-      return data;
-    }
-  }
-);
+  });
+});

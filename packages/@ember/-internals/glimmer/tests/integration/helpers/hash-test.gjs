@@ -1,246 +1,250 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { setComponentTemplate } from '@glimmer/manager';
-import { precompileTemplate } from '@ember/template-compilation';
-import { template } from '@ember/template-compiler/runtime';
-
 import Component from '@glimmer/component';
-
-import { set, computed } from '@ember/object';
-
-moduleFor(
-  'Helpers test: {{hash}}',
-  class extends RenderingTestCase {
-    ['@test returns a hash with the right key-value']() {
-      this.render(`{{#let (hash name="Sergio") as |person|}}{{person.name}}{{/let}}`);
-
-      this.assertText('Sergio');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Sergio');
-    }
-
-    ['@test can be shadowed']() {
-      let hash = (obj) =>
-        Object.entries(obj)
-          .map(([key, value]) => `hash:${key}=${value}`)
-          .join(',');
-      let Root = template(
-        `({{hash apple='red' banana='yellow'}}) ({{#let shadowHash as |hash|}}{{hash apple='green'}}{{/let}})`,
-        { scope: () => ({ hash, shadowHash: hash }) }
-      );
-
-      this.renderComponent(Root, {
-        expect: '(hash:apple=red,hash:banana=yellow) (hash:apple=green)',
-      });
-    }
-
-    ['@test can have more than one key-value']() {
-      this.render(
-        `{{#let (hash name="Sergio" lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/let}}`
-      );
-
-      this.assertText('Sergio Arbeo');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Sergio Arbeo');
-    }
-
-    ['@test binds values when variables are used']() {
-      this.render(
-        `{{#let (hash name=this.model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/let}}`,
-        {
-          model: {
-            firstName: 'Marisa',
-          },
-        }
-      );
-
-      this.assertText('Marisa Arbeo');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Marisa Arbeo');
-
-      runTask(() => set(this.context, 'model.firstName', 'Sergio'));
-
-      this.assertText('Sergio Arbeo');
-
-      runTask(() => set(this.context, 'model', { firstName: 'Marisa' }));
-
-      this.assertText('Marisa Arbeo');
-    }
-
-    ['@test binds multiple values when variables are used']() {
-      this.render(
-        `{{#let (hash name=this.model.firstName lastName=this.model.lastName) as |person|}}{{person.name}} {{person.lastName}}{{/let}}`,
-        {
-          model: {
-            firstName: 'Marisa',
-            lastName: 'Arbeo',
-          },
-        }
-      );
-
-      this.assertText('Marisa Arbeo');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Marisa Arbeo');
-
-      runTask(() => set(this.context, 'model.firstName', 'Sergio'));
-
-      this.assertText('Sergio Arbeo');
-
-      runTask(() => set(this.context, 'model.lastName', 'Smith'));
-
-      this.assertText('Sergio Smith');
-
-      runTask(() =>
-        set(this.context, 'model', {
-          firstName: 'Marisa',
-          lastName: 'Arbeo',
-        })
-      );
-
-      this.assertText('Marisa Arbeo');
-    }
-
-    ['@test hash helpers can be nested']() {
-      this.render(
-        `{{#let (hash person=(hash name=this.model.firstName)) as |ctx|}}{{ctx.person.name}}{{/let}}`,
-        {
-          model: { firstName: 'Balint' },
-        }
-      );
-
-      this.assertText('Balint');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Balint');
-
-      runTask(() => set(this.context, 'model.firstName', 'Chad'));
-
-      this.assertText('Chad');
-
-      runTask(() => set(this.context, 'model', { firstName: 'Balint' }));
-
-      this.assertText('Balint');
-    }
-
-    ['@test should yield hash of internal properties']() {
-      let fooBarInstance;
-      let FooBarComponent = class extends Component {
-        constructor(owner, args) {
-          super(owner, args);
-          fooBarInstance = this;
-          this.model = { firstName: 'Chad' };
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(`{{yield (hash firstName=this.model.firstName)}}`),
-          FooBarComponent
-        )
-      );
-
-      this.render(`{{#foo-bar as |values|}}{{values.firstName}}{{/foo-bar}}`);
-
-      this.assertText('Chad');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Chad');
-
-      runTask(() => set(fooBarInstance, 'model.firstName', 'Godfrey'));
-
-      this.assertText('Godfrey');
-
-      runTask(() => set(fooBarInstance, 'model', { firstName: 'Chad' }));
-
-      this.assertText('Chad');
-    }
-
-    ['@test should yield hash of internal and external properties']() {
-      let fooBarInstance;
-      let FooBarComponent = class extends Component {
-        constructor(owner, args) {
-          super(owner, args);
-          fooBarInstance = this;
-          this.model = { firstName: 'Chad' };
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(`{{yield (hash firstName=this.model.firstName lastName=@lastName)}}`),
-          FooBarComponent
-        )
-      );
-
-      this.render(
-        `{{#foo-bar lastName=this.model.lastName as |values|}}{{values.firstName}} {{values.lastName}}{{/foo-bar}}`,
-        {
-          model: { lastName: 'Hietala' },
-        }
-      );
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        set(fooBarInstance, 'model.firstName', 'Godfrey');
-        set(this.context, 'model.lastName', 'Chan');
-      });
-
-      this.assertText('Godfrey Chan');
-
-      runTask(() => {
-        set(fooBarInstance, 'model', { firstName: 'Chad' });
-        set(this.context, 'model', { lastName: 'Hietala' });
-      });
-
-      this.assertText('Chad Hietala');
-    }
-
-    ['@test works with computeds']() {
-      let FooBarComponent = class extends Component {
-        @computed('args.hash.firstName', 'args.hash.lastName')
-        get fullName() {
-          return `${this.args.hash.firstName} ${this.args.hash.lastName}`;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate(`{{this.fullName}}`), FooBarComponent)
-      );
-
-      this.render(`{{foo-bar hash=(hash firstName=this.firstName lastName=this.lastName)}}`, {
-        firstName: 'Chad',
-        lastName: 'Hietala',
-      });
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        set(this.context, 'firstName', 'Godfrey');
-        set(this.context, 'lastName', 'Chan');
-      });
-
-      this.assertText('Godfrey Chan');
-    }
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
+import { hash } from '@ember/helper';
+import { computed } from '@ember/object';
+
+class Model {
+  @tracked firstName;
+  @tracked lastName;
+
+  constructor({ firstName, lastName }) {
+    this.firstName = firstName;
+    this.lastName = lastName;
   }
-);
+}
+
+class State {
+  @tracked model;
+
+  constructor(model) {
+    this.model = new Model(model);
+  }
+}
+
+module('Helpers test: {{hash}}', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('returns a hash with the right key-value', async function (assert) {
+    await render(
+      <template>{{#let (hash name='Sergio') as |person|}}{{person.name}}{{/let}}</template>
+    );
+
+    await assert.stableRender('Sergio');
+  });
+
+  test('can be shadowed', async function (assert) {
+    let hash = (obj) =>
+      Object.entries(obj)
+        .map(([key, value]) => `hash:${key}=${value}`)
+        .join(',');
+    let shadowHash = hash;
+
+    await render(
+      <template>
+        ({{hash apple='red' banana='yellow'}})
+        {{#let shadowHash as |hash|}}
+          ({{hash apple='green'}})
+        {{/let}}
+      </template>
+    );
+
+    assert.dom().hasText('(hash:apple=red,hash:banana=yellow) (hash:apple=green)');
+    await assert.stableRender();
+  });
+
+  test('can have more than one key-value', async function (assert) {
+    await render(
+      <template>
+        {{#let (hash name='Sergio' lastName='Arbeo') as |person|}}
+          {{person.name}}
+          {{person.lastName}}
+        {{/let}}
+      </template>
+    );
+
+    assert.dom().hasText('Sergio Arbeo');
+    await assert.stableRender();
+  });
+
+  test('binds values when variables are used', async function (assert) {
+    let state = new State({ firstName: 'Marisa' });
+
+    await render(
+      <template>
+        {{#let (hash name=state.model.firstName lastName='Arbeo') as |person|}}
+          {{person.name}}
+          {{person.lastName}}
+        {{/let}}
+      </template>
+    );
+
+    assert.dom().hasText('Marisa Arbeo');
+    await assert.stableRender();
+
+    state.model.firstName = 'Sergio';
+    await settled();
+
+    assert.dom().hasText('Sergio Arbeo');
+
+    state.model = new Model({ firstName: 'Marisa' });
+    await settled();
+
+    assert.dom().hasText('Marisa Arbeo');
+  });
+
+  test('binds multiple values when variables are used', async function (assert) {
+    let state = new State({ firstName: 'Marisa', lastName: 'Arbeo' });
+
+    await render(
+      <template>
+        {{#let (hash name=state.model.firstName lastName=state.model.lastName) as |person|}}
+          {{person.name}}
+          {{person.lastName}}
+        {{/let}}
+      </template>
+    );
+
+    assert.dom().hasText('Marisa Arbeo');
+    await assert.stableRender();
+
+    state.model.firstName = 'Sergio';
+    await settled();
+
+    assert.dom().hasText('Sergio Arbeo');
+
+    state.model.lastName = 'Smith';
+    await settled();
+
+    assert.dom().hasText('Sergio Smith');
+
+    state.model = new Model({ firstName: 'Marisa', lastName: 'Arbeo' });
+    await settled();
+
+    assert.dom().hasText('Marisa Arbeo');
+  });
+
+  test('hash helpers can be nested', async function (assert) {
+    let state = new State({ firstName: 'Balint' });
+
+    await render(
+      <template>
+        {{#let (hash person=(hash name=state.model.firstName)) as |ctx|}}{{ctx.person.name}}{{/let}}
+      </template>
+    );
+
+    await assert.stableRender('Balint');
+
+    state.model.firstName = 'Chad';
+    await settled();
+
+    assert.dom().hasText('Chad');
+
+    state.model = new Model({ firstName: 'Balint' });
+    await settled();
+
+    assert.dom().hasText('Balint');
+  });
+
+  test('should yield hash of internal properties', async function (assert) {
+    let fooBarInstance;
+
+    class FooBar extends Component {
+      @tracked model = new Model({ firstName: 'Chad' });
+
+      constructor(owner, args) {
+        super(owner, args);
+        fooBarInstance = this;
+      }
+
+      <template>{{yield (hash firstName=this.model.firstName)}}</template>
+    }
+
+    await render(
+      <template>
+        <FooBar as |values|>{{values.firstName}}</FooBar>
+      </template>
+    );
+
+    await assert.stableRender('Chad');
+
+    fooBarInstance.model.firstName = 'Godfrey';
+    await settled();
+
+    assert.dom().hasText('Godfrey');
+
+    fooBarInstance.model = new Model({ firstName: 'Chad' });
+    await settled();
+
+    assert.dom().hasText('Chad');
+  });
+
+  test('should yield hash of internal and external properties', async function (assert) {
+    let state = new State({ lastName: 'Hietala' });
+    let fooBarInstance;
+
+    class FooBar extends Component {
+      @tracked model = new Model({ firstName: 'Chad' });
+
+      constructor(owner, args) {
+        super(owner, args);
+        fooBarInstance = this;
+      }
+
+      <template>{{yield (hash firstName=this.model.firstName lastName=@lastName)}}</template>
+    }
+
+    await render(
+      <template>
+        <FooBar @lastName={{state.model.lastName}} as |values|>
+          {{values.firstName}}
+          {{values.lastName}}
+        </FooBar>
+      </template>
+    );
+
+    assert.dom().hasText('Chad Hietala');
+    await assert.stableRender();
+
+    fooBarInstance.model.firstName = 'Godfrey';
+    state.model.lastName = 'Chan';
+    await settled();
+
+    assert.dom().hasText('Godfrey Chan');
+
+    fooBarInstance.model = new Model({ firstName: 'Chad' });
+    state.model = new Model({ lastName: 'Hietala' });
+    await settled();
+
+    assert.dom().hasText('Chad Hietala');
+  });
+
+  test('works with computeds', async function (assert) {
+    let state = new Model({ firstName: 'Chad', lastName: 'Hietala' });
+
+    class FooBar extends Component {
+      @computed('args.hash.firstName', 'args.hash.lastName')
+      get fullName() {
+        return `${this.args.hash.firstName} ${this.args.hash.lastName}`;
+      }
+
+      <template>{{this.fullName}}</template>
+    }
+
+    await render(
+      <template>
+        <FooBar @hash={{hash firstName=state.firstName lastName=state.lastName}} />
+      </template>
+    );
+
+    await assert.stableRender('Chad Hietala');
+
+    state.firstName = 'Godfrey';
+    state.lastName = 'Chan';
+    await settled();
+
+    assert.dom().hasText('Godfrey Chan');
+  });
+});

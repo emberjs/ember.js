@@ -91,6 +91,8 @@ let unrelated = trackedValue(0);
   change causes a new render.
 
   With a string, it also compares the rendered HTML with the string.
+  White space at the start and at the end of the rendered HTML does not
+  count, so the content of a `<template>` can be on its own lines.
 
   This is the `assertStableRerender()` and the `renderComponent()` `expect`
   option of `RenderingTestCase`, for a test that uses `setupRenderingTest()`.
@@ -109,7 +111,11 @@ async function stableRender(expected) {
   await settled();
 
   if (typeof expected === 'string') {
-    equalTokens(getContext().element, expected, `the rendered HTML is: \`${expected}\``);
+    equalTokens(
+      getContext().element.innerHTML.trim(),
+      expected,
+      `the rendered HTML is: \`${expected}\``
+    );
   }
 
   let after = takeSnapshot();

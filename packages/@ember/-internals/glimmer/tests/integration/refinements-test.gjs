@@ -1,66 +1,78 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
 
-import { set } from '@ember/object';
+class State {
+  @tracked var = 'var';
+}
 
-moduleFor(
-  'syntax refinements',
-  class extends RenderingTestCase {
-    ['@test block params should not be refined']() {
-      this.registerHelper('foo', () => 'bar helper');
+module('syntax refinements', function (hooks) {
+  setupRenderingTest(hooks);
 
-      this.render(
-        strip`
-      {{#let this.var as |foo|}}
-        {{foo}}
-      {{/let}}
+  test('block params should not be refined', async function (assert) {
+    let state = new State();
+    let foo = () => 'bar helper';
 
-      ---
+    await render(
+      <template>
+        {{#let state.var as |foo|}}
+          {{foo}}
+        {{/let}}
 
-      {{#let this.var as |outlet|}}
-        {{outlet}}
-      {{/let}}
+        ---
 
-      ---
+        {{#let state.var as |outlet|}}
+          {{outlet}}
+        {{/let}}
 
-      {{#let this.var as |mount|}}
-        {{mount}}
-      {{/let}}
+        ---
 
-      ---
+        {{#let state.var as |mount|}}
+          {{mount}}
+        {{/let}}
 
-      {{#let this.var as |component|}}
-        {{component}}
-      {{/let}}
+        ---
 
-      ---
+        {{#let state.var as |component|}}
+          {{component}}
+        {{/let}}
 
-      {{#let this.var as |input|}}
-        {{input}}
-      {{/let}}
+        ---
 
-      ---
+        {{#let state.var as |input|}}
+          {{input}}
+        {{/let}}
 
-      {{#let this.var as |-with-dynamic-vars|}}
-        {{-with-dynamic-vars}}
-      {{/let}}
+        ---
 
-      ---
+        {{#let state.var as |-with-dynamic-vars|}}
+          {{-with-dynamic-vars}}
+        {{/let}}
 
-      {{#let this.var as |-in-element|}}
-        {{-in-element}}
-      {{/let}}`,
-        { var: 'var' }
+        ---
+
+        {{#let state.var as |-in-element|}}
+          {{-in-element}}
+        {{/let}}
+      </template>
+    );
+
+    assert.dom().hasText('var --- var --- var --- var --- var --- var --- var');
+    await assert.stableRender();
+
+    state.var = 'RARRR!!!';
+    await settled();
+
+    assert
+      .dom()
+      .hasText(
+        'RARRR!!! --- RARRR!!! --- RARRR!!! --- RARRR!!! --- RARRR!!! --- RARRR!!! --- RARRR!!!'
       );
 
-      this.assertText('var---var---var---var---var---var---var');
+    state.var = 'var';
+    await settled();
 
-      runTask(() => set(this.context, 'var', 'RARRR!!!'));
-
-      this.assertText('RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!');
-
-      runTask(() => set(this.context, 'var', 'var'));
-
-      this.assertText('var---var---var---var---var---var---var');
-    }
-  }
-);
+    assert.dom().hasText('var --- var --- var --- var --- var --- var --- var');
+  });
+});

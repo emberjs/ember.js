@@ -1,74 +1,84 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
-
-import { renderSettled } from '@ember/-internals/glimmer';
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render } from '@ember/test-helpers';
+import { renderSettled } from '@ember/renderer';
 import { run, schedule } from '@ember/runloop';
 
-import { all } from 'rsvp';
+class State {
+  @tracked foo = 'bar';
+}
 
-moduleFor(
-  'renderSettled',
-  class extends RenderingTestCase {
-    ['@test resolves when no rendering is happening'](assert) {
-      return renderSettled().then(() => {
-        assert.ok(true, 'resolved even without rendering');
-      });
-    }
+module('renderSettled', function (hooks) {
+  setupRenderingTest(hooks);
 
-    ['@test resolves renderers exist but no runloops are triggered'](assert) {
-      this.render(strip`{{this.foo}}`, { foo: 'bar' });
+  test('resolves when no rendering is happening', async function (assert) {
+    await renderSettled();
 
-      return renderSettled().then(() => {
-        assert.ok(true, 'resolved even without runloops');
-      });
-    }
+    assert.ok(true, 'resolved even without rendering');
+  });
 
-    ['@test does not create extraneous promises'](assert) {
-      let first = renderSettled();
-      let second = renderSettled();
+  test('resolves renderers exist but no runloops are triggered', async function (assert) {
+    let state = new State();
 
-      assert.strictEqual(first, second);
+    await render(<template>{{state.foo}}</template>);
 
-      return all([first, second]);
-    }
+    await renderSettled();
 
-    ['@test resolves when rendering has completed (after property update)']() {
-      this.render(strip`{{this.foo}}`, { foo: 'bar' });
+    assert.ok(true, 'resolved even without runloops');
+  });
 
-      this.assertText('bar');
-      this.component.set('foo', 'baz');
-      this.assertText('bar');
+  test('does not create extraneous promises', async function (assert) {
+    let first = renderSettled();
+    let second = renderSettled();
 
-      return renderSettled().then(() => {
-        this.assertText('baz');
-      });
-    }
+    assert.strictEqual(first, second);
 
-    ['@test resolves in run loop when renderer has settled'](assert) {
-      assert.expect(3);
+    await Promise.all([first, second]);
+  });
 
-      this.render(strip`{{this.foo}}`, { foo: 'bar' });
+  test('resolves when rendering has completed (after property update)', async function (assert) {
+    let state = new State();
 
-      this.assertText('bar');
-      let promise;
+    await render(<template>{{state.foo}}</template>);
 
-      return run(() => {
-        schedule('actions', null, () => {
-          this.component.set('foo', 'set in actions');
+    assert.dom().hasText('bar');
+    state.foo = 'baz';
+    assert.dom().hasText('bar');
 
-          promise = renderSettled().then(() => {
-            this.assertText('set in afterRender');
-          });
+    await renderSettled();
 
-          schedule('afterRender', null, () => {
-            this.component.set('foo', 'set in afterRender');
-          });
+    assert.dom().hasText('baz');
+  });
+
+  test('resolves in run loop when renderer has settled', async function (assert) {
+    assert.expect(3);
+
+    let state = new State();
+
+    await render(<template>{{state.foo}}</template>);
+
+    assert.dom().hasText('bar');
+
+    let settledInRunLoop;
+
+    run(() => {
+      schedule('actions', null, () => {
+        state.foo = 'set in actions';
+
+        settledInRunLoop = renderSettled();
+
+        schedule('afterRender', null, () => {
+          state.foo = 'set in afterRender';
         });
-
-        // still not updated here
-        this.assertText('bar');
-
-        return promise;
       });
-    }
-  }
-);
+
+      // still not updated here
+      assert.dom().hasText('bar');
+    });
+
+    await settledInRunLoop;
+
+    assert.dom().hasText('set in afterRender');
+  });
+});

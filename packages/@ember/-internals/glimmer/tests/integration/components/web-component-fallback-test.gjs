@@ -1,36 +1,44 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
 
-import { set } from '@ember/object';
+class State {
+  @tracked name = 'Robert';
+}
 
-moduleFor(
-  'Components test: web component fallback',
-  class extends RenderingTestCase {
-    ['@test custom elements are rendered']() {
-      let template = `<foo-bar some-attr="123">hello</foo-bar>`;
+module('Components test: web component fallback', function (hooks) {
+  setupRenderingTest(hooks);
 
-      this.render(template);
+  test('custom elements are rendered', async function (assert) {
+    await render(
+      <template>
+        <foo-bar some-attr='123'>hello</foo-bar>
+      </template>
+    );
 
-      this.assertHTML(template);
+    await assert.stableRender('<foo-bar some-attr="123">hello</foo-bar>');
+  });
 
-      this.assertStableRerender();
-    }
+  test('custom elements can have bound attributes', async function (assert) {
+    let state = new State();
 
-    ['@test custom elements can have bound attributes']() {
-      let template = `<foo-bar some-attr="{{this.name}}">hello</foo-bar>`;
+    await render(
+      <template>
+        <foo-bar some-attr='{{state.name}}'>hello</foo-bar>
+      </template>
+    );
 
-      this.render(template, { name: 'Robert' });
+    await assert.stableRender('<foo-bar some-attr="Robert">hello</foo-bar>');
 
-      this.assertHTML(`<foo-bar some-attr="Robert">hello</foo-bar>`);
+    state.name = 'Kris';
+    await settled();
 
-      this.assertStableRerender();
+    assert.dom('foo-bar').hasAttribute('some-attr', 'Kris').hasText('hello');
 
-      runTask(() => set(this.context, 'name', 'Kris'));
+    state.name = 'Robert';
+    await settled();
 
-      this.assertHTML(`<foo-bar some-attr="Kris">hello</foo-bar>`);
-
-      runTask(() => set(this.context, 'name', 'Robert'));
-
-      this.assertHTML(`<foo-bar some-attr="Robert">hello</foo-bar>`);
-    }
-  }
-);
+    assert.dom('foo-bar').hasAttribute('some-attr', 'Robert').hasText('hello');
+  });
+});
