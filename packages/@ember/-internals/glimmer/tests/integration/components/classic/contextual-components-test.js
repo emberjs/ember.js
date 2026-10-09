@@ -320,6 +320,57 @@ moduleFor(
 
       this.assertText('ab');
     }
+
+    '@test component helper can curry arguments'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            '1. [{{this.one}}]2. [{{this.two}}]3. [{{this.three}}]4. [{{this.four}}]5. [{{this.five}}]6. [{{this.six}}]{{yield}}a. [{{this.a}}]b. [{{this.b}}]c. [{{this.c}}]d. [{{this.d}}]e. [{{this.e}}]f. [{{this.f}}]'
+          ),
+          class extends EmberComponent {
+            static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+          }
+        )
+      );
+
+      this.render(strip`
+        {{#let (component "foo-bar" "outer 1" "outer 2" a="outer a" b="outer b" c="outer c" e="outer e") as |outer|}}
+          {{#let (component outer "inner 1" a="inner a" d="inner d" e="inner e") as |inner|}}
+            {{#component inner "invocation 1" "invocation 2" a="invocation a" b="invocation b"}}---{{/component}}
+          {{/let}}
+        {{/let}}
+      `);
+
+      this.assertText(
+        '1. [outer 1]2. [outer 2]3. [inner 1]4. [invocation 1]5. [invocation 2]6. []---a. [invocation a]b. [invocation b]c. [outer c]d. [inner d]e. [inner e]f. []'
+      );
+    }
+
+    '@test component helper: currying works inline'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            '1. [{{this.one}}]2. [{{this.two}}]3. [{{this.three}}]4. [{{this.four}}]5. [{{this.five}}]6. [{{this.six}}]'
+          ),
+          class extends EmberComponent {
+            static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+          }
+        )
+      );
+
+      this.render(
+        strip`
+          {{component (component (component 'foo-bar' this.foo.first this.foo.second) 'inner 1') 'invocation 1' 'invocation 2'}}
+        `,
+        { foo: { first: 'outer 1', second: 'outer 2' } }
+      );
+
+      this.assertText(
+        '1. [outer 1]2. [outer 2]3. [inner 1]4. [invocation 1]5. [invocation 2]6. []'
+      );
+    }
   }
 );
 

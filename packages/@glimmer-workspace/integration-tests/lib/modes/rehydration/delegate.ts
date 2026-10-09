@@ -35,6 +35,7 @@ import { registerComponent, registerHelper, registerModifier } from '../jit/regi
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { debugRehydrateTree } from './builder';
 
 export interface RehydrationStats {
@@ -56,6 +57,19 @@ export class RehydrationDelegate implements RenderDelegate {
   protected clientRegistry: TestJitRegistry;
   protected serverRegistry: TestJitRegistry;
 
+  /** Components are registered on these owners, one per side: server and client are separate apps. */
+  protected clientOwner: TestOwner = createOwner();
+  protected serverOwner: TestOwner = createOwner();
+
+  /**
+   * Registration follows the phase: both owners until the server has rendered, then the client
+   * owner only. Ember's registry refuses to re-register a name that has been resolved, and the
+   * server owner has resolved the components by then, while the client owner has resolved nothing
+   * before `renderClientSide`, so a registration made in the client phase (possibly a different
+   * layout under the same name) replaces the earlier one on the client owner.
+   */
+  protected serverRendered = false;
+
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
 
@@ -75,6 +89,11 @@ export class RehydrationDelegate implements RenderDelegate {
     this.serverRegistry = new TestJitRegistry();
     this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
     this.serverContext = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
+  }
+
+  /** Called after each test. */
+  teardown(): void {
+    teardownOwners(this.clientOwner, this.serverOwner);
   }
 
   getInitialElement(): SimpleElement {
@@ -121,9 +140,11 @@ export class RehydrationDelegate implements RenderDelegate {
       this.serverContext,
       this.getSelf(env, context),
       this.getElementBuilder(env, cursor),
+      this.serverOwner,
       this.precompileOptions
     );
 
+    this.serverRendered = true;
     takeSnapshot();
     return this.serialize(element);
   }
@@ -152,6 +173,7 @@ export class RehydrationDelegate implements RenderDelegate {
       this.clientContext,
       this.getSelf(env, context),
       builder,
+      this.clientOwner,
       this.precompileOptions
     );
 
@@ -180,8 +202,8 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
-    registerComponent(this.clientRegistry, type, name, layout);
-    registerComponent(this.serverRegistry, type, name, layout);
+    registerComponent(this.clientOwner, type, name, layout);
+    if (!this.serverRendered) registerComponent(this.serverOwner, type, name, layout);
   }
 
   registerHelper(name: string, helper: UserHelper): void {

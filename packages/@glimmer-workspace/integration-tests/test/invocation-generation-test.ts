@@ -9,6 +9,9 @@ module(
     beforeEach() {
       renderTests = new RenderTest(new JitRenderDelegate());
     },
+    afterEach() {
+      renderTests.teardownDelegate();
+    },
   },
   ({ test }) => {
     test('Can build basic glimmer invocation', (assert) => {
@@ -89,6 +92,23 @@ module(
       assert.strictEqual(
         invocation,
         `<Lol @foo={{bar}} @baz={{1}} @bar={{null}} data-foo="bar" id="wat" as |a b c|>World</Lol>`
+      );
+    });
+
+    test('Can build glimmer invocation with else', (assert) => {
+      renderTests['testType'] = 'Glimmer';
+      let invocation = renderTests.buildComponent({
+        name: 'Lol',
+        layout: 'Hello {{yield}}',
+        template: 'World',
+        args: { foo: 'bar' },
+        blockParams: ['a b c'],
+        else: 'ELSE',
+      });
+
+      assert.strictEqual(
+        invocation,
+        `<Lol @foo={{bar}}><:default as |a b c|>World</:default><:else>ELSE</:else></Lol>`
       );
     });
 

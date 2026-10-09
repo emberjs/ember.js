@@ -44,6 +44,7 @@ import type { RenderDelegateOptions } from '../../render-delegate';
 
 import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import JitCompileTimeLookup from './compilation-context';
 import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
 import { TestJitRegistry } from './registry';
@@ -74,6 +75,7 @@ export class JitRenderDelegate implements RenderDelegate {
   protected resolver: TestJitRuntimeResolver;
 
   private plugins: ASTPluginBuilder[] = [];
+  private _owner: Nullable<TestOwner> = null;
   private _context: Nullable<EvaluationContext> = null;
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
@@ -94,6 +96,21 @@ export class JitRenderDelegate implements RenderDelegate {
     this.registry.register('helper', 'array', array);
     this.registry.register('helper', 'get', get);
     this.registry.register('helper', 'concat', concat);
+  }
+
+  /** A real owner, created on first use and destroyed in `teardown()`. */
+  protected get owner(): TestOwner {
+    if (this._owner === null) {
+      this._owner = createOwner();
+    }
+
+    return this._owner;
+  }
+
+  /** Called after each test. */
+  teardown(): void {
+    if (this._owner !== null) teardownOwners(this._owner);
+    this._owner = null;
   }
 
   get context(): EvaluationContext {
@@ -136,27 +153,13 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
-    return componentHelper(this.registry, name, this.context.program.constants);
+    return componentHelper(this.resolver, this.owner, name, this.context.program.constants);
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {
     this.plugins.push(plugin);
   }
 
-  registerComponent<K extends 'TemplateOnly' | 'Glimmer', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: string,
-    Class?: ComponentTypes[K]
-  ): void;
-  registerComponent<K extends 'Curly' | 'Dynamic', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: Nullable<string>,
-    Class?: ComponentTypes[K]
-  ): void;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     _testType: L,
@@ -164,7 +167,7 @@ export class JitRenderDelegate implements RenderDelegate {
     layout: Nullable<string>,
     Class?: ComponentTypes[K]
   ) {
-    registerComponent(this.registry, type, name, layout, Class);
+    registerComponent(this.owner, type, name, layout, Class);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
@@ -192,7 +195,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   compileTemplate(template: string): HandleResult {
-    let compiled = preprocess(template, this.precompileOptions);
+    let compiled = preprocess(template, this.precompileOptions, this.owner);
 
     return unwrapTemplate(compiled).asLayout().compile(this.context);
   }
@@ -207,6 +210,7 @@ export class JitRenderDelegate implements RenderDelegate {
       this.context,
       this.getSelf(env, context),
       this.getElementBuilder(env, cursor),
+      this.owner,
       this.precompileOptions
     );
   }
@@ -220,7 +224,14 @@ export class JitRenderDelegate implements RenderDelegate {
     let cursor = { element, nextSibling: null };
     let { env } = this.context;
     let builder = this.getElementBuilder(env, cursor);
-    let iterator = renderComponent(this.context, builder, {}, component, args, dynamicScope);
+    let iterator = renderComponent(
+      this.context,
+      builder,
+      this.owner,
+      component,
+      args,
+      dynamicScope
+    );
 
     return renderSync(env, iterator);
   }

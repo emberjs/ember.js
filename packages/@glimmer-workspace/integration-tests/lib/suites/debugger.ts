@@ -110,7 +110,7 @@ export class DebuggerSuite extends RenderTest {
     }
   }
 
-  @test
+  @test({ kind: 'glimmer' })
   'debugger in class-backed component logs context message with named argument hint'() {
     let originalInfo = console.info;
     let messages: string[] = [];
@@ -140,7 +140,7 @@ export class DebuggerSuite extends RenderTest {
     }
   }
 
-  @test
+  @test({ kind: 'glimmer' })
   'can get locals'() {
     let expectedContext = {
       foo: 'bar',

@@ -404,7 +404,6 @@ export class InElementSuite extends RenderTest {
       }
     }
 
-    this.testType = 'Dynamic';
     this.registerComponent('TemplateOnly', 'FooBar', '<p>{{@value}}</p>');
 
     this.registerHelper('log', () => {});

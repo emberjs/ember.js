@@ -410,5 +410,134 @@ moduleFor(
         content: 'hello',
       });
     }
+
+    '@test invocation attributes are merged with the classes of the component'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('Hello world!'),
+          class extends EmberComponent {
+            classNames = ['inner'];
+          }
+        )
+      );
+
+      this.render('<FooBar class="outer" />');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('ember-view inner outer') },
+        content: 'Hello world!',
+      });
+
+      this.assertStableRerender();
+    }
+
+    '@test invocation attributes win over attributeBindings'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('Hello world!'),
+          class extends EmberComponent {
+            attributeBindings = ['data-foo'];
+            'data-foo' = 'inner';
+          }
+        )
+      );
+
+      this.render('<FooBar data-foo="outer" />');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { 'data-foo': 'outer' },
+        content: 'Hello world!',
+      });
+
+      this.assertStableRerender();
+    }
+
+    '@test explicit ...attributes in the layout receive the invocation attributes'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<h1 ...attributes>Hello world!</h1>'),
+          class extends EmberComponent {}
+        )
+      );
+
+      this.render('<FooBar data-foo="bar" />');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { 'data-foo': 'bar' },
+        content: '<h1 data-foo="bar">Hello world!</h1>',
+      });
+
+      this.assertStableRerender();
+    }
+
+    '@test it can yield to a named block'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('Hello{{yield to="baz"}}world!'),
+          class extends EmberComponent {}
+        )
+      );
+
+      this.render('<FooBar><:baz> my </:baz></FooBar>');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        content: 'Hello my world!',
+      });
+
+      this.assertStableRerender();
+    }
+
+    '@test it can yield to an explicit default named block'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('Hello{{yield to="default"}}world!'),
+          class extends EmberComponent {}
+        )
+      );
+
+      this.render('<FooBar><:default> my </:default></FooBar>');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        content: 'Hello my world!',
+      });
+
+      this.assertStableRerender();
+    }
+
+    '@test it can yield a value to the else and inverse named blocks'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('Hello{{yield "my" to="inverse"}}world!'),
+          class extends EmberComponent {}
+        )
+      );
+
+      this.render(strip`
+        <FooBar><:else as |value|> {{value}} </:else></FooBar>
+        <FooBar><:inverse as |value|> {{value}} </:inverse></FooBar>
+      `);
+
+      this.assertComponentElement(this.nthChild(0), {
+        tagName: 'div',
+        content: 'Hello my world!',
+      });
+      this.assertComponentElement(this.nthChild(1), {
+        tagName: 'div',
+        content: 'Hello my world!',
+      });
+
+      this.assertStableRerender();
+    }
   }
 );

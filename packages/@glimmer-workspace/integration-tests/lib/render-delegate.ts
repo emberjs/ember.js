@@ -57,4 +57,6 @@ export default interface RenderDelegate {
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder;
   getSelf(env: Environment, context: unknown): Reference;
+  /** Called after each test: releases what the delegate created (its owners). */
+  teardown?(): void;
 }

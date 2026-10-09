@@ -1410,6 +1410,9 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11
     devDependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
       '@ember/owner':
         specifier: workspace:*
         version: link:../../@ember/owner
@@ -1440,6 +1443,9 @@ importers:
       dom-types:
         specifier: ^1.1.2
         version: 1.1.4
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
 
   packages/@glimmer-workspace/integration-tests/test:
     dependencies:

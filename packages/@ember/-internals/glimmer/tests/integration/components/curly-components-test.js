@@ -938,6 +938,48 @@ moduleFor(
       this.assertText('Yes:Hello42');
     }
 
+    ['@test yield to else']() {
+      this.owner.register(
+        'component:my-if',
+        template(
+          strip`
+            {{#if @predicate}}
+              Yes:{{yield @someValue}}
+            {{else}}
+              No:{{yield to="else"}}
+            {{/if}}
+          `,
+          { component: templateOnly(), strictMode: false }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#my-if predicate=this.activated someValue=42 as |result|}}
+        Hello{{result}}
+      {{else}}
+        Goodbye
+      {{/my-if}}`,
+        {
+          activated: true,
+        }
+      );
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.context.set('activated', false));
+
+      this.assertText('No:Goodbye');
+
+      runTask(() => this.context.set('activated', true));
+
+      this.assertText('Yes:Hello42');
+    }
+
     ['@test expression (has-block) inverse']() {
       this.owner.register(
         'component:check-inverse',
