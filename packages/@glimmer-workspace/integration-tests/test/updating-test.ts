@@ -1,10 +1,9 @@
 import GlimmerComponent from '@glimmer/component';
-import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import type { Arguments, Nullable, Owner, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import {
   assertNodeTagName,
@@ -14,6 +13,7 @@ import {
   RenderTest,
   stripTight,
   test,
+  TestHelper,
   tracked,
   trimLines,
 } from '@glimmer-workspace/integration-tests';
@@ -378,9 +378,7 @@ class UpdatingTest extends RenderTest {
   'double curlies with const SafeString'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(htmlSafe(rawString), 'safe-string');
-    });
+    this.registerHelper('const-foobar', () => htmlSafe(rawString));
 
     this.render('<div>{{const-foobar}}</div>', {});
     this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
@@ -391,9 +389,7 @@ class UpdatingTest extends RenderTest {
   'double curlies with const Node'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
-    });
+    this.registerHelper('const-foobar', () => this.delegate.createTextNode(rawString));
 
     this.render('<div>{{const-foobar}}</div>');
     this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
@@ -404,9 +400,7 @@ class UpdatingTest extends RenderTest {
   'triple curlies with const SafeString'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(htmlSafe(rawString), 'safe-string');
-    });
+    this.registerHelper('const-foobar', () => htmlSafe(rawString));
 
     this.render('<div>{{{const-foobar}}}</div>');
     this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
@@ -417,9 +411,7 @@ class UpdatingTest extends RenderTest {
   'triple curlies with const Node'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
-    });
+    this.registerHelper('const-foobar', () => this.delegate.createTextNode(rawString));
 
     this.render('<div>{{{const-foobar}}}</div>');
     this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
@@ -436,13 +428,18 @@ class UpdatingTest extends RenderTest {
       destroyable.count++;
     });
 
-    this.registerInternalHelper('destroy-me', (_args) => {
-      let ref = createPrimitiveRef('destroy me!');
+    class DestroyMeHelper extends TestHelper {
+      constructor(owner: Owner, args: Arguments) {
+        super(owner, args);
+        associateDestroyableChild(this, destroyable);
+      }
 
-      associateDestroyableChild(ref, destroyable);
+      value() {
+        return 'destroy me!';
+      }
+    }
 
-      return ref;
-    });
+    this.registerHelperDefinition('destroy-me', DestroyMeHelper);
 
     this.render('<div>{{destroy-me}}</div>', {});
 
@@ -476,21 +473,23 @@ class UpdatingTest extends RenderTest {
     let tag = createTag();
     let currentValue: T | U = truthyValue;
 
-    this.registerInternalHelper('stateful-foo', (_args) => {
-      didCreate++;
+    class StatefulHelper extends TestHelper {
+      constructor(owner: Owner, args: Arguments) {
+        super(owner, args);
+        didCreate++;
+      }
 
-      let ref = createComputeRef(() => {
+      value() {
         consumeTag(tag);
         return currentValue;
-      });
+      }
 
-      let destroyable = {};
+      override willDestroy() {
+        didDestroy++;
+      }
+    }
 
-      registerDestructor(destroyable, () => didDestroy++);
-      associateDestroyableChild(ref, destroyable);
-
-      return ref;
-    });
+    this.registerHelperDefinition('stateful-foo', StatefulHelper);
 
     assert.strictEqual(didCreate, 0, 'didCreate: before render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: before render');

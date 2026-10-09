@@ -4,7 +4,6 @@ import type {
   DynamicScope,
   ElementNamespace,
   Environment,
-  Helper,
   RenderResult,
   SimpleDocument,
   SimpleDocumentFragment,
@@ -42,7 +41,7 @@ export default interface RenderDelegate {
   ): void;
   registerPlugin(plugin: ASTPluginBuilder): void;
   registerHelper(name: string, helper: UserHelper): void;
-  registerInternalHelper(name: string, helper: Helper): void;
+  registerHelperDefinition(name: string, definition: object): void;
   registerModifier(name: string, klass: unknown): void;
   renderTemplate(
     template: string,
