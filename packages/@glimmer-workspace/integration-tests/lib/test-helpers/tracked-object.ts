@@ -1,26 +1,18 @@
-import { consumeTag, dirtyTagFor, tagFor } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 
-export function trackedObj<T extends Record<string, unknown>>(
-  obj: T = {} as T
-): Record<string, unknown> {
-  let trackedObj = {};
+const TRACKED_CONTEXTS = new WeakMap<object, object>();
 
-  for (let key in obj) {
-    Object.defineProperty(trackedObj, key, {
-      enumerable: true,
-
-      get() {
-        consumeTag(tagFor(obj, key));
-
-        return (obj as any)[key];
-      },
-
-      set(value: unknown) {
-        dirtyTagFor(obj, key);
-        return ((obj as any)[key] = value);
-      },
-    });
+/**
+ * The tracked context for a plain object a test passes in. The same plain object always maps to
+ * the same tracked object, so a server render and a client render (or several renders of the same
+ * context) share one tracked context, as they shared the plain object before.
+ */
+export function trackedContext<T extends Record<string, unknown>>(plain: T): T {
+  let existing = TRACKED_CONTEXTS.get(plain);
+  if (existing === undefined) {
+    // every write dirties, like `RenderTest.context`
+    existing = trackedObject<Record<string, unknown>>(plain, { equals: () => false });
+    TRACKED_CONTEXTS.set(plain, existing);
   }
-
-  return trackedObj;
+  return existing as T;
 }

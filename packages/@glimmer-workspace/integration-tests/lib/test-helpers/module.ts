@@ -1,4 +1,3 @@
-import type { EnvironmentDelegate } from '@glimmer/runtime';
 import { keys } from '@glimmer/util';
 
 import type { ComponentKind } from '../components';
@@ -8,8 +7,7 @@ import type { Count, IRenderTest, RenderTest } from '../render-test';
 import type { DeclaredComponentKind } from '../test-decorator';
 
 import { JitRenderDelegate } from '../modes/jit/delegate';
-import { NodeJitRenderDelegate } from '../modes/node/env';
-import { JitSerializationDelegate } from '../suites/custom-dom-helper';
+import { JitSerializationDelegate, NodeJitRenderDelegate } from '../modes/node/env';
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
   suiteName: string;
@@ -18,7 +16,7 @@ export interface RenderTestConstructor<D extends RenderDelegate, T extends IRend
 
 export function jitSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>,
-  options?: { componentModule?: boolean; env?: EnvironmentDelegate }
+  options?: { componentModule?: boolean; debugRenderTree?: boolean }
 ): void {
   return suite(klass, JitRenderDelegate, options);
 }
@@ -72,7 +70,7 @@ export function suite<D extends RenderDelegate>(
   Delegate: RenderDelegateConstructor<D>,
   options: {
     componentModule?: boolean;
-    env?: EnvironmentDelegate;
+    debugRenderTree?: boolean;
     /** The invocation kinds a component module runs (default: all of them). */
     kinds?: DeclaredComponentKind[];
   } = {}
@@ -92,7 +90,7 @@ export function suite<D extends RenderDelegate>(
     let instance: IRenderTest | null = null;
     QUnit.module(`[integration] ${Delegate.style} :: ${suiteName}`, {
       beforeEach() {
-        instance = new klass(new Delegate({ env: options.env }));
+        instance = new klass(new Delegate({ debugRenderTree: options.debugRenderTree }));
         if (instance.beforeEach) instance.beforeEach();
       },
 
@@ -174,7 +172,6 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
       if (!kinds.includes(kind)) tests[kind] = [];
     }
   }
-
   QUnit.module(`[integration] ${name}`, (hooks) => {
     hooks.afterEach(() => {
       if (current !== null) teardown(current);

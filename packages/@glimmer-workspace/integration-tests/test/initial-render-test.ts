@@ -22,6 +22,7 @@ import {
   test,
   toInnerHTML,
   toTextContent,
+  trackedContext,
 } from '@glimmer-workspace/integration-tests';
 
 class RenderTests extends InitialRenderSuite {
@@ -41,7 +42,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
-      context,
+      trackedContext(context),
       () => this.takeSnapshot(),
       element
     );
@@ -49,8 +50,10 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   }
 
   renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
-    this.context = context;
-    this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
+    // the same tracked object the server render got (see `trackedContext`), so that writes through
+    // `this.context` are tracked
+    this.context = trackedContext(context);
+    this.handle = this.delegate.renderClientSide(template as string, this.context, this.element);
   }
 
   assertRehydrationStats({ nodesRemoved: nodes }: { nodesRemoved: number }) {
@@ -389,7 +392,6 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
     doc = this.delegate.clientDoc;
     let clientNode = doc.createTextNode('hello');
-    this.context = { node: clientNode };
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
     // Just repairs the value of the text node

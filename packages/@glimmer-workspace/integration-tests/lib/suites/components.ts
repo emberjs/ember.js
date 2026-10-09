@@ -90,7 +90,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (named arg path) via angle brackets'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render({
       layout: '<@stuff.Foo />',
@@ -107,7 +106,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking curried component with attributes via angle brackets (invocation attributes clobber)'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent(
       'Glimmer',
       'Foo',
@@ -128,7 +126,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking curried component with attributes via angle brackets (invocation classes merge)'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', '<p class="default" ...attributes>hello world!</p>');
     this.render({
       layout: '<@stuff.Foo class="invocation" />',
@@ -280,7 +277,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (local path) via angle brackets'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render(`{{#let (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/let}}`);
 

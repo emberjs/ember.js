@@ -41,7 +41,12 @@
   },
   "devDependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/destroyable": "workspace:*",
     "@ember/owner": "workspace:*",
+    "@ember/reactive": "workspace:*",
+    "@ember/renderer": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/template": "workspace:*",
     "@glimmer/constants": "workspace:*",

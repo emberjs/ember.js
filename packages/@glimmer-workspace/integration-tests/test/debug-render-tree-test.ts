@@ -1,3 +1,4 @@
+import { trackedObject } from '@ember/reactive/collections';
 import type Owner from '@ember/owner';
 import GlimmerComponent from '@glimmer/component';
 import type {
@@ -9,7 +10,6 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -18,10 +18,10 @@ import {
   setInternalComponentManager,
   setModifierManager,
 } from '@glimmer/manager';
-import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
+import { EMPTY_ARGS, TemplateOnlyComponentManager } from '@glimmer/runtime';
+import type { TemplateOnlyComponent } from '@ember/component/template-only';
+import templateOnlyComponent from '@ember/component/template-only';
 import {
-  BaseEnv,
   createTemplate,
   defComponent,
   defineSimpleModifier,
@@ -30,7 +30,6 @@ import {
   suite,
   test,
   tracked,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 interface CapturedBounds {
@@ -76,7 +75,7 @@ class DebugRenderTreeTest extends RenderTest {
   declare delegate: DebugRenderTreeDelegate;
 
   @test 'strict-mode components'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
     const HelloWorld = defComponent('{{@arg}}');
     const Root = defComponent(
@@ -184,7 +183,7 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode modifiers'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
     const HelloWorld = defComponent('<p ...attributes>{{@arg}}</p>');
     const noopFn = () => {};
@@ -318,8 +317,8 @@ class DebugRenderTreeTest extends RenderTest {
         args: (actual) => {
           const args = { positional: [], named: { arg: 'first', arg2: { error } } };
           this.assert.deepEqual(actual, args);
-          this.assert.ok(!this.delegate.context.env.isArgumentCaptureError!(actual.named['arg']));
-          this.assert.ok(this.delegate.context.env.isArgumentCaptureError!(actual.named['arg2']));
+          this.assert.ok(!this.delegate.isArgumentCaptureError(actual.named['arg']));
+          this.assert.ok(this.delegate.isArgumentCaptureError(actual.named['arg2']));
           return true;
         },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
@@ -904,8 +903,4 @@ class DebugRenderTreeTest extends RenderTest {
   }
 }
 
-suite(DebugRenderTreeTest, DebugRenderTreeDelegate, {
-  env: assign({}, BaseEnv, {
-    enableDebugTooling: true,
-  }),
-});
+suite(DebugRenderTreeTest, DebugRenderTreeDelegate, { debugRenderTree: true });

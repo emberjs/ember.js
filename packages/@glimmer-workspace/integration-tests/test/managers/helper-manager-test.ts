@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
+import { trackedObject } from '@ember/reactive/collections';
 import GlimmerComponent from '@glimmer/component';
 import type { Arguments, Owner } from '@glimmer/interfaces';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
@@ -10,7 +11,6 @@ import {
   TestHelper,
   TestHelperManager,
   tracked,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
 import { DEBUG } from '@glimmer/env';
@@ -118,7 +118,7 @@ class HelperManagerTest extends RenderTest {
       count++;
       return x;
     };
-    let args = trackedObj({ value: 'hello', unused: 'unused' });
+    let args = trackedObject({ value: 'hello', unused: 'unused' });
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value @unused}}'), args);
 
@@ -141,7 +141,7 @@ class HelperManagerTest extends RenderTest {
   @test
   '(Default Helper Manager) plain functions entangle with any tracked data'(assert: Assert) {
     let count = 0;
-    let trackedState = trackedObj({ value: 'hello' });
+    let trackedState = trackedObject({ value: 'hello' });
 
     let obj = () => {
       count++;
@@ -167,7 +167,7 @@ class HelperManagerTest extends RenderTest {
       count++;
       return x;
     };
-    let args = trackedObj({ value: 'hello', unused: 'unused' });
+    let args = trackedObject({ value: 'hello', unused: 'unused' });
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@unused}}'), args);
     assert.strictEqual(count, 1, 'rendered once');
@@ -189,7 +189,7 @@ class HelperManagerTest extends RenderTest {
       return options['namedOpt'];
     };
 
-    let args = trackedObj({ value: 'hello', used: 'used' });
+    let args = trackedObject({ value: 'hello', used: 'used' });
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@used}}'), args);
     assert.strictEqual(count, 1, 'rendered once');
@@ -212,7 +212,7 @@ class HelperManagerTest extends RenderTest {
       return x;
     };
 
-    let args = trackedObj({});
+    let args = trackedObject({});
 
     this.renderComponent(defineComponent({ obj }, 'result: {{obj}}'), args);
     this.assertHTML('result: default value');
@@ -229,7 +229,7 @@ class HelperManagerTest extends RenderTest {
       return x;
     };
 
-    let args = trackedObj({ value: undefined });
+    let args = trackedObject<Record<string, unknown>>({ value: undefined });
 
     this.renderComponent(defineComponent({ obj }, 'result: {{obj @value}}'), args);
     this.assertHTML('result: default value');
@@ -252,7 +252,7 @@ class HelperManagerTest extends RenderTest {
       }
     }
 
-    let args = trackedObj({ foo: 123 });
+    let args = trackedObject({ foo: 123 });
 
     this.renderComponent(defineComponent({ hello: Hello }, '{{hello foo=@foo}}'), args);
 
@@ -281,7 +281,7 @@ class HelperManagerTest extends RenderTest {
       }
     }
 
-    let args = trackedObj({ foo: 123 });
+    let args = trackedObject({ foo: 123 });
 
     this.renderComponent(defineComponent({ hello: Hello }, '{{hello @foo}}'), args);
 
