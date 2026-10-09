@@ -221,6 +221,26 @@ module('Helpers test: {{hash}}', function (hooks) {
     assert.dom().hasText('Chad Hietala');
   });
 
+  test('individual hash values are accessed lazily', async function (assert) {
+    class FooBar extends Component {
+      get lastName() {
+        assert.ok(false, 'lastName was accessed');
+
+        return undefined;
+      }
+
+      <template>{{yield (hash firstName=@firstName lastName=this.lastName)}}</template>
+    }
+
+    await render(
+      <template>
+        <FooBar @firstName="Godfrey" as |values|>{{values.firstName}}</FooBar>
+      </template>
+    );
+
+    await assert.stableRender('Godfrey');
+  });
+
   test('works with computeds', async function (assert) {
     let state = new Model({ firstName: 'Chad', lastName: 'Hietala' });
 

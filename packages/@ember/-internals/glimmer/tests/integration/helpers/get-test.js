@@ -650,5 +650,45 @@ moduleFor(
 
       this.assertText('miguelandrade30');
     }
+
+    '@test should be able to get string length with a static key'() {
+      this.render(`[{{get this.name 'length'}}] [{{if true (get this.name 'length')}}]`, {
+        name: 'Tomster',
+      });
+
+      this.assertText('[7] [7]');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'name', 'Zoey'));
+
+      this.assertText('[4] [4]');
+
+      runTask(() => set(this.context, 'name', 'Tomster'));
+
+      this.assertText('[7] [7]');
+    }
+
+    '@test should be able to get string length with a bound/dynamic key'() {
+      this.render(`[{{get this.name this.key}}] [{{if true (get this.name this.key)}}]`, {
+        name: 'Tomster',
+        key: 'length',
+      });
+
+      this.assertText('[7] [7]');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'key', 'foo'));
+
+      this.assertText('[] []');
+
+      runTask(() => {
+        set(this.context, 'name', 'Zoey');
+        set(this.context, 'key', 'length');
+      });
+
+      this.assertText('[4] [4]');
+    }
   }
 );
