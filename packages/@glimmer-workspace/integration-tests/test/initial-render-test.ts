@@ -1,5 +1,5 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
-import type { SafeString } from '@glimmer/runtime';
+import { htmlSafe } from '@ember/template';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, expect } from '@glimmer/debug-util';
 import {
@@ -115,11 +115,7 @@ class Rehydration extends AbstractRehydrationTests {
   'handles empty trusted content (html safe string)'() {
     let template = '<div>{{this.value}}</div>';
 
-    let safeString: SafeString = {
-      toHTML() {
-        return '';
-      },
-    };
+    let safeString = htmlSafe('');
     let obj = { value: safeString };
 
     this.renderServerSide(template, obj);

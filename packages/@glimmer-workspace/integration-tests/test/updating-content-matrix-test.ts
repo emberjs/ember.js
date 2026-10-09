@@ -1,22 +1,8 @@
 import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import type { SafeString } from '@glimmer/runtime';
+import { htmlSafe, type SafeString } from '@ember/template';
 import type { RenderDelegate, RenderTestConstructor } from '@glimmer-workspace/integration-tests';
 import { NS_SVG } from '@glimmer/constants';
 import { jitSuite, RenderTest } from '@glimmer-workspace/integration-tests';
-
-function makeSafeString(value: string): SafeString {
-  return new SafeStringImpl(value);
-}
-
-class SafeStringImpl implements SafeString {
-  constructor(private string: string) {}
-  toHTML() {
-    return this.string;
-  }
-  toString() {
-    return this.string;
-  }
-}
 
 class ContentTest extends RenderTest {
   static suiteName = 'Updating - Content';
@@ -206,17 +192,17 @@ generateContentTestCase(ContentTest, {
       description: 'blank string',
     },
     {
-      input: (_test, isHTML) => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+      input: (_test, isHTML) => htmlSafe(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
       expected: (_test, isHTML) => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
       description: 'safe string containing HTML',
     },
     {
-      input: makeSafeString(''),
+      input: htmlSafe(''),
       expected: '<!---->',
       description: 'empty safe string',
     },
     {
-      input: makeSafeString(' '),
+      input: htmlSafe(' '),
       expected: ' ',
       description: 'blank safe string',
     },
@@ -313,17 +299,17 @@ generateContentTestCase(ContentTest, {
       description: 'blank string',
     },
     {
-      input: (_test, isHTML) => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+      input: (_test, isHTML) => htmlSafe(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
       expected: (_test, isHTML) => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
       description: 'safe string containing HTML',
     },
     {
-      input: makeSafeString(''),
+      input: htmlSafe(''),
       expected: '<!---->',
       description: 'empty safe string',
     },
     {
-      input: makeSafeString(' '),
+      input: htmlSafe(' '),
       expected: ' ',
       description: 'blank safe string',
     },
