@@ -3,41 +3,13 @@ import GlimmerComponent from '@glimmer/component';
 import type {
   InternalComponentCapabilities,
   Owner,
-  ResolvedComponentDefinition,
   WithCreateInstance,
   WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import type { RenderDelegateOptions } from '@glimmer-workspace/integration-tests';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { NULL_REFERENCE } from '@glimmer/reference';
-import {
-  createTemplate,
-  defineComponent,
-  EmberishCurlyComponent,
-  JitRenderDelegate,
-  RenderTest,
-  suite,
-  test,
-  TestJitRuntimeResolver,
-} from '@glimmer-workspace/integration-tests';
-
-class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
-  override lookupComponent(name: string, owner: () => void): ResolvedComponentDefinition | null {
-    if (typeof owner === 'function') owner();
-
-    return super.lookupComponent(name, owner);
-  }
-}
-
-class OwnerJitRenderDelegate extends JitRenderDelegate {
-  constructor(options?: RenderDelegateOptions) {
-    super({
-      ...options,
-      resolver: (registry) => new OwnerJitRuntimeResolver(registry),
-    });
-  }
-}
+import { defineComponent, RenderTest, jitSuite, test } from '@glimmer-workspace/integration-tests';
 
 const CAPABILITIES = {
   dynamicLayout: false,
@@ -117,64 +89,6 @@ function defineCheckOwnerComponent(ownerToCheck: object | undefined, assert: Ass
 class OwnerTest extends RenderTest {
   static suiteName = '[owner]';
 
-  declare delegate: OwnerJitRenderDelegate;
-
-  @test
-  'owner can be used per-template in compile time resolver'(assert: Assert) {
-    class FooBar extends EmberishCurlyComponent {
-      override layout = createTemplate('<FooBaz/>')(() => {
-        assert.step('foo-bar owner called');
-      });
-    }
-
-    class FooBaz extends EmberishCurlyComponent {
-      override layout = createTemplate('<FooQux/>')(() => {
-        assert.step('foo-baz owner called');
-      });
-    }
-
-    this.delegate.registerComponent('Curly', 'Curly', 'FooBar', null, FooBar);
-    this.delegate.registerComponent('Curly', 'Curly', 'FooBaz', null, FooBaz);
-    this.delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'FooQux', 'testing');
-
-    this.render('<FooBar/>');
-
-    assert.verifySteps(['foo-bar owner called', 'foo-baz owner called'], 'owners used correctly');
-  }
-
-  @test
-  'owner can be used per-template in runtime resolver'(assert: Assert) {
-    this.delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'FooQux', 'testing');
-
-    this.delegate.registerComponent(
-      'Curly',
-      'Curly',
-      'FooBaz',
-      null,
-      class FooBaz extends EmberishCurlyComponent {
-        override layout = createTemplate('<FooQux/>')(() => {
-          assert.step('foo-baz owner called');
-        });
-      }
-    );
-
-    this.delegate.registerComponent(
-      'Curly',
-      'Curly',
-      'FooBar',
-      null,
-      class FooBar extends EmberishCurlyComponent {
-        override layout = createTemplate('<FooBaz/>')(() => {
-          assert.step('foo-bar owner called');
-        });
-      }
-    );
-
-    this.render('<FooBar/>');
-
-    assert.verifySteps(['foo-bar owner called', 'foo-baz owner called'], 'owners used correctly');
-  }
-
   @test
   'owner can be changed by a component with the hasSubOwner capability'(assert: Assert) {
     let owner1 = { name: 'owner1' };
@@ -243,4 +157,4 @@ class OwnerTest extends RenderTest {
   }
 }
 
-suite(OwnerTest, OwnerJitRenderDelegate);
+jitSuite(OwnerTest);

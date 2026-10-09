@@ -1,6 +1,6 @@
 import GlimmerComponent from '@glimmer/component';
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import type { SafeString } from '@glimmer/runtime';
+import { htmlSafe } from '@ember/template';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
@@ -20,20 +20,6 @@ import {
 
 import { assert } from './support';
 import { DEBUG } from '@glimmer/env';
-
-function makeSafeString(value: string): SafeString {
-  return new SafeStringImpl(value);
-}
-
-class SafeStringImpl implements SafeString {
-  constructor(private string: string) {}
-  toHTML() {
-    return this.string;
-  }
-  toString() {
-    return this.string;
-  }
-}
 
 class UpdatingTest extends RenderTest {
   static suiteName = 'Updating';
@@ -345,7 +331,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'updating a triple curly with a safe and unsafe string'() {
-    let safeString = makeSafeString('<p>hello world</p>');
+    let safeString = htmlSafe('<p>hello world</p>');
     let unsafeString = '<b>Big old world!</b>';
 
     this.render('<div>{{{this.value}}}</div>', {
@@ -393,7 +379,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(makeSafeString(rawString), 'safe-string');
+      return createConstRef(htmlSafe(rawString), 'safe-string');
     });
 
     this.render('<div>{{const-foobar}}</div>', {});
@@ -419,7 +405,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(makeSafeString(rawString), 'safe-string');
+      return createConstRef(htmlSafe(rawString), 'safe-string');
     });
 
     this.render('<div>{{{const-foobar}}}</div>');
