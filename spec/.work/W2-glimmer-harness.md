@@ -879,7 +879,7 @@ Save the current tips to the scratchpad first so the old stack can be restored.
       its harness changes (renderer, owner, resolver, compile options, loose-template root);
       full suite green and per-test diff on every branch; triage any kind-specific failure
       (stop and report anything that is not plumbing).
-- [ ] 10.4 Rewrite the PR 4 and PR 5 descriptions (and any other whose counts or claims
+- [x] 10.4 (done, see notes) Rewrite the PR 4 and PR 5 descriptions (and any other whose counts or claims
       change); per-branch suite counts in each message.
 - [ ] 10.5 Correct the ledger "4.1 summary" and "4.1 review" notes; update STATUS and §09 C18
       wording if it says the fan-out was collapsed; move refs; record new hashes.
@@ -1432,3 +1432,13 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   (`8243c6486a`): 12 files, all the kinds delta (`types.ts`, `register.ts`, `render-test.ts`, `module.ts`,
   `test-decorator.ts`, the has-block/has-block-params/yield/debugger/invocation suites, `initial-render-test.ts`,
   `invocation-generation-test.ts`); prettier clean.
+- 10.4 (2026-10-09): messages written as each branch was rebuilt (so no branch had to be re-amended after its ref
+  moved). PR 4: rewritten (three invocation forms on a real `@glimmer/component`, real owner + `ResolverImpl`, why
+  Curly and Dynamic are kept, the 40 formerly curly-only tests in all three forms, what is not fanned out and why;
+  9290). PR 5: the owner and component resolution now come from PR 4, so its intro, "Owner and resolver" section and
+  devDependency list say what PR 5 adds on top (owner owns the renderer, `-view-registry:main`, helpers/modifiers on
+  the owner, test registry deleted, phase rule for every registration); 9289. PR 6: the dasherize bullet names the
+  Dynamic kind's `componentName`, "real owner and Ember's renderer"; 9293. PR 9: the has-block-inverse bullet says the
+  behavior was untested *on a classic component* (the Curly kind covers it on a Glimmer component); 9193. PRs 7, 8,
+  10: suite count only (9287, 9192, 9196 / 9178 pass). PRs 1-3 unchanged. All keep the `Co-Authored-By` trailer; none
+  mentions the spec branch or the ledger.
