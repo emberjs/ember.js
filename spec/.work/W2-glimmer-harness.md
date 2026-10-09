@@ -881,7 +881,7 @@ Save the current tips to the scratchpad first so the old stack can be restored.
       (stop and report anything that is not plumbing).
 - [x] 10.4 (done, see notes) Rewrite the PR 4 and PR 5 descriptions (and any other whose counts or claims
       change); per-branch suite counts in each message.
-- [ ] 10.5 Correct the ledger "4.1 summary" and "4.1 review" notes; update STATUS and §09 C18
+- [x] 10.5 (done, see notes) Correct the ledger "4.1 summary" and "4.1 review" notes; update STATUS and §09 C18
       wording if it says the fan-out was collapsed; move refs; record new hashes.
 
 ### 10.1 design
@@ -1442,3 +1442,14 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   behavior was untested *on a classic component* (the Curly kind covers it on a Glimmer component); 9193. PRs 7, 8,
   10: suite count only (9287, 9192, 9196 / 9178 pass). PRs 1-3 unchanged. All keep the `Co-Authored-By` trailer; none
   mentions the spec branch or the ledger.
+- 10.5 (2026-10-09): ledger "4.1 summary" and "4.1 review" each get a dated **Correction** paragraph (kept the original
+  text): the rationale covered the layout side (keywords inside the layout compile the same for every invocation form),
+  not the caller side (default/`{{else}}` blocks, block params and args passed through `{{#foo-bar}}` and
+  `{{#component x}}`); EG has no `{{else}}` or block params through `{{#component}}` (checked: its 13 `{{#component`
+  uses have neither); corrected totals table (150 kept (real component), 202 collapsed, 6 deleted (twin), 20 port).
+  STATUS "Next steps" item 6: PR 4 title, step-10 paragraph with all ten tips and totals, superseded sentences
+  ("tree equals the W2 branch", "-10 differs by that change only") reworded. §09 C18 row: the resolution said "collapse
+  the component fan-out to Glimmer + template-only"; now says the Curly/Dynamic kinds stay on a real
+  `@glimmer/component` through Ember's resolver. `xref.py` and `check-citations.py` clean. Refs: all ten
+  `ef4/test-cleanup-*` moved (4-10 new, 1-3 unchanged); old tips in the scratchpad `stack-before-step10.txt`; worktree
+  back on `test/w2-glimmer-harness`.

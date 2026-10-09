@@ -274,9 +274,10 @@ Suggestions for the plan's author, based on what is still open:
       `93d54aa9f9`, `8d8030598c`.
    3. *Helpers and modifiers through the public managers* (step 3): `e8163f76b0`, `29e2f90191`,
       `cce8d18557`.
-   4. *Collapse the component fan-out; delete the fake classic component* (step 4; ports to real
-      classic components first): `f76a25d5ce`, `79517d806a`, `73aa8f83c3`, `dd4714ac3c`,
-      `eac1ad7182`, `bf935f7c7a`.
+   4. *Run the component fan-out on real Glimmer components; delete the fake classic component*
+      (step 4; ports to real classic components first): `f76a25d5ce`, `79517d806a`, `73aa8f83c3`,
+      `dd4714ac3c`, `eac1ad7182`, `bf935f7c7a`; rebuilt in step 10 (see below), so the branch, not
+      these commits, is the reference.
    5. *Render through Ember's renderer with a real owner and resolver* (5.2a–5.4b):
       `5f76825492`, `c562908ff0`, `5c0b5156be`, `e41d3c7792`, `3ebe247030`, `fedd0647fb`,
       `f482d68ebb`.
@@ -292,18 +293,28 @@ Suggestions for the plan's author, based on what is still open:
        component), `b9cdcda432` + `0121b60d62` (non-interactive server render and its pins),
        `8939c50aff` (loose templates through `renderComponent` + a custom manager).
    These ten PRs exist as stacked branches `ef4/test-cleanup-1` … `ef4/test-cleanup-10` (one
-   commit each, its message the PR description; branch N's tree equals the W2 branch at the
-   last commit of PR N, so each was green on the full suite). On 2026-10-09 PR 1 was amended to
+   commit each, its message the PR description; branch N's tree equalled the W2 branch at the
+   last commit of PR N until step 10, below). On 2026-10-09 PR 1 was amended to
    type test-component owners as `Owner` from `@ember/owner` (new devDependency) instead of
    `ConstructorParameters<typeof Component>[0]`, and 2–10 were rebased onto it; every branch
-   type-checks, and `-10` passes the full suite (9017 / 8999 / 0 / 18). So `-10` now differs
-   from `test/w2-glimmer-harness` by that change only; the cleanup branches are the reference.
+   type-checks, and `-10` passed the full suite (9017 / 8999 / 0 / 18).
    Also on 2026-10-09 (review of PR 4): "components inside the root are destroyed when the
    render result is destroyed" had vacuous DOM assertions after its port to `@glimmer/component`
    (invocation `id`s went nowhere without `...attributes`); PR 4 now adds `...attributes` and
    asserts the elements exist before `destroy()` (fails without the fix), and 5–10 were rebased.
    No other PR 4 port has the problem. The stack is based on `9bec1cb2a8`; `origin/main` has
    since moved on. Not pushed.
+   **Step 10 (2026-10-09):** review showed that dropping the Curly and Dynamic kinds lost the
+   caller side of `{{#foo-bar}}…{{else}}` / `{{#component x}}…{{else}}` across the has-block /
+   has-block-params / yield matrix (the 4.1 rationale covered the layout side only). PR 4 was
+   rebuilt to keep both kinds as invocations of a real `@glimmer/component` on a real owner and
+   Ember's `ResolverImpl` (the owner/component-resolver part of step 5 moved into PR 4), and 5–10
+   were rebased; `.work/W2-glimmer-harness.md` step 10. Tips and full-suite totals (all 0 fail,
+   18 skip): 1 `41f1a0199d` 9541, 2 `cb4772c2e1` 9504, 3 `86fe1ea485` 9504 (unchanged),
+   4 `24f7fe5f0a` 9290, 5 `dbe02bf853` 9289, 6 `02c65b1128` 9293, 7 `1935d23361` 9287,
+   8 `7b18d6fddb` 9192, 9 `89ac9d6070` 9193, 10 `df23a8c76d` 9196 (each the old count + 179).
+   So `-10` differs from `test/w2-glimmer-harness` by the owner-type fix, the PR 4 teardown-test
+   fix and step 10; the cleanup branches are the reference.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh

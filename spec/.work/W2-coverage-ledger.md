@@ -342,6 +342,40 @@ Counting rows rather than registrations, the 68 `port` registrations are 35 ledg
 - Most `port` rows (has-block-params, has-block attr/concat) are not classic-specific and lose nothing if `kind: 'curly'` is simply removed so the test runs as Glimmer; they are `port` because step 4.4 would otherwise drop them (no Glimmer registration today). Several IT tests are mislabelled (see the has-block-params rows marked "Mislabelled"); 4.2 may delete the duplicates.
 - Twins from EG run on template-only layouts or glimmer `Component`s (none on `PositionalComponent`), so no 6.2 re-check is needed for the 4.1 rows.
 
+**Correction (10.5, 2026-10-09).** The rationale above, and the review below, covered the *layout* side only: a
+keyword such as `has-block`, `has-block-params` or `yield` inside the component's layout compiles the same way
+whatever the invocation form. It did not cover the *caller* side: how the caller hands the component its default and
+`{{else}}` blocks, their block params and its arguments through `{{#foo-bar}}…{{else}}…{{/foo-bar}}` and
+`{{#component x}}…{{else}}…{{/component}}`. That is what the Curly and Dynamic registrations of the has-block /
+has-block-params / yield / blocks matrix tested, and EG does not test it for dynamic invocation (no `{{else}}`,
+`to="inverse"` or `has-block-params` after `{{component`). The first note above is wrong on this: the invocation
+form is not covered elsewhere for this matrix. The registrations were dropped because they ran on the fake classic
+component, not because they were redundant. Step 10 (author decision) keeps them, as invocations of a real
+`@glimmer/component` resolved by Ember's `ResolverImpl` on a real owner; the 75 affected rows above say `kept (real
+component)`. Corrected totals of the 378 registrations:
+
+| Suite | kept (real component) | collapsed | deleted (twin) | port | total |
+|---|---|---|---|---|---|
+| emberish-components.ts | 10 | 2 | 6 | 12 | 30 |
+| has-block.ts | 42 | 0 | 0 | 0 | 42 |
+| has-block-params.ts | 50 | 0 | 0 | 2 | 52 |
+| yield.ts | 30 | 0 | 0 | 0 | 30 |
+| scope.ts | 4 | 0 | 0 | 0 | 4 |
+| with-dynamic-vars.ts | 6 | 0 | 0 | 0 | 6 |
+| debugger.ts | 0 | 4 | 0 | 0 | 4 |
+| ssr.ts ServerSideComponentSuite | 8 | 0 | 0 | 0 | 8 |
+| RehydratingComponents own tests (13) | 0 | 20 | 0 | 6 | 26 |
+| RehydratingComponents inherited from InitialRenderSuite (88) | 0 | 176 | 0 | 0 | 176 |
+| **total** | 150 | 202 | 6 | 20 | 378 |
+
+The 202 still `collapsed` are the ones where the layout-side argument does hold: the debugger tests and the
+emberish element-modifier test render a string template, so their Curly/Dynamic runs were identical to the Glimmer
+run, and the rehydration suite is not fanned out (176 of its registrations render no component; curly and
+`{{component}}` rehydration of real components is pinned by the 4 tests of 5.6). The 6 `deleted (twin)` and 20
+`port` left are classic-specific (emberish), has-block-params' curried-component test (a string template) and the
+rehydration rows of 5.6. The 15 tests whose Curly/Dynamic registrations had been deleted as twins also gained a
+Glimmer registration (has-block 7, has-block-params 6, yield 2).
+
 ### 4.1 review (Opus, 2026-10-08)
 
 Approved for 4.2–4.4, with one change: the `drop (fake-only)` row (class merge) becomes `port`
@@ -351,6 +385,14 @@ invocation form; curly `{{#x}}…{{else}}` and `{{component}}` invocation of rea
 covered throughout `EG`); the 176 inherited rehydration registrations render no components.
 For the mislabelled has-block-params tests, 4.2 fixes the label or the template so each test
 checks what its name says, and ledgers any that turn out to be exact duplicates.
+
+**Correction (10.5, 2026-10-09).** "`collapsed` is sound for `has-block`/`yield`/scope/dynamic-vars/debugger/SSR"
+was checked on the layout side only ("keywords compile the same way for every invocation form"). The second reason,
+"curly `{{#x}}…{{else}}` and `{{component}}` invocation of real components are covered throughout `EG`", does not hold
+for this matrix: no EG test passes `{{else}}` or block params through `{{component}}` to a component that checks
+`has-block`/`has-block-params`/`yield to="inverse"`. The caller side was the point of those registrations. Superseded
+by the correction to the 4.1 summary above and step 10: `collapsed` stands only for debugger, the element-modifier test
+and rehydration.
 
 ### 5.5b rows
 
