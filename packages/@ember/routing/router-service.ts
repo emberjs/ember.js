@@ -3,7 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
+import alias from '@ember/-internals/metal/lib/alias';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -20,6 +20,10 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal/lib/events';
+
+function readOnly(dependentKey: string) {
+  return alias(dependentKey).readOnly();
+}
 
 export const ROUTER = Symbol('ROUTER');
 

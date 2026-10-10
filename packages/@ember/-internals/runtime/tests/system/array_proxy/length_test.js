@@ -1,6 +1,6 @@
 import ArrayProxy from '@ember/array/proxy';
-import EmberObject, { observer } from '@ember/object';
-import { oneWay as reads, not } from '@ember/object/computed';
+import EmberObject, { computed, observer } from '@ember/object';
+import { oneWay as reads } from '@ember/object/computed';
 import { A as a } from '@ember/array';
 import {
   moduleFor,
@@ -39,8 +39,10 @@ moduleFor(
       assert
     ) {
       let proxy = class extends ArrayProxy {
-        @not('length')
-        isEmpty;
+        @computed('length')
+        get isEmpty() {
+          return !this.length;
+        }
       }.create({
         content: a([1, 2, 3]),
       });
@@ -186,6 +188,11 @@ moduleFor(
     async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
       assert
     ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let aCalled, bCalled, cCalled, dCalled, eCalled;
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;

@@ -2,7 +2,8 @@ import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
 import { A as emberA, isArray } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 function K() {
   return this;
@@ -201,7 +202,14 @@ moduleFor(
       );
     }
 
-    ['@test can iterate over a list of computed properties for a class'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test can iterate over a list of computed properties for a class`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let MyClass = EmberObject.extend({
         foo: computed(function () {}),
 
@@ -353,9 +361,14 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test observing prop installed with computed macro reads and overriding it in create() works`](
       assert
     ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let Obj = EmberObject.extend({
         name: reads('model.name'),
         nameDidChange: observer('name', function () {}),
@@ -511,7 +524,14 @@ moduleFor(
       assert.deepEqual(n.normalized, ['bar']);
     }
 
-    ['@test lazy computation cannot cause infinite cycles'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lazy computation cannot cause infinite cycles`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       // This is based off a real world bug found in ember-cp-validations:
       // https://github.com/offirgolan/ember-cp-validations/issues/659
       let CycleObject = class extends EmberObject {

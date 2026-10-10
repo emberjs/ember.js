@@ -1,6 +1,21 @@
 export { ComputedProperty as default } from '@ember/-internals/metal/lib/computed';
 export { default as expandProperties } from '@ember/-internals/metal/lib/expand_properties';
-export { default as alias } from '@ember/-internals/metal/lib/alias';
+
+import { assert } from '@ember/debug';
+import internalAlias, { type AliasDecorator } from '@ember/-internals/metal/lib/alias';
+import { isDecoratorCall } from '@ember/-internals/metal/lib/decorator';
+import { deprecateComputedMacro } from './lib/computed/computed_macros';
+
+export function alias(altKey: string): AliasDecorator {
+  assert(
+    'You attempted to use @alias as a decorator directly, but it requires a `altKey` parameter',
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
+  );
+
+  deprecateComputedMacro('alias');
+
+  return internalAlias(altKey);
+}
 
 export {
   empty,

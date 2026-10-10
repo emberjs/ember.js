@@ -112,7 +112,14 @@ moduleFor(
       }
     }
 
-    ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test sets up mandatory setters for simple properties watched with aliases`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       if (DEBUG) {
         let MyClass = class extends EmberObject {
           foo = null;
