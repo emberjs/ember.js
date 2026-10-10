@@ -4,6 +4,10 @@ import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
+// A production build runs one assertion for all deprecation expectations.
+// One pattern keeps the assertion count equal in both builds.
+const DEPRECATION = /The `TargetActionSupport` mixin is deprecated|Calling `triggerAction` on/;
+
 let originalLookup = context.lookup;
 let lookup;
 
@@ -12,11 +16,6 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       context.lookup = lookup = {};
-
-      expectDeprecation(
-        /The `TargetActionSupport` mixin is deprecated/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
     }
 
     afterEach() {
@@ -26,12 +25,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should return false if no target or action are specified`](assert) {
-      assert.expect(3);
+      assert.expect(2);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create();
 
@@ -41,12 +37,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should support actions specified as strings`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
@@ -64,12 +57,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should invoke the send() method on objects that implement it`](assert) {
-      assert.expect(5);
+      assert.expect(4);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
@@ -88,12 +78,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should find targets specified using a property path`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let Test = {};
       lookup.Test = Test;
@@ -115,12 +102,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use an actionContext object specified as a property on the object`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         action: 'anEvent',
@@ -141,12 +125,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should find an actionContext specified as a property path`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let Test = {};
       lookup.Test = Test;
@@ -168,12 +149,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the target specified in the argument`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let targetObj = EmberObject.create({
         anEvent() {
@@ -193,12 +171,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the action specified in the argument`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
@@ -217,12 +192,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the actionContext specified in the argument`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let context = {};
       let obj = EmberObject.extend(TargetActionSupport).create({
@@ -243,12 +215,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should allow multiple arguments from actionContext`](assert) {
-      assert.expect(5);
+      assert.expect(4);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let param1 = 'someParam';
       let param2 = 'someOtherParam';
@@ -277,12 +246,9 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use a null value specified in the actionContext argument`](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
-      expectDeprecation(
-        /Calling `triggerAction` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      expectDeprecation(DEPRECATION, DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
