@@ -14,7 +14,7 @@ const { isEnabled, isRemoved } = DEPRECATIONS.DEPRECATE_EMBER_OBJECT;
   The flag is a build-time value, so one build runs only one of the two
   modules below.
 */
-const isDropped = Boolean(import.meta.env?.EMBER_DROP_EMBER_OBJECT);
+const isDropped = Boolean(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES);
 
 function expectEmberObjectDeprecation(callback, message) {
   expectDeprecation(callback, message, isEnabled);
@@ -155,7 +155,7 @@ if (!isDropped) {
 
 if (isDropped) {
   moduleFor(
-    'EmberObject deprecation: EMBER_DROP_EMBER_OBJECT build flag',
+    'EmberObject deprecation: EMBER_DROP_CLASSIC_FEATURES build flag',
     class extends AbstractTestCase {
       ['@test a class that extends EmberObject throws'](assert) {
         class Cart extends EmberObject {}

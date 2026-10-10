@@ -193,22 +193,22 @@ export function deprecateUntil(message: string, deprecation: DeprecationObject) 
 
 declare global {
   interface ImportMetaEnv {
-    EMBER_DROP_EMBER_OBJECT?: boolean | string;
+    EMBER_DROP_CLASSIC_FEATURES?: boolean | string;
   }
 }
 
 /**
   Reports the use of an API that RFC 1234 removes with `EmberObject`.
 
-  The `EMBER_DROP_EMBER_OBJECT` build flag is a preview of the removal:
+  The `EMBER_DROP_CLASSIC_FEATURES` build flag is a preview of the removal:
   when it is set, the API throws.
 
   @private
 */
 export function deprecateEmberObject(api: string) {
-  if (import.meta.env?.EMBER_DROP_EMBER_OBJECT) {
+  if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
     throw new Error(
-      `${api} is not available, because the \`EMBER_DROP_EMBER_OBJECT\` build flag is set. Please see ${DEPRECATIONS.DEPRECATE_EMBER_OBJECT.options.url} for more details.`
+      `${api} is not available, because the \`EMBER_DROP_CLASSIC_FEATURES\` build flag is set. Please see ${DEPRECATIONS.DEPRECATE_EMBER_OBJECT.options.url} for more details.`
     );
   }
 
