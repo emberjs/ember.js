@@ -15,18 +15,30 @@ function isObjectLike<T>(u: T): u is Indexable & T {
 
 export type TagMeta = Map<PropertyKey, UpdatableTag>;
 
+/**
+ * A map from a key to its tag.
+ *
+ * The registry keeps a `Map` for each object.
+ * A tracked collection passes its own `Map` or `WeakMap`,
+ * so its keys can be any value.
+ */
+export interface TagStore<Key> {
+  get(key: Key): UpdatableTag | undefined;
+  set(key: Key, tag: UpdatableTag): unknown;
+}
+
 const TRACKED_TAGS = new WeakMap<object, TagMeta>();
 
-export function dirtyTagFor<T extends object>(
+export function dirtyTagFor<T extends object, Key = keyof T | string | symbol>(
   obj: T,
-  key: keyof T | string | symbol,
-  meta?: TagMeta
+  key: Key,
+  meta?: TagStore<Key>
 ): void {
   if (DEBUG && !isObjectLike(obj)) {
     throw new Error(`BUG: Can't update a tag for a primitive`);
   }
 
-  let tags = meta === undefined ? TRACKED_TAGS.get(obj) : meta;
+  let tags = meta === undefined ? (TRACKED_TAGS.get(obj) as TagStore<Key> | undefined) : meta;
 
   // No tags have been setup for this object yet, return
   if (tags === undefined) return;
@@ -36,7 +48,7 @@ export function dirtyTagFor<T extends object>(
 
   if (propertyTag !== undefined) {
     if (DEBUG) {
-      unwrap(debug.assertTagNotConsumed)(propertyTag, obj, key);
+      unwrap(debug.assertTagNotConsumed)(propertyTag, obj, key as keyof T);
     }
 
     DIRTY_TAG(propertyTag, true);
@@ -55,12 +67,12 @@ export function tagMetaFor(obj: object): TagMeta {
   return tags;
 }
 
-export function tagFor<T extends object>(
+export function tagFor<T extends object, Key = keyof T | string | symbol>(
   obj: T,
-  key: keyof T | string | symbol,
-  meta?: TagMeta
+  key: Key,
+  meta?: TagStore<Key>
 ): UpdatableTag | ConstantTag {
-  let tags = meta === undefined ? tagMetaFor(obj) : meta;
+  let tags = meta === undefined ? (tagMetaFor(obj) as TagStore<Key>) : meta;
   let tag = tags.get(key);
 
   if (tag === undefined) {
