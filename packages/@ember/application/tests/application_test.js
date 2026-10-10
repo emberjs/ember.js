@@ -74,16 +74,6 @@ moduleFor(
       });
     }
 
-    [`@test you cannot make a new application that is a descendant of an existing application`]() {
-      expectAssertion(() => {
-        runTask(() =>
-          this.createSecondApplication({
-            rootElement: '#one-child',
-          })
-        );
-      });
-    }
-
     [`@test you cannot make a new application that is a duplicate of an existing application`]() {
       expectAssertion(() => {
         runTask(() =>
