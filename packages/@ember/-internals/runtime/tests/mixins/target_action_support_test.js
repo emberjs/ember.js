@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import EmberObject from '@ember/object';
-import TargetActionSupport from '../../lib/mixins/target_action_support-internal';
+import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
@@ -12,6 +12,11 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       context.lookup = lookup = {};
+
+      expectDeprecation(
+        /The `TargetActionSupport` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
     }
 
     afterEach() {
@@ -21,7 +26,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should return false if no target or action are specified`](assert) {
-      assert.expect(2);
+      assert.expect(3);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -36,7 +41,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should support actions specified as strings`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -59,7 +64,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should invoke the send() method on objects that implement it`](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -83,7 +88,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should find targets specified using a property path`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -110,7 +115,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use an actionContext object specified as a property on the object`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -136,7 +141,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should find an actionContext specified as a property path`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -163,7 +168,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the target specified in the argument`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -188,7 +193,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the action specified in the argument`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -212,7 +217,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use the actionContext specified in the argument`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -238,7 +243,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should allow multiple arguments from actionContext`](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
@@ -272,7 +277,7 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
     )} @test it should use a null value specified in the actionContext argument`](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(
         /Calling `triggerAction` on/,
