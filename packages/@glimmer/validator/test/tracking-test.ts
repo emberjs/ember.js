@@ -448,6 +448,199 @@ module('@glimmer/validator: tracking', () => {
       assert.deepEqual(getValue(outerCache), [3, 2], 'memoized result returned correctly');
     });
 
+    /**
+     * The tag that a cache has after a read.
+     *
+     * The outer frame consumes only the tag of the cache,
+     * and a frame with one tag returns that tag.
+     */
+    function tagOf(cache: ReturnType<typeof createCache>) {
+      beginTrackFrame();
+      getValue(cache);
+
+      return endTrackFrame();
+    }
+
+    test('it keeps its tag if it consumes the same tags in the next run', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      let cache = createCache(() => {
+        assert.step('cache reads tag1 and tag2');
+
+        consumeTag(tag1);
+        consumeTag(tag2);
+      });
+
+      let first = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag1 and tag2']);
+
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag1 and tag2'], 'the cache ran again');
+      assert.strictEqual(second, first, 'the cache has the tag of its first run');
+    });
+
+    test('it gets a new tag if it consumes other tags in the next run', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let useThird = false;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+
+        if (useThird) {
+          assert.step('cache reads tag1 and tag3');
+          consumeTag(tag3);
+        } else {
+          assert.step('cache reads tag1 and tag2');
+          consumeTag(tag2);
+        }
+      });
+
+      let first = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag1 and tag2']);
+
+      useThird = true;
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag1 and tag3'], 'the cache ran again');
+      assert.notStrictEqual(second, first);
+    });
+
+    test('it gets a new tag if it consumes the same tags in another order', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let swap = false;
+
+      let cache = createCache(() => {
+        if (swap) {
+          assert.step('cache reads tag2, then tag1');
+          consumeTag(tag2);
+          consumeTag(tag1);
+        } else {
+          assert.step('cache reads tag1, then tag2');
+          consumeTag(tag1);
+          consumeTag(tag2);
+        }
+      });
+
+      let first = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag1, then tag2']);
+
+      swap = true;
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.verifySteps(['cache reads tag2, then tag1'], 'the cache ran again');
+      assert.notStrictEqual(second, first);
+
+      let snapshot = valueForTag(second);
+
+      dirtyTag(tag2);
+      assert.notOk(validateTag(second, snapshot), 'the new tag follows both tags');
+    });
+
+    test('it tracks the new tags if the tags change between two runs', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let useThird = false;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+
+        if (useThird) {
+          assert.step('cache reads tag1 and tag3');
+          consumeTag(tag3);
+        } else {
+          assert.step('cache reads tag1 and tag2');
+          consumeTag(tag2);
+        }
+      });
+
+      getValue(cache);
+      assert.verifySteps(['cache reads tag1 and tag2']);
+
+      dirtyTag(tag2);
+      getValue(cache);
+      assert.verifySteps(['cache reads tag1 and tag2'], 'the cache ran again with the same tags');
+
+      dirtyTag(tag2);
+      getValue(cache);
+      assert.verifySteps(['cache reads tag1 and tag2'], 'the reused tag still follows its tags');
+
+      useThird = true;
+      dirtyTag(tag1);
+      getValue(cache);
+      assert.verifySteps(['cache reads tag1 and tag3']);
+
+      dirtyTag(tag2);
+      getValue(cache);
+      assert.verifySteps([], 'the cache does not depend on the old tag');
+
+      dirtyTag(tag3);
+      getValue(cache);
+      assert.verifySteps(['cache reads tag1 and tag3'], 'the cache depends on the new tag');
+    });
+
+    test('an outer cache runs again if a tag of a reused inner tag changes', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+
+      let inner = createCache(() => {
+        assert.step('inner reads tag1 and tag2');
+
+        consumeTag(tag1);
+        consumeTag(tag2);
+      });
+
+      let outer = createCache(() => {
+        assert.step('outer reads tag3 and inner');
+
+        consumeTag(tag3);
+        getValue(inner);
+      });
+
+      getValue(outer);
+      assert.verifySteps(['outer reads tag3 and inner', 'inner reads tag1 and tag2']);
+
+      dirtyTag(tag1);
+      getValue(outer);
+      assert.verifySteps(
+        ['outer reads tag3 and inner', 'inner reads tag1 and tag2'],
+        'the inner cache ran again with the same tags'
+      );
+
+      dirtyTag(tag2);
+      getValue(outer);
+      assert.verifySteps(
+        ['outer reads tag3 and inner', 'inner reads tag1 and tag2'],
+        'the outer cache follows the reused inner tag'
+      );
+
+      dirtyTag(tag3);
+      getValue(outer);
+      assert.verifySteps(['outer reads tag3 and inner'], 'the inner cache did not run again');
+
+      dirtyTag(tag1);
+      getValue(outer);
+      assert.verifySteps(
+        ['outer reads tag3 and inner', 'inner reads tag1 and tag2'],
+        'the outer cache still follows the inner tag'
+      );
+    });
+
     test('isTracking works within a memoized function and untrack frame', (assert) => {
       assert.notOk(isTracking());
 
