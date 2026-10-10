@@ -642,7 +642,7 @@ moduleFor(
         toggleVal: true,
         observedProperty: 'beingWatched',
         testRemove: 'observerToBeRemoved',
-        normalArray: emberA([1, 2, 3, 4, 5]),
+        normalArray: [1, 2, 3, 4, 5],
       });
     }
 
@@ -720,6 +720,10 @@ moduleFor(
     }
 
     async ['@test should notify array observer when array changes'](assert) {
+      object.set('normalArray', emberA([1, 2, 3, 4, 5]));
+      await runLoopSettled();
+      object.abnormal = 'zeroValue';
+
       get(object, 'normalArray').replace(0, 0, [6]);
       await runLoopSettled();
 

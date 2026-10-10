@@ -2,7 +2,6 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -185,7 +184,7 @@ moduleFor(
         'route:application',
         class extends Route {
           model() {
-            return emberA();
+            return [];
           }
         }
       );
