@@ -329,6 +329,10 @@ Suggestions for the plan's author, based on what is still open:
    the author's commit "removing unhelpful comments" (`ee24031cdb`) kept on top of PR 5's main
    commit (`2413654dbf`); 6–10 rebased: `3838692714`, `74fa889361`, `9cfd7f93bb`, `f324fc4d98`,
    `c33c938db4`. Suites unchanged (PR 5 9289, PR 10 9196, 0 fail). Still on `e436b92b11`.
+   Then: the author's "simplify custom iterable implementation" (`35172dfa90`) and a commit
+   importing `tracked` from `@glimmer/tracking` directly (`1dc78237f2`, resolves the TODO in the
+   deleted `lib/test-helpers/tracked.ts`); 6–10 rebased: `5984c57b5f`, `c17d762457`,
+   `881ede071d`, `86c4967de5`, `5e7d5cd727`. Suites unchanged.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
