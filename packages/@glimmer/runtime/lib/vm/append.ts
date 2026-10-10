@@ -739,32 +739,38 @@ export class VM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
-    if (DEBUG) {
-      let hasErrored = true;
-      try {
-        let value = this._execute(initialize);
+    let hasErrored = true;
+    try {
+      let value = this._execute(initialize);
 
-        // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
-        // which would happen with a `catch` + `throw`
-        hasErrored = false;
+      // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
+      // which would happen with a `catch` + `throw`
+      hasErrored = false;
 
-        return value;
-      } finally {
-        if (hasErrored) {
-          // If any existing blocks are open, due to an error or something like
-          // that, we need to close them all and clean things up properly.
-          let elements = this.tree();
+      return value;
+    } finally {
+      if (hasErrored) {
+        // If any existing blocks are open, due to an error or something like
+        // that, we need to close them all and clean things up properly.
+        let elements = this.tree();
 
-          while (elements.hasBlocks) {
-            elements.popBlock();
-          }
-
-          // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
+        while (elements.hasBlocks) {
+          elements.popBlock();
         }
+
+        // Tracking state is module-level in @glimmer/validator.
+        // An opcode that opens a frame and then throws never closes it.
+        // Without this reset the frame stays open for the life of the process,
+        // and every render after that adds its tags to it.
+        // In a browser that page is already broken.
+        // A server-side renderer such as FastBoot keeps going, so it leaks
+        // until it runs out of heap (emberjs/ember.js#20130).
+        // The reset and the report run in every build.
+        let message = resetTracking();
+
+        // eslint-disable-next-line no-console
+        console.error(`\n\nError occurred:\n\n${message}\n\n`);
       }
-    } else {
-      return this._execute(initialize);
     }
   }
 
