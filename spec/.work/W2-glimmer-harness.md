@@ -1458,3 +1458,20 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   wording and 5-10 re-picked onto it with byte-identical trees (checked with `rev-parse <ref>^{tree}`), so the runs of
   10.2/10.3 stand. Final tips: 4 `8ac18e59e3`, 5 `f77c03a8d4`, 6 `e49cee1db1`, 7 `8be5c5cb72`, 8 `41d16395a0`, 9
   `edcba6a5cb`, 10 `835eeacb63` (hashes above updated to these).
+- 10.6 Rebase onto main `e436b92b11` (2026-10-09): PRs 1-4 landed upstream as #21676-#21679 (same commits); PRs 5-10
+  cherry-picked onto `origin/main` (old tips in the scratchpad `stack-before-main-rebase.txt`), one commit each, refs
+  moved only after all six passed. New tips and full-suite totals (all 0 fail, 18 skip; counts unchanged because upstream's
+  `.gjs` migration kept every test): 5 `ed6014eb69` 9289, 6 `688ac9d380` 9293, 7 `767a55f920` 9287, 8 `d557386498` 9192,
+  9 `66ca368c66` 9193, 10 `912c417af6` 9196. Each: `pnpm install --offline --frozen-lockfile` clean, lock diff against
+  `origin/main` = 15 added devDependency lines (no removals, no rolldown entry), `type-check:internals` clean, prettier
+  clean on changed ts/js/json, build with only the known sourcemap warning, grep list 0. Per-test diff against the step-10
+  tap runs: 0 missing, 0 new on every branch once whitespace is normalized (the migrated `.gjs` tests dropped `moduleFor`'s
+  double space after the module name, and the module names are otherwise unchanged). Conflicts: only PR 8, `helpers/fn-test.js` and
+  `hash-test.js` (deleted upstream by the rename to `.gjs`). Resolved by deleting the `.js` files and rewriting PR 8's moved
+  tests as plain tests in `fn-test.gjs` / `hash-test.gjs` (same names, same checks): the 'there is no `this`' DEBUG branch now
+  renders `Stash` with a `State` and verifies the step; four `asserts if ...` tests use `await assert.rejects(render(...))`
+  / `assert.throws(() => stashedFn())` (the two undefined/null ones render a one-off component class so the rendering
+  stack still reads `this.myFunc`; with a module-level `State` it reads `false.myFunc`); the prod branches use
+  `assert.expect(0)` as the migrated file does; hash lazy test is a `FooBar` class with the same throwing getter and
+  `assert.stableRender('Godfrey')`. PR 5 message lost its "Depends on" line; the others and all counts are unchanged.
+  PR 8's twins (array, concat, fn, get, hash, on) all still exist under the same names.

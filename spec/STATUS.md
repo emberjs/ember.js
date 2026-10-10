@@ -315,6 +315,13 @@ Suggestions for the plan's author, based on what is still open:
    8 `41d16395a0` 9192, 9 `edcba6a5cb` 9193, 10 `835eeacb63` 9196 (each the old count + 179).
    So `-10` differs from `test/w2-glimmer-harness` by the owner-type fix, the PR 4 teardown-test
    fix and step 10; the cleanup branches are the reference.
+   **Rebase onto main `e436b92b11` (2026-10-09):** PRs 1-4 landed upstream as #21676-#21679;
+   `ef4/test-cleanup-5` ... `-10` now sit on `e436b92b11` (one commit each, stacked), nothing
+   pushed. Tips and totals (0 fail, 18 skip): 5 `ed6014eb69` 9289, 6 `688ac9d380` 9293,
+   7 `767a55f920` 9287, 8 `d557386498` 9192, 9 `66ca368c66` 9193, 10 `912c417af6` 9196. Only
+   PR 8 conflicted (upstream renamed `fn-test.js` and `hash-test.js` to `.gjs`); its moved
+   tests were rewritten in the plain style. The hashes in the paragraphs above for 5-10
+   are the pre-rebase ones; `.work/W2-glimmer-harness.md` 10.6.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
