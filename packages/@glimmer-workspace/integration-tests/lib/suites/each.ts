@@ -1,6 +1,5 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
-import { trackedObject } from '@ember/reactive/collections';
 
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
@@ -95,21 +94,19 @@ export class EachSuite extends RenderTest {
 
     let list = {
       arr: [1, 2, 3, 4],
-      version: trackedObject({ count: 0 }),
+      version: tracked(0),
 
       [Symbol.iterator]() {
-        void this.version['count'];
+        void this.version.value;
         return this.arr[Symbol.iterator]();
       },
 
       push(...vals: number[]) {
-        this.version['count']!++;
-        this.arr.push(...vals);
+        (this.version.update((n) => n + 1), this.arr.push(...vals));
       },
 
       clear() {
-        this.version['count']!++;
-        this.arr.splice(0, this.arr.length);
+        (this.version.update((n) => n + 1), this.arr.splice(0, this.arr.length));
       },
     };
     this.render('{{#each this.list key="@index" as |item|}}{{item}}{{else}}Empty{{/each}}', {
