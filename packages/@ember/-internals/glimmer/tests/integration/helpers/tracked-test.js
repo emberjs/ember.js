@@ -1,9 +1,16 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
+import MutableArray from '@ember/array/mutable';
 import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
-import { InternalMutableArray as MutableArray } from '@ember/array/index-internal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -172,7 +179,14 @@ moduleFor(
       this.assertText('1, 2, 3, 4');
     }
 
-    '@test custom ember array properties rerender when updated'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved
+    )} @test custom ember array properties rerender when updated`]() {
+      expectDeprecation(
+        /The `MutableArray` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isEnabled
+      );
+
       let CustomArray = class extends EmberObject.extend(MutableArray) {
         init() {
           super.init(...arguments);

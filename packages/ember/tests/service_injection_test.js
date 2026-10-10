@@ -1,8 +1,14 @@
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
-import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { _ProxyMixin } from '@ember/-internals/runtime';
+import {
+  expectDeprecation,
+  moduleFor,
+  ApplicationTestCase,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -27,7 +33,14 @@ moduleFor(
       assert.ok(controller.get('myService') instanceof MyService);
     }
 
-    async ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved
+    )} @test Service can be an object proxy and access owner in init GH#16484`](assert) {
+      expectDeprecation(
+        /The `ProxyMixin` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isEnabled
+      );
+
       let serviceOwner;
 
       this.add(
