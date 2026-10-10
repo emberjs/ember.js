@@ -1,3 +1,6 @@
+import { template } from '@ember/template-compiler/runtime';
+import { tracked } from '@glimmer/tracking';
+import { trackedObject } from '@ember/reactive/collections';
 import type Owner from '@ember/owner';
 import GlimmerComponent from '@glimmer/component';
 import type {
@@ -9,7 +12,6 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -18,19 +20,16 @@ import {
   setInternalComponentManager,
   setModifierManager,
 } from '@glimmer/manager';
-import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
+import { EMPTY_ARGS, TemplateOnlyComponentManager } from '@glimmer/runtime';
+import type { TemplateOnlyComponent } from '@ember/component/template-only';
+import templateOnlyComponent from '@ember/component/template-only';
 import {
-  BaseEnv,
   createTemplate,
-  defComponent,
   defineSimpleModifier,
   JitRenderDelegate,
   RenderTest,
   suite,
   test,
-  tracked,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 interface CapturedBounds {
@@ -76,12 +75,12 @@ class DebugRenderTreeTest extends RenderTest {
   declare delegate: DebugRenderTreeDelegate;
 
   @test 'strict-mode components'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(
       `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state } }
+      { scope: () => ({ HelloWorld, state }) }
     );
 
     this.renderComponent(Root);
@@ -108,9 +107,9 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode components preserve names from scope'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<HelloWorld @arg="first"/>`, {
-      scope: { HelloWorld },
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<HelloWorld @arg="first"/>`, {
+      scope: () => ({ HelloWorld }),
     });
 
     this.renderComponent(Root);
@@ -137,13 +136,13 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
+    const HelloWorld = template('{{@arg}}');
 
     class Root extends GlimmerComponent {
       HelloWorld = HelloWorld;
     }
 
-    const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
+    const RootDef = template(`<this.HelloWorld @arg="first"/>`, {
       component: Root,
     });
 
@@ -164,8 +163,8 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<@Greeting @arg="first"/>`);
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<@Greeting @arg="first"/>`);
 
     this.renderComponent(Root, { Greeting: HelloWorld });
 
@@ -184,14 +183,14 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode modifiers'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('<p ...attributes>{{@arg}}</p>');
+    const HelloWorld = template('<p ...attributes>{{@arg}}</p>');
     const noopFn = () => {};
     const noop = defineSimpleModifier(noopFn);
-    const Root = defComponent(
+    const Root = template(
       `<HelloWorld {{noop}} @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state, noop } }
+      { scope: () => ({ HelloWorld, state, noop }) }
     );
 
     this.renderComponent(Root);
@@ -318,8 +317,8 @@ class DebugRenderTreeTest extends RenderTest {
         args: (actual) => {
           const args = { positional: [], named: { arg: 'first', arg2: { error } } };
           this.assert.deepEqual(actual, args);
-          this.assert.ok(!this.delegate.context.env.isArgumentCaptureError!(actual.named['arg']));
-          this.assert.ok(this.delegate.context.env.isArgumentCaptureError!(actual.named['arg2']));
+          this.assert.ok(!this.delegate.isArgumentCaptureError(actual.named['arg']));
+          this.assert.ok(this.delegate.isArgumentCaptureError(actual.named['arg2']));
           return true;
         },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
@@ -904,8 +903,4 @@ class DebugRenderTreeTest extends RenderTest {
   }
 }
 
-suite(DebugRenderTreeTest, DebugRenderTreeDelegate, {
-  env: assign({}, BaseEnv, {
-    enableDebugTooling: true,
-  }),
-});
+suite(DebugRenderTreeTest, DebugRenderTreeDelegate, { debugRenderTree: true });

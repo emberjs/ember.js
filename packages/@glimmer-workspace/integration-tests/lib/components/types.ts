@@ -1,6 +1,6 @@
 import type GlimmerComponent from '@glimmer/component';
 import type { Dict } from '@glimmer/interfaces';
-import type { TemplateOnlyComponent } from '@glimmer/runtime';
+import type { TemplateOnlyComponent } from '@ember/component/template-only';
 
 export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'TemplateOnly' | 'Custom' | 'unknown';
 

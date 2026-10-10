@@ -1,14 +1,9 @@
+import { tracked } from '@glimmer/tracking';
+import { trackedObject } from '@ember/reactive/collections';
 import type { Arguments, ModifierManager, Owner } from '@glimmer/interfaces';
 import { modifierCapabilities, setModifierManager } from '@glimmer/manager';
 import { getOwner, setOwner } from '@glimmer/owner';
-import {
-  defineComponent,
-  jitSuite,
-  RenderTest,
-  test,
-  tracked,
-  trackedObj,
-} from '@glimmer-workspace/integration-tests';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
 import { DEBUG } from '@glimmer/env';
 
@@ -80,7 +75,7 @@ abstract class ModifierManagerTest extends RenderTest {
       { foo },
       '{{#if @truthy}}<h1 {{foo @truthy}}>hello world</h1>{{/if}}'
     );
-    let args = trackedObj({ truthy: true });
+    let args = trackedObject<Record<string, unknown>>({ truthy: true });
 
     this.renderComponent(Main, args);
 
@@ -98,6 +93,10 @@ abstract class ModifierManagerTest extends RenderTest {
     args['truthy'] = true;
     this.rerender();
     assert.verifySteps(['Called didInsertElement']);
+
+    // the modifier is destroyed with the render, which the harness does after the test
+    this.destroy();
+    assert.verifySteps(['Called willDestroyElement']);
   }
 
   @test 'associates manager even through an inheritance structure'(assert: Assert) {
@@ -126,7 +125,7 @@ abstract class ModifierManagerTest extends RenderTest {
   }
 
   @test 'can give consistent access to underlying DOM element'(assert: Assert) {
-    assert.expect(6);
+    assert.expect(7);
 
     let foo = this.defineModifier(
       class extends CustomModifier {
@@ -153,13 +152,16 @@ abstract class ModifierManagerTest extends RenderTest {
     );
 
     const Main = defineComponent({ foo }, '<h1 {{foo @truthy}}>hello world</h1>');
-    let args = trackedObj({ truthy: true });
+    let args = trackedObject<Record<string, unknown>>({ truthy: true });
 
     this.renderComponent(Main, args);
     this.assertHTML(`<h1>hello world</h1>`);
 
     args['truthy'] = 'true';
     this.rerender();
+
+    // the destructor's assertion runs when the render is destroyed
+    this.destroy();
   }
 
   @test 'lifecycle hooks are autotracked by default'(assert: Assert) {
@@ -355,7 +357,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
       '<h1 {{foo @positionOne @positionTwo bar=@bar qux=@qux}}>hello world</h1>'
     );
 
-    let args = trackedObj({
+    let args = trackedObject({
       positionOne: 'first!!!',
       positionTwo: 'second :(',
       bar: 'bar',
@@ -402,7 +404,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
       '<h1 {{foo @positionOne @positionTwo bar=@bar qux=@qux}}>hello world</h1>'
     );
 
-    let args = trackedObj({
+    let args = trackedObject({
       bar: 'bar',
       qux: 'quz',
     });

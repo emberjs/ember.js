@@ -1,3 +1,4 @@
+import { trackedObject } from '@ember/reactive/collections';
 import GlimmerComponent from '@glimmer/component';
 import {
   defineComponent,
@@ -7,7 +8,6 @@ import {
   RenderTest,
   syntaxErrorFor,
   test,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
@@ -212,7 +212,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     });
 
     const Bar = defineComponent({}, '{{#if @show}}<div {{@foo}}></div>{{/if}}');
-    const args = trackedObj({ show: true, foo: undefined });
+    const args = trackedObject<Record<string, unknown>>({ show: true, foo: undefined });
 
     this.renderComponent(Bar, args);
     assert.verifySteps([]);
@@ -237,7 +237,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     });
 
     const Bar = defineComponent({}, '<div {{@foo}}></div>');
-    const args = trackedObj({ foo: undefined });
+    const args = trackedObject<Record<string, unknown>>({ foo: undefined });
 
     this.renderComponent(Bar, args);
     assert.verifySteps([]);
