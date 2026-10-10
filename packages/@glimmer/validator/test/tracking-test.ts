@@ -7,11 +7,13 @@ import {
   createTag,
   debug,
   dirtyTag,
+  dirtyTagFor,
   endTrackFrame,
   getValue,
   isConst,
   isTracking,
   resetTracking,
+  tagFor,
   track,
   trackedData,
   untrack,
@@ -568,6 +570,50 @@ module('@glimmer/validator: tracking', () => {
       let snapshot = valueForTag(tag);
 
       setter(foo, 789);
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a write dirties the tag that tagFor gave before the first read', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = tagFor(foo, 'foo');
+      let snapshot = valueForTag(tag);
+
+      setter(foo, 456);
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a read consumes the tag that tagFor gave before it', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let registered = tagFor(foo, 'foo');
+      let tag = track(() => getter(foo));
+
+      assert.strictEqual(tag, registered);
+    });
+
+    test('dirtyTagFor dirties the tag that a read consumed', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = track(() => getter(foo));
+      let snapshot = valueForTag(tag);
+
+      dirtyTagFor(foo, 'foo');
       assert.notOk(validateTag(tag, snapshot));
     });
 
