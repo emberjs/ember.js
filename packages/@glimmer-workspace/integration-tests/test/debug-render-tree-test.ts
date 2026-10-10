@@ -1,3 +1,4 @@
+import { tracked } from '@glimmer/tracking';
 import { trackedObject } from '@ember/reactive/collections';
 import type Owner from '@ember/owner';
 import GlimmerComponent from '@glimmer/component';
@@ -29,7 +30,6 @@ import {
   RenderTest,
   suite,
   test,
-  tracked,
 } from '@glimmer-workspace/integration-tests';
 
 interface CapturedBounds {

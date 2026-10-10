@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
+import { tracked } from '@glimmer/tracking';
 import { trackedObject } from '@ember/reactive/collections';
 import GlimmerComponent from '@glimmer/component';
 import type { Arguments, Owner } from '@glimmer/interfaces';
@@ -10,7 +11,6 @@ import {
   test,
   TestHelper,
   TestHelperManager,
-  tracked,
 } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
 import { DEBUG } from '@glimmer/env';

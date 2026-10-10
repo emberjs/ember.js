@@ -3,7 +3,7 @@ import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
 
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';

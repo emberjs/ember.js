@@ -7,7 +7,7 @@ import { assertingElement } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip, stripTight } from '../test-helpers/strings';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 import { DEBUG } from '@glimmer/env';
 
 export class TemplateOnlyComponents extends RenderTest {

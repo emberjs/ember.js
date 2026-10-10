@@ -1,3 +1,4 @@
+import { tracked } from '@glimmer/tracking';
 import GlimmerComponent from '@glimmer/component';
 import type { Arguments, Nullable, Owner, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
@@ -14,7 +15,6 @@ import {
   stripTight,
   test,
   TestHelper,
-  tracked,
   trimLines,
 } from '@glimmer-workspace/integration-tests';
 

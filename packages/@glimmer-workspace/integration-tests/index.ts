@@ -19,6 +19,5 @@ export * from './lib/test-decorator';
 export * from './lib/test-helpers/define';
 export * from './lib/test-helpers/module';
 export * from './lib/test-helpers/strings';
-export * from './lib/test-helpers/tracked';
 export * from './lib/test-helpers/tracked-object';
 export { syntaxErrorFor } from '@glimmer-workspace/test-utils';

@@ -7,7 +7,7 @@ import { replaceHTML } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { stripTight } from '../test-helpers/strings';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';

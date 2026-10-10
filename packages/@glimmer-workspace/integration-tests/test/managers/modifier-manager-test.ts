@@ -1,14 +1,9 @@
+import { tracked } from '@glimmer/tracking';
 import { trackedObject } from '@ember/reactive/collections';
 import type { Arguments, ModifierManager, Owner } from '@glimmer/interfaces';
 import { modifierCapabilities, setModifierManager } from '@glimmer/manager';
 import { getOwner, setOwner } from '@glimmer/owner';
-import {
-  defineComponent,
-  jitSuite,
-  RenderTest,
-  test,
-  tracked,
-} from '@glimmer-workspace/integration-tests';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
 import { DEBUG } from '@glimmer/env';
 
