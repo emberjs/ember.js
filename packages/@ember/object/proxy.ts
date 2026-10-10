@@ -5,6 +5,7 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
   `ObjectProxy` forwards all properties not defined by the proxy itself
@@ -133,5 +134,7 @@ class ObjectProxy<Content = unknown> extends FrameworkObject {
   }
 }
 ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+
+setFrameworkClass(ObjectProxy);
 
 export default ObjectProxy;

@@ -4,6 +4,7 @@ import { OutletState } from '@ember/-internals/routing/route-managers/outlet-sta
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
+import { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
@@ -70,6 +71,7 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module @ember/routing/router
@@ -78,8 +80,8 @@ import {
 function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo[]) {
   updatePaths(this);
 
-  this.notifyPropertyChange('url');
-  this.set('currentState', this.targetState);
+  notifyPropertyChange(this, 'url');
+  set(this, 'currentState', this.targetState);
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -548,12 +550,12 @@ class EmberRouter extends EmberObject {
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
         if (transition.isIntermediate) {
-          router.set('currentRoute', transition.to);
+          set(router, 'currentRoute', transition.to);
         }
       }
 
       routeDidChange(transition: Transition) {
-        router.set('currentRoute', transition.to);
+        set(router, 'currentRoute', transition.to);
         once(() => {
           sendEvent(router, 'routeDidChange', [transition]);
 
@@ -1782,9 +1784,9 @@ function didBeginTransition(transition: Transition, router: EmberRouter) {
   let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
 
   if (!router.currentState) {
-    router.set('currentState', routerState);
+    set(router, 'currentState', routerState);
   }
-  router.set('targetState', routerState);
+  set(router, 'targetState', routerState);
 
   transition.promise = transition.catch((error: any) => {
     if (router._isErrorHandled(error)) {
@@ -1846,5 +1848,7 @@ EmberRouter.reopen({
     return location.getURL();
   }),
 });
+
+setFrameworkClass(EmberRouter);
 
 export default EmberRouter;

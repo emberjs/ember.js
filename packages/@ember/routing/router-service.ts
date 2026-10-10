@@ -3,7 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
+import { readOnly } from '@ember/object/lib/computed/computed_macros';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';

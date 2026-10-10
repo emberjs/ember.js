@@ -18,6 +18,7 @@ import setProperties from '@ember/-internals/metal/lib/set_properties';
 import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
+import { deprecateEmberObject } from '@ember/-internals/deprecations';
 
 export type ObserverMethod<Target, Sender> =
   | keyof Target
@@ -423,18 +424,22 @@ interface Observable {
 }
 const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   get(keyName: string) {
+    deprecateEmberObject('The `get` method');
     return get(this, keyName);
   },
 
   getProperties(...args: string[]) {
+    deprecateEmberObject('The `getProperties` method');
     return getProperties(this, ...args);
   },
 
   set(keyName: string, value: unknown) {
+    deprecateEmberObject('The `set` method');
     return set(this, keyName, value);
   },
 
   setProperties(hash: object) {
+    deprecateEmberObject('The `setProperties` method');
     return setProperties(this, hash);
   },
 
@@ -478,6 +483,7 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   notifyPropertyChange(keyName: string) {
+    deprecateEmberObject('The `notifyPropertyChange` method');
     notifyPropertyChange(this, keyName);
     return this;
   },
@@ -518,6 +524,7 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   incrementProperty(keyName: string, increment = 1) {
+    deprecateEmberObject('The `incrementProperty` method');
     assert(
       'Must pass a numeric value to incrementProperty',
       !isNaN(parseFloat(String(increment))) && isFinite(increment)
@@ -526,6 +533,7 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   decrementProperty(keyName: string, decrement = 1) {
+    deprecateEmberObject('The `decrementProperty` method');
     assert(
       'Must pass a numeric value to decrementProperty',
       (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
@@ -534,6 +542,7 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   toggleProperty(keyName: string) {
+    deprecateEmberObject('The `toggleProperty` method');
     return set(this, keyName, !get(this, keyName));
   },
 

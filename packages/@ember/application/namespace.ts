@@ -18,6 +18,7 @@ import { getName, setName } from '@ember/-internals/utils/lib/name';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import EmberObject from '@ember/object';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -77,5 +78,7 @@ class Namespace extends EmberObject {
 
 // Declare on the prototype to have a single shared value.
 Namespace.prototype.isNamespace = true;
+
+setFrameworkClass(Namespace);
 
 export default Namespace;

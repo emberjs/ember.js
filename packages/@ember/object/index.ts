@@ -9,6 +9,8 @@ import expandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
+import internalComputed from '@ember/-internals/metal/lib/computed';
+import { deprecateEmberObject } from '@ember/-internals/deprecations';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
 import {
@@ -24,11 +26,19 @@ export { get } from '@ember/-internals/metal/lib/property_get';
 export { set, trySet } from '@ember/-internals/metal/lib/property_set';
 export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
 export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
-export { default as computed } from '@ember/-internals/metal/lib/computed';
 
 /**
 @module @ember/object
 */
+
+/**
+  The public `computed`. Ember's own code imports the implementation, which
+  does not report the deprecation.
+*/
+export const computed = function computed(this: unknown, ...args: unknown[]) {
+  deprecateEmberObject('`computed`');
+  return (internalComputed as AnyFn).apply(this, args);
+} as typeof internalComputed;
 
 /**
   `EmberObject` is the main base class for all Ember objects. It is a subclass

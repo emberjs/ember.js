@@ -168,6 +168,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-utils',
   }),
+  DEPRECATE_EMBER_OBJECT: deprecation({
+    id: 'deprecate-ember-object',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '9.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-object',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
@@ -182,4 +189,31 @@ export function deprecateUntil(message: string, deprecation: DeprecationObject) 
     );
   }
   deprecate(message, deprecation.test, options);
+}
+
+declare global {
+  interface ImportMetaEnv {
+    EMBER_DROP_CLASSIC_FEATURES?: boolean | string;
+  }
+}
+
+/**
+  Reports the use of an API that RFC 1234 removes with `EmberObject`.
+
+  The `EMBER_DROP_CLASSIC_FEATURES` build flag is a preview of the removal:
+  when it is set, the API throws.
+
+  @private
+*/
+export function deprecateEmberObject(api: string) {
+  if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    throw new Error(
+      `${api} is not available, because the \`EMBER_DROP_CLASSIC_FEATURES\` build flag is set. Please see ${DEPRECATIONS.DEPRECATE_EMBER_OBJECT.options.url} for more details.`
+    );
+  }
+
+  deprecateUntil(
+    `${api} is deprecated. Use native classes with tracked properties instead.`,
+    DEPRECATIONS.DEPRECATE_EMBER_OBJECT
+  );
 }

@@ -13,6 +13,7 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 import type { RouteArgs } from '@ember/routing/-internals';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam =
@@ -374,6 +375,8 @@ export function inject(
 ): InjectionDecorator | DecoratorPropertyDescriptor | void {
   return metalInject('controller', ...args);
 }
+
+setFrameworkClass(Controller);
 
 export { Controller as default, ControllerMixin };
 

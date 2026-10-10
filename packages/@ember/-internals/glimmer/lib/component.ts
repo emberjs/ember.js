@@ -32,6 +32,7 @@ import {
   getComponentCapturedArgs,
 } from './component-managers/curly';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -1051,7 +1052,7 @@ class Component<S = unknown>
 
   getAttr(key: string) {
     // TODO Intimate API should be deprecated
-    return this.get(key);
+    return get(this, key);
   }
 
   /**
@@ -1692,5 +1693,7 @@ Component.reopenClass({
 });
 
 setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
+
+setFrameworkClass(Component);
 
 export default Component;

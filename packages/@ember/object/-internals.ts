@@ -5,6 +5,7 @@ import { addListener } from '@ember/-internals/metal/lib/events';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '.';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 // Here we have runtime shenanigans to add debug-only errors to the class in dev
 // builds. Those runtime shenanigans produce the need for type-level shenanigans
@@ -46,5 +47,7 @@ if (DEBUG) {
 
   addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
 }
+
+setFrameworkClass(FrameworkObject);
 
 export { FrameworkObject };

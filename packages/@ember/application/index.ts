@@ -29,6 +29,7 @@ import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-re
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
  * @deprecated Use `import { getOwner } from '@ember/owner';` instead.
@@ -1132,5 +1133,7 @@ function commonSetupRegistry(registry: Registry) {
 
   registry.register('service:router', RouterService);
 }
+
+setFrameworkClass(Application);
 
 export { Application as default };

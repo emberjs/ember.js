@@ -48,6 +48,7 @@ import {
   queryParamType,
   stashParamNames,
 } from './lib/utils';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<ModelFor<R>> {
   _names?: unknown[];
@@ -2082,5 +2083,7 @@ Route.reopen({
 });
 
 setRouteManager((owner) => new ClassicRouteManager(owner), Route);
+
+setFrameworkClass(Route);
 
 export default Route;

@@ -20,6 +20,11 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
+import { deprecateEmberObject } from '@ember/-internals/deprecations';
+import {
+  isFrameworkClass,
+  isOwnFrameworkClass,
+} from '@ember/-internals/utils/lib/internal-framework-class';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
@@ -56,6 +61,35 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
 const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
+const INIT_OVERRIDES = new WeakMap<object, boolean>();
+
+/**
+  Checks whether a subclass of a framework class, such as a `Route`,
+  defines its own `init`. The search stops at the class that Ember owns.
+
+  Call this after `proto()`, which puts the `init` of a classic class on
+  the prototype.
+*/
+function overridesInit(Class: typeof CoreObject): boolean {
+  let result = INIT_OVERRIDES.get(Class);
+
+  if (result === undefined) {
+    result = false;
+
+    let proto = Class.prototype;
+    while (proto !== null && proto !== undefined && !isOwnFrameworkClass(proto.constructor)) {
+      if (Object.prototype.hasOwnProperty.call(proto, 'init')) {
+        result = true;
+        break;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    INIT_OVERRIDES.set(Class, result);
+  }
+
+  return result;
+}
 const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
@@ -242,8 +276,16 @@ class CoreObject {
   constructor(owner?: Owner) {
     this[OWNER] = owner;
 
+    let Class = this.constructor as typeof CoreObject;
+
     // prepare prototype...
-    (this.constructor as typeof CoreObject).proto();
+    Class.proto();
+
+    if (!isFrameworkClass(Class)) {
+      deprecateEmberObject('`EmberObject`');
+    } else if (overridesInit(Class)) {
+      deprecateEmberObject('The `init` method');
+    }
 
     let self;
     if (DEBUG && hasUnknownProperty(this)) {
