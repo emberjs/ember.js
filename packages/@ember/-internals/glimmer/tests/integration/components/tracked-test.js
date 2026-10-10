@@ -14,6 +14,7 @@ import {
   runTask,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import Component from '@glimmer/component';
@@ -61,9 +62,9 @@ moduleFor(
       this.assertText('max jackson | max jackson');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
-    )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
+      expectClassicClassDeprecation();
+
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
       expectDeprecation(
         /`PromiseProxyMixin` is deprecated/,

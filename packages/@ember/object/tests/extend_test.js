@@ -1,18 +1,29 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { computed, get } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
   class extends AbstractTestCase {
-    ['@test Basic extend'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Basic extend`](assert) {
+      expectClassicClassDeprecation();
+
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       assert.ok(SomeClass.isClass, 'A class has isClass of true');
       let obj = SomeClass.create();
       assert.equal(obj.foo, 'BAR');
     }
 
-    ['@test Sub-subclass'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Sub-subclass`](assert) {
+      expectClassicClassDeprecation();
+
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       let AnotherClass = SomeClass.extend({ bar: 'FOO' });
       let obj = AnotherClass.create();
@@ -20,7 +31,11 @@ moduleFor(
       assert.equal(obj.bar, 'FOO');
     }
 
-    ['@test Overriding a method several layers deep'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Overriding a method several layers deep`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let SomeClass = EmberObject.extend({
         fooCnt: 0,
         foo() {
@@ -69,7 +84,11 @@ moduleFor(
       assert.equal(obj.barCnt, 2, 'should invoke both');
     }
 
-    ['@test With concatenatedProperties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test With concatenatedProperties`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let SomeClass = EmberObject.extend({
         things: 'foo',
         concatenatedProperties: ['things'],
@@ -92,7 +111,11 @@ moduleFor(
       );
     }
 
-    ['@test With concatenatedProperties class properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test With concatenatedProperties class properties`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let SomeClass = EmberObject.extend();
       SomeClass.reopenClass({
         concatenatedProperties: ['things'],
@@ -122,7 +145,11 @@ moduleFor(
       );
     }
 
-    async ['@test Overriding a computed property with an observer'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Overriding a computed property with an observer`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Parent = EmberObject.extend({
         foo: computed(function () {
           return 'FOO';

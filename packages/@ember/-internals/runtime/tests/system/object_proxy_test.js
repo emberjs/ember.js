@@ -8,6 +8,7 @@ import {
   runLoopSettled,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -167,9 +168,11 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test setting a property on the proxy's prototype avoids the assertion`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test setting a property on the proxy's prototype avoids the assertion`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let proxy = ObjectProxy.extend({
         toJSON: null,
       }).create({
@@ -373,9 +376,11 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should not throw or deprecate when adding an observer to an ObjectProxy based class`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test should not throw or deprecate when adding an observer to an ObjectProxy based class`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let obj = ObjectProxy.extend({
         observe: observer('foo', function () {}),
       }).create();

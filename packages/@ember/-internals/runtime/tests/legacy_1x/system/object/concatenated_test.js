@@ -1,5 +1,11 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject, { get } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -19,112 +25,136 @@ function K() {
 
 let klass;
 
-moduleFor(
-  'EmberObject Concatenated Properties',
-  class extends AbstractTestCase {
-    beforeEach() {
-      klass = EmberObject.extend({
-        concatenatedProperties: ['values', 'functions'],
-        values: ['a', 'b', 'c'],
-        functions: [K],
-      });
+if (!DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved) {
+  moduleFor(
+    'EmberObject Concatenated Properties',
+    class extends AbstractTestCase {
+      beforeEach() {
+        expectClassicClassDeprecation();
+
+        klass = EmberObject.extend({
+          concatenatedProperties: ['values', 'functions'],
+          values: ['a', 'b', 'c'],
+          functions: [K],
+        });
+      }
+
+      ['@test concatenates instances'](assert) {
+        let obj = klass.create({
+          values: ['d', 'e', 'f'],
+        });
+
+        let values = get(obj, 'values');
+        let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate values property (expected: ${expected}, got: ${values})`
+        );
+      }
+
+      [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test concatenates subclasses`](
+        assert
+      ) {
+        expectClassicClassDeprecation();
+
+        let subKlass = klass.extend({
+          values: ['d', 'e', 'f'],
+        });
+        let obj = subKlass.create();
+
+        let values = get(obj, 'values');
+        let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate values property (expected: ${expected}, got: ${values})`
+        );
+      }
+
+      [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test concatenates reopen`](
+        assert
+      ) {
+        expectClassicClassDeprecation();
+
+        klass.reopen({
+          values: ['d', 'e', 'f'],
+        });
+        let obj = klass.create();
+
+        let values = get(obj, 'values');
+        let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate values property (expected: ${expected}, got: ${values})`
+        );
+      }
+
+      [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test concatenates mixin`](
+        assert
+      ) {
+        expectClassicClassDeprecation();
+
+        let mixin = {
+          values: ['d', 'e'],
+        };
+        let subKlass = klass.extend(mixin, {
+          values: ['f'],
+        });
+        let obj = subKlass.create();
+
+        let values = get(obj, 'values');
+        let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate values property (expected: ${expected}, got: ${values})`
+        );
+      }
+
+      [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test concatenates reopen, subclass, and instance`](
+        assert
+      ) {
+        expectClassicClassDeprecation();
+
+        klass.reopen({ values: ['d'] });
+        let subKlass = klass.extend({ values: ['e'] });
+        let obj = subKlass.create({ values: ['f'] });
+
+        let values = get(obj, 'values');
+        let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate values property (expected: ${expected}, got: ${values})`
+        );
+      }
+
+      [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test concatenates subclasses when the values are functions`](
+        assert
+      ) {
+        expectClassicClassDeprecation();
+
+        let subKlass = klass.extend({
+          functions: K,
+        });
+        let obj = subKlass.create();
+
+        let values = get(obj, 'functions');
+        let expected = [K, K];
+
+        assert.deepEqual(
+          values,
+          expected,
+          `should concatenate functions property (expected: ${expected}, got: ${values})`
+        );
+      }
     }
-
-    ['@test concatenates instances'](assert) {
-      let obj = klass.create({
-        values: ['d', 'e', 'f'],
-      });
-
-      let values = get(obj, 'values');
-      let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate values property (expected: ${expected}, got: ${values})`
-      );
-    }
-
-    ['@test concatenates subclasses'](assert) {
-      let subKlass = klass.extend({
-        values: ['d', 'e', 'f'],
-      });
-      let obj = subKlass.create();
-
-      let values = get(obj, 'values');
-      let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate values property (expected: ${expected}, got: ${values})`
-      );
-    }
-
-    ['@test concatenates reopen'](assert) {
-      klass.reopen({
-        values: ['d', 'e', 'f'],
-      });
-      let obj = klass.create();
-
-      let values = get(obj, 'values');
-      let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate values property (expected: ${expected}, got: ${values})`
-      );
-    }
-
-    ['@test concatenates mixin'](assert) {
-      let mixin = {
-        values: ['d', 'e'],
-      };
-      let subKlass = klass.extend(mixin, {
-        values: ['f'],
-      });
-      let obj = subKlass.create();
-
-      let values = get(obj, 'values');
-      let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate values property (expected: ${expected}, got: ${values})`
-      );
-    }
-
-    ['@test concatenates reopen, subclass, and instance'](assert) {
-      klass.reopen({ values: ['d'] });
-      let subKlass = klass.extend({ values: ['e'] });
-      let obj = subKlass.create({ values: ['f'] });
-
-      let values = get(obj, 'values');
-      let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate values property (expected: ${expected}, got: ${values})`
-      );
-    }
-
-    ['@test concatenates subclasses when the values are functions'](assert) {
-      let subKlass = klass.extend({
-        functions: K,
-      });
-      let obj = subKlass.create();
-
-      let values = get(obj, 'functions');
-      let expected = [K, K];
-
-      assert.deepEqual(
-        values,
-        expected,
-        `should concatenate functions property (expected: ${expected}, got: ${values})`
-      );
-    }
-  }
-);
+  );
+}

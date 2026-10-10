@@ -13,6 +13,7 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 import type { RouteArgs } from '@ember/routing/-internals';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam =
@@ -317,7 +318,7 @@ const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
   @public
 */
 interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+class Controller<_T = unknown> extends FrameworkObject[INTERNAL_EXTEND](ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

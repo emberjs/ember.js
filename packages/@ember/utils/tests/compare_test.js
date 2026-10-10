@@ -4,13 +4,11 @@ import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'inte
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let data = [];
-let Comp = EmberObject.extend();
-
-Comp.reopenClass({
-  compare(obj) {
+class Comp extends EmberObject {
+  static compare(obj) {
     return obj.get('val');
-  },
-});
+  }
+}
 
 const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 

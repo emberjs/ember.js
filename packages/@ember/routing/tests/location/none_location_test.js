@@ -29,12 +29,12 @@ moduleFor(
     }
 
     ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/en/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -42,13 +42,13 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/foo/');
           set(this, 'path', '/foo/bar');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -58,13 +58,13 @@ moduleFor(
     ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
       assert
     ) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/foo/bar/baz');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -72,13 +72,13 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/bars/baz');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -86,13 +86,13 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() treats regex metacharacters in rootURL literally'](assert) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/a.c/');
           set(this, 'path', '/axc/secret');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -100,13 +100,13 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() strips the rootURL when it has an extra trailing slash'](assert) {
-      NoneTestLocation.reopen({
+      NoneTestLocation = class extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/foo//');
           set(this, 'path', '/foo//bar');
-        },
-      });
+        }
+      };
 
       createLocation();
 

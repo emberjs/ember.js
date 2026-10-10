@@ -4,7 +4,13 @@ import EventedMixin from '@ember/object/evented';
 import Component from '@ember/component';
 import Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
-import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
@@ -27,9 +33,11 @@ moduleFor(
       assert.false(EventedMixin.detect(EmberObject.prototype), 'EmberObject');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test works properly on proxy-ish objects`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test works properly on proxy-ish objects`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let eventedProxyObj;
       eventedProxyObj = class extends CoreObject.extend(EventedMixin) {
         unknownProperty() {

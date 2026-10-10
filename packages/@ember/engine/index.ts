@@ -16,6 +16,10 @@ import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import { StrictResolver } from './lib/strict-resolver';
+import {
+  INTERNAL_EXTEND,
+  INTERNAL_REOPEN_CLASS,
+} from '@ember/-internals/utils/lib/internal-classic-class';
 
 function props(obj: object) {
   let properties = [];
@@ -56,7 +60,7 @@ export interface Initializer<T> {
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+class Engine extends Namespace[INTERNAL_EXTEND](RegistryProxyMixin) {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -494,7 +498,7 @@ export function buildInitializerMethod<
       let attrs = {
         [bucketName]: Object.create(this[bucketName]),
       };
-      this.reopenClass(attrs);
+      this[INTERNAL_REOPEN_CLASS](attrs);
     }
 
     assert(

@@ -156,14 +156,19 @@ moduleFor(
     ['@test RouterService can be injected into router and accessed on init'](assert) {
       assert.expect(1);
 
-      this.router.reopen({
-        routerService: service('router'),
-        init() {
-          this.routerService.one('routeDidChange', () => {
-            assert.ok(true, 'routeDidChange event listener called');
-          });
-        },
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            @service('router') routerService;
+
+            init() {
+              this.routerService.one('routeDidChange', () => {
+                assert.ok(true, 'routeDidChange event listener called');
+              });
+            }
+          }
+      );
 
       return this.visit('/');
     }

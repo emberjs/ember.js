@@ -13,6 +13,7 @@ import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 
 /**
   `CoreView` is an abstract class that exists to give view-like behavior
@@ -32,7 +33,7 @@ import states from './states';
 */
 
 interface CoreView extends ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(ActionHandler) {
+class CoreView extends FrameworkObject[INTERNAL_EXTEND](ActionHandler) {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.

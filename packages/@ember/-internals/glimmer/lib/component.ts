@@ -32,6 +32,10 @@ import {
   getComponentCapturedArgs,
 } from './component-managers/curly';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
+import {
+  INTERNAL_EXTEND,
+  INTERNAL_REOPEN_CLASS,
+} from '@ember/-internals/utils/lib/internal-classic-class';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -802,7 +806,7 @@ interface Component<S = unknown>
   extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
 
 class Component<S = unknown>
-  extends CoreView.extend(
+  extends CoreView[INTERNAL_EXTEND](
     TargetActionSupport,
     ActionSupport,
     {
@@ -1687,7 +1691,7 @@ class Component<S = unknown>
 }
 
 // We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
+Component[INTERNAL_REOPEN_CLASS]({
   positionalParams: [],
 });
 

@@ -10,6 +10,7 @@ import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 import Observable from '@ember/object/observable';
 import {
   type Decorator,
@@ -42,7 +43,7 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
-class EmberObject extends CoreObject.extend(Observable) {
+class EmberObject extends CoreObject[INTERNAL_EXTEND](Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;

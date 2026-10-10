@@ -70,6 +70,10 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
+import {
+  INTERNAL_REOPEN,
+  INTERNAL_REOPEN_CLASS,
+} from '@ember/-internals/utils/lib/internal-classic-class';
 
 /**
 @module @ember/routing/router
@@ -303,7 +307,7 @@ class EmberRouter extends EmberObject {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
       // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
+      this[INTERNAL_REOPEN_CLASS]({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1829,7 +1833,7 @@ function forEachQueryParam(
   }
 }
 
-EmberRouter.reopen({
+EmberRouter[INTERNAL_REOPEN]({
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',

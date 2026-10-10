@@ -7,6 +7,7 @@ import {
   runLoopSettled,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../../../deprecations';
 import { action } from '@ember/object';
@@ -1968,7 +1969,11 @@ moduleFor(
       this.assertText('things');
     }
 
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test didReceiveAttrs fires after .init() but before observers become active`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let barCopyDidChangeCount = 0;
 
       this.owner.register(
@@ -2042,7 +2047,7 @@ moduleFor(
       runTask(() => set(this.context, 'foo', 5));
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)`](
       assert
     ) {
       assert.expect(5);
@@ -2051,6 +2056,8 @@ moduleFor(
 
       expectDeprecation(
         () => {
+          expectClassicClassDeprecation();
+
           this.owner.register(
             'component:evented-component',
             Component.extend({
@@ -2111,7 +2118,9 @@ moduleFor(
       this.assertText('hello');
     }
 
-    ['@test using attrs for positional params is asserted against']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test using attrs for positional params is asserted against`]() {
+      expectClassicClassDeprecation();
+
       let MyComponent = class extends Component {};
 
       expectAssertion(() => {
@@ -2129,8 +2138,12 @@ moduleFor(
     }
 
     // Perhaps change this test to `{{this.attrs.myVar.value}}` when removing the deprecation?
-    ['@test using this.attrs for positional params']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test using this.attrs for positional params`]() {
+      expectClassicClassDeprecation();
+
       let MyComponent = class extends Component {};
+
+      MyComponent.reopenClass({ positionalParams: ['myVar'] });
 
       expectDeprecation(() => {
         this.owner.register(
@@ -2138,7 +2151,7 @@ moduleFor(
           template(
             'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
             {
-              component: MyComponent.reopenClass({ positionalParams: ['myVar'] }),
+              component: MyComponent,
               strictMode: false,
             }
           )
@@ -2150,7 +2163,9 @@ moduleFor(
       this.assertText('MyVar1: 1 1 MyVar2: 2 2');
     }
 
-    ['@test using named arguments for positional params']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test using named arguments for positional params`]() {
+      expectClassicClassDeprecation();
+
       let MyComponent = class extends Component {};
 
       this.owner.register(

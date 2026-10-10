@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 
 /**
  @module @ember/test
@@ -16,7 +17,7 @@ interface Adapter extends EmberObject {
   asyncEnd(): void;
   exception(error: unknown): never;
 }
-const Adapter = EmberObject.extend({
+const Adapter = EmberObject[INTERNAL_EXTEND]({
   /**
     This callback will be called whenever an async operation is about to start.
 

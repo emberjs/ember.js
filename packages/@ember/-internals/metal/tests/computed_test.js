@@ -1,3 +1,4 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject from '@ember/object';
 import { meta as metaFor } from '@ember/-internals/meta';
 import {
@@ -10,7 +11,13 @@ import {
   addObserver,
 } from '..';
 import { run } from '@ember/runloop';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 let obj, objA, objB, count, func;
@@ -730,7 +737,11 @@ moduleFor(
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
 
-    ['@test the return value of the setter gets cached'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test the return value of the setter gets cached`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let testObj = EmberObject.extend({
         a: '1',
         sampleCP: computed('a', {
