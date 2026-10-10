@@ -551,41 +551,6 @@ const InternalMutableArray = InternalMixin.create(InternalEmberArray, InternalMu
   },
 });
 
-/**
-  Creates an `NativeArray` from an Array-like object.
-  Does not modify the original object's contents.
-
-  This exists primarily for historic reasons and should not be used
-  in new code. Prefer native [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
-  or [trackedArray](/ember/release/functions/@ember%2Freactive%2Fcollections/trackedArray).
-
-  Example
-
-  ```app/components/my-component.js
-  import Component from '@ember/component';
-  import { A } from '@ember/array';
-
-  export default Component.extend({
-    tagName: 'ul',
-    classNames: ['pagination'],
-
-    init() {
-      this._super(...arguments);
-
-      if (!this.get('content')) {
-        this.set('content', A());
-        this.set('otherContent', A([1,2,3]));
-      }
-    }
-  });
-  ```
-
-  @method A
-  @static
-  @for @ember/array
-  @return {Ember.NativeArray}
-*/
-
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
 // because they are so common.
@@ -635,6 +600,74 @@ A = function <T>(this: unknown, arr?: Array<T>) {
     return InternalNativeArray.apply(arr ?? []) as NativeArray<T>;
   }
 };
+
+const NATIVE_ARRAY_KEYS: string[] = [];
+InternalNativeArray.keys().forEach((key) => {
+  if (!key.startsWith('_')) {
+    NATIVE_ARRAY_KEYS.push(key);
+  }
+});
+
+/**
+  Makes an Ember array for a value that Ember gives to application code.
+
+  The array calls `report` with the name of each Ember array member
+  that application code uses.
+
+  One call from application code gives one report,
+  because the members call each other.
+*/
+export function reportingA<T>(arr: T[], report: (name: string) => void): NativeArray<T> {
+  let array = A(arr);
+  let isInside = false;
+
+  function reportOnce<R>(name: string, callback: () => R): R {
+    if (isInside) {
+      return callback();
+    }
+
+    report(name);
+    isInside = true;
+
+    try {
+      return callback();
+    } finally {
+      isInside = false;
+    }
+  }
+
+  for (let name of NATIVE_ARRAY_KEYS) {
+    let descriptor = Object.getOwnPropertyDescriptor(array, name);
+
+    if (descriptor === undefined) {
+      continue;
+    }
+
+    let { value, get, set } = descriptor;
+
+    if (typeof value === 'function') {
+      descriptor.value = function (this: unknown, ...args: unknown[]) {
+        return reportOnce(name, () => value.apply(this, args));
+      };
+    } else if (get !== undefined) {
+      descriptor.get = function (this: unknown) {
+        return reportOnce(name, () => get.call(this));
+      };
+
+      if (set !== undefined) {
+        descriptor.set = function (this: unknown, newValue: unknown) {
+          reportOnce(name, () => set.call(this, newValue));
+        };
+      }
+    } else {
+      continue;
+    }
+
+    Object.defineProperty(array, name, descriptor);
+  }
+
+  return array;
+}
 
 export { A, InternalEmberArray, InternalMutableArray, InternalNativeArray };
 

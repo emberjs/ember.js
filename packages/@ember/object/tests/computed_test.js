@@ -1,8 +1,11 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
-import { A as emberA, isArray } from '@ember/array';
+import { isArray, A as emberA } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 function K() {
   return this;
@@ -392,7 +395,9 @@ moduleFor(
       assert.equal(instance.bar, 456, 'setters work');
     }
 
-    ['@test @each on maybe array'](assert) {
+    [`${testUnless(EMBER_A.isRemoved)} @test @each on maybe array`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let Normalizer = EmberObject.extend({
         options: null, // null | undefined | { value: any } | Array<{ value: any }>
 

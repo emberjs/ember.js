@@ -16,6 +16,8 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
 
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
+
 moduleFor(
   'Helper Tracked Properties',
   class extends RenderingTestCase {
@@ -147,7 +149,9 @@ moduleFor(
       assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
     }
 
-    '@test array properties rerender when updated'() {
+    [`${testUnless(EMBER_A.isRemoved)} @test array properties rerender when updated`]() {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       class NumListComponent extends Component {
         @tracked numbers = A([1, 2, 3]);
 
@@ -402,7 +406,9 @@ moduleFor(
       this.assertText('sal-value');
     }
 
-    '@test each-in autotracks arrays acorrectly'() {
+    [`${testUnless(EMBER_A.isRemoved)} @test each-in autotracks arrays acorrectly`]() {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let obj = EmberObject.create({ arr: A([1]) });
 
       this.owner.register(

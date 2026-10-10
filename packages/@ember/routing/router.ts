@@ -28,7 +28,7 @@ import type {
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
+import { queryParamArray } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { assert, info } from '@ember/debug';
 import { cancel, later, once, run } from '@ember/runloop';
 import { associateDestroyableChild } from '@glimmer/destroyable';
@@ -1168,7 +1168,7 @@ class EmberRouter extends EmberObject {
     } else if (defaultType === 'number') {
       return Number(value).valueOf();
     } else if (defaultType === 'array') {
-      return emberA(JSON.parse(value as string));
+      return queryParamArray(JSON.parse(value as string));
     }
     return value;
   }

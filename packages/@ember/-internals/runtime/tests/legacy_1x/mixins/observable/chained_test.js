@@ -1,7 +1,16 @@
 import { addObserver } from '@ember/-internals/metal';
 import EmberObject, { get, set } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -17,9 +26,13 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
 moduleFor(
   'Ember.Observable - Observing with @each',
   class extends AbstractTestCase {
-    async ['@test chained observers on enumerable properties are triggered when the observed property of any item changes'](
+    async [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test chained observers on enumerable properties are triggered when the observed property of any item changes`](
       assert
     ) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let family = EmberObject.create({ momma: null });
       let momma = EmberObject.create({ children: [] });
 

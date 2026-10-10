@@ -10,7 +10,17 @@ import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
 
 import { precompileTemplate } from '@ember/template-compilation';
-import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import {
+  QueryParamTestCase,
+  moduleFor,
+  getTextOf,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const QP_EMBER_ARRAY = DEPRECATIONS.DEPRECATE_QUERY_PARAM_EMBER_ARRAY;
 
 moduleFor(
   'Query Params - main',
@@ -1314,8 +1324,16 @@ moduleFor(
       });
     }
 
-    async ['@test Array query params can be pushed/popped'](assert) {
-      assert.expect(17);
+    async [`${testUnless(QP_EMBER_ARRAY.isRemoved)} @test Array query params can be pushed/popped`](
+      assert
+    ) {
+      assert.expect(QP_EMBER_ARRAY.isEnabled ? 20 : 17);
+
+      if (QP_EMBER_ARRAY.isEnabled) {
+        expectDeprecation(/`pushObject` was used on the array value of a query param/);
+        expectDeprecation(/`popObject` was used on the array value of a query param/);
+        expectDeprecation(/`unshiftObject` was used on the array value of a query param/);
+      }
 
       this.router.map(function () {
         this.route('home', { path: '/' });
