@@ -214,10 +214,6 @@ export function nextElementSibling(node: SimpleNode): Nullable<SimpleElement> {
   return null;
 }
 
-export function elementId(element: SimpleElement): Nullable<string> {
-  return element.getAttribute('id');
-}
-
 class TextSerializer extends Serializer {
   override openTag(_element: SerializableElement) {
     return '';

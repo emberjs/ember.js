@@ -1,3 +1,4 @@
+import { template } from '@ember/template-compiler/runtime';
 import { tracked } from '@glimmer/tracking';
 import { trackedObject } from '@ember/reactive/collections';
 import type Owner from '@ember/owner';
@@ -24,7 +25,6 @@ import type { TemplateOnlyComponent } from '@ember/component/template-only';
 import templateOnlyComponent from '@ember/component/template-only';
 import {
   createTemplate,
-  defComponent,
   defineSimpleModifier,
   JitRenderDelegate,
   RenderTest,
@@ -77,10 +77,10 @@ class DebugRenderTreeTest extends RenderTest {
   @test 'strict-mode components'() {
     const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(
       `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state } }
+      { scope: () => ({ HelloWorld, state }) }
     );
 
     this.renderComponent(Root);
@@ -107,9 +107,9 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode components preserve names from scope'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<HelloWorld @arg="first"/>`, {
-      scope: { HelloWorld },
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<HelloWorld @arg="first"/>`, {
+      scope: () => ({ HelloWorld }),
     });
 
     this.renderComponent(Root);
@@ -136,13 +136,13 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
+    const HelloWorld = template('{{@arg}}');
 
     class Root extends GlimmerComponent {
       HelloWorld = HelloWorld;
     }
 
-    const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
+    const RootDef = template(`<this.HelloWorld @arg="first"/>`, {
       component: Root,
     });
 
@@ -163,8 +163,8 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<@Greeting @arg="first"/>`);
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<@Greeting @arg="first"/>`);
 
     this.renderComponent(Root, { Greeting: HelloWorld });
 
@@ -185,12 +185,12 @@ class DebugRenderTreeTest extends RenderTest {
   @test 'strict-mode modifiers'() {
     const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('<p ...attributes>{{@arg}}</p>');
+    const HelloWorld = template('<p ...attributes>{{@arg}}</p>');
     const noopFn = () => {};
     const noop = defineSimpleModifier(noopFn);
-    const Root = defComponent(
+    const Root = template(
       `<HelloWorld {{noop}} @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state, noop } }
+      { scope: () => ({ HelloWorld, state, noop }) }
     );
 
     this.renderComponent(Root);

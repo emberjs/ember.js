@@ -102,19 +102,6 @@ export interface DefineComponentOptions {
   keywords?: string[];
 }
 
-export function defComponent(
-  templateSource: string,
-  options?: {
-    component?: object | undefined;
-    scope?: Record<string, unknown> | undefined;
-  }
-) {
-  let definition = options?.component ?? templateOnlyComponent();
-  let templateFactory = createTemplate(templateSource, { strictMode: true }, options?.scope ?? {});
-  setComponentTemplate(templateFactory, definition);
-  return definition;
-}
-
 export function defineComponent(
   scopeValues: Record<string, unknown> | null,
   templateSource: string,

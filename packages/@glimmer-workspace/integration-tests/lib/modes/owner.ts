@@ -1,6 +1,5 @@
-import { associateDestroyableChild, destroy } from '@ember/destroyable';
+import { destroy } from '@ember/destroyable';
 import { _resetRenderers } from '@ember/-internals/glimmer';
-import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import { run } from '@ember/runloop';
 import { buildOwner } from 'internal-test-helpers';
 
