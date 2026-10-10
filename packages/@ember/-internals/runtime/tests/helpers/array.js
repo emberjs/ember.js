@@ -1,5 +1,5 @@
 import ArrayProxy from '@ember/array/proxy';
-import EmberArray, { A as emberA } from '@ember/array';
+import EmberArray, { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
@@ -11,6 +11,12 @@ import {
 import EmberObject, { get, computed } from '@ember/object';
 import { moduleFor, ignoreDeprecation } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+// These suites test the shared array APIs.
+// The tests of `A` cover its deprecation.
+export function emberA(array) {
+  return ignoreDeprecation(() => A(array));
+}
 
 export function newFixture(cnt) {
   let ret = [];
@@ -156,7 +162,9 @@ class ArrayProxyHelpers extends AbstractArrayHelper {
     // These suites exercise the shared array APIs rather than `ArrayProxy`
     // itself, so we let the `ArrayProxy` deprecation pass silently here. The
     // deprecation itself is covered by the dedicated `ArrayProxy` tests.
-    return ignoreDeprecation(() => ArrayProxy.create({ content: emberA(super.newObject(ary)) }));
+    let content = emberA(super.newObject(ary));
+
+    return ignoreDeprecation(() => ArrayProxy.create({ content }));
   }
 
   mutate(obj) {
@@ -287,6 +295,10 @@ export function runArrayTests(name, Tests, ...types) {
   // `ArrayProxy` is removed rather than run it against helpers it was never
   // really exercising. See the `deprecate-array-proxy` deprecation.
   if (requested.includes('ArrayProxy') && DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved) {
+    return;
+  }
+
+  if (DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved) {
     return;
   }
 
