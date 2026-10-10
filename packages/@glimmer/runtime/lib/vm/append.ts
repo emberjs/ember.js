@@ -74,6 +74,7 @@ class Stacks {
   readonly cache = new Stack<JumpIfNotModifiedOpcode>();
   readonly list = new Stack<ListBlockOpcode>();
   readonly destroyable = new Stack<object>();
+  readonly block = new Stack<BlockOpcode>();
 
   constructor(scope: Scope, dynamicScope: DynamicScope) {
     this.scope.push(scope);
@@ -402,6 +403,8 @@ export class VM {
   enter(args: number) {
     let updating: UpdatingOpcode[] = [];
 
+    beginTrackFrame();
+
     let state = this.capture(args);
     let block = this.tree().pushResettableBlock();
 
@@ -437,6 +440,8 @@ export class VM {
    */
   enterItem({ key, value, memo }: OpaqueIterationItem): ListItemOpcode {
     let { stack } = this;
+
+    beginTrackFrame();
 
     let valueRef = createIteratorItemRef(value);
     let memoRef = createIteratorItemRef(memo);
@@ -479,6 +484,10 @@ export class VM {
   enterList(iterableRef: Reference<OpaqueIterator>, offset: number) {
     let updating: ListItemOpcode[] = [];
 
+    // The list block reads its iterable in the constructor, so the frame must
+    // be open before that read.
+    beginTrackFrame();
+
     let addr = this.lowlevel.target(offset);
     let state = this.capture(0, addr);
     let list = this.tree().pushBlockList(updating) as AppendingBlockList;
@@ -509,8 +518,21 @@ export class VM {
   private didEnter(opcode: BlockOpcode) {
     this.associateDestroyable(opcode);
     this.#stacks.destroyable.push(opcode);
+    this.#stacks.block.push(opcode);
     this.updateWith(opcode);
     this.pushUpdating(opcode.children);
+  }
+
+  /**
+   * Re-enter a block that the updating VM is re-rendering. Its tracking frame
+   * is already open, opened by the updating VM before it evaluated the block.
+   *
+   * [!] push Block Stack <- `opcode`
+   * [!] push Updating Stack <- `children`
+   */
+  resumeBlock(opcode: BlockOpcode, children: UpdatingOpcode[]) {
+    this.#stacks.block.push(opcode);
+    this.pushUpdating(children);
   }
 
   /**
@@ -529,6 +551,7 @@ export class VM {
     this.#stacks.destroyable.pop();
     this.#tree.popBlock();
     this.popUpdating();
+    expect(this.#stacks.block.pop(), 'VM BUG: expected a block to exit').didExit();
   }
 
   /**
