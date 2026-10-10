@@ -1,0 +1,10 @@
+# Unlabeled Changes
+
+* [#21686](https://github.com/emberjs/ember.js/pull/21686) Upgrade @ember/test-helpers to 5.7.0 ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+* [#21680](https://github.com/emberjs/ember.js/pull/21680) Convert more tests ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* [#21679](https://github.com/emberjs/ember.js/pull/21679) Delete fake classic component ([@ef4](https://github.com/ef4))
+* [#21672](https://github.com/emberjs/ember.js/pull/21672) Migrate five more glimmer integration tests to plain .gjs tests with setupRenderingTest ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+* [#21677](https://github.com/emberjs/ember.js/pull/21677) Delete Glimmer tests of fake Ember pieces that real Ember tests cover ([@ef4](https://github.com/ef4))
+
+
+*Cannot plan release until the above changes are labeled*.
