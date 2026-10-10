@@ -333,6 +333,11 @@ Suggestions for the plan's author, based on what is still open:
    importing `tracked` from `@glimmer/tracking` directly (`1dc78237f2`, resolves the TODO in the
    deleted `lib/test-helpers/tracked.ts`); 6–10 rebased: `5984c57b5f`, `c17d762457`,
    `881ede071d`, `86c4967de5`, `5e7d5cd727`. Suites unchanged.
+   Then the author's "drop silly vestigial test helper" (`59bb3d06de`) and a commit using public
+   APIs where helpers only wrapped them (`5813fb78d7`: `defComponent` → runtime `template()`,
+   dead `elementId`, unused imports); 6–10: `b85f83f8ff`, `2139643e50`, `c710ee0fd0`,
+   `28553335d0`, `f3a9ef4622`. Suites unchanged. Deferred by the author: `defineSimpleHelper` →
+   plain-function helpers, and Ember's `tests/utils/helpers.js` re-exports → public modules.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
