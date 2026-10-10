@@ -2116,6 +2116,10 @@ In SSR, trusted HTML is inserted as a raw HTML section rather than parsed (`pack
 elements are created without namespaces, and every attribute is set with `setAttribute`
 without namespace (`node-dom-helper.ts:32-40`).
 
+SSR is an optional profile for a new implementation (author ruling, 2026-10-10, §09-9.8 Q2):
+it needs stabilization before it can be a reliable part of this specification. What follows
+binds only an implementation that claims the SSR profile.
+
 **What is normative** (author ruling, 2026-10-07, §09-9.8 Q1). A server render is always
 rehydrated by the same implementation, so the serialized markup is implementation-defined and
 need not interoperate. §13.1 and the marker-walking steps of §13.2 document the current
@@ -2126,8 +2130,13 @@ results instead:
    and state, and leaves none of the nodes that serialization added behind.
 2. Server nodes that match the client render are kept (node identity); text and attribute
    values are corrected in place; the remaining results listed at the end of §13.2 hold.
-3. Content of the container outside the rendered root is left alone, including for partial
-   rehydration through `renderComponent`.
+3. Content of the container outside the rendered root is left alone, including when only one
+   component root is rehydrated (partial rehydration). Ember has no public API for that today:
+   application rehydration is selected by the private `_renderMode` boot option
+   (`packages/@ember/application/instance.ts:344-349`,
+   `packages/@ember/-internals/glimmer/lib/setup-registry.ts:16-32`), and `renderComponent`
+   always uses the client builder and clears its target element on the first render
+   (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:430-442,737-749`).
 4. The server render is non-interactive (above): no modifier is created, installed or
    updated during it (author ruling, commit `eb4f794d62`).
 

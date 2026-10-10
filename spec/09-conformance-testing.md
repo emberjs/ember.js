@@ -80,7 +80,7 @@ which profiles it supports. The suite is organized so that each test belongs to 
 | **Loose mode** | Resolution of free names through the owner, `{{foo}}` vs `this.foo` | **[Loose mode]** | Required for Ember compatibility |
 | **Legacy** | Classic components, `get`/`set` interop, curly invocation | **[Legacy]** | Required for Ember compatibility |
 | **Ember integration** | §08: owner and resolver, built-ins (`Input`, `LinkTo`, …), outlets, routing, engines, `renderComponent`, `renderSettled`, run-loop timing (§07-1.10) | — | Required for Ember. Partly depends on the run loop (§9.5, C11) |
-| **SSR** | Serialization and rehydration (§05-13). The marker format is implementation-defined (ruling Q1): tests check that the same implementation's server output, rehydrated, gives the client render's DOM and keeps the server's nodes, not marker strings | — | Required or optional: Q2 |
+| **SSR** | Serialization and rehydration (§05-13). The marker format is implementation-defined (ruling Q1): tests check that the same implementation's server output, rehydrated, gives the client render's DOM and keeps the server's nodes, not marker strings | — | Optional (author ruling 2026-10-10, Q2 in part): needs stabilization before it can be a reliable part of the spec. Rehydration has no stable public API: an app selects it with the private `_renderMode` boot option, and `renderComponent` can neither serialize nor rehydrate (§05-13 item 3) |
 | **Debug render tree** | `captureRenderTree` and the tree shape (§08-13) | **[Dev]** | Optional. Ember Inspector depends on it |
 | **Proposed** | The [Proposed] reactive core (§07-2) | **[Proposed]** | Only `spec/prototype/reactive/test.mjs` for now |
 
@@ -422,7 +422,7 @@ own, because they remove test dependencies on VM internals that Ember is itself 
 
 | # | Workstream | Depends on | Exit criterion | Model |
 |---|---|---|---|---|
-| W0 | **Author decisions**: Q1, Q3–Q6 are ruled (2026-10-07); Q2 (required profiles) is open | — | Recorded in STATUS "Decisions" | Author |
+| W0 | **Author decisions**: Q1, Q3–Q6 are ruled (2026-10-07); Q2 (required profiles) is partly ruled (SSR optional, 2026-10-10) | — | Recorded in STATUS "Decisions" | Author |
 | W1 | **Manifest.** Tag every test file (later every test) with its profile and class (P/R/M/I) and the spec sections it checks, seeded from `.work/T16-coupling.md`. A QUnit module-name prefix or a checked-in manifest, plus a filter so `testem` can run one profile | W0 | Every template-relevant test file is classified; `profile=core` runs only conformance tests | Sonnet |
 | W2 | **Glimmer harness: eliminate the fake stubs and refactor** (C1, C2, C6, C18): the C18 sequence first (it removes most of C6), then `delegate.set/rerender/destroy`, `RenderHandle`, one `compile`, a tracked test context. **Done** on branch `test/w2-glimmer-harness`, not yet upstreamed (`.work/W2-glimmer-harness.md`) | — | No fake Ember or Glimmer stand-ins remain (C18 table empty); no `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`, `@glimmer/opcode-compiler` or `@glimmer/compiler` import outside `lib/modes/`, except in files classified I by W1/W5 (W2's list: "W5 classification list" in its checklist); the Legacy profile's coverage is unchanged (every removed curly-kind case has an Ember twin); all Glimmer tests pass | Sonnet per step of the C18 sequence; Opus for the API and the coverage diff |
 | W3 | **Convert the Ember harness's tests to the app-style form** (§9.4.3; C2, C11, rulings Q4/Q5): `render` + `await settled()` instead of `this.render`/`runTask`; `<template>` and `.gjs` instead of string templates; `assert.rejects` for [Dev] messages. Upstream has started (§9.3 item 6). Files that must stay on `RenderingTestCase` (loose-mode registry tests, classic `this`) keep it, with its renderer entry points behind one module that seam A replaces | — | No `runTask` in the conformance-profile files of `@ember/-internals/glimmer/tests`; every converted test passes | Sonnet, one directory per task; Opus reviews |
@@ -439,15 +439,18 @@ profile list, but can start with the proposal of §9.2.
 ## 9.8 Open questions
 
 Q1 and Q3–Q6 were ruled by the plan's author on 2026-10-07 (commit `5740b4aeb7`). They are kept
-here, with the ruling, so that the references above still resolve. Q2 is open.
+here, with the ruling, so that the references above still resolve. Q2 is partly ruled.
 
 1. **Q1. Is the SSR marker format normative?** *Ruled: no.* Markers are left to the
    implementation; there is no interoperable marker format. A server render and its
    rehydration are always done by the same implementation. §05-13.1 now documents the current
    markers as informative, and the SSR profile checks the rehydrated DOM and node reuse instead
    (§9.2, C14).
-2. **Q2. Which profiles are required?** *Open.* §9.2 proposes Core, Dev, Loose mode, Legacy and
-   Ember integration as required, with SSR, Debug render tree and Proposed optional.
+2. **Q2. Which profiles are required?** *Partly ruled (2026-10-10): SSR is optional* for a new
+   implementation; it needs stabilization before it can be a reliable part of the spec (there is
+   no stable public API for component-level serialization or rehydration, §05-13 item 3). The
+   rest is open: §9.2 proposes Core, Dev, Loose mode, Legacy and Ember integration as required,
+   with Debug render tree and Proposed optional.
 3. **Q3. Are all [Dev] messages normative verbatim?** *Ruled: yes,* because it keeps the suite
    simple. To be revisited only if following Ember's exact wording, including location
    suffixes such as `('module' @ L1:C2)`, turns out to be inordinately hard for a second

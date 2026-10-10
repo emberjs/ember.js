@@ -51,7 +51,10 @@ continue the work. Last updated: 2026-10-08.
   marker-walking of §05-13.2 are informative); [Dev] messages are verbatim; tests move to
   `await settled()` and the app-style form (§09-9.4.3); the suite stays in this repo, and a
   feature flag selects the implementation; fake Glimmer/Ember stubs of each other are
-  eliminated (§09-9.5 C18). Open: which profiles are required (Q2).
+  eliminated (§09-9.5 C18). Open: which profiles are required (Q2), except that the SSR
+  profile is optional for a new implementation (author, 2026-10-10: it needs stabilization;
+  rehydration has no stable public API, only the private `_renderMode` boot option, and
+  `renderComponent` cannot serialize or rehydrate; §09-9.2, §05-13).
 - **Author rulings of 2026-10-08** (commit `eb4f794d62`, on questions from W2; W2-9):
   - *Dynamic scope.* Any key other than `outletState` is a [Dev] runtime assertion, with Ember's
     messages verbatim. Implementations are encouraged to implement dynamic scope generally, as
