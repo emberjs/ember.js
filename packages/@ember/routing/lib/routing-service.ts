@@ -4,13 +4,17 @@
 
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
+import alias from '@ember/-internals/metal/lib/alias';
 import Service from '@ember/service';
 import type Route from '@ember/routing/route';
 import type { ModelFor } from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import type RouterState from './router_state';
 import { ROUTER } from '@ember/routing/router-service';
+
+function readOnly(dependentKey: string) {
+  return alias(dependentKey).readOnly();
+}
 
 /**
   The Routing service is used by LinkTo, and provides facilities for
