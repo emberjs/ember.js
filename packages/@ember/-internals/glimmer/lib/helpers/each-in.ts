@@ -2,13 +2,14 @@
 @module @ember/helper
 */
 import { tagForObject } from '@ember/-internals/metal/lib/tags';
-import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy';
+import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
+import { DEPRECATIONS } from '../../../deprecations';
 
 /**
   The `{{#each}}` keyword loops over elements in a collection. It is an extension
@@ -311,10 +312,12 @@ export default internalHelper(({ positional }: CapturedArguments) => {
 
     consumeTag(tagForObject(iterable));
 
-    if (isProxy(iterable)) {
-      // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
-      // and the proxy's tag is lazy updated on access
-      iterable = _contentFor(iterable);
+    if (!DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved) {
+      if (isProxy(iterable)) {
+        // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
+        // and the proxy's tag is lazy updated on access
+        iterable = _contentFor(iterable);
+      }
     }
 
     return new EachInWrapper(iterable);
