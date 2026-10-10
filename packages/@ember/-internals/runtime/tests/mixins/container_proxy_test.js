@@ -1,15 +1,20 @@
 import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
-import ContainerProxy from '../../lib/mixins/container_proxy-internal';
+import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '@ember/object';
 import { run, schedule } from '@ember/runloop';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../deprecations';
 import { destroy } from '@glimmer/destroyable';
+
+const MIXIN = DEPRECATIONS.DEPRECATE_CONTAINER_PROXY_MIXIN;
 
 moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',
   class extends AbstractTestCase {
     beforeEach() {
+      expectDeprecation(/The `ContainerProxyMixin` mixin is deprecated/, MIXIN.isEnabled);
+
       this.Owner = EmberObject.extend(ContainerProxy);
       this.instance = this.Owner.create();
 
@@ -20,14 +25,14 @@ moduleFor(
       });
     }
 
-    ['@test provides ownerInjection helper method'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test provides ownerInjection helper method`](assert) {
       let result = this.instance.ownerInjection();
 
       assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
     }
 
-    ['@test actions queue completes before destruction'](assert) {
-      assert.expect(1);
+    [`${testUnless(MIXIN.isRemoved)} @test actions queue completes before destruction`](assert) {
+      assert.expect(2);
 
       this.registry.register(
         'service:auth',
@@ -46,10 +51,12 @@ moduleFor(
       });
     }
 
-    '@test being destroyed by @ember/destroyable properly destroys the container and created instances'(
+    [`${testUnless(
+      MIXIN.isRemoved
+    )} @test being destroyed by @ember/destroyable properly destroys the container and created instances`](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.registry.register(
         'service:foo',
