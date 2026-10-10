@@ -315,6 +315,34 @@ export const ObjectTestCases = {
 // Testing behaviors related to arrays and array proxies
 export const ArrayTestCases = {
   ['@test it considers empty arrays falsy']() {
+    this.renderValues(['hello'], []);
+
+    this.assertText('T1F2');
+
+    runTask(() => this.rerender());
+
+    this.assertText('T1F2');
+
+    runTask(() => set(this.context, 'cond1', []));
+
+    this.assertText('F1F2');
+
+    runTask(() => {
+      set(this.context, 'cond1', ['hello']);
+      set(this.context, 'cond2', [1]);
+    });
+
+    this.assertText('T1T2');
+
+    runTask(() => {
+      set(this.context, 'cond1', ['hello']);
+      set(this.context, 'cond2', []);
+    });
+
+    this.assertText('T1F2');
+  },
+
+  ['@test it considers empty Ember arrays falsy']() {
     this.renderValues(emberA(['hello']), emberA());
 
     this.assertText('T1F2');
@@ -335,15 +363,15 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', emberA(['hello']));
-      set(this.context, 'cond2', emberA());
+      set(this.context, 'cond1', ['hello']);
+      set(this.context, 'cond2', []);
     });
 
     this.assertText('T1F2');
   },
 
   [`${testUnless(ARRAY_PROXY_REMOVED)} @test it considers array proxies without content falsy`]() {
-    this.renderValues(arrayProxy({ content: emberA(['hello']) }), arrayProxy({ content: null }));
+    this.renderValues(arrayProxy({ content: ['hello'] }), arrayProxy({ content: null }));
 
     this.assertText('T1F2');
 
@@ -359,14 +387,14 @@ export const ArrayTestCases = {
     this.assertText('F1F2');
 
     runTask(() => {
-      set(this.context, 'cond1.content', emberA(['hello']));
-      set(this.context, 'cond2.content', emberA([1]));
+      set(this.context, 'cond1.content', ['hello']);
+      set(this.context, 'cond2.content', [1]);
     });
 
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', arrayProxy({ content: emberA(['hello']) }));
+      set(this.context, 'cond1', arrayProxy({ content: ['hello'] }));
       set(this.context, 'cond2', arrayProxy({ content: null }));
     });
 
@@ -397,8 +425,8 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', arrayProxy({ content: emberA(['hello']) }));
-      set(this.context, 'cond2', arrayProxy({ content: emberA() }));
+      set(this.context, 'cond1', arrayProxy({ content: ['hello'] }));
+      set(this.context, 'cond2', arrayProxy({ content: [] }));
     });
 
     this.assertText('T1F2');

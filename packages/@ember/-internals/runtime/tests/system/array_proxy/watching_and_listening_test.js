@@ -1,6 +1,5 @@
 import { peekMeta } from '@ember/-internals/meta';
 import ArrayProxy from '@ember/array/proxy';
-import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -24,7 +23,7 @@ moduleFor(
     [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting 'content' adds listeners correctly`](
       assert
     ) {
-      let content = A();
+      let content = [];
       let proxy = ArrayProxy.create();
 
       assert.deepEqual(sortedListenersFor(content, '@array:before'), []);
@@ -43,8 +42,8 @@ moduleFor(
     [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test changing 'content' adds and removes listeners correctly`](
       assert
     ) {
-      let content1 = A();
-      let content2 = A();
+      let content1 = [];
+      let content2 = [];
       let proxy = ArrayProxy.create({ content: content1 });
 
       assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);

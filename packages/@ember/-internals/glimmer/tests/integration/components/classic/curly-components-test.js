@@ -16,7 +16,7 @@ import { tracked } from '@ember/-internals/metal';
 import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
 import { set, get, computed, observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1143,7 +1143,7 @@ moduleFor(
       );
 
       this.render('{{sample-component names=this.things}}', {
-        things: emberA(['Foo', 4, 'Bar']),
+        things: trackedArray(['Foo', 4, 'Bar']),
       });
 
       this.assertText('Foo4Bar');
@@ -1152,19 +1152,19 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      runTask(() => this.context.get('things').pushObject(5));
+      runTask(() => this.context.get('things').push(5));
 
       this.assertText('Foo4Bar5');
 
-      runTask(() => this.context.get('things').shiftObject());
+      runTask(() => this.context.get('things').shift());
 
       this.assertText('4Bar5');
 
-      runTask(() => this.context.get('things').clear());
+      runTask(() => this.context.get('things').splice(0));
 
       this.assertText('');
 
-      runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
+      runTask(() => this.context.set('things', ['Foo', 4, 'Bar']));
 
       this.assertText('Foo4Bar');
     }
@@ -1882,22 +1882,22 @@ moduleFor(
 
             init() {
               super.init(...arguments);
-              this.options = emberA([]);
+              this.options = [];
               this.value = null;
             }
 
             updateValue() {
-              let newValue = this.get('options.lastObject.value');
+              let newValue = this.options.at(-1)?.value;
 
               this.set('value', newValue);
             }
 
             registerOption(option) {
-              this.get('options').addObject(option);
+              this.options.push(option);
             }
 
             unregisterOption(option) {
-              this.get('options').removeObject(option);
+              this.options.splice(this.options.indexOf(option), 1);
 
               this.updateValue();
             }
