@@ -10,7 +10,6 @@ const TRACKED_CONTEXTS = new WeakMap<object, object>();
 export function trackedContext<T extends Record<string, unknown>>(plain: T): T {
   let existing = TRACKED_CONTEXTS.get(plain);
   if (existing === undefined) {
-    // every write dirties, like `RenderTest.context`
     existing = trackedObject<Record<string, unknown>>(plain, { equals: () => false });
     TRACKED_CONTEXTS.set(plain, existing);
   }

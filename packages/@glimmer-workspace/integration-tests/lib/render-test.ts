@@ -57,8 +57,6 @@ export class RenderTest implements IRenderTest {
 
   protected element: SimpleElement;
   assert = QUnit.assert;
-  // Every write dirties the property, even of an equal value: tests mutate nested plain objects and
-  // then `set` the same object again to signal the change (`rerender({ person })`).
   protected context: Dict = trackedObject<Dict>({}, { equals: () => false });
   protected handle: Nullable<RenderHandle> = null;
   private voidHandle: Nullable<RenderHandle> = null;
