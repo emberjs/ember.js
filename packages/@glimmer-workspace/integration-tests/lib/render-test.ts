@@ -24,7 +24,7 @@ import type RenderDelegate from './render-delegate';
 import type { NodesSnapshot } from './snapshot';
 
 import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
-import { assertElementShape, assertEmberishElement } from './dom/assertions';
+import { assertElementShape } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
 import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
 import { defineComponent } from './test-helpers/define';
@@ -33,6 +33,7 @@ type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type Present<T> = Exclude<T, null | undefined>;
 
 export interface IRenderTest {
+  teardownDelegate?(): void;
   readonly count: Count;
   testType: ComponentKind;
   beforeEach?(): void;
@@ -178,6 +179,7 @@ export class RenderTest implements IRenderTest {
       args = {},
       attributes = {},
       template,
+      else: elseBlock,
       name = GLIMMER_TEST_COMPONENT,
       blockParams = [],
     } = blueprint;
@@ -203,11 +205,17 @@ export class RenderTest implements IRenderTest {
     if (template) {
       let block: string | string[] = [];
       let params = this.buildBlockParams(blockParams);
-      if (params !== '') {
-        block.push(params);
+      if (elseBlock) {
+        // Angle brackets have no `{{else}}`: the blocks become named blocks.
+        block.push(`><:default${params}>${template}</:default>`);
+        block.push(`<:else>${elseBlock}</:else>`);
+      } else {
+        if (params !== '') {
+          block.push(params);
+        }
+        block.push(`>`);
+        block.push(template);
       }
-      block.push(`>`);
-      block.push(template);
       block.push(`</${name}>`);
       invocation.push(block.join(''));
     } else {
@@ -218,24 +226,25 @@ export class RenderTest implements IRenderTest {
     return invocation.join('');
   }
 
-  private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
-    let { tag = 'div', layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
-    let invocation = this.buildAngleBracketComponent(blueprint);
+  /**
+   * The layout of a blueprint's Glimmer component, for every invocation kind: the blueprint's
+   * layout inside its own element (not a wrapper: `...attributes` is inert for curly callers).
+   */
+  private buildGlimmerLayout(blueprint: ComponentBlueprint): string {
+    let { tag = 'div', layout } = blueprint;
     let layoutAttrs = this.buildAttributes(blueprint.layoutAttributes);
-    this.assert.ok(
-      true,
-      `generated glimmer layout as <${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`
-    );
-    this.delegate.registerComponent(
-      'Glimmer',
-      this.testType,
-      name,
-      `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`
-    );
+    return `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`;
+  }
+
+  private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
+    let { name = GLIMMER_TEST_COMPONENT } = blueprint;
+    let invocation = this.buildAngleBracketComponent(blueprint);
+    let layout = this.buildGlimmerLayout(blueprint);
+    this.assert.ok(true, `generated glimmer layout as ${layout}`);
+    this.delegate.registerComponent('Glimmer', this.testType, name, layout);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
-
   private buildCurlyBlockTemplate(
     name: string,
     template: string,
@@ -254,7 +263,6 @@ export class RenderTest implements IRenderTest {
   private buildCurlyComponent(blueprint: ComponentBlueprint): string {
     let {
       args = {},
-      layout,
       template,
       attributes,
       else: elseBlock,
@@ -286,6 +294,7 @@ export class RenderTest implements IRenderTest {
     } else {
       invocation.push('}}');
     }
+    let layout = this.buildGlimmerLayout(blueprint);
     this.assert.ok(true, `generated curly layout as ${layout}`);
     this.delegate.registerComponent('Curly', this.testType, name, layout);
     invocation = invocation.join('');
@@ -305,7 +314,6 @@ export class RenderTest implements IRenderTest {
   private buildDynamicComponent(blueprint: ComponentBlueprint): string {
     let {
       args = {},
-      layout,
       template,
       attributes,
       else: elseBlock,
@@ -337,8 +345,9 @@ export class RenderTest implements IRenderTest {
       invocation.push('}}');
     }
 
+    let layout = this.buildGlimmerLayout(blueprint);
     this.assert.ok(true, `generated dynamic layout as ${layout}`);
-    this.delegate.registerComponent('Curly', this.testType, name, layout);
+    this.delegate.registerComponent('Dynamic', this.testType, name, layout);
     invocation = invocation.join('');
     this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
 
@@ -414,6 +423,11 @@ export class RenderTest implements IRenderTest {
         dynamicScope
       );
     });
+  }
+
+  /** Called after each test, after `afterEach`. */
+  teardownDelegate(): void {
+    this.delegate.teardown?.();
   }
 
   rerender(properties: Dict = {}): void {
@@ -793,13 +807,7 @@ export class RenderTest implements IRenderTest {
   protected assertComponent(content: string, attrs: object = {}) {
     let element = assertingElement(this.element.firstChild);
 
-    switch (this.testType) {
-      case 'Glimmer':
-        assertElementShape(element, 'div', attrs, content);
-        break;
-      default:
-        assertEmberishElement(element, 'div', attrs, content);
-    }
+    assertElementShape(element, 'div', attrs, content);
 
     this.takeSnapshot();
   }

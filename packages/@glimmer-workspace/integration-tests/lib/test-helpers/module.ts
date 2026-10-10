@@ -49,6 +49,10 @@ export function jitSerializeSuite<T extends IRenderTest>(
   return suite(klass, JitSerializationDelegate, options);
 }
 
+function teardown(test: IRenderTest): void {
+  test.teardownDelegate?.();
+}
+
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   readonly isEager: boolean;
   readonly style: string;
@@ -57,15 +61,21 @@ export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
 
 export function componentSuite<D extends RenderDelegate>(
   klass: RenderTestConstructor<D, IRenderTest>,
-  Delegate: RenderDelegateConstructor<D>
+  Delegate: RenderDelegateConstructor<D>,
+  options: { kinds?: DeclaredComponentKind[] } = {}
 ): void {
-  return suite(klass, Delegate, { componentModule: true });
+  return suite(klass, Delegate, { componentModule: true, kinds: options.kinds });
 }
 
 export function suite<D extends RenderDelegate>(
   klass: RenderTestConstructor<D, IRenderTest>,
   Delegate: RenderDelegateConstructor<D>,
-  options: { componentModule?: boolean; env?: EnvironmentDelegate } = {}
+  options: {
+    componentModule?: boolean;
+    env?: EnvironmentDelegate;
+    /** The invocation kinds a component module runs (default: all of them). */
+    kinds?: DeclaredComponentKind[];
+  } = {}
 ): void {
   let suiteName = klass.suiteName;
 
@@ -74,7 +84,8 @@ export function suite<D extends RenderDelegate>(
       componentModule(
         `${Delegate.style} :: Components :: ${suiteName}`,
         klass as any as RenderTestConstructor<D, RenderTest>,
-        Delegate
+        Delegate,
+        options.kinds
       );
     }
   } else {
@@ -87,6 +98,7 @@ export function suite<D extends RenderDelegate>(
 
       afterEach() {
         if (instance!.afterEach) instance!.afterEach();
+        teardown(instance!);
         instance = null;
       },
     });
@@ -113,7 +125,8 @@ export function suite<D extends RenderDelegate>(
 function componentModule<D extends RenderDelegate, T extends IRenderTest>(
   name: string,
   klass: RenderTestConstructor<D, T>,
-  Delegate: RenderDelegateConstructor<D>
+  Delegate: RenderDelegateConstructor<D>,
+  kinds?: DeclaredComponentKind[]
 ) {
   let tests: ComponentTests = {
     glimmer: [],
@@ -121,6 +134,8 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
     dynamic: [],
     templateOnly: [],
   };
+
+  let current: IRenderTest | null = null;
 
   function createTest(prop: string, test: any, skip?: boolean) {
     let shouldSkip: boolean;
@@ -132,6 +147,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
       if (!shouldSkip) {
         QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
+          current = instance;
           instance.testType = type;
           return test.call(instance, assert, instance.count);
         });
@@ -140,68 +156,35 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
   }
 
   for (let [prop, test] of testFunctions(klass.prototype)) {
-    if (test['kind'] === undefined) {
-      let skip = test['skip'];
-      switch (skip) {
-        case 'glimmer':
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-          tests.glimmer.push(createTest(prop, test, true));
-          break;
-        case 'curly':
-          tests.glimmer.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test, true));
-          break;
-        case 'dynamic':
-          tests.glimmer.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test, true));
-          break;
-        case true:
-          ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
-            tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
-          });
-          break;
-        default:
-          tests.glimmer.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-      }
-      continue;
-    }
-
     let kind = test['kind'];
 
-    if (kind === 'curly') {
-      tests.curly.push(createTest(prop, test));
-      tests.dynamic.push(createTest(prop, test));
-    }
-
-    if (kind === 'glimmer') {
+    if (kind === undefined) {
+      // A blueprint test runs once per invocation form of a Glimmer component: angle
+      // brackets, curly (`{{#test-component}}`) and `{{component}}`.
       tests.glimmer.push(createTest(prop, test));
-    }
-
-    if (kind === 'dynamic') {
       tests.curly.push(createTest(prop, test));
       tests.dynamic.push(createTest(prop, test));
-    }
-
-    if (kind === 'templateOnly') {
-      tests.templateOnly.push(createTest(prop, test));
+    } else {
+      tests[kind].push(createTest(prop, test));
     }
   }
-  QUnit.module(`[integration] ${name}`, () => {
+
+  if (kinds) {
+    for (let kind of keys(tests)) {
+      if (!kinds.includes(kind)) tests[kind] = [];
+    }
+  }
+
+  QUnit.module(`[integration] ${name}`, (hooks) => {
+    hooks.afterEach(() => {
+      if (current !== null) teardown(current);
+      current = null;
+    });
     nestedComponentModules(klass, tests);
   });
 }
 
-interface ComponentTests {
-  glimmer: Function[];
-  curly: Function[];
-  dynamic: Function[];
-  templateOnly: Function[];
-}
+type ComponentTests = Record<DeclaredComponentKind, Function[]>;
 
 function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>(
   klass: RenderTestConstructor<D, T>,
@@ -250,7 +233,7 @@ function shouldRunTest<T extends RenderDelegate>(Delegate: RenderDelegateConstru
 interface TestFunction {
   (this: IRenderTest, assert: typeof QUnit.assert, count?: Count): void;
   kind?: DeclaredComponentKind;
-  skip?: boolean | DeclaredComponentKind;
+  skip?: boolean;
 }
 
 /*

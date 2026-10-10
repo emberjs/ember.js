@@ -10,10 +10,14 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
-import type { EmberishCurlyComponent } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
-import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
+import {
+  modifierCapabilities,
+  setComponentTemplate,
+  setInternalComponentManager,
+  setModifierManager,
+} from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
 import {
@@ -60,14 +64,9 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
 
     setComponentTemplate(createTemplate(template), ComponentClass);
 
-    let definition = {
-      name,
-      state: ComponentClass,
-      manager: new Manager(),
-      template: null,
-    };
+    setInternalComponentManager(new Manager(), ComponentClass);
 
-    this.registry.register('component', name, definition);
+    this.owner.register(`component:${name}`, ComponentClass, { instantiate: false });
   }
 }
 
@@ -285,8 +284,8 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
-  @test 'emberish curly components'() {
-    this.registerComponent('Curly', 'HelloWorld', 'Hello World');
+  @test 'glimmerish components with an argument that throws'() {
+    this.registerComponent('Glimmer', 'HelloWorld', 'Hello World');
     let error = null as Error | null;
     class State {
       @tracked doFail = false;
@@ -323,7 +322,7 @@ class DebugRenderTreeTest extends RenderTest {
           this.assert.ok(this.delegate.context.env.isArgumentCaptureError!(actual.named['arg2']));
           return true;
         },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -338,7 +337,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -346,7 +345,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'second',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -359,7 +358,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },

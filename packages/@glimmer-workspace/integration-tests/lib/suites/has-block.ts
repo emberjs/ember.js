@@ -4,7 +4,7 @@ import { test } from '../test-decorator';
 export class HasBlockSuite extends RenderTest {
   static suiteName = 'has-block';
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (subexpr, else) when else supplied'() {
     this.render({
       layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
@@ -38,7 +38,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (subexpr, default) when block not supplied'() {
     this.render({
       layout: '{{#if (has-block)}}Yes{{else}}No{{/if}}',
@@ -48,7 +48,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (content, else) when else supplied'() {
     this.render({
       layout: '{{has-block "inverse"}}',
@@ -82,7 +82,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (content, default) when block not supplied'() {
     this.render({
       layout: '{{has-block}}',
@@ -92,7 +92,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (prop, else) when else supplied'() {
     this.render({
       layout: '<button name={{has-block "inverse"}}></button>',
@@ -126,7 +126,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (prop, default) when block not supplied'() {
     this.render({
       layout: '<button name={{has-block}}></button>',
@@ -136,7 +136,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'has-block works when used directly as an argument without extra parens (prop, default)'() {
     this.registerComponent('TemplateOnly', 'Foo', '{{@hasBlock}}');
 
@@ -148,7 +148,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (attr, else) when else supplied'() {
     this.render({
       layout: '<button data-has-block="{{has-block "inverse"}}"></button>',
@@ -182,7 +182,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (attr, default) when block not supplied'() {
     this.render({
       layout: '<button data-has-block="{{has-block}}"></button>',
@@ -192,7 +192,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (concatted attr, else) when else supplied'() {
     this.render({
       layout: '<button data-has-block="is-{{has-block "inverse"}}"></button>',
@@ -226,7 +226,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test
   'parameterized has-block (concatted attr, default) when block not supplied'() {
     this.render({
       layout: '<button data-has-block="is-{{has-block}}"></button>',

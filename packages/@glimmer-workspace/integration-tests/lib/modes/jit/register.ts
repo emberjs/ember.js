@@ -2,50 +2,35 @@ import GlimmerComponent from '@glimmer/component';
 import type { Nullable, ResolutionTimeConstants, TemplateFactory } from '@glimmer/interfaces';
 import type { CurriedValue } from '@glimmer/runtime';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
-import { getInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
+import { setComponentTemplate } from '@glimmer/manager';
 import { curry, templateOnlyComponent } from '@glimmer/runtime';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
+import type { TestOwner } from '../owner';
 import type { TestJitRegistry } from './registry';
+import type { TestJitRuntimeResolver } from './resolver';
 
 import { createTemplate } from '../../compile';
-import { EmberishCurlyComponent } from '../../components/emberish-curly';
 import { defineUserHelper } from '../../helpers';
 import { defineTestModifier } from '../../modifiers';
 
 export function registerTemplateOnlyComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   layoutSource: string
 ): void {
   registerSomeComponent(
-    registry,
+    owner,
     name,
     createTemplate(layoutSource),
     templateOnlyComponent(undefined, name)
   );
 }
 
-export function registerEmberishCurlyComponent(
-  registry: TestJitRegistry,
-  name: string,
-  Component: Nullable<ComponentTypes['Curly']>,
-  layoutSource: Nullable<string>
-): void {
-  let ComponentClass = Component || class extends EmberishCurlyComponent {};
-
-  registerSomeComponent(
-    registry,
-    name,
-    layoutSource !== null ? createTemplate(layoutSource) : null,
-    ComponentClass
-  );
-}
-
 export function registerGlimmerishComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   Component: Nullable<ComponentTypes['Glimmer']>,
   layoutSource: Nullable<string>
@@ -55,7 +40,22 @@ export function registerGlimmerishComponent(
   }
   let ComponentClass = Component || class extends GlimmerComponent {};
 
-  registerSomeComponent(registry, name, createTemplate(layoutSource), ComponentClass);
+  registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
+}
+
+/**
+ * A Glimmer component for the curly invocation kinds (`{{#test-component}}`,
+ * `{{component this.componentName}}`), whose names may be dasherized.
+ */
+export function registerCurlyInvokedComponent(
+  owner: TestOwner,
+  name: string,
+  Component: Nullable<ComponentTypes['Curly']>,
+  layoutSource: Nullable<string>
+): void {
+  let ComponentClass = Component || class extends GlimmerComponent {};
+
+  registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
 export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
@@ -71,7 +71,7 @@ export function registerModifier(
 }
 
 export function registerComponent<K extends ComponentKind>(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   type: K,
   name: string,
   layout: Nullable<string>,
@@ -79,28 +79,20 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerGlimmerishComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
+      registerGlimmerishComponent(owner, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'Curly':
-      registerEmberishCurlyComponent(registry, name, Class as ComponentTypes['Curly'], layout);
-      break;
-
     case 'Dynamic':
-      registerEmberishCurlyComponent(
-        registry,
-        name,
-        Class as any as typeof EmberishCurlyComponent,
-        layout
-      );
+      registerCurlyInvokedComponent(owner, name, Class as ComponentTypes['Curly'], layout);
       break;
     case 'TemplateOnly':
-      registerTemplateOnlyComponent(registry, name, layout ?? '');
+      registerTemplateOnlyComponent(owner, name, layout ?? '');
       break;
   }
 }
 
 function registerSomeComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   templateFactory: TemplateFactory | null,
   ComponentClass: object
@@ -109,25 +101,16 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  let manager = getInternalComponentManager(ComponentClass);
-
-  let definition = {
-    name,
-    state: ComponentClass,
-    manager,
-    template: null,
-  };
-
-  registry.register('component', name, definition);
-  return definition;
+  owner.register(`component:${name}`, ComponentClass, { instantiate: false });
 }
 
 export function componentHelper(
-  registry: TestJitRegistry,
+  resolver: TestJitRuntimeResolver,
+  owner: TestOwner,
   name: string,
   constants: ResolutionTimeConstants
 ): CurriedValue | null {
-  let definition = registry.lookupComponent(name);
+  let definition = resolver.lookupComponent(name, owner);
 
   if (definition === null) return null;
 

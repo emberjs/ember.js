@@ -11,10 +11,11 @@ export function renderTemplate(
   context: EvaluationContext,
   self: Reference,
   builder: TreeBuilder,
+  owner: object,
   options?: PrecompileOptions
 ): RenderResult {
-  let template = preprocess(src, options);
+  let template = preprocess(src, options, owner);
 
-  let iterator = renderMain(context, {}, self, builder, unwrapTemplate(template).asLayout());
+  let iterator = renderMain(context, owner, self, builder, unwrapTemplate(template).asLayout());
   return renderSync(context.env, iterator);
 }
