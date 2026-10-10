@@ -1141,7 +1141,7 @@ if (!ARRAY_PROXY_REMOVED) {
             init: function () {
               this._super(...arguments);
 
-              this.set('content', emberA(wrapped));
+              this.set('content', wrapped);
             },
           }).create()
         );
