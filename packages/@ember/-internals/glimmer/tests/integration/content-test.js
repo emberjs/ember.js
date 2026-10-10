@@ -639,7 +639,12 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a readOnly property of a path']() {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test it can render a readOnly property of a path`]() {
+    expectDeprecation(
+      /from `@ember\/object\/computed` is deprecated/,
+      DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+    );
+
     let Messenger = class extends EmberObject {
       @readOnly('a.b.c')
       message;

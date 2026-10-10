@@ -15,6 +15,13 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 @module @ember/object
 */
 
+export function deprecateComputedMacro(name: string) {
+  deprecateUntil(
+    `\`${name}\` from \`@ember/object/computed\` is deprecated. Use a getter instead.`,
+    DEPRECATIONS.DEPRECATE_COMPUTED_MACROS
+  );
+}
+
 function expandPropertiesToArray(predicateName: string, properties: string[]) {
   let expandedProperties: string[] = [];
 
@@ -42,6 +49,8 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
       `You attempted to use @${name} as a decorator directly, but it requires at least one dependent key parameter`,
       !isDecoratorCall(properties)
     );
+
+    deprecateComputedMacro(name);
 
     let dependentKeys = expandPropertiesToArray(name, properties);
 
@@ -250,12 +259,15 @@ export function none(dependentKey: string) {
   @return {ComputedProperty} computed property which returns inverse of the
   original value for property
   @public
+  @deprecated Use a getter instead.
 */
 export function not(dependentKey: string) {
   assert(
     'You attempted to use @not as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('not');
 
   return computed(dependentKey, function () {
     return !get(this, dependentKey);
@@ -298,12 +310,15 @@ export function not(dependentKey: string) {
   @return {ComputedProperty} computed property which converts to boolean the
   original value for property
   @public
+  @deprecated Use a getter instead.
 */
 export function bool(dependentKey: string) {
   assert(
     'You attempted to use @bool as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('bool');
 
   return computed(dependentKey, function () {
     return Boolean(get(this, dependentKey));
@@ -344,12 +359,15 @@ export function bool(dependentKey: string) {
   @return {ComputedProperty} computed property which match the original value
   for property against a given RegExp
   @public
+  @deprecated Use a getter instead.
 */
 export function match(dependentKey: string, regexp: RegExp) {
   assert(
     'You attempted to use @match as a decorator directly, but it requires `dependentKey` and `regexp` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('match');
 
   return computed(dependentKey, function () {
     let value = get(this, dependentKey);
@@ -390,12 +408,15 @@ export function match(dependentKey: string, regexp: RegExp) {
   @return {ComputedProperty} computed property which returns true if the
   original value for property is equal to the given value.
   @public
+  @deprecated Use a getter instead.
 */
 export function equal(dependentKey: string, value: unknown) {
   assert(
     'You attempted to use @equal as a decorator directly, but it requires `dependentKey` and `value` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('equal');
 
   return computed(dependentKey, function () {
     return get(this, dependentKey) === value;
@@ -435,12 +456,15 @@ export function equal(dependentKey: string, value: unknown) {
   @return {ComputedProperty} computed property which returns true if the
   original value for property is greater than given value.
   @public
+  @deprecated Use a getter instead.
 */
 export function gt(dependentKey: string, value: number) {
   assert(
     'You attempted to use @gt as a decorator directly, but it requires `dependentKey` and `value` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('gt');
 
   return computed(dependentKey, function () {
     return get(this, dependentKey) > value;
@@ -480,12 +504,15 @@ export function gt(dependentKey: string, value: number) {
   @return {ComputedProperty} computed property which returns true if the
   original value for property is greater or equal then given value.
   @public
+  @deprecated Use a getter instead.
 */
 export function gte(dependentKey: string, value: number) {
   assert(
     'You attempted to use @gte as a decorator directly, but it requires `dependentKey` and `value` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('gte');
 
   return computed(dependentKey, function () {
     return get(this, dependentKey) >= value;
@@ -525,12 +552,15 @@ export function gte(dependentKey: string, value: number) {
   @return {ComputedProperty} computed property which returns true if the
   original value for property is less then given value.
   @public
+  @deprecated Use a getter instead.
 */
 export function lt(dependentKey: string, value: number) {
   assert(
     'You attempted to use @lt as a decorator directly, but it requires `dependentKey` and `value` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('lt');
 
   return computed(dependentKey, function () {
     return get(this, dependentKey) < value;
@@ -570,12 +600,15 @@ export function lt(dependentKey: string, value: number) {
   @return {ComputedProperty} computed property which returns true if the
   original value for property is less or equal than given value.
   @public
+  @deprecated Use a getter instead.
 */
 export function lte(dependentKey: string, value: number) {
   assert(
     'You attempted to use @lte as a decorator directly, but it requires `dependentKey` and `value` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('lte');
 
   return computed(dependentKey, function () {
     return get(this, dependentKey) <= value;
@@ -625,6 +658,7 @@ export function lte(dependentKey: string, value: number) {
   @return {ComputedProperty} computed property which performs a logical `and` on
   the values of all the original values for properties.
   @public
+  @deprecated Use a getter instead.
 */
 export const and = generateComputedWithPredicate('and', (value) => value);
 
@@ -668,6 +702,7 @@ export const and = generateComputedWithPredicate('and', (value) => value);
   @return {ComputedProperty} computed property which performs a logical `or` on
   the values of all the original values for properties.
   @public
+  @deprecated Use a getter instead.
 */
 export const or = generateComputedWithPredicate('or', (value) => !value);
 
@@ -704,6 +739,7 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   @return {ComputedProperty} computed property which creates an alias to the
   original value for property.
   @public
+  @deprecated Use a getter instead.
 */
 
 /**
@@ -744,12 +780,15 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   @return {ComputedProperty} computed property which creates a one way computed
   property to the original value for property.
   @public
+  @deprecated Use a getter instead.
 */
 export function oneWay(dependentKey: string) {
   assert(
     'You attempted to use @oneWay as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('oneWay');
 
   return alias(dependentKey).oneWay() as FieldDecorator;
 }
@@ -808,12 +847,15 @@ export function oneWay(dependentKey: string) {
   property to the original value for property.
   @since 1.5.0
   @public
+  @deprecated Use a getter instead.
 */
 export function readOnly(dependentKey: string) {
   assert(
     'You attempted to use @readOnly as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('readOnly');
 
   return alias(dependentKey).readOnly() as FieldDecorator;
 }
@@ -852,12 +894,15 @@ export function readOnly(dependentKey: string) {
   deprecation to the original value for property.
   @since 1.7.0
   @public
+  @deprecated Use a getter instead.
 */
 export function deprecatingAlias(dependentKey: string, options: DeprecationOptions) {
   assert(
     'You attempted to use @deprecatingAlias as a decorator directly, but it requires `dependentKey` and `options` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateComputedMacro('deprecatingAlias');
 
   return computed(dependentKey, {
     get(key) {
