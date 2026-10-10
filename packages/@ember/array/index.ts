@@ -7,9 +7,10 @@ import type MutableEnumerable from '@ember/enumerable/mutable';
 import type Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import isArray from './lib/is-array';
+import { assert } from '@ember/debug';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import InternalEmberArrayMixin, {
-  A,
+  A as internalA,
   InternalMutableArray as InternalMutableArrayMixin,
   InternalNativeArray as InternalNativeArrayMixin,
 } from '@ember/array/index-internal';
@@ -1484,6 +1485,44 @@ const NativeArray = DeprecatedMixin.create(InternalNativeArrayMixin, {
     );
   },
 });
+
+/**
+  Creates an `NativeArray` from an Array-like object.
+  Does not modify the original object's contents.
+
+  Use a native [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
+  or [trackedArray](/ember/release/functions/@ember%2Freactive%2Fcollections/trackedArray) instead.
+
+  Example
+
+  ```javascript
+  import { A } from '@ember/array';
+
+  let content = A();
+  let otherContent = A([1, 2, 3]);
+  ```
+
+  @method A
+  @static
+  @for @ember/array
+  @return {Ember.NativeArray}
+  @deprecated Use a native array or `trackedArray` from `@ember/reactive/collections` instead.
+*/
+let A: <T>(arr?: Array<T>) => NativeArray<T>;
+
+A = function <T>(this: unknown, arr?: Array<T>) {
+  assert(
+    'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
+    !(this instanceof A)
+  );
+
+  deprecateUntil(
+    '`A` from `@ember/array` is deprecated. Use a native array or `trackedArray` from `@ember/reactive/collections` instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A
+  );
+
+  return internalA(arr);
+};
 
 export { A, NativeArray, MutableArray };
 

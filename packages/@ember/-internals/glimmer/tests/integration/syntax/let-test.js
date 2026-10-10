@@ -9,7 +9,7 @@ import {
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
-import { A as emberA, removeAt } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import ObjectProxy from '@ember/object/proxy';
 
 moduleFor(
@@ -173,7 +173,7 @@ moduleFor(
       this.render(
         `{{#let this.arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
         {
-          arrayThing: emberA(['Hello', ' ', 'world']),
+          arrayThing: trackedArray(['Hello', ' ', 'world']),
         }
       );
 
@@ -185,10 +185,10 @@ moduleFor(
 
       runTask(() => {
         let array = get(this.context, 'arrayThing');
-        array.replace(0, 1, ['Goodbye']);
-        removeAt(array, 1);
-        array.insertAt(1, ', ');
-        array.pushObject('!');
+        array.splice(0, 1, 'Goodbye');
+        array.splice(1, 1);
+        array.splice(1, 0, ', ');
+        array.push('!');
       });
 
       this.assertText('Goodbye, world!');

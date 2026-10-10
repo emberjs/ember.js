@@ -17,6 +17,8 @@ import {
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import GlimmerishComponent from '../../utils/glimmerish-component';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 import Component from '@glimmer/component';
 import { Component as EmberComponent } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -141,9 +143,10 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || EMBER_A.isRemoved
     )} @test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion`]() {
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
 
       class LoaderComponent extends GlimmerishComponent {
         get data() {
@@ -397,7 +400,9 @@ moduleFor(
       this.assertText('1');
     }
 
-    '@test array properties rerender when updated'() {
+    [`${testUnless(EMBER_A.isRemoved)} @test array properties rerender when updated`]() {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       class NumListComponent extends Component {
         @tracked numbers = A([1, 2, 3]);
 

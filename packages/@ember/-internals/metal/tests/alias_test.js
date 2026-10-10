@@ -10,9 +10,18 @@ import {
 } from '..';
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { destroy } from '@glimmer/destroyable';
 import { valueForTag, validateTag } from '@glimmer/validator';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 let obj, count;
 
@@ -69,7 +78,11 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
+    [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test nested aliases should trigger computed property invalidation [GH#19279]`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let AttributeModel = class extends EmberObject {
         @alias('additives.length')
         countAdditives;

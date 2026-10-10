@@ -2,7 +2,6 @@ import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import EmberObject, { action, get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
-import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
@@ -11,7 +10,17 @@ import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
 
 import { precompileTemplate } from '@ember/template-compilation';
-import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import {
+  QueryParamTestCase,
+  moduleFor,
+  getTextOf,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const QP_EMBER_ARRAY = DEPRECATIONS.DEPRECATE_QUERY_PARAM_EMBER_ARRAY;
 
 moduleFor(
   'Query Params - main',
@@ -1315,14 +1324,22 @@ moduleFor(
       });
     }
 
-    async ['@test Array query params can be pushed/popped'](assert) {
-      assert.expect(17);
+    async [`${testUnless(QP_EMBER_ARRAY.isRemoved)} @test Array query params can be pushed/popped`](
+      assert
+    ) {
+      assert.expect(QP_EMBER_ARRAY.isEnabled ? 20 : 17);
+
+      if (QP_EMBER_ARRAY.isEnabled) {
+        expectDeprecation(/`pushObject` was used on the array value of a query param/);
+        expectDeprecation(/`popObject` was used on the array value of a query param/);
+        expectDeprecation(/`unshiftObject` was used on the array value of a query param/);
+      }
 
       this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
-      this.setSingleQPController('home', 'foo', emberA());
+      this.setSingleQPController('home', 'foo', []);
 
       await this.visitAndAssert('/');
       let controller = this.getController('home');
@@ -1385,13 +1402,13 @@ moduleFor(
         }
       );
 
-      this.setSingleQPController('home', 'foo', emberA([1]));
+      this.setSingleQPController('home', 'foo', [1]);
 
       await this.visitAndAssert('/');
       assert.equal(modelCount, 1);
 
       let controller = this.getController('home');
-      await this.setAndFlush(controller, 'model', emberA([1]));
+      await this.setAndFlush(controller, 'model', [1]);
 
       assert.equal(modelCount, 1);
       this.assertCurrentPath('/');
@@ -1444,7 +1461,7 @@ moduleFor(
       assert.deepEqual(controller.get('foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.transitionTo('/home');
@@ -1455,7 +1472,7 @@ moduleFor(
       await this.setAndFlush(controller, 'foo', null);
       this.assertCurrentPath('/home', 'Setting property to null');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.setAndFlush(controller, 'foo', undefined);

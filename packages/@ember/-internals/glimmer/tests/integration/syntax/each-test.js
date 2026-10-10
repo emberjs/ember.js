@@ -5,12 +5,13 @@ import {
   strip,
   runTask,
   ignoreDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -154,6 +155,12 @@ class BasicEachTest extends TogglingEachTest {}
 // `ArrayProxy` is deprecated; the deprecation itself is asserted by the
 // dedicated `ArrayProxy` tests, so it is silenced in these rendering fixtures.
 const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
+
+// The tests of `A` cover its deprecation.
+function emberA(items) {
+  return ignoreDeprecation(() => A(items));
+}
 
 function arrayProxy(props) {
   return ignoreDeprecation(() => ArrayProxy.create(props));
@@ -161,12 +168,11 @@ function arrayProxy(props) {
 
 const TRUTHY_CASES = [
   ['hello'],
-  emberA(['hello']),
+  ...(EMBER_A_REMOVED ? [] : [emberA(['hello'])]),
   new Set(['hello']),
   new ForEachable(['hello']),
-  ...(ARRAY_PROXY_REMOVED
-    ? []
-    : [arrayProxy({ content: ['hello'] }), arrayProxy({ content: emberA(['hello']) })]),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: ['hello'] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA(['hello']) })]),
   new ArrayIterable(['hello']),
 ];
 
@@ -177,12 +183,11 @@ const FALSY_CASES = [
   '',
   0,
   [],
-  emberA([]),
+  ...(EMBER_A_REMOVED ? [] : [emberA([])]),
   new Set([]),
   new ForEachable([]),
-  ...(ARRAY_PROXY_REMOVED
-    ? []
-    : [arrayProxy({ content: [] }), arrayProxy({ content: emberA([]) })]),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: [] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA([]) })]),
   new ArrayIterable([]),
 ];
 
@@ -1037,15 +1042,17 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with emberA-wrapped arrays',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return { list: wrapped, delegate: wrapped };
+if (!EMBER_A_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each}} with emberA-wrapped arrays',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        return { list: wrapped, delegate: wrapped };
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each}} with native Set',
@@ -1085,7 +1092,7 @@ moduleFor(
   }
 );
 
-if (!ARRAY_PROXY_REMOVED) {
+if (!ARRAY_PROXY_REMOVED && !EMBER_A_REMOVED) {
   moduleFor(
     'Syntax test: {{#each}} with array proxies, modifying itself',
     class extends EachTest {
@@ -1141,7 +1148,7 @@ if (!ARRAY_PROXY_REMOVED) {
             init: function () {
               this._super(...arguments);
 
-              this.set('content', emberA(wrapped));
+              this.set('content', wrapped);
             },
           }).create()
         );
@@ -1184,7 +1191,7 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
   class extends RenderingTestCase {
-    ['@test it should itterate over holes']() {
+    [`${testUnless(EMBER_A_REMOVED)} @test it should itterate over holes`]() {
       let sparseArray = [];
       sparseArray[3] = 'foo';
       sparseArray[4] = 'bar';

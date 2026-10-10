@@ -4,10 +4,14 @@ import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
+
 moduleFor(
   'MutableEnumerable',
   class extends AbstractTestCase {
-    ['@test should be mixed into A()'](assert) {
+    [`${testUnless(EMBER_A.isRemoved)} @test should be mixed into A()`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       assert.ok(MutableEnumerable.detect(A()));
     }
 

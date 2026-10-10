@@ -6,7 +6,8 @@
   functions below.
 */
 
-import { A as emberA } from '@ember/array';
+import { reportingA } from '@ember/array/index-internal';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { assert } from '@ember/debug';
 import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -18,13 +19,27 @@ import type { InternalRouteInfo, Transition } from 'router_js';
 import { hasClassicInterop, STATE_SYMBOL } from 'router_js';
 import { ClassicRouteBucket } from './bucket';
 
-// Returns a fresh native array when the value is an array so callers cannot
+function reportEmberArrayUse(name: string) {
+  deprecateUntil(
+    `\`${name}\` was used on the array value of a query param. This value becomes a native array. Use native array methods, and assign a new array to the property to change the query param.`,
+    DEPRECATIONS.DEPRECATE_QUERY_PARAM_EMBER_ARRAY
+  );
+}
+
+/**
+  Makes the array that a controller gets as the value of a query param.
+ */
+export function queryParamArray<T>(value: T[]): T[] {
+  return reportingA(value, reportEmberArrayUse);
+}
+
+// Returns a fresh array when the value is an array so callers cannot
 // mutate the shared default. Also used by `@ember/routing/route`'s QP meta
 // building.
 export function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
-    return emberA(value.slice()) as unknown as T;
+    return queryParamArray(value.slice()) as unknown as T;
   }
   return value;
 }

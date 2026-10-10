@@ -18,6 +18,7 @@ import {
 import { DEPRECATIONS } from '../../../deprecations';
 
 const MIXIN = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_MIXIN;
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 function expectMixinDeprecation() {
   expectDeprecation(/The `EmberArray` mixin is deprecated/, MIXIN.isEnabled);
@@ -388,9 +389,13 @@ moduleFor(
       assert.equal(objectAt(arr, 4), undefined);
     }
 
-    ['@test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization'](
+    [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization`](
       assert
     ) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let obj = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -410,9 +415,13 @@ moduleFor(
       assert.equal('BYE!', get(obj, 'common'));
     }
 
-    async ['@test observers that contain @each in the path should fire only once the first time they are accessed'](
+    async [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test observers that contain @each in the path should fire only once the first time they are accessed`](
       assert
     ) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let count = 0;
 
       let obj = EmberObject.extend({

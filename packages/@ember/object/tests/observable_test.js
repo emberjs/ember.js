@@ -3,7 +3,16 @@ import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -641,7 +650,7 @@ moduleFor(
         toggleVal: true,
         observedProperty: 'beingWatched',
         testRemove: 'observerToBeRemoved',
-        normalArray: emberA([1, 2, 3, 4, 5]),
+        normalArray: [1, 2, 3, 4, 5],
       });
     }
 
@@ -718,7 +727,15 @@ moduleFor(
       );
     }
 
-    async ['@test should notify array observer when array changes'](assert) {
+    async [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test should notify array observer when array changes`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
+      object.set('normalArray', emberA([1, 2, 3, 4, 5]));
+      await runLoopSettled();
+      object.abnormal = 'zeroValue';
+
       get(object, 'normalArray').replace(0, 0, [6]);
       await runLoopSettled();
 

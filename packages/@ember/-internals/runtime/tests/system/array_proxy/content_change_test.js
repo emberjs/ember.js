@@ -6,14 +6,19 @@ import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
+const { DEPRECATE_ARRAY_PROXY, DEPRECATE_EMBER_ARRAY_A } = DEPRECATIONS;
+const REMOVED = DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATE_EMBER_ARRAY_A.isRemoved;
+const ENABLED = DEPRECATE_ARRAY_PROXY.isEnabled || DEPRECATE_EMBER_ARRAY_A.isEnabled;
+const DEPRECATION = /`ArrayProxy` is deprecated|`A` from `@ember\/array` is deprecated/;
+
 moduleFor(
   'ArrayProxy - content change',
   class extends AbstractTestCase {
     beforeEach() {
-      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+      expectDeprecation(DEPRECATION, ENABLED);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test The ArrayProxy doesn't explode when assigned a destroyed object`](
+    [`${testUnless(REMOVED)} @test The ArrayProxy doesn't explode when assigned a destroyed object`](
       assert
     ) {
       let proxy1 = ArrayProxy.create();
@@ -26,7 +31,7 @@ moduleFor(
       assert.ok(true, 'No exception was raised');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test should update if content changes while change events are deferred`](
+    [`${testUnless(REMOVED)} @test should update if content changes while change events are deferred`](
       assert
     ) {
       let proxy = ArrayProxy.create();
@@ -39,9 +44,7 @@ moduleFor(
       });
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test objectAt recomputes the object cache correctly`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test objectAt recomputes the object cache correctly`](assert) {
       let indexes = [];
 
       let proxy = class extends ArrayProxy {
@@ -71,9 +74,7 @@ moduleFor(
       assert.deepEqual(indexes, [2, 3, 4]);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test negative indexes are handled correctly`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test negative indexes are handled correctly`](assert) {
       let indexes = [];
 
       let proxy = class extends ArrayProxy {

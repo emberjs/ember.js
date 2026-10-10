@@ -14,16 +14,19 @@ import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
+const { DEPRECATE_ARRAY_PROXY, DEPRECATE_EMBER_ARRAY_A } = DEPRECATIONS;
+const REMOVED = DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATE_EMBER_ARRAY_A.isRemoved;
+const ENABLED = DEPRECATE_ARRAY_PROXY.isEnabled || DEPRECATE_EMBER_ARRAY_A.isEnabled;
+const DEPRECATION = /`ArrayProxy` is deprecated|`A` from `@ember\/array` is deprecated/;
+
 moduleFor(
   'Ember.ArrayProxy - content change (length)',
   class extends AbstractTestCase {
     beforeEach() {
-      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+      expectDeprecation(DEPRECATION, ENABLED);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test should update length for null content`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test should update length for null content`](assert) {
       let proxy = ArrayProxy.create({
         content: a([1, 2, 3]),
       });
@@ -35,7 +38,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test should update length for null content when there is a computed property watching length`](
+    [`${testUnless(REMOVED)} @test should update length for null content when there is a computed property watching length`](
       assert
     ) {
       let proxy = class extends ArrayProxy {
@@ -56,9 +59,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test getting length does not recompute the object cache`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test getting length does not recompute the object cache`](assert) {
       let indexes = [];
 
       let proxy = class extends ArrayProxy {
@@ -84,9 +85,7 @@ moduleFor(
       assert.deepEqual(indexes, []);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test accessing length after content set to null`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test accessing length after content set to null`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -97,7 +96,7 @@ moduleFor(
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test accessing length after content set to null in willDestroy`](
+    [`${testUnless(REMOVED)} @test accessing length after content set to null in willDestroy`](
       assert
     ) {
       let obj = class extends ArrayProxy {
@@ -117,9 +116,7 @@ moduleFor(
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to 0`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test setting length to 0`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -130,9 +127,7 @@ moduleFor(
       assert.deepEqual(obj.content, [], 'content length was truncated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to smaller value`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test setting length to smaller value`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -143,9 +138,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to larger value`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test setting length to larger value`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -156,9 +149,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo', 'bar', undefined], 'content length was updated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length after content set to null`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test setting length after content set to null`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -170,9 +161,7 @@ moduleFor(
       assert.equal(obj.length, 0, 'length is still updated');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to greater than zero`](
-      assert
-    ) {
+    [`${testUnless(REMOVED)} @test setting length to greater than zero`](assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -183,9 +172,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
-      assert
-    ) {
+    async [`${testUnless(REMOVED)} @test array proxy + aliasedProperty complex test`](assert) {
       let aCalled, bCalled, cCalled, dCalled, eCalled;
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;
@@ -239,7 +226,7 @@ moduleFor(
       obj.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy length is reactive when accessed normally`](
+    async [`${testUnless(REMOVED)} @test array proxy length is reactive when accessed normally`](
       assert
     ) {
       let proxy = ArrayProxy.create({
@@ -263,7 +250,7 @@ moduleFor(
       assert.equal(getValue(lengthCache), 0, 'length is correct');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy length is reactive when accessed using get`](
+    async [`${testUnless(REMOVED)} @test array proxy length is reactive when accessed using get`](
       assert
     ) {
       let proxy = ArrayProxy.create({
