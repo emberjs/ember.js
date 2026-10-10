@@ -126,22 +126,6 @@ export const ENV = {
   _DEFAULT_ASYNC_OBSERVERS: false,
 
   /**
-    Whether `EmberObject` and the APIs of the Ember object model throw.
-
-    This is a preview of the removal of `EmberObject`.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _NO_EMBER_OBJECT
-    @for EmberENV
-    @type Boolean
-    @default false
-    @private
-  */
-  _NO_EMBER_OBJECT: false,
-
-  /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
     applications should not need to modify this environment variable, but please
     open an issue so that we can determine if a better default value is needed.
