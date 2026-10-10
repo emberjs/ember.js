@@ -755,12 +755,40 @@ export class VM {
           // that, we need to close them all and clean things up properly.
           let elements = this.tree();
 
-          while (elements.hasBlocks) {
-            elements.popBlock();
+          try {
+            while (elements.hasBlocks) {
+              elements.popBlock();
+            }
+          } finally {
+            /**
+             * popBlock can throw.
+             *
+             * An empty block finalizes with an insert of a comment
+             * before the `nextSibling` of the cursor.
+             * If the parent element does not contain that node,
+             * `insertBefore` throws a `NotFoundError`.
+             *
+             * No manual DOM change is necessary for this.
+             * A known sequence:
+             *
+             * 1. A render fails. For example, a modifier throws
+             *    when Glimmer installs it. Its root stays registered.
+             * 2. `renderComponent` clears the same element
+             *    and renders into it again.
+             *    `clearRender()` of `@ember/test-helpers` does this.
+             * 3. The second render fails too.
+             *    Its open block needs a node that is gone.
+             *
+             * The reset must run anyway.
+             * With an open tracking frame, each later tracked write
+             * fails with a backtracking assertion.
+             * Each later test of the same run fails too.
+             *
+             * https://github.com/emberjs/ember.js/issues/21681
+             */
+            // eslint-disable-next-line no-console
+            console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
           }
-
-          // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
         }
       }
     } else {
