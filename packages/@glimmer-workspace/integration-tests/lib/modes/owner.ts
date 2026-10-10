@@ -16,11 +16,6 @@ export function createOwner(): TestOwner {
   return owner;
 }
 
-/** Destroying the owner destroys the renderer, and with it every root. */
-export function ownRenderer(owner: object, renderer: BaseRenderer): void {
-  associateDestroyableChild(owner, renderer);
-}
-
 /**
  * Called after each test. Destroys the owners (and with them the renderers, the roots
  * and the `Application` namespaces), then forgets the renderers that Ember still lists.

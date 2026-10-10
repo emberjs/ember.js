@@ -6,7 +6,7 @@ import type ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 
 import type { DebugBounds, RenderHandle } from '../render-delegate';
 
-import { ownRenderer } from './owner';
+import { associateDestroyableChild } from '@glimmer/destroyable';
 
 const HANDLE_BOUNDS = new WeakMap<RenderHandle, () => DebugBounds>();
 
@@ -55,7 +55,7 @@ export function createRenderer(
   }
 
   setRenderer(owner, renderer);
-  ownRenderer(owner, renderer);
+  associateDestroyableChild(owner, renderer);
 
   return renderer;
 }
