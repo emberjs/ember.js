@@ -283,7 +283,11 @@ export class HasBlockSuite extends RenderTest {
       `<div data-has-block="{{has-block}}" ...attributes></div>`
     );
 
-    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+    this.registerComponent(
+      'Glimmer',
+      'Yielder',
+      `{{yield (component 'component-with-has-block')}}`
+    );
 
     this.registerComponent(
       'Glimmer',
@@ -305,7 +309,11 @@ export class HasBlockSuite extends RenderTest {
       `<div data-has-block="{{has-block}}" ...attributes></div>`
     );
 
-    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+    this.registerComponent(
+      'Glimmer',
+      'Yielder',
+      `{{yield (component 'component-with-has-block')}}`
+    );
 
     this.registerComponent(
       'Glimmer',
@@ -327,7 +335,11 @@ export class HasBlockSuite extends RenderTest {
       `<div data-has-block="{{has-block}}" ...attributes></div>`
     );
 
-    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+    this.registerComponent(
+      'Glimmer',
+      'Yielder',
+      `{{yield (component 'component-with-has-block')}}`
+    );
 
     this.registerComponent(
       'Glimmer',

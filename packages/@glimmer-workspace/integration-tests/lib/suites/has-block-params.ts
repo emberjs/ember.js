@@ -22,7 +22,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
     class TestHarness extends GlimmerComponent {
       public Foo: any;
     }
-    this.registerComponent('Glimmer', 'TestHarness', '{{yield (component "Foo")}}', TestHarness);
+    this.registerComponent('Glimmer', 'TestHarness', '{{yield (component "foo")}}', TestHarness);
     this.registerComponent('Glimmer', 'Foo', '{{#if (has-block-params)}}Yes{{else}}No{{/if}}');
 
     this.render('<TestHarness as |Foo|>{{Foo}}</TestHarness>');

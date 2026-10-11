@@ -1,3 +1,5 @@
+import { dasherize } from '@ember/-internals/string';
+import Component from '@ember/component';
 import GlimmerComponent from '@glimmer/component';
 import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -54,6 +56,20 @@ export function registerCurlyInvokedComponent(
   registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
+/**
+ * Registers a real classic `Component` (`@ember/component`) under `component:<name>`, to be
+ * invoked with curly syntax (`{{foo-bar}}`, `{{#foo-bar}}`, `{{component "foo-bar"}}`). Always
+ * registers a fresh subclass: `setComponentTemplate` can be called once per class.
+ */
+export function registerClassicComponent(
+  owner: TestOwner,
+  name: string,
+  layoutSource: string,
+  Class: typeof Component = Component
+): void {
+  registerSomeComponent(owner, name, createTemplate(layoutSource), class extends Class {});
+}
+
 export function registerHelper(owner: TestOwner, name: string, helper: UserHelper) {
   registerHelperDefinition(owner, name, defineUserHelper(helper));
 }
@@ -101,5 +117,5 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  owner.register(`component:${name}`, ComponentClass, { instantiate: false });
+  owner.register(`component:${dasherize(name)}`, ComponentClass, { instantiate: false });
 }

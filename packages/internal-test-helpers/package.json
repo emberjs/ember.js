@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./lib/compile": "./lib/compile.ts",
     "./lib/run": "./lib/run.ts"
   },
   "dependencies": {

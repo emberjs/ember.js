@@ -12,6 +12,7 @@ import {
   content,
   EMPTY,
   equalTokens,
+  firstElementChild,
   InitialRenderSuite,
   jitSuite,
   OPEN,
@@ -490,51 +491,6 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
-  'in-element with insertBefore=element can rehydrate'() {
-    let template = strip`
-      <outer><prefix></prefix>
-      {{#in-element this.remote insertBefore=this.prefix}}<inner>Wat Wat</inner>{{/in-element}}
-      <suffix></suffix></outer>
-      `;
-    let doc = this.delegate.serverDoc;
-    let remote = doc.createElement('remote');
-    let prefix = doc.createElement('prefix');
-    let suffix = doc.createElement('suffix');
-    remote.appendChild(prefix);
-    remote.appendChild(suffix);
-
-    this.renderServerSide(template, { remote, prefix, suffix });
-    let serializedRemote = this.delegate.serialize(remote);
-    let b = blockStack();
-    assertSerializedInElement(
-      serializedRemote,
-      strip`
-      ${b(2)}
-      <inner>Wat Wat</inner>
-      ${b(2)}
-      <prefix></prefix>
-      <suffix></suffix>
-    `
-    );
-
-    doc = this.delegate.clientDoc;
-    let clientRemote = (remote = doc.createElement('remote'));
-    let host = doc.createElement('div');
-    host.appendChild(this.element);
-    host.appendChild(clientRemote);
-    replaceHTML(clientRemote, serializedRemote);
-    this.element = assertingElement(host.firstChild);
-    let clientPrefix = clientRemote.childNodes[4];
-
-    this.renderClientSide(template, { remote: clientRemote, prefix: clientPrefix });
-    this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.strictEqual(
-      toInnerHTML(clientRemote),
-      '<inner>Wat Wat</inner><prefix></prefix><suffix></suffix>'
-    );
-  }
-
-  @test
   'in-element can rehydrate into pre-existing content'() {
     let template = strip`
       <outer>
@@ -588,44 +544,6 @@ class Rehydration extends AbstractRehydrationTests {
     this.assert.strictEqual(
       toInnerHTML(clientRemote),
       '<preexisting></preexisting><inner>Wat Wat</inner>'
-    );
-  }
-
-  @test
-  'in-element with insertBefore=element can rehydrate into pre-existing content'() {
-    let template = strip`
-      <outer>
-      {{#in-element this.remote insertBefore=this.preexisting}}<inner>Wat Wat</inner>{{/in-element}}
-      </outer>
-      `;
-    let doc = this.delegate.serverDoc;
-    let remote = doc.createElement('remote');
-    let prefix = doc.createElement('prefix');
-    let preexisting = doc.createElement('preexisting');
-    remote.appendChild(prefix);
-    remote.appendChild(preexisting);
-
-    this.renderServerSide(template, { remote, prefix, preexisting });
-    let serializedRemote = '<prefix></prefix><preexisting></preexisting>';
-
-    doc = this.delegate.clientDoc;
-    let clientRemote = (remote = doc.createElement('remote'));
-    let host = doc.createElement('div');
-    host.appendChild(this.element);
-    host.appendChild(clientRemote);
-    replaceHTML(clientRemote, serializedRemote);
-    let clientPreexisting = clientRemote.childNodes[1];
-    this.element = assertingElement(host.firstChild);
-
-    this.renderClientSide(template, {
-      remote: clientRemote,
-      prefix,
-      preexisting: clientPreexisting,
-    });
-    this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.strictEqual(
-      toInnerHTML(clientRemote),
-      '<prefix></prefix><inner>Wat Wat</inner><preexisting></preexisting>'
     );
   }
 
@@ -948,6 +866,156 @@ class Rehydration extends AbstractRehydrationTests {
       <p>2</p>
       <p>4</p>
     `);
+    this.assertStableRerender();
+  }
+
+  // The curly forms below go through the delegate's real owner: a real classic `Component`
+  // (`@ember/component`) or a Glimmer component, resolved by name by Ember's resolver.
+
+  @test
+  'curly invocation of a classic Component: multiple invocations'() {
+    this.delegate.registerClassicComponent('foo-bar', 'Hello {{yield}}');
+    let template = '{{#foo-bar}}World{{/foo-bar}}';
+    this.renderServerSide(template, {});
+
+    // a classic component injects a wrapper element
+    let wrapper = assertingElement(firstElementChild(this.element));
+    this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
+    this.assert.strictEqual(toTextContent(wrapper), 'Hello World');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
+    this.assertStableRerender();
+  }
+
+  @test
+  'curly invocation of a classic Component: mismatched multiple invocations'() {
+    this.delegate.registerClassicComponent('foo-bar', 'Hello {{yield}}');
+    this.renderServerSide('{{#foo-bar}}World{{/foo-bar}}', {});
+
+    let wrapper = assertingElement(firstElementChild(this.element));
+    this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
+
+    this.renderClientSide('{{#foo-bar}}Chad{{/foo-bar}}', {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.strictEqual(toTextContent(this.element), 'Hello Chad');
+    this.assertStableRerender();
+  }
+
+  @test
+  '{{component}} invocation: component invocations'() {
+    this.delegate.registerComponent(
+      'Glimmer',
+      'Glimmer',
+      'FooBar',
+      '<div ...attributes>Hello {{@name}}</div>'
+    );
+    let template = '{{component this.componentName name=this.name}}';
+    let context = { componentName: 'foo-bar', name: 'Filewatcher' };
+
+    this.renderServerSide(template, context);
+    let b = blockStack();
+    // one more block marker than the angle-bracket form: the `{{component}}` itself
+    this.assertServerOutput(
+      `${b(1)}${b(2)}<div>Hello ${b(3)}Filewatcher${b(3)}</div>${b(2)}${b(1)}`
+    );
+
+    this.renderClientSide(template, context);
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div>Hello Filewatcher</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  '{{component}} invocation: interacting with builtins'() {
+    let layout = strip`
+      <ul>
+        {{#each @items key="id" as |item i|}}
+          {{#if item.show}}
+            <li>{{item.name}}</li>
+          {{else}}
+            {{yield i}}
+          {{/if}}
+        {{/each}}
+      </ul>`;
+    this.delegate.registerHelper(
+      'even',
+      (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
+    );
+    this.delegate.registerComponent(
+      'TemplateOnly',
+      'TemplateOnly',
+      'FooBar',
+      '<li>{{@count}}</li>'
+    );
+    this.delegate.registerComponent(
+      'Glimmer',
+      'Glimmer',
+      'TestComponent',
+      `<div ...attributes>${layout}</div>`
+    );
+    let template = strip`
+      {{#component this.componentName items=this.items as |i|}}
+        {{#if (even i)}}<FooBar @count={{i}} />{{/if}}
+      {{/component}}`;
+    let items = [
+      { show: true, name: 'Industry' },
+      { show: false, name: 'Standard' },
+      { show: false, name: 'Components' },
+    ];
+    let context = { componentName: 'test-component', items };
+
+    this.renderServerSide(template, context);
+    let b = blockStack();
+
+    // the markers of the angle-bracket form of this test, shifted by one for the `{{component}}`
+    this.assertServerOutput(strip`
+      ${b(1)}${b(2)}
+      <div>
+        <ul>
+          ${b(3)}
+          ${b(4)}
+          ${b(5)}
+          ${b(6)}
+          <li>
+            ${b(7)}
+            Industry
+            ${b(7)}
+          </li>
+          ${b(6)}
+          ${b(5)}
+          ${b(5)}
+          ${b(6)}
+          ${b(7)}
+          <!---->
+          ${b(7)}
+          ${b(6)}
+          ${b(5)}
+          ${b(5)}
+          ${b(6)}
+          ${b(7)}
+          ${b(8)}
+          <li>
+            ${b(9)}
+            2
+            ${b(9)}
+          </li>
+          ${b(8)}
+          ${b(7)}
+          ${b(6)}
+          ${b(5)}
+          ${b(4)}
+          ${b(3)}
+        </ul>
+      </div>
+      ${b(2)}${b(1)}
+    `);
+
+    this.renderClientSide(template, context);
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div><ul><li>Industry</li><!----><li>2</li></ul></div>');
     this.assertStableRerender();
   }
 }

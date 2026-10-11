@@ -170,6 +170,12 @@ function transformParams(
     first
   );
 
+  // Production builds strip the assertion; leave the call alone so that the keyword's own
+  // validation reports the error.
+  if (!first) {
+    return params;
+  }
+
   if (isStringLiteral(first)) {
     return [
       b.sexpr(
