@@ -1,5 +1,6 @@
 import type { KeywordType } from '@glimmer/syntax';
 import { KEYWORDS_TYPES } from '@glimmer/syntax';
+import { DEBUG } from '@glimmer/env';
 import { jitSuite, preprocess, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 type KeywordName = keyof typeof KEYWORDS_TYPES;
@@ -168,9 +169,9 @@ for (const keyword of KEYWORDS) {
         () => {
           preprocess(`{{${keyword}}}`, { meta: { moduleName: 'test-module' } });
         },
-        // Ember's `transform-resolutions` (§03-7.9 neighbours, "No first positional") asserts on a
-        // bare `{{modifier}}` before the Glimmer keyword validation is reached.
-        keyword === 'modifier'
+        // In development, Ember's `transform-resolutions` asserts on a bare `{{modifier}}` before
+        // the keyword's own validation runs.
+        keyword === 'modifier' && DEBUG
           ? /The modifier keyword requires at least one positional arguments/u
           : new RegExp(
               `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`,
