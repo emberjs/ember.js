@@ -171,9 +171,7 @@ moduleFor(
         }
       };
 
-      FooBarComponent.reopenClass({
-        positionalParams: ['firstPositional'],
-      });
+      FooBarComponent.positionalParams = ['firstPositional'];
 
       this.owner.register('component:foo-bar', FooBarComponent);
 
