@@ -1,5 +1,4 @@
 import Controller from '@ember/controller';
-import { A as emberA } from '@ember/array';
 import Route from '@ember/routing/route';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -39,7 +38,7 @@ moduleFor(
         this.route('about');
       });
 
-      let articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+      let articles = [{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }];
 
       this.add(
         'controller:application',
@@ -62,7 +61,7 @@ moduleFor(
               );
               self.expectedModelHookParams = null;
             }
-            return articles.findBy('id', params.id);
+            return articles.find((article) => article.id === params.id);
           }
         }
       );
@@ -385,7 +384,7 @@ moduleFor(
         this.route('about');
       });
 
-      let site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+      let site_articles = [{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }];
 
       this.add(
         'controller:application',
@@ -408,7 +407,7 @@ moduleFor(
               );
               self.expectedModelHookParams = null;
             }
-            return site_articles.findBy('id', params.id);
+            return site_articles.find((article) => article.id === params.id);
           }
         }
       );
@@ -733,8 +732,8 @@ moduleFor(
         });
       });
 
-      let sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
-      let site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+      let sites = [{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }];
+      let site_articles = [{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }];
 
       this.add(
         'controller:application',
@@ -776,7 +775,7 @@ moduleFor(
               );
               self.expectedSiteModelHookParams = null;
             }
-            return sites.findBy('id', params.site_id);
+            return sites.find((site) => site.id === params.site_id);
           }
         }
       );
@@ -793,7 +792,7 @@ moduleFor(
               );
               self.expectedArticleModelHookParams = null;
             }
-            return site_articles.findBy('id', params.article_id);
+            return site_articles.find((article) => article.id === params.article_id);
           }
         }
       );

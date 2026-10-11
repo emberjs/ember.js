@@ -12,7 +12,7 @@ import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
 import EmberObject, { set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
 import PositionalComponent from '../../utils/positional-component';
@@ -1369,7 +1369,7 @@ moduleFor(
         setComponentTemplate(precompileTemplate('Child: {{@item}}.'), templateOnly())
       );
 
-      let items = emberA(['Tom', 'Dick', 'Harry']);
+      let items = trackedArray(['Tom', 'Dick', 'Harry']);
 
       this.render('{{non-block items=this.items}}', { items });
 
@@ -1379,15 +1379,15 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').pushObject('Sergio'));
+      runTask(() => this.context.get('items').push('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shiftObject());
+      runTask(() => this.context.get('items').shift());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+      runTask(() => this.context.set('items', ['Tom', 'Dick', 'Harry']));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
