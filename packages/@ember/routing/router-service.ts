@@ -3,7 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import alias from '@ember/-internals/metal/lib/alias';
+import { dependentKeyCompat } from '@ember/object/compat';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -20,10 +20,6 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal/lib/events';
-
-function readOnly(dependentKey: string) {
-  return alias(dependentKey).readOnly();
-}
 
 export const ROUTER = Symbol('ROUTER');
 
@@ -730,8 +726,10 @@ class RouterService extends Service {
     @type {String | null}
     @public
   */
-  @readOnly('_router.currentRouteName')
-  readonly currentRouteName!: this['_router']['currentRouteName'];
+  @dependentKeyCompat
+  get currentRouteName(): this['_router']['currentRouteName'] {
+    return this._router.currentRouteName;
+  }
 
   /**
    Current URL for the application.
@@ -759,8 +757,10 @@ class RouterService extends Service {
     @type String
     @public
   */
-  @readOnly('_router.currentURL')
-  readonly currentURL!: this['_router']['currentURL'];
+  @dependentKeyCompat
+  get currentURL(): this['_router']['currentURL'] {
+    return this._router.currentURL;
+  }
 
   /**
     The `location` property returns what implementation of the `location` API
@@ -798,8 +798,10 @@ class RouterService extends Service {
     @see {Location}
     @public
   */
-  @readOnly('_router.location')
-  readonly location!: this['_router']['location'];
+  @dependentKeyCompat
+  get location(): this['_router']['location'] {
+    return this._router.location;
+  }
 
   /**
     The `rootURL` property represents the URL of the root of
@@ -828,8 +830,10 @@ class RouterService extends Service {
     @default '/'
     @public
   */
-  @readOnly('_router.rootURL')
-  readonly rootURL!: this['_router']['rootURL'];
+  @dependentKeyCompat
+  get rootURL(): this['_router']['rootURL'] {
+    return this._router.rootURL;
+  }
 
   /**
     The `currentRoute` property contains metadata about the current leaf route.
@@ -860,8 +864,10 @@ class RouterService extends Service {
     @type RouteInfo
     @public
   */
-  @readOnly('_router.currentRoute')
-  readonly currentRoute!: this['_router']['currentRoute'];
+  @dependentKeyCompat
+  get currentRoute(): this['_router']['currentRoute'] {
+    return this._router.currentRoute;
+  }
 }
 
 export { RouterService as default, type RouteInfo, type RouteInfoWithAttributes };
