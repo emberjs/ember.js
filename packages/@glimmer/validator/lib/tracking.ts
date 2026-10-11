@@ -244,6 +244,8 @@ export function resetTracking(): string | void {
   if (DEBUG) {
     return unwrap(debug.resetTrackingTransaction)();
   }
+
+  return 'tracking state was reset (the tracking stack is only recorded in DEBUG builds)';
 }
 
 export function isTracking(): boolean {
