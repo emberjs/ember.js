@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { getOwner } from '@ember/-internals/owner';
+import { createCache, getValue } from '@glimmer/validator';
 import RSVP from 'rsvp';
 import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
@@ -364,6 +365,27 @@ moduleFor(
         });
         ['foo', 'bar', '/foo'].forEach((destination) => run(router, 'transitionTo', destination));
       });
+    }
+
+    async ['@test a plain read of the router properties is reactive'](assert) {
+      this.router.map(function () {
+        this.route('root', { path: '/' });
+        this.route('foo', { path: '/foo' });
+      });
+
+      await this.visit('/');
+
+      let router = this.applicationInstance.lookup('router:main');
+      let summary = createCache(
+        () =>
+          `${router.currentRouteName} ${router.currentPath} ${router.currentURL} ${router.currentRoute.name}`
+      );
+
+      assert.strictEqual(getValue(summary), 'root root / root');
+
+      await this.visit('/foo');
+
+      assert.strictEqual(getValue(summary), 'foo foo /foo foo');
     }
 
     ['@test using replaceWith calls location.replaceURL if available'](assert) {
