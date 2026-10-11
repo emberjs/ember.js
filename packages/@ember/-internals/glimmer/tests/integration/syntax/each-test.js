@@ -1155,10 +1155,6 @@ if (!ARRAY_PROXY_REMOVED) {
   );
 }
 
-// The key semantics of `{{#each}}` (`@identity`, `@key`, `@index`, paths), observed through which
-// DOM nodes are kept as the list changes. These went here from the unit tests of
-// `@glimmer/reference`'s `createIteratorRef`, which ran on a hand-made iterator protocol; the
-// iteration itself is Ember's `toIterator`.
 moduleFor(
   'Syntax test: {{#each}} keys and DOM identity',
   class extends RenderingTestCase {
