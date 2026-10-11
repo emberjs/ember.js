@@ -1,7 +1,14 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject, { computed, observer } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'dependentKeyCompat',
@@ -58,7 +65,11 @@ moduleFor(
       assert.equal(tom.fullName, 'Thomas Dale');
     }
 
-    async '@test it works with async observers'(assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it works with async observers`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
 
       let Person = EmberObject.extend({
@@ -95,7 +106,11 @@ moduleFor(
       tom.destroy();
     }
 
-    '@test it does not work with sync observers'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it does not work with sync observers`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
 
       let Person = EmberObject.extend({

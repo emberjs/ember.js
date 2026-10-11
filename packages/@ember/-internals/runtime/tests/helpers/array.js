@@ -115,6 +115,12 @@ const ArrayTestsObserverClass = class extends EmberObject {
   }
 };
 
+// These fixtures are built at import time, so a test cannot expect their
+// deprecation. `runArrayTests` skips them after the removal.
+function classicFixture(build) {
+  return DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved ? undefined : ignoreDeprecation(build);
+}
+
 class AbstractArrayHelper {
   beforeEach(assert) {
     this.assert = assert;
@@ -172,75 +178,79 @@ class ArrayProxyHelpers extends AbstractArrayHelper {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
-  _content: null,
+const TestArray = classicFixture(() =>
+  EmberObject.extend(EmberArray, {
+    _content: null,
 
-  init() {
-    this._content = this._content || [];
-  },
+    init() {
+      this._content = this._content || [];
+    },
 
-  // some methods to modify the array so we can test changes.  Note that
-  // arrays can be modified even if they don't implement MutableArray.  The
-  // MutableArray is just a standard API for mutation but not required.
-  addObject(obj) {
-    let idx = this._content.length;
-    arrayContentWillChange(this, idx, 0, 1);
-    this._content.push(obj);
-    arrayContentDidChange(this, idx, 0, 1);
-  },
+    // some methods to modify the array so we can test changes.  Note that
+    // arrays can be modified even if they don't implement MutableArray.  The
+    // MutableArray is just a standard API for mutation but not required.
+    addObject(obj) {
+      let idx = this._content.length;
+      arrayContentWillChange(this, idx, 0, 1);
+      this._content.push(obj);
+      arrayContentDidChange(this, idx, 0, 1);
+    },
 
-  removeFirst() {
-    arrayContentWillChange(this, 0, 1, 0);
-    this._content.shift();
-    arrayContentDidChange(this, 0, 1, 0);
-  },
+    removeFirst() {
+      arrayContentWillChange(this, 0, 1, 0);
+      this._content.shift();
+      arrayContentDidChange(this, 0, 1, 0);
+    },
 
-  objectAt(idx) {
-    return this._content[idx];
-  },
+    objectAt(idx) {
+      return this._content[idx];
+    },
 
-  length: computed(function () {
-    return this._content.length;
-  }),
-});
+    length: computed(function () {
+      return this._content.length;
+    }),
+  })
+);
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestMutableArray = EmberObject.extend(MutableArray, {
-  _content: null,
+const TestMutableArray = classicFixture(() =>
+  EmberObject.extend(MutableArray, {
+    _content: null,
 
-  init(ary = []) {
-    this._content = emberA(ary);
-  },
+    init(ary = []) {
+      this._content = emberA(ary);
+    },
 
-  replace(idx, amt, objects) {
-    let args = objects ? objects.slice() : [];
-    let removeAmt = amt;
-    let addAmt = args.length;
+    replace(idx, amt, objects) {
+      let args = objects ? objects.slice() : [];
+      let removeAmt = amt;
+      let addAmt = args.length;
 
-    arrayContentWillChange(this, idx, removeAmt, addAmt);
+      arrayContentWillChange(this, idx, removeAmt, addAmt);
 
-    args.unshift(amt);
-    args.unshift(idx);
-    this._content.splice.apply(this._content, args);
-    arrayContentDidChange(this, idx, removeAmt, addAmt);
-    return this;
-  },
+      args.unshift(amt);
+      args.unshift(idx);
+      this._content.splice.apply(this._content, args);
+      arrayContentDidChange(this, idx, removeAmt, addAmt);
+      return this;
+    },
 
-  objectAt(idx) {
-    return this._content[idx];
-  },
+    objectAt(idx) {
+      return this._content[idx];
+    },
 
-  length: computed(function () {
-    return this._content.length;
-  }),
+    length: computed(function () {
+      return this._content.length;
+    }),
 
-  slice() {
-    return this._content.slice();
-  },
-});
+    slice() {
+      return this._content.slice();
+    },
+  })
+);
 
 class MutableArrayHelpers extends NativeArrayHelpers {
   newObject(ary) {
@@ -266,6 +276,7 @@ const ARRAY_TEST_HELPERS = {
   NativeArray: NativeArrayHelpers,
 };
 
+const CLASSIC_ARRAY_TEST_TYPES = ['EmberArray', 'MutableArray'];
 const DEFAULT_ARRAY_TEST_TYPES = ['ArrayProxy', 'EmberArray', 'MutableArray', 'NativeArray'];
 
 export function runArrayTests(name, Tests, ...types) {
@@ -291,6 +302,13 @@ export function runArrayTests(name, Tests, ...types) {
   }
 
   for (let type of requested) {
+    if (
+      CLASSIC_ARRAY_TEST_TYPES.includes(type) &&
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved
+    ) {
+      continue;
+    }
+
     moduleFor(`${type}: ${name}`, Tests, ARRAY_TEST_HELPERS[type]);
   }
 }

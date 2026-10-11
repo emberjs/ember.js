@@ -1,8 +1,14 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { _ProxyMixin } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -27,7 +33,11 @@ moduleFor(
       assert.ok(controller.get('myService') instanceof MyService);
     }
 
-    async ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Service can be an object proxy and access owner in init GH#16484`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let serviceOwner;
 
       this.add(

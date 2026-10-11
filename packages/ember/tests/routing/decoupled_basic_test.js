@@ -361,19 +361,23 @@ moduleFor(
     ['@test using replaceWith calls location.replaceURL if available'](assert) {
       let setCount = 0;
       let replaceCount = 0;
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = NoneLocation.create({
+              setURL(path) {
+                setCount++;
+                set(this, 'path', path);
+              },
 
-          replaceURL(path) {
-            replaceCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
+              replaceURL(path) {
+                replaceCount++;
+                set(this, 'path', path);
+              },
+            });
+          }
+      );
 
       this.router.map(function () {
         this.route('root', { path: '/' });
@@ -396,14 +400,18 @@ moduleFor(
     ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
       let setCount = 0;
 
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = NoneLocation.create({
+              setURL(path) {
+                setCount++;
+                set(this, 'path', path);
+              },
+            });
+          }
+      );
 
       this.router.map(function () {
         this.route('root', { path: '/' });
@@ -671,11 +679,15 @@ moduleFor(
         },
       });
 
-      this.router.reopen({
-        // location: 'historyTest',
-        location,
-        rootURL: rootURL,
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = location;
+
+            rootURL = rootURL;
+          }
+      );
 
       this.router.map(function () {
         this.route('posts', { path: '/posts' });
@@ -716,19 +728,23 @@ moduleFor(
         }
       );
 
-      this.router.reopen({
-        location: 'history-test',
-        rootURL: rootURL,
-        // if we transition in this test we will receive failures
-        // if the tests are run from a static file
-        _doURLTransition() {
-          return {
-            followRedirects() {
-              return RSVP.resolve('');
-            },
-          };
-        },
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = 'history-test';
+
+            rootURL = rootURL;
+
+            _doURLTransition() {
+              return {
+                followRedirects() {
+                  return RSVP.resolve('');
+                },
+              };
+            }
+          }
+      );
 
       return this.visit('/');
     }

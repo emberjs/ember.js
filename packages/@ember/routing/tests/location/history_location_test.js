@@ -68,15 +68,16 @@ moduleFor(
     ['@test HistoryLocation initState does not get fired on init'](assert) {
       assert.expect(1);
 
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
           assert.ok(true, 'init was called');
-          this._super(...arguments);
-        },
+          super.init(...arguments);
+        }
+
         initState() {
           assert.ok(false, 'initState() should not be called automatically');
-        },
-      });
+        }
+      };
 
       createLocation();
     }
@@ -120,20 +121,20 @@ moduleFor(
     ['@test base URL is removed when retrieving the current pathname'](assert) {
       assert.expect(1);
 
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'baseURL', '/base/');
-        },
+        }
 
         initState() {
-          this._super(...arguments);
+          super.initState(...arguments);
 
           assert.equal(this.getURL(), '/foo/bar');
-        },
-      });
+        }
+      };
 
       createLocation();
       location.initState();
@@ -142,14 +143,14 @@ moduleFor(
     ['@test base URL is preserved when moving around'](assert) {
       assert.expect(2);
 
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'baseURL', '/base/');
-        },
-      });
+        }
+      };
 
       createLocation();
       location.initState();
@@ -184,15 +185,15 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'rootURL', '/app/');
           set(this, 'baseURL', '/base/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -202,14 +203,14 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
           set(this, 'rootURL', '/bar/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -219,13 +220,13 @@ moduleFor(
     ['@test HistoryLocation.getURL() will not remove the rootURL when only a partial match'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
           set(this, 'rootURL', '/bar/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -235,14 +236,14 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
           set(this, 'baseURL', '/bar/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -252,13 +253,13 @@ moduleFor(
     ['@test HistoryLocation.getURL() will not remove the baseURL when only a partial match'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
           set(this, 'baseURL', '/bar/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -266,12 +267,12 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.search'](assert) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -279,12 +280,12 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.hash'](assert) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -292,12 +293,12 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -305,14 +306,14 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           let location = mockBrowserLocation('//admin//profile//');
           location.pathname = '//admin//profile//'; // mockBrowserLocation does not allow for `//`, so force it
           set(this, 'location', location);
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -322,14 +323,14 @@ moduleFor(
     ['@test HistoryLocation.getURL() treats regex metacharacters in rootURL and baseURL literally'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/axc/secret'));
           set(this, 'rootURL', '/a.c/');
           set(this, 'baseURL', '/a.c/');
-        },
-      });
+        }
+      };
 
       createLocation();
 
@@ -344,12 +345,12 @@ moduleFor(
 
       FakeHistory.state = existingState;
 
-      HistoryTestLocation.reopen({
+      HistoryTestLocation = class extends HistoryTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'location', mockBrowserLocation('/route/path'));
-        },
-      });
+        }
+      };
 
       createLocation();
       location.initState();

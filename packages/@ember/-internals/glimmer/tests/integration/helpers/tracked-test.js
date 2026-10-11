@@ -1,9 +1,16 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -172,7 +179,9 @@ moduleFor(
       this.assertText('1, 2, 3, 4');
     }
 
-    '@test custom ember array properties rerender when updated'() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test custom ember array properties rerender when updated`]() {
+      expectClassicClassDeprecation();
+
       let CustomArray = class extends EmberObject.extend(MutableArray) {
         init() {
           super.init(...arguments);

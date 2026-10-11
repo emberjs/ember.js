@@ -1,3 +1,4 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { get, set, observer } from '@ember/object';
 import CoreObject from '@ember/object/core';
@@ -7,6 +8,8 @@ import {
   buildOwner,
   runDestroy,
   runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
@@ -97,7 +100,11 @@ moduleFor(
       TestObj.create(options);
     }
 
-    async ['@test observed properties are enumerable when set GH#14594'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observed properties are enumerable when set GH#14594`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let callCount = 0;
       let Test = CoreObject.extend({
         myProp: null,

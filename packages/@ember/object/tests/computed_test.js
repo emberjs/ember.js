@@ -1,8 +1,14 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
 import { A as emberA, isArray } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 function K() {
   return this;
@@ -140,7 +146,11 @@ moduleFor(
       testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
-    ['@test can retrieve metadata for a computed property'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test can retrieve metadata for a computed property`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
       });
@@ -175,9 +185,11 @@ moduleFor(
       }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
     }
 
-    ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test overriding a computed property with null removes it from eachComputedProperty iteration`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         foo: computed(function () {}),
 
@@ -201,7 +213,11 @@ moduleFor(
       );
     }
 
-    ['@test can iterate over a list of computed properties for a class'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test can iterate over a list of computed properties for a class`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         foo: computed(function () {}),
 
@@ -251,9 +267,11 @@ moduleFor(
       );
     }
 
-    ['@test list of properties updates when an additional property is added (such cache busting)'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test list of properties updates when an additional property is added (such cache busting)`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         foo: computed(K),
 
@@ -303,7 +321,11 @@ moduleFor(
       );
     }
 
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Calling _super in call outside the immediate function of a CP getter works`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -328,7 +350,11 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Calling _super in apply outside the immediate function of a CP getter works`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -353,9 +379,11 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observing prop installed with computed macro reads and overriding it in create() works`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let Obj = EmberObject.extend({
         name: reads('model.name'),
         nameDidChange: observer('name', function () {}),
@@ -392,7 +420,11 @@ moduleFor(
       assert.equal(instance.bar, 456, 'setters work');
     }
 
-    ['@test @each on maybe array'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test @each on maybe array`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Normalizer = EmberObject.extend({
         options: null, // null | undefined | { value: any } | Array<{ value: any }>
 
@@ -470,7 +502,11 @@ moduleFor(
       }, /When using @each to observe the array `true,foo,123`, the items in the array must be objects/);
     }
 
-    ['@test @each works with array-likes'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test @each works with array-likes`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       class ArrayLike {
         constructor(arr = []) {
           this.inner = arr;

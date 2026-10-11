@@ -29,6 +29,7 @@ import {
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type { Tag } from '@glimmer/interfaces';
+import { INTERNAL_REOPEN } from '@ember/-internals/utils/lib/internal-classic-class';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
@@ -412,7 +413,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
+ArrayProxy[INTERNAL_REOPEN](MutableArray, {
   arrangedContent: alias('content'),
 });
 

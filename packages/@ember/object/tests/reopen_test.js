@@ -1,11 +1,21 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject, { get } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 // TODO: Update these tests (or the title) to match each other.
 moduleFor(
   'system/core_object/reopen',
   class extends AbstractTestCase {
-    ['@test adds new properties to subclass instance'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test adds new properties to subclass instance`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Subclass = class extends EmberObject {};
       Subclass.reopen({
         foo() {
@@ -18,7 +28,11 @@ moduleFor(
       assert.equal(get(Subclass.create(), 'bar'), 'BAR', 'Adds property');
     }
 
-    ['@test reopened properties inherited by subclasses'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test reopened properties inherited by subclasses`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Subclass = class extends EmberObject {};
       let SubSub = class extends Subclass {};
 
@@ -33,7 +47,11 @@ moduleFor(
       assert.equal(get(SubSub.create(), 'bar'), 'BAR', 'Adds property');
     }
 
-    ['@test allows reopening already instantiated classes'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test allows reopening already instantiated classes`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Subclass = class extends EmberObject {};
 
       Subclass.create();

@@ -18,6 +18,7 @@ export {
   expectDeprecationAsync,
   ignoreDeprecation,
 } from './lib/ember-dev/deprecation';
+export { expectClassicClassDeprecation } from './lib/classic-class-deprecation';
 export { defineSimpleHelper, defineSimpleModifier } from './lib/define-template-values';
 export { testIf, testUnless } from './lib/conditional-test';
 export { equalsElement, classes, styles, regex } from './lib/matchers';

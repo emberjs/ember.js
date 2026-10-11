@@ -1,7 +1,13 @@
 import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
-import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
@@ -22,9 +28,11 @@ moduleFor(
       assert.equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
     }
 
-    ['@test using reopen() and calling _super where there is not a super function does not cause infinite recursion'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test using reopen() and calling _super where there is not a super function does not cause infinite recursion`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let Taco = class extends EmberObject {
         createBreakfast() {
           // There is no original createBreakfast function.

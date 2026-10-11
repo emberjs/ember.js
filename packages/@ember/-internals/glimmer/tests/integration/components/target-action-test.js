@@ -4,6 +4,7 @@ import {
   RenderingTestCase,
   runTask,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
@@ -84,9 +85,9 @@ moduleFor(
       runTask(() => component.send('foo', 'baz'));
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test a handled action can be bubbled to the target for continued processing`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a handled action can be bubbled to the target for continued processing`]() {
+      expectClassicClassDeprecation();
+
       this.assert.expect(3);
 
       expectDeprecation(
@@ -124,9 +125,11 @@ moduleFor(
       runTask(() => component.send('poke'));
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test action can be handled by a superclass' actions object`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test action can be handled by a superclass' actions object`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       this.assert.expect(5);
 
       expectDeprecation(

@@ -1,14 +1,22 @@
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
-import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
   'Object events',
   class extends AbstractTestCase {
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test a listener can be added to an object`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a listener can be added to an object`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
       let F = function () {
         count++;
@@ -45,11 +53,11 @@ moduleFor(
       assert.equal(count, 2, 'the event was triggered');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test a listener can be added and removed automatically the first time it is triggered`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a listener can be added and removed automatically the first time it is triggered`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
       let F = function () {
         count++;
@@ -87,9 +95,11 @@ moduleFor(
       assert.equal(count, 1, 'the event was not triggered again');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test triggering an event can have arguments`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test triggering an event can have arguments`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let self, args;
 
       let obj;
@@ -118,9 +128,11 @@ moduleFor(
       assert.equal(self, obj);
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test a listener can be added and removed automatically and have arguments`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a listener can be added and removed automatically and have arguments`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let self, args;
       let count = 0;
 
@@ -164,9 +176,11 @@ moduleFor(
       assert.equal(self, obj);
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test binding an event can specify a different target`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test binding an event can specify a different target`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let self, args;
 
       let obj;
@@ -196,11 +210,11 @@ moduleFor(
       assert.equal(self, target);
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test a listener registered with one can take method as string and can be added with different target`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a listener registered with one can take method as string and can be added with different target`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
       let target = {};
       target.fn = function () {
@@ -239,9 +253,11 @@ moduleFor(
       assert.equal(count, 1, 'the event was not triggered again');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test a listener registered with one can be removed with off`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test a listener registered with one can be removed with off`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let obj;
       obj = class extends EmberObject.extend(Evented) {
         F() {}
@@ -301,9 +317,11 @@ moduleFor(
       assert.equal(objHas, false, 'has no more events');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
-    )} @test adding and removing listeners should be chainable`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test adding and removing listeners should be chainable`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let obj;
       obj = EmberObject.extend(Evented).create();
       let F = function () {};

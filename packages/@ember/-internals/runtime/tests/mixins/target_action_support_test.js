@@ -1,7 +1,13 @@
 import { context } from '@ember/-internals/environment';
 import EmberObject from '@ember/object';
 import TargetActionSupport from '../../lib/mixins/target_action_support';
-import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  AbstractTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
 let originalLookup = context.lookup;
@@ -18,9 +24,11 @@ moduleFor(
       context.lookup = originalLookup;
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should return false if no target or action are specified`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should return false if no target or action are specified`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(2);
 
       expectDeprecation(
@@ -33,9 +41,11 @@ moduleFor(
       assert.ok(false === obj.triggerAction(), 'no target or action was specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should support actions specified as strings`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should support actions specified as strings`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -56,9 +66,11 @@ moduleFor(
       assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should invoke the send() method on objects that implement it`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should invoke the send() method on objects that implement it`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(4);
 
       expectDeprecation(
@@ -80,9 +92,11 @@ moduleFor(
       assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should find targets specified using a property path`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should find targets specified using a property path`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -107,9 +121,11 @@ moduleFor(
       assert.ok(true === myObj.triggerAction(), 'a valid target and action were specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should use an actionContext object specified as a property on the object`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should use an actionContext object specified as a property on the object`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -133,9 +149,11 @@ moduleFor(
       assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should find an actionContext specified as a property path`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should find an actionContext specified as a property path`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -160,9 +178,11 @@ moduleFor(
       assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should use the target specified in the argument`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should use the target specified in the argument`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -185,9 +205,11 @@ moduleFor(
       );
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should use the action specified in the argument`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should use the action specified in the argument`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -209,9 +231,11 @@ moduleFor(
       );
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should use the actionContext specified in the argument`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should use the actionContext specified in the argument`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -235,9 +259,11 @@ moduleFor(
       );
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should allow multiple arguments from actionContext`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should allow multiple arguments from actionContext`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(4);
 
       expectDeprecation(
@@ -269,9 +295,11 @@ moduleFor(
       );
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test it should use a null value specified in the actionContext argument`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test it should use a null value specified in the actionContext argument`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(

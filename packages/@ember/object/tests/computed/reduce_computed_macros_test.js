@@ -32,6 +32,7 @@ import {
   runLoopSettled,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -2022,9 +2023,11 @@ moduleFor(
       assert.deepEqual(obj2.get('sortedItems').mapBy('name'), ['Z', 'X', 'Y', 'W'], 'final');
     }
 
-    ['@test sort correctly when multiple sorts are chained on the same instance of a class'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test sort correctly when multiple sorts are chained on the same instance of a class`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let obj2 = klass
         .extend({
           items: computed('sibling.sortedItems.[]', function () {
@@ -2339,53 +2342,57 @@ moduleFor(
 );
 
 let userFnCalls;
-moduleFor(
-  'Chaining array and reduced CPs',
-  class extends AbstractTestCase {
-    beforeEach() {
-      userFnCalls = 0;
-      obj = class extends EmberObject {
-        @mapBy('array', 'v')
-        mapped;
-        @max('mapped')
-        max;
+if (!DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved) {
+  moduleFor(
+    'Chaining array and reduced CPs',
+    class extends AbstractTestCase {
+      beforeEach() {
+        expectClassicClassDeprecation();
+
+        userFnCalls = 0;
+        obj = class extends EmberObject {
+          @mapBy('array', 'v')
+          mapped;
+          @max('mapped')
+          max;
+        }
+          .extend({
+            maxDidChange: observer('max', () => userFnCalls++),
+          })
+          .create({
+            array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+          });
       }
-        .extend({
-          maxDidChange: observer('max', () => userFnCalls++),
-        })
-        .create({
-          array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
-        });
+
+      afterEach() {
+        run(obj, 'destroy');
+      }
+
+      async ['@test it computes interdependent array computed properties'](assert) {
+        assert.equal(userFnCalls, 0, 'object defined observers have not fired yet');
+        assert.equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
+
+        let calls = 0;
+
+        addObserver(obj, 'max', () => calls++);
+
+        obj.get('array').pushObject({ v: 5 });
+        await runLoopSettled();
+
+        assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
+        assert.equal(userFnCalls, 1, 'object defined observers fire');
+        assert.equal(calls, 1, 'runtime created observers fire');
+
+        obj.get('array').pushObject({ v: 7 });
+        await runLoopSettled();
+
+        assert.equal(obj.get('max'), 7, 'maximum value is updated correctly again');
+        assert.equal(userFnCalls, 2, 'object defined observers fire again');
+        assert.equal(calls, 2, 'runtime created observers fire again');
+      }
     }
-
-    afterEach() {
-      run(obj, 'destroy');
-    }
-
-    async ['@test it computes interdependent array computed properties'](assert) {
-      assert.equal(userFnCalls, 0, 'object defined observers have not fired yet');
-      assert.equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
-
-      let calls = 0;
-
-      addObserver(obj, 'max', () => calls++);
-
-      obj.get('array').pushObject({ v: 5 });
-      await runLoopSettled();
-
-      assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
-      assert.equal(userFnCalls, 1, 'object defined observers fire');
-      assert.equal(calls, 1, 'runtime created observers fire');
-
-      obj.get('array').pushObject({ v: 7 });
-      await runLoopSettled();
-
-      assert.equal(obj.get('max'), 7, 'maximum value is updated correctly again');
-      assert.equal(userFnCalls, 2, 'object defined observers fire again');
-      assert.equal(calls, 2, 'runtime created observers fire again');
-    }
-  }
-);
+  );
+}
 
 moduleFor(
   'sum',

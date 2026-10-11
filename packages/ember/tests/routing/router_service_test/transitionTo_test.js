@@ -256,10 +256,11 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-          sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+
+          sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'ASC' });
@@ -278,9 +279,9 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'DESC' });
@@ -305,12 +306,15 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort', 'page', 'category', 'extra'],
-          sort: 'ASC',
-          page: null,
-          category: undefined,
-        })
+        class extends Controller {
+          queryParams = ['sort', 'page', 'category', 'extra'];
+
+          sort = 'ASC';
+
+          page = null;
+
+          category = undefined;
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'DESC' });
@@ -331,12 +335,15 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: {
-            cont_sort: 'url_sort',
-          },
-          cont_sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = [
+            {
+              cont_sort: 'url_sort',
+            },
+          ];
+
+          cont_sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ url_sort: 'DESC' });
@@ -357,12 +364,15 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: {
-            cont_sort: 'url_sort',
-          },
-          cont_sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = [
+            {
+              cont_sort: 'url_sort',
+            },
+          ];
+
+          cont_sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ cont_sort: 'ASC' });
@@ -396,12 +406,13 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             cont_sort: { as: 'url_sort' },
-          },
-          cont_sort: 'ASC',
-        })
+          };
+
+          cont_sort = 'ASC';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -426,9 +437,9 @@ moduleFor(
       );
       this.add(
         'controller:parent',
-        Controller.extend({
-          queryParams: ['url_sort'],
-        })
+        class extends Controller {
+          queryParams = ['url_sort'];
+        }
       );
 
       return this.visit('/child?url_sort=a').then(() => {
@@ -459,10 +470,11 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['bar'],
-          bar: null,
-        })
+        class extends Controller {
+          queryParams = ['bar'];
+
+          bar = null;
+        }
       );
 
       await this.visit('/');
@@ -500,10 +512,11 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['bar'],
-          bar: null,
-        })
+        class extends Controller {
+          queryParams = ['bar'];
+
+          bar = null;
+        }
       );
 
       await this.visit('/child');
@@ -611,11 +624,13 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          queryParams: ['filter', 'sort'],
-          filter: '',
-          sort: '',
-        })
+        class extends Controller {
+          queryParams = ['filter', 'sort'];
+
+          filter = '';
+
+          sort = '';
+        }
       );
 
       await this.visit('/?filter=&sort=');
@@ -669,11 +684,13 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          queryParams: ['filter', 'sort'],
-          filter: '',
-          sort: '',
-        })
+        class extends Controller {
+          queryParams = ['filter', 'sort'];
+
+          filter = '';
+
+          sort = '';
+        }
       );
 
       await this.visit('/?filter=&sort=');

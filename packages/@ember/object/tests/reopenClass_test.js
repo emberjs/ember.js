@@ -1,11 +1,21 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { get } from '@ember/object';
 import EmberObject from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'system/object/reopenClass',
   class extends AbstractTestCase {
-    ['@test adds new properties to subclass'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test adds new properties to subclass`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Subclass = class extends EmberObject {};
       Subclass.reopenClass({
         foo() {
@@ -18,7 +28,11 @@ moduleFor(
       assert.equal(get(Subclass, 'bar'), 'BAR', 'Adds property');
     }
 
-    ['@test class properties inherited by subclasses'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test class properties inherited by subclasses`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let Subclass = class extends EmberObject {};
       Subclass.reopenClass({
         foo() {

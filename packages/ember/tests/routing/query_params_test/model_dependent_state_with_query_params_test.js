@@ -18,14 +18,6 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       'there should be no pending expectation of expected model hook params'
     );
   }
-
-  reopenController(name, options) {
-    this.application.resolveRegistration(`controller:${name}`).reopen(options);
-  }
-
-  reopenRoute(name, options) {
-    this.application.resolveRegistration(`route:${name}`).reopen(options);
-  }
 }
 
 moduleFor(
@@ -69,19 +61,22 @@ moduleFor(
 
       this.add(
         'controller:article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
+        class extends Controller {
+          queryParams = ['q', 'z'];
+
+          q = 'wat';
+
+          z = 0;
+        }
       );
 
       this.add(
         'controller:comments',
-        Controller.extend({
-          queryParams: 'page',
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+
+          page = 1;
+        }
       );
 
       this.add(
@@ -249,9 +244,13 @@ moduleFor(
 
       this.setupApplication();
 
-      this.reopenController('article', {
-        queryParams: { q: { scope: 'controller' } },
-      });
+      this.subclass(
+        'controller:article',
+        (ArticleController) =>
+          class extends ArticleController {
+            queryParams = ['q', 'z', { q: { scope: 'controller' } }];
+          }
+      );
 
       await this.visitApplication();
       this.$link1.click();
@@ -328,14 +327,18 @@ moduleFor(
 
       this.setupApplication();
 
-      this.reopenRoute('article', {
-        resetController(controller, isExiting) {
-          this.controllerFor('comments').set('page', 1);
-          if (isExiting) {
-            controller.set('q', 'imdone');
+      this.subclass(
+        'route:article',
+        (ArticleRoute) =>
+          class extends ArticleRoute {
+            resetController(controller, isExiting) {
+              this.controllerFor('comments').set('page', 1);
+              if (isExiting) {
+                controller.set('q', 'imdone');
+              }
+            }
           }
-        },
-      });
+      );
 
       this.add(
         'template:about',
@@ -415,19 +418,22 @@ moduleFor(
 
       this.add(
         'controller:site.article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
+        class extends Controller {
+          queryParams = ['q', 'z'];
+
+          q = 'wat';
+
+          z = 0;
+        }
       );
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
-          queryParams: 'page',
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+
+          page = 1;
+        }
       );
 
       this.add(
@@ -595,9 +601,13 @@ moduleFor(
 
       this.setupApplication();
 
-      this.reopenController('site.article', {
-        queryParams: { q: { scope: 'controller' } },
-      });
+      this.subclass(
+        'controller:site.article',
+        (ArticleController) =>
+          class extends ArticleController {
+            queryParams = ['q', 'z', { q: { scope: 'controller' } }];
+          }
+      );
 
       await this.visitApplication();
       this.$link1.click();
@@ -674,14 +684,18 @@ moduleFor(
 
       this.setupApplication();
 
-      this.reopenRoute('site.article', {
-        resetController(controller, isExiting) {
-          this.controllerFor('site.article.comments').set('page', 1);
-          if (isExiting) {
-            controller.set('q', 'imdone');
+      this.subclass(
+        'route:site.article',
+        (ArticleRoute) =>
+          class extends ArticleRoute {
+            resetController(controller, isExiting) {
+              this.controllerFor('site.article.comments').set('page', 1);
+              if (isExiting) {
+                controller.set('q', 'imdone');
+              }
+            }
           }
-        },
-      });
+      );
 
       this.add(
         'template:about',
@@ -800,27 +814,31 @@ moduleFor(
 
       this.add(
         'controller:site',
-        Controller.extend({
-          queryParams: ['country'],
-          country: 'au',
-        })
+        class extends Controller {
+          queryParams = ['country'];
+
+          country = 'au';
+        }
       );
 
       this.add(
         'controller:site.article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
+        class extends Controller {
+          queryParams = ['q', 'z'];
+
+          q = 'wat';
+
+          z = 0;
+        }
       );
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+
+          page = 1;
+        }
       );
 
       this.add(

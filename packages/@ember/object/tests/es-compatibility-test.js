@@ -15,6 +15,7 @@ import {
   runLoopSettled,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 
@@ -174,7 +175,11 @@ moduleFor(
       });
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test using mixins`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test using mixins`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
 
       let Mixin1 = Mixin.create({
@@ -285,7 +290,7 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test observes / removeObserver on / removeListener interop`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observes / removeObserver on / removeListener interop`](
       assert
     ) {
       let fooDidChangeBase = 0;
@@ -297,6 +302,8 @@ moduleFor(
       let A;
       expectDeprecation(
         () => {
+          expectClassicClassDeprecation();
+
           A = class extends (
             EmberObject.extend({
               fooDidChange: observer('foo', function () {
@@ -383,7 +390,11 @@ moduleFor(
       });
     }
 
-    '@test super and _super interop between old and new methods'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test super and _super interop between old and new methods`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let calls = [];
       let changes = [];
       let events = [];

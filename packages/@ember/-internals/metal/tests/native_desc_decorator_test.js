@@ -1,7 +1,12 @@
 import EmberObject from '@ember/object';
 import { defineProperty, nativeDescDecorator } from '..';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../deprecations';
 
 let classes = [
@@ -70,6 +75,8 @@ let classes = [
       return `${title}: in EmberObject.extend()`;
     }
 
+    static usesClassicClasses = true;
+
     constructor() {
       this.klass = null;
       this.props = {};
@@ -97,6 +104,8 @@ let classes = [
     static module(title) {
       return `${title}: in EmberObject.extend() through a mixin`;
     }
+
+    static usesClassicClasses = true;
 
     static usesMixins = true;
 
@@ -128,6 +137,8 @@ let classes = [
       return `${title}: inherited from another EmberObject super class`;
     }
 
+    static usesClassicClasses = true;
+
     constructor() {
       this.superklass = null;
       this.props = {};
@@ -154,6 +165,10 @@ let classes = [
 
 classes
   .filter((TestClass) => !TestClass.usesMixins || !DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)
+  .filter(
+    (TestClass) =>
+      !TestClass.usesClassicClasses || !DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved
+  )
   .forEach((TestClass) => {
     moduleFor(
       TestClass.module('@ember/-internals/metal/nativeDescDecorator'),
@@ -164,6 +179,9 @@ classes
               /Using mixins is deprecated/,
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
+          }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
           }
 
           let factory = new TestClass(assert);
@@ -191,6 +209,9 @@ classes
               /Using mixins is deprecated/,
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
+          }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
           }
 
           let factory = new TestClass(assert);
@@ -227,6 +248,9 @@ classes
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
           }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
+          }
 
           let factory = new TestClass(assert);
           factory.install('foo', nativeDescDecorator({ enumerable: true, value: 'bar' }), assert);
@@ -247,6 +271,9 @@ classes
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
           }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
+          }
 
           let factory = new TestClass(assert);
           factory.install('foo', nativeDescDecorator({ enumerable: false, value: 'bar' }), assert);
@@ -266,6 +293,9 @@ classes
               /Using mixins is deprecated/,
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
+          }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
           }
 
           let factory = new TestClass(assert);
@@ -293,6 +323,9 @@ classes
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
           }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
+          }
 
           let factory = new TestClass(assert);
           factory.install('foo', nativeDescDecorator({ writable: false, value: 'bar' }), assert);
@@ -315,6 +348,9 @@ classes
               /Using mixins is deprecated/,
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
+          }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
           }
 
           let factory = new TestClass(assert);
@@ -346,6 +382,9 @@ classes
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
           }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
+          }
 
           let factory = new TestClass(assert);
           factory.install(
@@ -375,6 +414,9 @@ classes
               /Using mixins is deprecated/,
               DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
             );
+          }
+          if (TestClass.usesClassicClasses) {
+            expectClassicClassDeprecation();
           }
 
           let factory = new TestClass(assert);

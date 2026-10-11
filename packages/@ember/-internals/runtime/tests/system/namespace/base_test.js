@@ -1,10 +1,16 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
 import Namespace from '@ember/application/namespace';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectClassicClassDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
 
 const originalLookup = context.lookup;
 let lookup;
@@ -59,7 +65,11 @@ moduleFor(
       );
     }
 
-    ['@test Classes under an Namespace are properly named'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Classes under an Namespace are properly named`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let nsA = (lookup.NamespaceA = Namespace.create());
       nsA.Foo = EmberObject.extend();
       Namespace.processAll();

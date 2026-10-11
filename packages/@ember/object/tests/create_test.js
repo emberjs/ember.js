@@ -13,6 +13,7 @@ import {
   AbstractTestCase,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 import { destroy } from '@glimmer/destroyable';
@@ -47,7 +48,11 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test calls computed property setters'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test calls computed property setters`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         foo: computed({
           get() {
@@ -63,7 +68,11 @@ moduleFor(
       assert.equal(o.get('foo'), 'bar');
     }
 
-    ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test sets up mandatory setters for simple properties watched with observers`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       if (DEBUG) {
         let MyClass = EmberObject.extend({
           foo: null,
@@ -136,7 +145,11 @@ moduleFor(
       }
     }
 
-    ['@test does not sets up separate mandatory setters on getters'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test does not sets up separate mandatory setters on getters`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       if (DEBUG) {
         let MyClass = EmberObject.extend({
           get foo() {

@@ -1,3 +1,4 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import EmberObject, { action, get, computed } from '@ember/object';
@@ -11,7 +12,14 @@ import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
 
 import { precompileTemplate } from '@ember/template-compilation';
-import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import {
+  QueryParamTestCase,
+  moduleFor,
+  getTextOf,
+  runLoopSettled,
+  expectClassicClassDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
 
 moduleFor(
   'Query Params - main',
@@ -1629,9 +1637,11 @@ moduleFor(
       return this.refreshModelWhileLoadingTest(true);
     }
 
-    async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test warn user that Route's queryParams configuration must be an Object, not an Array`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       assert.expect(1);
 
       this.add(

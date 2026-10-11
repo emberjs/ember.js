@@ -13,6 +13,7 @@ export default class MethodCallTracker {
   private _isExpectingNoCalls: boolean;
   private _expectedMessages: Message[];
   private _expectedOptionLists: OptionList[];
+  private _expectedQuietly: boolean[];
   private _actuals: Actual[];
   private _originalMethod: DebugFunction | undefined;
 
@@ -22,6 +23,7 @@ export default class MethodCallTracker {
     this._isExpectingNoCalls = false;
     this._expectedMessages = [];
     this._expectedOptionLists = [];
+    this._expectedQuietly = [];
     this._actuals = [];
     this._originalMethod = undefined;
   }
@@ -50,10 +52,13 @@ export default class MethodCallTracker {
     }
   }
 
-  expectCall(message?: Message, options?: OptionList): void {
+  // A quiet expectation adds an assertion only when it fails, so the
+  // assertion count of a test does not depend on it.
+  expectCall(message?: Message, options?: OptionList, quiet = false): void {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
+    this._expectedQuietly.push(quiet);
   }
 
   expectNoCalls(): void {
@@ -157,7 +162,9 @@ export default class MethodCallTracker {
           `Received no Ember.${methodName} calls at all, expecting: ${expectedMessage}`
         );
       } else if (match && !match[1]) {
-        assert.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
+        if (!this._expectedQuietly[o]) {
+          assert.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
+        }
       } else if (match && match[1]) {
         assert.ok(
           false,
