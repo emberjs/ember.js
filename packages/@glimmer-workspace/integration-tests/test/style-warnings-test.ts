@@ -20,6 +20,9 @@ class StyleWarningsTest extends RenderTest {
           warnings++;
         },
 
+        // writes to the (tracked) test context schedule a revalidation
+        scheduleRevalidate() {},
+
         getProp(obj, key) {
           return (obj as Record<string, unknown>)[key];
         },

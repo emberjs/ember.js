@@ -4,7 +4,6 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import Component from '@glimmer/component';
-import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Components test: setComponentTemplate',
@@ -72,23 +71,6 @@ moduleFor(
       assert.throws(() => {
         setComponentTemplate(precompileTemplate('foo'), Thing);
       }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Thing`\)/);
-    }
-
-    '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(
-        precompileTemplate('hello'),
-        class extends EmberComponent {}
-      );
-
-      this.owner.register('component:foo-bar', class extends Parent {});
-
-      this.render('<FooBar />');
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
 
     '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {

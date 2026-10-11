@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import EmberObject from '@ember/object';

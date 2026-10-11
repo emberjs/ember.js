@@ -91,6 +91,9 @@ importers:
       '@babel/types':
         specifier: ^7.22.5
         version: 7.29.7
+      '@ember/test-helpers':
+        specifier: ^5.7.0
+        version: 5.7.0(@babel/core@7.29.7)
       '@embroider/macros':
         specifier: ^1.20.2
         version: 1.20.3(@babel/core@7.29.7)
@@ -166,6 +169,9 @@ importers:
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
+      ember-qunit:
+        specifier: ^9.1.0
+        version: 9.1.0(@ember/test-helpers@5.7.0(@babel/core@7.29.7))(qunit@2.26.0)
       eslint:
         specifier: ^9.21.0
         version: 9.39.4
@@ -223,6 +229,9 @@ importers:
       qunit:
         specifier: ^2.19.4
         version: 2.26.0
+      qunit-dom:
+        specifier: ^3.6.0
+        version: 3.6.0
       recast:
         specifier: ^0.22.0
         version: 0.22.0
@@ -1404,9 +1413,33 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11
     devDependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../../@ember/destroyable
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../../@ember/owner
+      '@ember/reactive':
+        specifier: workspace:*
+        version: link:../../@ember/reactive
+      '@ember/renderer':
+        specifier: workspace:*
+        version: link:../../@ember/renderer
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop
+      '@ember/template':
+        specifier: workspace:*
+        version: link:../../@ember/template
       '@glimmer/constants':
         specifier: workspace:*
         version: link:../../@glimmer/constants
@@ -1428,6 +1461,9 @@ importers:
       dom-types:
         specifier: ^1.1.2
         version: 1.1.4
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
 
   packages/@glimmer-workspace/integration-tests/test:
     dependencies:
@@ -2800,8 +2836,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0(@types/node@22.19.19)
       '@ember/test-helpers':
-        specifier: ^5.5.0
-        version: 5.5.0(@babel/core@7.29.7)
+        specifier: ^5.7.0
+        version: 5.7.0(@babel/core@7.29.7)
       '@embroider/macros':
         specifier: ^1.20.4
         version: 1.20.5(@babel/core@7.29.7)
@@ -2864,7 +2900,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.1.0
-        version: 9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.1.0(@ember/test-helpers@5.7.0(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.2.0
         version: 13.2.0
@@ -3094,8 +3130,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       '@ember/test-helpers':
-        specifier: ^5.4.3
-        version: 5.5.0(@babel/core@7.29.7)
+        specifier: ^5.7.0
+        version: 5.7.0(@babel/core@7.29.7)
       '@ember/test-waiters':
         specifier: ^4.1.2
         version: 4.1.2
@@ -3158,7 +3194,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.1.0
-        version: 9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.1.0(@ember/test-helpers@5.7.0(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.2.0
         version: 13.2.0
@@ -4103,8 +4139,8 @@ packages:
   '@ember/string@4.0.1':
     resolution: {integrity: sha512-VWeng8BSWrIsdPfffOQt/bKwNKJL7+37gPFh/6iZZ9bke+S83kKqkS30poo4bTGfRcMnvAE0ie7txom+iDu81Q==}
 
-  '@ember/test-helpers@5.5.0':
-    resolution: {integrity: sha512-yTg0YqLQvPIy0rGGVa+Tnwis20orfsE5Mz2zphv4qtfZ9w5NbTdxNKed9CrrCANFQdLo7eXj9lmQ8ST8K/GBHw==}
+  '@ember/test-helpers@5.7.0':
+    resolution: {integrity: sha512-h77kAJpFQ9fffuLc9+XhoYsk7URDLd7jTLnq7Yk9gGvQ41JupxrGMHoRjyboytSbwngSy+0yXyMhNYfH8ng4xg==}
 
   '@ember/test-waiters@4.1.1':
     resolution: {integrity: sha512-HbK70JYCDJcGI0CrwcbjeL2QHAn0HLwa3oGep7mr6l/yO95U7JYA8VN+/9VTsWJTmKueLtWayUqEmGS3a3mVOg==}
@@ -14238,7 +14274,7 @@ snapshots:
 
   '@ember/string@4.0.1': {}
 
-  '@ember/test-helpers@5.5.0(@babel/core@7.29.7)':
+  '@ember/test-helpers@5.7.0(@babel/core@7.29.7)':
     dependencies:
       '@ember/test-waiters': 4.1.2
       '@embroider/addon-shim': 1.10.2
@@ -19315,9 +19351,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-qunit@9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0):
+  ember-qunit@9.1.0(@ember/test-helpers@5.7.0(@babel/core@7.29.7))(qunit@2.26.0):
     dependencies:
-      '@ember/test-helpers': 5.5.0(@babel/core@7.29.7)
+      '@ember/test-helpers': 5.7.0(@babel/core@7.29.7)
       '@embroider/addon-shim': 1.10.2
       qunit: 2.26.0
       qunit-theme-ember: 1.0.0

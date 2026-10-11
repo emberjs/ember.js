@@ -114,6 +114,15 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
+  /**
+   * The index at which a tracker put this tag last.
+   * `Tracker#add` uses it to find out if a tracking frame has the tag already.
+   *
+   * The start value 0 is safe:
+   * the tracker compares its entry at that index with the tag.
+   */
+  public slot = 0;
+
   declare [TYPE]: T;
 
   constructor(type: T) {
@@ -138,9 +147,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
+            for (let i = 0; i < subtag.length; i++) {
+              revision = Math.max((subtag[i] as Tag)[COMPUTE](), revision);
             }
           } else {
             let subtagValue = subtag[COMPUTE]();
@@ -254,6 +262,12 @@ const VOLATILE_TAG_ID: IVOLATILE_TAG_ID = 100;
 
 export class VolatileTag implements Tag {
   readonly [TYPE] = VOLATILE_TAG_ID;
+
+  /**
+   * See `slot` of `MonomorphicTagImpl`.
+   */
+  slot = 0;
+
   [COMPUTE](): Revision {
     return VOLATILE;
   }
@@ -267,6 +281,12 @@ const CURRENT_TAG_ID: ICURRENT_TAG_ID = 101;
 
 export class CurrentTag implements Tag {
   readonly [TYPE] = CURRENT_TAG_ID;
+
+  /**
+   * See `slot` of `MonomorphicTagImpl`.
+   */
+  slot = 0;
+
   [COMPUTE](): Revision {
     return $REVISION;
   }

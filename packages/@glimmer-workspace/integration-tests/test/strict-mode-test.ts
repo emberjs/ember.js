@@ -1,16 +1,17 @@
+import { trackedObject } from '@ember/reactive/collections';
+import GlimmerComponent from '@glimmer/component';
 import { castToBrowser } from '@glimmer/debug-util';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
 import {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   syntaxErrorFor,
   test,
   TestHelper,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 import { DEBUG } from '@glimmer/env';
 
@@ -78,7 +79,7 @@ class GeneralStrictModeTest extends RenderTest {
     this.assert.throws(
       () => {
         defineComponent({}, '{{bar}}', {
-          definition: class extends GlimmerishComponent {
+          definition: class extends GlimmerComponent {
             get bar() {
               throw new Error('should not fallback to this.bar');
             }
@@ -96,28 +97,6 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
-  'Non-native keyword'() {
-    this.registerHelper('bar', () => {
-      throw new Error('should not resolve this helper');
-    });
-
-    this.registerHelper('$keyword.bar', () => 'bar keyword');
-
-    const Foo = defineComponent({}, '{{bar}}', {
-      keywords: ['bar'],
-      definition: class extends GlimmerishComponent {
-        get bar() {
-          throw new Error('should not fallback to this.bar');
-        }
-      },
-    });
-
-    this.renderComponent(Foo);
-    this.assertHTML('bar keyword');
-    this.assertStableRerender();
-  }
-
-  @test
   '{{component}} throws an error if a string is used in strict (append position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{component "bar"}}');
@@ -127,7 +106,7 @@ class GeneralStrictModeTest extends RenderTest {
   @test({ skip: !DEBUG })
   '{{component}} throws an error if a string is used indirectly in strict (append position)'() {
     const Foo = defineComponent({}, '{{component this.bar}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = 'bar';
       },
     });
@@ -141,7 +120,7 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component.foo}} throws an error (append position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{component.foo}}', {
-        definition: class extends GlimmerishComponent {},
+        definition: class extends GlimmerComponent {},
       });
     }, /The `component` keyword was used incorrectly. It was used as `component.foo`, but it cannot be used with additional path segments./u);
   }
@@ -152,7 +131,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{component @Bar}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -175,7 +154,7 @@ class GeneralStrictModeTest extends RenderTest {
   @test({ skip: !DEBUG })
   '{{component}} throws an error if a string is used indirectly in strict (block position)'() {
     const Foo = defineComponent({}, '{{#component this.bar}}{{/component}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = 'bar';
       },
     });
@@ -191,7 +170,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{#component @Bar}}{{/component}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -214,7 +193,7 @@ class GeneralStrictModeTest extends RenderTest {
   @test({ skip: !DEBUG })
   '{{component}} throws an error if a string is used indirectly in strict (expression position)'() {
     const Bar = defineComponent({}, '{{#let (component this.bar) as |bar|}}<bar/>{{/let}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = 'bar';
       },
     });
@@ -230,7 +209,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{#let (component @Bar) as |bar|}}<bar/>{{/let}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -598,7 +577,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic component'() {
     const Foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({}, '<this.Foo/>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -612,7 +591,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic component in ambiguous append position'() {
     const Foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({}, '{{this.Foo}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -626,7 +605,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic component in append position (with args)'() {
     const Foo = defineComponent({}, 'Hello, {{@value}}');
     const Bar = defineComponent({}, '{{this.Foo value="world!"}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -639,7 +618,7 @@ class DynamicStrictModeTest extends RenderTest {
   @test
   'Can use a dynamic component with a changing definition (append position)'(assert: Assert) {
     const Foo = defineComponent({}, 'Hello, world!', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         override willDestroy() {
           assert.step('willDestroy 1 called');
         }
@@ -647,7 +626,7 @@ class DynamicStrictModeTest extends RenderTest {
     });
 
     const Bar = defineComponent({}, 'Hello, earth!', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         override willDestroy() {
           assert.step('willDestroy 2 called');
         }
@@ -656,7 +635,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Baz = defineComponent({}, '{{@Foo}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObject<Record<string, unknown>>({ Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
@@ -683,7 +662,7 @@ class DynamicStrictModeTest extends RenderTest {
     const Bar = defineComponent({}, 'Goodbye, {{@value}}!');
     const Baz = defineComponent({}, '{{@Foo value="world"}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObject({ Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
@@ -702,7 +681,7 @@ class DynamicStrictModeTest extends RenderTest {
     const Ko = defineComponent({}, 'Ko');
     const Foo = defineComponent({ Ok, Ko }, '{{if @isOk Ok Ko}}');
 
-    let args = trackedObj({ isOk: true });
+    let args = trackedObject({ isOk: true });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Ok');
@@ -725,7 +704,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic component in block position'() {
     const Foo = defineComponent({}, 'Hello, {{yield}}');
     const Bar = defineComponent({}, '{{#this.Foo}}world!{{/this.Foo}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -739,7 +718,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic helper'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '{{this.foo}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -753,7 +732,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic helper (with args)'() {
     const foo = defineSimpleHelper((value: string) => value);
     const Bar = defineComponent({}, '{{this.foo "Hello, world!"}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -767,7 +746,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic helper as a subexpression'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '{{(this.foo)}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -781,7 +760,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic helper as a subexpression (with args)'() {
     const foo = defineSimpleHelper((value: string) => value);
     const Bar = defineComponent({}, '{{(this.foo "Hello, world!")}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -796,7 +775,7 @@ class DynamicStrictModeTest extends RenderTest {
     const foo = defineSimpleHelper((value: string) => value);
     const bar = defineSimpleHelper((value: string) => value);
     const Bar = defineComponent({ bar }, '{{bar (this.foo "Hello, world!")}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -811,7 +790,7 @@ class DynamicStrictModeTest extends RenderTest {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const bar = defineSimpleHelper((value: string) => value);
     const Bar = defineComponent({ bar }, '{{bar (this.foo)}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -824,7 +803,7 @@ class DynamicStrictModeTest extends RenderTest {
   @test
   'Calling a dynamic helper without a value returns undefined'() {
     const Bar = defineComponent({}, '{{this.foo 123}}', {
-      definition: class extends GlimmerishComponent {},
+      definition: class extends GlimmerComponent {},
     });
 
     this.renderComponent(Bar);
@@ -855,7 +834,7 @@ class DynamicStrictModeTest extends RenderTest {
     }
 
     const Foo = defineComponent({}, '{{@helper}}');
-    let args = trackedObj({ helper: Helper1 });
+    let args = trackedObject<Record<string, unknown>>({ helper: Helper1 });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -900,7 +879,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{@helper}}');
     const Bar = defineComponent({ Foo }, '<Foo @helper={{helper @helper "world"}}/>');
-    let args = trackedObj({ helper: Helper1 });
+    let args = trackedObject<Record<string, unknown>>({ helper: Helper1 });
 
     this.renderComponent(Bar, args);
     this.assertHTML('Hello, world!');
@@ -925,7 +904,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic modifier'() {
     const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
     const Bar = defineComponent({}, '<div {{this.foo}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -1064,7 +1043,7 @@ class DynamicStrictModeTest extends RenderTest {
   @test
   'Calling a dynamic modifier without a value is a no-op'() {
     const Bar = defineComponent({}, '<div {{this.foo 123}}></div>', {
-      definition: class extends GlimmerishComponent {},
+      definition: class extends GlimmerComponent {},
     });
 
     this.renderComponent(Bar);
@@ -1091,7 +1070,7 @@ class DynamicStrictModeTest extends RenderTest {
     });
 
     const Foo = defineComponent({}, '<div {{@modifier}}></div>');
-    let args = trackedObj({ modifier: modifier1 });
+    let args = trackedObject<Record<string, unknown>>({ modifier: modifier1 });
 
     this.renderComponent(Foo, args);
     this.assertHTML('<div>Hello, world!</div>');
@@ -1132,7 +1111,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '<div {{@modifier}}></div>');
     const Bar = defineComponent({ Foo }, '<Foo @modifier={{modifier @modifier "world"}}/>');
-    let args = trackedObj({ modifier: modifier1 });
+    let args = trackedObject<Record<string, unknown>>({ modifier: modifier1 });
 
     this.renderComponent(Bar, args);
     this.assertHTML('<div>Hello, world!</div>');
@@ -1172,7 +1151,7 @@ class DynamicStrictModeTest extends RenderTest {
       '<div {{(if @inSpace nebula world) @name}}></div>'
     );
 
-    let args = trackedObj({ inSpace: false, name: 'Nebula' });
+    let args = trackedObject({ inSpace: false, name: 'Nebula' });
 
     this.renderComponent(Bar, args);
     this.assertHTML('<div>Hello, world!</div>');
@@ -1193,7 +1172,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Throws an error if a non-modifier is used as a modifier'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '<div {{this.foo}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });
@@ -1261,7 +1240,7 @@ class DynamicStrictModeTest extends RenderTest {
   '{{component}} works with static components'() {
     const Foo = defineComponent({}, '{{@value}}');
     const Bar = defineComponent({}, '{{component this.Foo value="Hello, world!"}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -1279,7 +1258,7 @@ class DynamicStrictModeTest extends RenderTest {
       { Bar },
       '<Bar @Baz={{component this.Foo value="Hello, world!"}}/>',
       {
-        definition: class extends GlimmerishComponent {
+        definition: class extends GlimmerComponent {
           Foo = Foo;
         },
       }
@@ -1294,7 +1273,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Throws an error if a non-component is used as a component'() {
     const Foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '<this.Foo/>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         Foo = Foo;
       },
     });
@@ -1362,7 +1341,7 @@ class DynamicStrictModeTest extends RenderTest {
   'Throws an error if a non-helper is used as a helper'() {
     const foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({}, '{{#if (this.foo)}}{{/if}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
       },
     });

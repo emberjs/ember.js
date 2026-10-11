@@ -235,7 +235,7 @@ export class Renderer extends BaseRenderer {
       dynamicScope,
       this.state.builder
     );
-    this.state.renderRoot(rootState, this);
+    this.state.renderRoot(rootState);
   }
 
   cleanupRootFor(component: ClassicComponent): void {

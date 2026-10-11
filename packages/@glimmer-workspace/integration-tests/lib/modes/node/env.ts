@@ -1,8 +1,12 @@
 import type {
+  Cursor,
+  Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   SimpleDocument,
+  TreeBuilder,
 } from '@glimmer/interfaces';
+import { serializeBuilder } from '@glimmer/node';
 import createHTMLDocument from '@simple-dom/document';
 
 import type RenderDelegate from '../../render-delegate';
@@ -27,6 +31,14 @@ export class NodeJitRenderDelegate extends JitRenderDelegate {
   }
 }
 
+export class JitSerializationDelegate extends NodeJitRenderDelegate {
+  static override style = 'jit serialization';
+
+  override getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
+    return serializeBuilder(env, cursor);
+  }
+}
+
 export class AbstractNodeTest extends RenderTest {
   constructor(delegate: RenderDelegate) {
     super(delegate);
@@ -39,12 +51,6 @@ export class AbstractNodeTest extends RenderTest {
 
   override assertComponent(html: string) {
     let el = assertingElement(this.element.firstChild);
-
-    if (this.testType !== 'Glimmer') {
-      this.assert.strictEqual(el.getAttribute('class'), 'ember-view');
-      this.assert.ok(el.getAttribute('id'));
-      this.assert.ok(el.getAttribute('id')!.indexOf('ember') > -1);
-    }
 
     let serialized = toInnerHTML(el);
     this.assert.strictEqual(serialized, html);

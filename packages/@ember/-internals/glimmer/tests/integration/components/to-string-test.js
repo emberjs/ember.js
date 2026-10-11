@@ -1,12 +1,8 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { module, test } from 'qunit';
+import Component from '@ember/component';
 
-import { Component } from '@ember/-internals/glimmer';
-
-moduleFor(
-  'built-in component toString',
-  class AbstractAppendTest extends RenderingTestCase {
-    '@test component has the correct toString value'(assert) {
-      assert.strictEqual(Component.toString(), '@ember/component');
-    }
-  }
-);
+module('built-in component toString', function () {
+  test('component has the correct toString value', function (assert) {
+    assert.strictEqual(Component.toString(), '@ember/component');
+  });
+});

@@ -477,8 +477,35 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  * </template>
  * ```
  *
- * This will display the result of `@foo.item1` when `index` is `1`, and
- * `this.foo.item2` when `index` is `2`, etc.
+ * This will display the result of `@address.street` when `@field` is
+ * `"street"`, and `@address.city` when `@field` is `"city"`, etc.
+ *
+ * The key is treated as a path, so a key containing a period is split on each
+ * period and looked up one segment at a time:
+ *
+ * ```gjs
+ * import { get } from '@ember/helper';
+ *
+ * const person = { address: { city: 'Portland' } };
+ *
+ * <template>
+ *   {{get person "address.city"}} {{! Portland }}
+ * </template>
+ * ```
+ *
+ * This also means that `{{get}}` cannot read a property whose name itself
+ * contains a period. `{{get obj "some.key"}}` looks up `obj.some.key`, not
+ * `obj["some.key"]`, and returns `undefined` when `obj.some` does not exist.
+ * To read such a key, use a plain function instead:
+ *
+ * ```gjs
+ * const obj = { 'some.key': 'some value' };
+ * const lookup = (object, key) => object[key];
+ *
+ * <template>
+ *   {{lookup obj "some.key"}} {{! some value }}
+ * </template>
+ * ```
  *
  * @method get
  * @for @ember/helper

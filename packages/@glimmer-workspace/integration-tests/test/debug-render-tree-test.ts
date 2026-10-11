@@ -1,32 +1,35 @@
+import { template } from '@ember/template-compiler/runtime';
+import { tracked } from '@glimmer/tracking';
+import { trackedObject } from '@ember/reactive/collections';
+import type Owner from '@ember/owner';
+import GlimmerComponent from '@glimmer/component';
 import type {
   CapturedArguments,
   CapturedRenderNode,
   CustomRenderNode,
   Dict,
   InternalComponentManager,
-  Owner,
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import type { TemplateOnlyComponent } from '@glimmer/runtime';
-import type { EmberishCurlyComponent } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
-import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
-import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
 import {
-  BaseEnv,
+  modifierCapabilities,
+  setComponentTemplate,
+  setInternalComponentManager,
+  setModifierManager,
+} from '@glimmer/manager';
+import { EMPTY_ARGS, TemplateOnlyComponentManager } from '@glimmer/runtime';
+import type { TemplateOnlyComponent } from '@ember/component/template-only';
+import templateOnlyComponent from '@ember/component/template-only';
+import {
   createTemplate,
-  defComponent,
   defineSimpleModifier,
-  GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,
   suite,
   test,
-  tracked,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 interface CapturedBounds {
@@ -60,14 +63,9 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
 
     setComponentTemplate(createTemplate(template), ComponentClass);
 
-    let definition = {
-      name,
-      state: ComponentClass,
-      manager: new Manager(),
-      template: null,
-    };
+    setInternalComponentManager(new Manager(), ComponentClass);
 
-    this.registry.register('component', name, definition);
+    this.owner.register(`component:${name}`, ComponentClass, { instantiate: false });
   }
 }
 
@@ -77,12 +75,12 @@ class DebugRenderTreeTest extends RenderTest {
   declare delegate: DebugRenderTreeDelegate;
 
   @test 'strict-mode components'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(
       `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state } }
+      { scope: () => ({ HelloWorld, state }) }
     );
 
     this.renderComponent(Root);
@@ -109,9 +107,9 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode components preserve names from scope'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<HelloWorld @arg="first"/>`, {
-      scope: { HelloWorld },
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<HelloWorld @arg="first"/>`, {
+      scope: () => ({ HelloWorld }),
     });
 
     this.renderComponent(Root);
@@ -138,13 +136,13 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
+    const HelloWorld = template('{{@arg}}');
 
-    class Root extends GlimmerishComponent {
+    class Root extends GlimmerComponent {
       HelloWorld = HelloWorld;
     }
 
-    const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
+    const RootDef = template(`<this.HelloWorld @arg="first"/>`, {
       component: Root,
     });
 
@@ -165,8 +163,8 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
-    const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<@Greeting @arg="first"/>`);
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<@Greeting @arg="first"/>`);
 
     this.renderComponent(Root, { Greeting: HelloWorld });
 
@@ -185,14 +183,14 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode modifiers'() {
-    const state = trackedObj({ showSecond: false });
+    const state = trackedObject({ showSecond: false });
 
-    const HelloWorld = defComponent('<p ...attributes>{{@arg}}</p>');
+    const HelloWorld = template('<p ...attributes>{{@arg}}</p>');
     const noopFn = () => {};
     const noop = defineSimpleModifier(noopFn);
-    const Root = defComponent(
+    const Root = template(
       `<HelloWorld {{noop}} @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state, noop } }
+      { scope: () => ({ HelloWorld, state, noop }) }
     );
 
     this.renderComponent(Root);
@@ -285,8 +283,8 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
-  @test 'emberish curly components'() {
-    this.registerComponent('Curly', 'HelloWorld', 'Hello World');
+  @test 'glimmerish components with an argument that throws'() {
+    this.registerComponent('Glimmer', 'HelloWorld', 'Hello World');
     let error = null as Error | null;
     class State {
       @tracked doFail = false;
@@ -319,11 +317,11 @@ class DebugRenderTreeTest extends RenderTest {
         args: (actual) => {
           const args = { positional: [], named: { arg: 'first', arg2: { error } } };
           this.assert.deepEqual(actual, args);
-          this.assert.ok(!this.delegate.context.env.isArgumentCaptureError!(actual.named['arg']));
-          this.assert.ok(this.delegate.context.env.isArgumentCaptureError!(actual.named['arg2']));
+          this.assert.ok(!this.delegate.isArgumentCaptureError(actual.named['arg']));
+          this.assert.ok(this.delegate.isArgumentCaptureError(actual.named['arg2']));
           return true;
         },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -338,7 +336,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -346,7 +344,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'second',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -359,7 +357,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
-        instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -381,7 +379,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -394,7 +392,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -402,7 +400,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'second',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -415,7 +413,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -428,7 +426,7 @@ class DebugRenderTreeTest extends RenderTest {
       'Glimmer',
       'HelloWorld',
       '{{#in-element this.destinationElement}}<HiWorld />{{/in-element}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         get destinationElement() {
           return document.getElementById('target');
         }
@@ -442,21 +440,21 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild!.nextSibling),
         children: [
           {
             type: 'keyword',
             name: 'in-element',
             args: { positional: [this.element.firstChild], named: {} },
-            instance: (instance: GlimmerishComponent | null) => instance === null,
+            instance: (instance: GlimmerComponent<Dict> | null) => instance === null,
             bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
             children: [
               {
                 type: 'component',
                 name: 'HiWorld',
                 args: { positional: [], named: {} },
-                instance: (instance: GlimmerishComponent) => instance,
+                instance: (instance: GlimmerComponent<Dict>) => instance,
                 bounds: this.nodeBounds(this.element.firstChild!.firstChild),
                 children: [],
               },
@@ -800,7 +798,7 @@ class DebugRenderTreeTest extends RenderTest {
       'Glimmer',
       'HelloWorld',
       'Hello World',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         constructor(owner: Owner, args: Dict) {
           super(owner, args);
           throw new Error('oops!');
@@ -905,8 +903,4 @@ class DebugRenderTreeTest extends RenderTest {
   }
 }
 
-suite(DebugRenderTreeTest, DebugRenderTreeDelegate, {
-  env: assign({}, BaseEnv, {
-    enableDebugTooling: true,
-  }),
-});
+suite(DebugRenderTreeTest, DebugRenderTreeDelegate, { debugRenderTree: true });

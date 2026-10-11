@@ -45,6 +45,7 @@ import {
   calculateCacheKey,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
+  queryParamType,
   stashParamNames,
 } from './lib/utils';
 
@@ -1956,24 +1957,6 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
 
     addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
   });
-}
-
-// Apps receive this as `defaultValueType` in `serializeQueryParam` and
-// `deserializeQueryParam`, so it keeps the type names of the common defaults.
-function queryParamType(value: unknown): string {
-  if (value === null) {
-    return 'null';
-  }
-
-  if (Array.isArray(value)) {
-    return 'array';
-  }
-
-  if (value instanceof Date) {
-    return 'date';
-  }
-
-  return typeof value;
 }
 
 function getEngineRouteName(engine: EngineInstance, routeName: string) {

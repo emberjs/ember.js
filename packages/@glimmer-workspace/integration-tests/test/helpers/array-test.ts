@@ -1,11 +1,7 @@
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  strip,
-  test,
-  tracked,
-} from '@glimmer-workspace/integration-tests';
+import { tracked } from '@glimmer/tracking';
+import type Owner from '@ember/owner';
+import GlimmerComponent from '@glimmer/component';
+import { jitSuite, RenderTest, strip, test } from '@glimmer-workspace/integration-tests';
 
 class ArrayTest extends RenderTest {
   static suiteName = 'Helpers test: {{array}}';
@@ -134,10 +130,10 @@ class ArrayTest extends RenderTest {
 
     const setInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       @tracked personOne;
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(owner: Owner, args: Record<string, unknown>) {
         super(owner, args);
         this.personOne = 'Chad';
         setInstance(this);
@@ -182,10 +178,10 @@ class ArrayTest extends RenderTest {
 
     const setInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       @tracked personOne = 'Chad';
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(owner: Owner, args: Record<string, unknown>) {
         super(owner, args);
         setInstance(this);
       }
@@ -259,10 +255,10 @@ class ArrayTest extends RenderTest {
 
     const setInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent<Record<string, unknown>> {
       @tracked personOne = 'Chad';
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(owner: Owner, args: Record<string, unknown>) {
         super(owner, args);
         setInstance(this);
       }

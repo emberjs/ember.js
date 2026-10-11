@@ -1,10 +1,9 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';
@@ -95,21 +94,19 @@ export class EachSuite extends RenderTest {
 
     let list = {
       arr: [1, 2, 3, 4],
-      tag: createTag(),
+      version: tracked(0),
 
       [Symbol.iterator]() {
-        consumeTag(this.tag);
+        void this.version.value;
         return this.arr[Symbol.iterator]();
       },
 
       push(...vals: number[]) {
-        dirtyTag(this.tag);
-        this.arr.push(...vals);
+        (this.version.update((n) => n + 1), this.arr.push(...vals));
       },
 
       clear() {
-        dirtyTag(this.tag);
-        this.arr.splice(0, this.arr.length);
+        (this.version.update((n) => n + 1), this.arr.splice(0, this.arr.length));
       },
     };
     this.render('{{#each this.list key="@index" as |item|}}{{item}}{{else}}Empty{{/each}}', {

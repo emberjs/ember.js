@@ -18,6 +18,7 @@ import {
   calculateCacheKey,
   extractRouteArgs,
   getActiveTargetName,
+  queryParamType,
   resemblesURL,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
@@ -1099,10 +1100,7 @@ class EmberRouter extends EmberObject {
         } else if (value === undefined) {
           return; // We don't serialize undefined values
         } else {
-          queryParams[key] = this._serializeQueryParam(
-            value,
-            Array.isArray(value) ? 'array' : typeof value
-          );
+          queryParams[key] = this._serializeQueryParam(value, queryParamType(value));
         }
       }
     );

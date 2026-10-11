@@ -19,7 +19,8 @@ import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
-import { Component, SafeString, htmlSafe } from '../utils/helpers';
+import Component from '@glimmer/component';
+import { SafeString, htmlSafe } from '../utils/helpers';
 
 const EMPTY = Object.freeze({});
 
@@ -1734,17 +1735,16 @@ if (DEBUG) {
         this.assertStyleWarning(userValue);
       }
 
-      ['@test specifying `attributeBindings: ["style"]` generates a warning']() {
-        let FooBarComponent = class extends Component {
-          attributeBindings = ['style'];
-        };
-
+      ['@test specifying `style` on a component with `...attributes` generates a warning']() {
         this.owner.register(
           'component:foo-bar',
-          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+          setComponentTemplate(
+            precompileTemplate('<div ...attributes>hello</div>'),
+            class extends Component {}
+          )
         );
         let userValue = 'width: 42px';
-        this.render('{{foo-bar style=this.userValue}}', {
+        this.render('<FooBar style={{this.userValue}} />', {
           userValue,
         });
 

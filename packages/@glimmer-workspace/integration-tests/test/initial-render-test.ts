@@ -1,10 +1,9 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
-import type { SafeString } from '@glimmer/runtime';
+import { htmlSafe } from '@ember/template';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, expect } from '@glimmer/debug-util';
 import {
   assertElementShape,
-  assertEmberishElement,
   assertingElement,
   assertSerializedInElement,
   blockStack,
@@ -13,8 +12,6 @@ import {
   content,
   EMPTY,
   equalTokens,
-  firstElementChild,
-  GLIMMER_TEST_COMPONENT,
   InitialRenderSuite,
   jitSuite,
   OPEN,
@@ -25,6 +22,7 @@ import {
   test,
   toInnerHTML,
   toTextContent,
+  trackedContext,
 } from '@glimmer-workspace/integration-tests';
 
 class RenderTests extends InitialRenderSuite {
@@ -44,7 +42,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
-      context,
+      trackedContext(context),
       () => this.takeSnapshot(),
       element
     );
@@ -52,8 +50,10 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   }
 
   renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
-    this.context = context;
-    this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
+    // the same tracked object the server render got (see `trackedContext`), so that writes through
+    // `this.context` are tracked
+    this.context = trackedContext(context);
+    this.handle = this.delegate.renderClientSide(template as string, this.context, this.element);
   }
 
   assertRehydrationStats({ nodesRemoved: nodes }: { nodesRemoved: number }) {
@@ -115,11 +115,7 @@ class Rehydration extends AbstractRehydrationTests {
   'handles empty trusted content (html safe string)'() {
     let template = '<div>{{this.value}}</div>';
 
-    let safeString: SafeString = {
-      toHTML() {
-        return '';
-      },
-    };
+    let safeString = htmlSafe('');
     let obj = { value: safeString };
 
     this.renderServerSide(template, obj);
@@ -396,7 +392,6 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
     doc = this.delegate.clientDoc;
     let clientNode = doc.createTextNode('hello');
-    this.context = { node: clientNode };
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
     // Just repairs the value of the text node
@@ -958,34 +953,19 @@ class Rehydration extends AbstractRehydrationTests {
 }
 
 class RehydratingComponents extends AbstractRehydrationTests {
-  _buildComponent(blueprint: ComponentBlueprint, properties: Dict = {}) {
-    let template = this.buildComponent(blueprint);
-    if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
-      properties['componentName'] = blueprint.name || GLIMMER_TEST_COMPONENT;
-    }
-    return template;
-  }
-
   assertServerComponent(html: string, attrs: object = {}) {
-    // the Dynamic test type is using {{component 'foo'}} style invocation
-    // and therefore an extra node is added delineating the block start
-    let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
-    let element = assertingElement(this.element.childNodes[elementIndex]);
+    let element = assertingElement(this.element.childNodes[2]);
 
-    if (this.testType === 'Glimmer') {
-      assertElementShape(element, 'div', attrs, html);
-    } else {
-      assertEmberishElement(element, 'div', attrs, html);
-    }
+    assertElementShape(element, 'div', attrs, html);
   }
 
   override renderServerSide(blueprint: ComponentBlueprint, properties: Dict = {}) {
-    let template = this._buildComponent(blueprint, properties);
+    let template = this.buildComponent(blueprint);
     super.renderServerSide(template, properties);
   }
 
   override renderClientSide(blueprint: ComponentBlueprint, properties: Dict = {}) {
-    let template = this._buildComponent(blueprint, properties);
+    let template = this.buildComponent(blueprint);
     super.renderClientSide(template, properties);
   }
 
@@ -1001,7 +981,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       { name: 'Filewatcher' }
     );
     let b = blockStack();
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
     this.assertServerComponent(`Hello ${b(id)}Filewatcher${b(id)}`);
 
     this.renderClientSide(
@@ -1028,7 +1008,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       { name: 'Filewatcher' }
     );
     let b = blockStack();
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
     this.assertServerComponent(`Hello ${b(id)}Filewatcher${b(id)}`);
 
     this.renderClientSide(
@@ -1053,7 +1033,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     this.renderServerSide(componentToRender, { show: true });
     let b = blockStack();
 
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
 
     this.assertServerComponent(`<p>hello ${b(id)}</p><div>world!</div>${b(id)}<p></p>`);
 
@@ -1081,7 +1061,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       { name: 'Filewatcher' }
     );
     let b = blockStack();
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
     this.assertServerComponent(`Hello ${b(id)}Filewatcher${b(id)}`);
 
     this.renderClientSide(
@@ -1115,7 +1095,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       { name: 'Filewatcher' }
     );
     let b = blockStack();
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
     this.assertServerComponent(`Hello ${b(id)}Filewatcher${b(id)}`);
 
     this.renderClientSide(
@@ -1180,7 +1160,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       layout,
     });
     let b = blockStack();
-    let id = this.testType === 'Dynamic' ? 3 : 2;
+    let id = 2;
     this.assertServerComponent(`Hello ${b(id)}<!--% %-->${b(id)}`);
 
     this.renderClientSide({
@@ -1193,36 +1173,15 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
   @test
   'Multiple invocations'() {
-    let name;
-    let template;
-
-    let emberishComponent = false;
-    if (this.testType === 'Dynamic' || this.testType === 'Curly') {
-      name = 'foo-bar';
-      template = '{{#foo-bar}}World{{/foo-bar}}';
-      emberishComponent = true;
-    } else {
-      name = 'FooBar';
-      template = '<FooBar>World</FooBar>';
-    }
-
-    this.registerComponent(this.testType, name, 'Hello {{yield}}');
+    this.registerComponent(this.testType, 'FooBar', 'Hello {{yield}}');
     let layout = `{{yield}}`;
+    let template = '<FooBar>World</FooBar>';
     this.renderServerSide({
       layout,
       template,
     });
     let b = blockStack();
-    if (emberishComponent) {
-      let wrapper = assertingElement(firstElementChild(this.element));
-
-      // injects wrapper elements
-      this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
-      this.assert.strictEqual(toTextContent(wrapper), 'Hello World');
-      // this.assert.strictEqual(this.element.textContent, 'Hello World');
-    } else {
-      this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
-    }
+    this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
 
     this.renderClientSide({
       layout,
@@ -1235,44 +1194,18 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
   @test
   'Mismatched Multiple invocations'() {
-    let name;
-    let template;
-
-    let emberishComponent = false;
-    if (this.testType === 'Dynamic' || this.testType === 'Curly') {
-      name = 'foo-bar';
-      template = '{{#foo-bar}}World{{/foo-bar}}';
-      emberishComponent = true;
-    } else {
-      name = 'FooBar';
-      template = '<FooBar>World</FooBar>';
-    }
-
-    this.registerComponent(this.testType, name, 'Hello {{yield}}');
+    this.registerComponent(this.testType, 'FooBar', 'Hello {{yield}}');
     let layout = `{{yield}}`;
     this.renderServerSide({
       layout,
-      template,
+      template: '<FooBar>World</FooBar>',
     });
     let b = blockStack();
-    if (emberishComponent) {
-      let wrapper = assertingElement(firstElementChild(this.element));
-      // injects wrapper elements
-      this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
-      this.assert.strictEqual(toTextContent(this.element), 'Hello World');
-    } else {
-      this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
-    }
-
-    if (this.testType === 'Dynamic' || this.testType === 'Curly') {
-      template = '{{#foo-bar}}Chad{{/foo-bar}}';
-    } else {
-      template = '<FooBar>Chad</FooBar>';
-    }
+    this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
 
     this.renderClientSide({
       layout,
-      template,
+      template: '<FooBar>Chad</FooBar>',
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assert.strictEqual(toTextContent(this.element), 'Hello Chad');
@@ -1318,43 +1251,41 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
     let b = blockStack();
 
-    let id = (num: number) => (this.testType === 'Dynamic' ? num + 1 : num);
-
     this.assertServerComponent(strip`
       <ul>
-        ${b(id(2))}
-        ${b(id(3))}
-        ${b(id(4))}
-        ${b(id(5))}
+        ${b(2)}
+        ${b(3)}
+        ${b(4)}
+        ${b(5)}
         <li>
-          ${b(id(6))}
+          ${b(6)}
           Industry
-          ${b(id(6))}
+          ${b(6)}
         </li>
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
         <!---->
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
-        ${b(id(7))}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
+        ${b(7)}
         <li>
-          ${b(id(8))}
+          ${b(8)}
           2
-          ${b(id(8))}
+          ${b(8)}
         </li>
-        ${b(id(7))}
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(3))}
-        ${b(id(2))}
+        ${b(7)}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(3)}
+        ${b(2)}
       </ul>
     `);
 
@@ -1418,43 +1349,41 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
     let b = blockStack();
 
-    let id = (num: number) => (this.testType === 'Dynamic' ? num + 1 : num);
-
     this.assertServerComponent(strip`
       <ul>
-        ${b(id(2))}
-        ${b(id(3))}
-        ${b(id(4))}
-        ${b(id(5))}
+        ${b(2)}
+        ${b(3)}
+        ${b(4)}
+        ${b(5)}
         <li>
-          ${b(id(6))}
+          ${b(6)}
           Industry
-          ${b(id(6))}
+          ${b(6)}
         </li>
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
         <!---->
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
-        ${b(id(7))}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
+        ${b(7)}
         <li>
-          ${b(id(8))}
+          ${b(8)}
           2
-          ${b(id(8))}
+          ${b(8)}
         </li>
-        ${b(id(7))}
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(3))}
-        ${b(id(2))}
+        ${b(7)}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(3)}
+        ${b(2)}
       </ul>
     `);
 
@@ -1527,48 +1456,46 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
     let b = blockStack();
 
-    let id = (num: number) => (this.testType === 'Dynamic' ? num + 1 : num);
-
     this.assertServerComponent(strip`
       <ul>
-        ${b(id(2))}
-        ${b(id(3))}
-        ${b(id(4))}
-        ${b(id(5))}
+        ${b(2)}
+        ${b(3)}
+        ${b(4)}
+        ${b(5)}
         <li>
-          ${b(id(6))}
+          ${b(6)}
           Industry
-          ${b(id(6))}
+          ${b(6)}
         </li>
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
         <!---->
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(4))}
-        ${b(id(5))}
-        ${b(id(6))}
-        ${b(id(7))}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(4)}
+        ${b(5)}
+        ${b(6)}
+        ${b(7)}
         <li>
-          ${b(id(8))}
+          ${b(8)}
           2
-          ${b(id(8))}
+          ${b(8)}
         </li>
-        ${b(id(7))}
-        ${b(id(6))}
-        ${b(id(5))}
-        ${b(id(4))}
-        ${b(id(3))}
-        ${b(id(2))}
+        ${b(7)}
+        ${b(6)}
+        ${b(5)}
+        ${b(4)}
+        ${b(3)}
+        ${b(2)}
       </ul>
       <ul>
-        ${b(id(2))}
+        ${b(2)}
         <!---->
-        ${b(id(2))}
+        ${b(2)}
       </ul>
     `);
 
@@ -1595,4 +1522,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
 suite(Rehydration, RehydrationDelegate);
 jitSuite(RenderTests);
-componentSuite(RehydratingComponents, RehydrationDelegate);
+// Angle-bracket invocation only: most of this suite's tests (inherited from the initial render
+// suite) render no component, and its own component tests compare rehydration markers, which
+// differ per invocation form.
+componentSuite(RehydratingComponents, RehydrationDelegate, { kinds: ['glimmer', 'templateOnly'] });

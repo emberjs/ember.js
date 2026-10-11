@@ -1,12 +1,13 @@
-import type { Dict, Owner } from '@glimmer/interfaces';
+import type Owner from '@ember/owner';
+import GlimmerComponent from '@glimmer/component';
+import type { Dict } from '@glimmer/interfaces';
 
-import { GlimmerishComponent } from '../components';
 import { assertElementShape } from '../dom/assertions';
 import { assertingElement } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip, stripTight } from '../test-helpers/strings';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 import { DEBUG } from '@glimmer/env';
 
 export class TemplateOnlyComponents extends RenderTest {
@@ -89,7 +90,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (named arg path) via angle brackets'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render({
       layout: '<@stuff.Foo />',
@@ -106,7 +106,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking curried component with attributes via angle brackets (invocation attributes clobber)'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent(
       'Glimmer',
       'Foo',
@@ -127,7 +126,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking curried component with attributes via angle brackets (invocation classes merge)'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', '<p class="default" ...attributes>hello world!</p>');
     this.render({
       layout: '<@stuff.Foo class="invocation" />',
@@ -214,7 +212,7 @@ export class GlimmerishComponents extends RenderTest {
   'invoking dynamic component (named arg) via angle brackets supports args and attributes'() {
     let instance = this.capture<Foo>();
 
-    class Foo extends GlimmerishComponent {
+    class Foo extends GlimmerComponent {
       @tracked localProperty: string;
 
       constructor(owner: Owner, args: Dict) {
@@ -279,7 +277,6 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (local path) via angle brackets'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render(`{{#let (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/let}}`);
 
@@ -336,7 +333,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports args, attributes, and blocks'() {
     let instance = this.capture<Foo>();
-    class Foo extends GlimmerishComponent {
+    class Foo extends GlimmerComponent {
       @tracked localProperty: string;
 
       constructor(owner: Owner, args: Dict) {
@@ -435,7 +432,7 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports attributes'() {
-    class TestHarness extends GlimmerishComponent {
+    class TestHarness extends GlimmerComponent {
       public Foo: any;
 
       constructor(owner: Owner, args: Dict) {
@@ -455,7 +452,7 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports args'() {
-    class TestHarness extends GlimmerishComponent {
+    class TestHarness extends GlimmerComponent {
       public Foo: any;
 
       constructor(owner: Owner, args: Dict) {
@@ -475,7 +472,7 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports passing a block'() {
-    class TestHarness extends GlimmerishComponent {
+    class TestHarness extends GlimmerComponent {
       public Foo: any;
 
       constructor(owner: Owner, args: Dict) {
@@ -497,7 +494,7 @@ export class GlimmerishComponents extends RenderTest {
   'invoking dynamic component (path) via angle brackets supports args, attributes, and blocks'() {
     let instance = this.capture<Foo>();
 
-    class TestHarness extends GlimmerishComponent {
+    class TestHarness extends GlimmerComponent {
       public Foo: any;
 
       constructor(owner: Owner, args: Dict) {
@@ -506,7 +503,7 @@ export class GlimmerishComponents extends RenderTest {
       }
     }
 
-    class Foo extends GlimmerishComponent {
+    class Foo extends GlimmerComponent {
       @tracked localProperty: string;
 
       constructor(owner: Owner, args: Dict) {
@@ -626,7 +623,7 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({ kind: 'glimmer' })
   '[BUG: #644 popping args should be balanced]'() {
-    class MainComponent extends GlimmerishComponent {
+    class MainComponent extends GlimmerComponent {
       salutation = 'Glimmer';
     }
     this.registerComponent(
@@ -646,7 +643,7 @@ export class GlimmerishComponents extends RenderTest {
 
     this.registerHelper('count', () => count++);
 
-    class MainComponent extends GlimmerishComponent {
+    class MainComponent extends GlimmerComponent {
       salutation = 'Glimmer';
     }
     this.registerComponent(
@@ -662,7 +659,7 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({ kind: 'glimmer' })
   '[BUG] Gracefully handles application of curried args when invoke starts with 0 args'() {
-    class MainComponent extends GlimmerishComponent {
+    class MainComponent extends GlimmerComponent {
       salutation = 'Glimmer';
     }
     this.registerComponent(
@@ -746,7 +743,7 @@ export class GlimmerishComponents extends RenderTest {
   'recursive component invocation'() {
     let counter = 0;
 
-    class RecursiveInvoker extends GlimmerishComponent {
+    class RecursiveInvoker extends GlimmerComponent {
       id: number;
 
       get showChildren() {
@@ -776,7 +773,7 @@ export class GlimmerishComponents extends RenderTest {
       'Glimmer',
       'Foo',
       'Hello',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         constructor(owner: Owner, args: Dict) {
           super(owner, args);
           throw new Error('something went wrong!');
@@ -804,7 +801,7 @@ export class GlimmerishComponents extends RenderTest {
       'Glimmer',
       'Foo',
       'Hello',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         constructor(owner: Owner, args: Dict) {
           super(owner, args);
           throw new Error('something went wrong!');
@@ -838,7 +835,7 @@ export class GlimmerishComponents extends RenderTest {
       'Glimmer',
       'Foo',
       'Hello',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         constructor(owner: Owner, args: Dict) {
           super(owner, args);
           throw new Error('something went wrong!');
@@ -885,7 +882,7 @@ export class GlimmerishComponents extends RenderTest {
         'Glimmer',
         'Foo',
         'Hello',
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           constructor(owner: Owner, args: Dict) {
             super(owner, args);
             throw new Error('something went wrong!');

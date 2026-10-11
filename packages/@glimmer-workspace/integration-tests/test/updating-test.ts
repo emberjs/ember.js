@@ -1,39 +1,25 @@
-import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import type { SafeString } from '@glimmer/runtime';
+import { tracked } from '@glimmer/tracking';
+import GlimmerComponent from '@glimmer/component';
+import type { Arguments, Nullable, Owner, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { htmlSafe } from '@ember/template';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 import {
   assertNodeTagName,
   getElementByClassName,
   getElementsByTagName,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   stripTight,
   test,
-  tracked,
+  TestHelper,
   trimLines,
 } from '@glimmer-workspace/integration-tests';
 
 import { assert } from './support';
 import { DEBUG } from '@glimmer/env';
-
-function makeSafeString(value: string): SafeString {
-  return new SafeStringImpl(value);
-}
-
-class SafeStringImpl implements SafeString {
-  constructor(private string: string) {}
-  toHTML() {
-    return this.string;
-  }
-  toString() {
-    return this.string;
-  }
-}
 
 class UpdatingTest extends RenderTest {
   static suiteName = 'Updating';
@@ -345,7 +331,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'updating a triple curly with a safe and unsafe string'() {
-    let safeString = makeSafeString('<p>hello world</p>');
+    let safeString = htmlSafe('<p>hello world</p>');
     let unsafeString = '<b>Big old world!</b>';
 
     this.render('<div>{{{this.value}}}</div>', {
@@ -392,9 +378,7 @@ class UpdatingTest extends RenderTest {
   'double curlies with const SafeString'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(makeSafeString(rawString), 'safe-string');
-    });
+    this.registerHelper('const-foobar', () => htmlSafe(rawString));
 
     this.render('<div>{{const-foobar}}</div>', {});
     this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
@@ -405,9 +389,7 @@ class UpdatingTest extends RenderTest {
   'double curlies with const Node'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
-    });
+    this.registerHelper('const-foobar', () => this.delegate.createTextNode(rawString));
 
     this.render('<div>{{const-foobar}}</div>');
     this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
@@ -418,9 +400,7 @@ class UpdatingTest extends RenderTest {
   'triple curlies with const SafeString'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(makeSafeString(rawString), 'safe-string');
-    });
+    this.registerHelper('const-foobar', () => htmlSafe(rawString));
 
     this.render('<div>{{{const-foobar}}}</div>');
     this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
@@ -431,9 +411,7 @@ class UpdatingTest extends RenderTest {
   'triple curlies with const Node'() {
     let rawString = '<b>bold</b> and spicy';
 
-    this.registerInternalHelper('const-foobar', () => {
-      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
-    });
+    this.registerHelper('const-foobar', () => this.delegate.createTextNode(rawString));
 
     this.render('<div>{{{const-foobar}}}</div>');
     this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
@@ -450,13 +428,18 @@ class UpdatingTest extends RenderTest {
       destroyable.count++;
     });
 
-    this.registerInternalHelper('destroy-me', (_args) => {
-      let ref = createPrimitiveRef('destroy me!');
+    class DestroyMeHelper extends TestHelper {
+      constructor(owner: Owner, args: Arguments) {
+        super(owner, args);
+        associateDestroyableChild(this, destroyable);
+      }
 
-      associateDestroyableChild(ref, destroyable);
+      value() {
+        return 'destroy me!';
+      }
+    }
 
-      return ref;
-    });
+    this.registerHelperDefinition('destroy-me', DestroyMeHelper);
 
     this.render('<div>{{destroy-me}}</div>', {});
 
@@ -487,24 +470,26 @@ class UpdatingTest extends RenderTest {
     let { template, truthyValue, falsyValue, element } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let tag = createTag();
+    let tag = trackedObject({ version: 0 });
     let currentValue: T | U = truthyValue;
 
-    this.registerInternalHelper('stateful-foo', (_args) => {
-      didCreate++;
+    class StatefulHelper extends TestHelper {
+      constructor(owner: Owner, args: Arguments) {
+        super(owner, args);
+        didCreate++;
+      }
 
-      let ref = createComputeRef(() => {
-        consumeTag(tag);
+      value() {
+        void tag['version'];
         return currentValue;
-      });
+      }
 
-      let destroyable = {};
+      override willDestroy() {
+        didDestroy++;
+      }
+    }
 
-      registerDestructor(destroyable, () => didDestroy++);
-      associateDestroyableChild(ref, destroyable);
-
-      return ref;
-    });
+    this.registerHelperDefinition('stateful-foo', StatefulHelper);
 
     assert.strictEqual(didCreate, 0, 'didCreate: before render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: before render');
@@ -522,7 +507,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
     currentValue = falsyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
@@ -530,7 +515,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
     currentValue = truthyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML('Yes', element, 'after reset');
@@ -878,7 +863,7 @@ class UpdatingTest extends RenderTest {
     this.registerHelper('hello', () => 'hello');
 
     assert.throws(() => {
-      this.delegate.compileTemplate('{{helo world}}');
+      this.render('{{helo world}}');
     }, /Error: Attempted to resolve `helo`, which was expected to be a component or helper, but nothing was found./u);
   }
 
@@ -1453,15 +1438,19 @@ class UpdatingTest extends RenderTest {
   }
 
   assertInvariants(msg?: string) {
-    let result = expect(this.renderResult, 'must render before asserting invariants');
+    let handle = expect(this.handle, 'must render before asserting invariants');
+    let bounds = expect(this.delegate.debugBounds, 'the delegate must provide debugBounds').call(
+      this.delegate,
+      handle
+    );
 
     assert.strictEqual(
-      result.firstNode(),
+      bounds.firstNode(),
       this.element.firstChild,
       `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`
     );
     assert.strictEqual(
-      result.lastNode(),
+      bounds.lastNode(),
       this.element.lastChild,
       `The lastNode of the result is the same as the roots's lastChild${msg ? ': ' + msg : ''}`
     );
@@ -1990,7 +1979,7 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         override willDestroy() {
           destroyCount++;
         }
@@ -2028,7 +2017,7 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         override willDestroy() {
           destroyCount++;
         }

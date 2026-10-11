@@ -1,10 +1,9 @@
-import type { Cursor, Environment, TreeBuilder } from '@glimmer/interfaces';
 import { precompile } from '@glimmer/compiler';
-import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
+import { NodeDOMTreeConstruction } from '@glimmer/node';
 
 import { blockStack } from '../dom/blocks';
 import { toInnerHTML } from '../dom/simple-utils';
-import { AbstractNodeTest, NodeJitRenderDelegate } from '../modes/node/env';
+import { AbstractNodeTest } from '../modes/node/env';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip } from '../test-helpers/strings';
@@ -33,14 +32,6 @@ export class CompilationTests extends RenderTest {
     template = precompile('hello', { meta: { moduleName: 'template/hello' } });
     obj = JSON.parse(template);
     this.assert.strictEqual(obj.id, '4vC0bnaR', 'short sha of template source and meta');
-  }
-}
-
-export class JitSerializationDelegate extends NodeJitRenderDelegate {
-  static override style = 'jit serialization';
-
-  override getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
-    return serializeBuilder(env, cursor);
   }
 }
 

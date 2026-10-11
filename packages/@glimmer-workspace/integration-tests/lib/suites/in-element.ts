@@ -1,15 +1,13 @@
+import GlimmerComponent from '@glimmer/component';
 import type { AST } from '@glimmer/syntax';
-import { unwrap } from '@glimmer/debug-util';
-import { destroy } from '@glimmer/destroyable';
 import { assign } from '@glimmer/util';
 
-import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { equalsElement } from '../dom/assertions';
 import { replaceHTML } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { stripTight } from '../test-helpers/strings';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';
@@ -341,7 +339,7 @@ export class InElementSuite extends RenderTest {
     this.assertHTML('BeforeYippie!<!---->After');
     this.assertStableRerender();
 
-    destroy(unwrap(this.renderResult));
+    this.destroy();
   }
 
   @test
@@ -404,7 +402,6 @@ export class InElementSuite extends RenderTest {
       }
     }
 
-    this.testType = 'Dynamic';
     this.registerComponent('TemplateOnly', 'FooBar', '<p>{{@value}}</p>');
 
     this.registerHelper('log', () => {});
@@ -518,7 +515,7 @@ export class InElementSuite extends RenderTest {
   'Components are destroyed'() {
     let destroyed = 0;
 
-    class DestroyMeComponent extends GlimmerishComponent {
+    class DestroyMeComponent extends GlimmerComponent {
       override willDestroy() {
         super.willDestroy();
         destroyed++;

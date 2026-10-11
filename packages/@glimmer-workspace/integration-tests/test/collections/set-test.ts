@@ -1,7 +1,7 @@
-import { trackedSet } from '@glimmer/validator';
+import Component from '@glimmer/component';
+import { trackedSet } from '@ember/reactive/collections';
 import {
   defineComponent,
-  GlimmerishComponent as Component,
   jitSuite,
   RenderTest,
   strip,
