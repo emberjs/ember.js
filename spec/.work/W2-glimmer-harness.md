@@ -517,6 +517,18 @@ dasherizes before the lookup; (3) `createTemplate` maps `meta.moduleName`/`plugi
 (locals become scope names), and drops `keywords` (no test uses it any more since "Non-native
 keyword" went in 5.3b).
 
+**2026-10-11 (author decision, PR 6 review): plain mode removed.** The triage above moved the
+five VM-only `in-element` tests to `IT/test/vm/in-element-vm-test.ts` with a `plain` compile mode
+(`IT/lib/modes/plain/`, a `compileTemplate` hook on the delegates). That is gone. The 2 null-destination
+tests ("Changing to falsey", "With pre-existing content") are back in `IT/lib/suites/in-element.ts`,
+compiled with Ember's options and `@test({ skip: DEBUG })`: the development assertion is
+`-in-element-null-check` (inserted by `transform-in-element.ts:38`), and a production build, where the
+assert is stripped, has the VM's behavior (renders nothing). They pass in a production build
+(`NODE_ENV=production npx vite build --mode production`, `FILTER=in-element`). The 3 non-null
+`insertBefore` tests are deleted (twin: `public-in-element-test.js`, which tests the compile-time
+assertion). Ledger rows `PR6-plain`. Per-test diff against the old PR 6: exactly those 5 changed.
+Suite 9293 -> 9290, skips 18 -> 20 in development; PR 10 9196 -> 9193.
+
 ## 6. Remaining stubs (step 6)
 
 - [x] 6.1 (done, see notes) `style-warnings-test.ts` → Ember harness with `expectWarning`.
@@ -772,8 +784,6 @@ and 8.1 exempts them from the import boundary (5.1 review decision 3). Keep addi
 - `IT/test/env-test.ts`: `EnvironmentImpl` (C7) (5.1 table).
 - `IT/test/debug-render-tree-test.ts`, the 2 `getDebugCustomRenderTree` tests only: `EMPTY_ARGS` and `TemplateOnlyComponentManager`, internal manager API (C7); the rest of the file is conformance (5.1 table, 5.3c).
 - `IT/test/precompile-test.ts`, `IT/test/compiler/compile-options-test.ts`: `precompile`, `templateFactory`, opcode-compiler types (C3) (5.1 table).
-- `IT/test/vm/in-element-vm-test.ts` (5 tests, `jit` and `rehydration (plain Glimmer compile)`): the VM's `{{#in-element}}` with a null destination or a non-null `insertBefore`, compiled with plain Glimmer options; Ember's template language rejects both (5.5b).
-- `IT/lib/modes/plain/{compile,delegates}.ts` (helpers for the previous entry, no tests of their own).
 - `packages/@glimmer/manager/test/managers-test.ts`: every test is at the registry level (`set*Manager`/`getInternal*Manager`, `CustomComponentManager['factory']`, hand-built internal managers, `create()` called directly); no render-level Ember twin (7.1g).
 - `packages/@glimmer/manager/test/capabilities-test.ts`: `capabilityFlagsFrom`/`managerHasCapability` bitmaps, internal VM flags (seen while doing 7.1g; not part of the §3 table).
 - Not kept, so not on the list: `iterable-test.ts` (6.3: every case was observable through `{{#each}}`, ported or ledgered; deleted), `style-warnings-test.ts` (6.1), `entry-point.ts` (5.4b, never registered), the strict-mode "Non-native keyword" test (5.3b, deleted).

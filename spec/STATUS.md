@@ -338,6 +338,17 @@ Suggestions for the plan's author, based on what is still open:
    dead `elementId`, unused imports); 6–10: `b85f83f8ff`, `2139643e50`, `c710ee0fd0`,
    `28553335d0`, `f3a9ef4622`. Suites unchanged. Deferred by the author: `defineSimpleHelper` →
    plain-function helpers, and Ember's `tests/utils/helpers.js` re-exports → public modules.
+   **PR 5 landed (2026-10-11) as #21684; PR 6 without plain mode (author decision).** `origin/main`
+   is `c49d802ba0` (PR 5 merged as-is, plus the `@ember/test-helpers` 5.7.0 upgrade). 6-10 are
+   rebased onto it (one commit each; only PR 8 and PR 10 needed hand merges, in `in-element.ts` and
+   the delegates). PR 6 no longer has `lib/modes/plain/`, `test/vm/in-element-vm-test.ts` or the
+   `compileTemplate` hook: the 2 null-destination `in-element` tests are back in the normal suite as
+   `@test({ skip: DEBUG })` (pass in a production build, skipped in development), and the 3
+   `insertBefore` = element tests are deleted (twin `public-in-element-test.js`). Ledger rows
+   `PR6-plain`. New tips and development totals (0 fail, 20 skip): 6 `e68582364f` 9290, 7 `80cd8345f0`
+   9284, 8 `9bbae31d7e` 9189, 9 `f6e36dfbc6` 9190, 10 `09d8662798` 9193 (each old count - 3). Per-test
+   diff against the old PR 6 and PR 10: only the 5 named tests changed, plus the 2 restored. The
+   pre-change tips are in the scratchpad `stack-before-pr6-plain.txt`. Not pushed.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
