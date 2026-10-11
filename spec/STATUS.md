@@ -349,6 +349,11 @@ Suggestions for the plan's author, based on what is still open:
    9284, 8 `9bbae31d7e` 9189, 9 `f6e36dfbc6` 9190, 10 `09d8662798` 9193 (each old count - 3). Per-test
    diff against the old PR 6 and PR 10: only the 5 named tests changed, plus the 2 restored. The
    pre-change tips are in the scratchpad `stack-before-pr6-plain.txt`. Not pushed.
+   2026-10-11: PR 6 gained a bugfix commit (`427e2c3958`): `transform-resolutions` crashed with
+   a TypeError on a bare `{{modifier}}`/`{{helper}}` in production builds (assertion stripped,
+   then `first.type` read); it now leaves the call to the keyword's own validation. Found by
+   PR 6's production CI run. 7–10 rebased onto it: `e1a4a6b9e0`, `6fd842093e`, `67bf90c131`,
+   `4ca21f34e7`; PR 10 dev 9193 / prod 9030, 0 fail.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
