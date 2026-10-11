@@ -1,7 +1,8 @@
+import { tracked } from '@glimmer/tracking';
 import type Owner from '@ember/owner';
 import GlimmerComponent from '@glimmer/component';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { jitSuite, RenderTest, test, tracked } from '@glimmer-workspace/integration-tests';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class HashTest extends RenderTest {
   static suiteName = 'Helpers test: {{hash}}';

@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import { trackedSet } from '@glimmer/validator';
+import { trackedSet } from '@ember/reactive/collections';
 import {
   defineComponent,
   jitSuite,

@@ -1,9 +1,9 @@
-import type { Dict, RenderResult, SimpleElement } from '@glimmer/interfaces';
+import type { Dict, SimpleElement } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util';
-import { renderComponent, renderSync } from '@glimmer/runtime';
+import { renderComponent } from '@ember/renderer';
 
+import type { RenderHandle } from '../../render-delegate';
 import type { TestOwner } from '../owner';
-import type { DebugRehydrateTree } from './builder';
 
 import { RehydrationDelegate } from './delegate';
 
@@ -12,21 +12,27 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     this.registerComponent('TemplateOnly', 'TemplateOnly', name, layout);
   }
 
-  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderResult {
-    let cursor = { element, nextSibling: null };
-    let context = this.clientContext;
-    let tree = this.getElementBuilder(context.env, cursor) as DebugRehydrateTree;
+  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderHandle {
     let component = this.componentFor(this.clientOwner, name);
 
-    let iterator = renderComponent(context, tree, this.clientOwner, component, args);
-
-    const result = renderSync(context.env, iterator);
+    // Through the renderer's `render` rather than the public `renderComponent`: the latter
+    // replaces the previous render into the same element, by rendering before its first node
+    // (`nextSibling` set), which rehydration does not support; the chaos tests render into one
+    // element once per iteration. It also clears an element target on its first render, which
+    // would wipe the server HTML that is to be rehydrated.
+    let root = this.clientRenderer.render(component, {
+      into: { element, nextSibling: null },
+      args,
+    });
 
     this.rehydrationStats = {
-      clearedNodes: tree.clearedNodes,
+      clearedNodes: this.lastClientTree!.clearedNodes,
     };
 
-    return result;
+    return {
+      rerender: () => this.clientRenderer.rerender(),
+      destroy: () => root.destroy(),
+    };
   }
 
   private componentFor(owner: TestOwner, name: string): object {
@@ -35,15 +41,14 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
 
   renderComponentServerSide(name: string, args: Dict): string {
     const element = this.serverDoc.createElement('div');
-    let cursor = { element, nextSibling: null };
-    let context = this.serverContext;
-    let builder = this.getElementBuilder(context.env, cursor);
-
     let component = this.componentFor(this.serverOwner, name);
 
-    let iterator = renderComponent(context, builder, this.serverOwner, component, args);
+    renderComponent(component, {
+      into: { element, nextSibling: null } as unknown as Element,
+      owner: this.serverOwner,
+      args,
+    });
 
-    renderSync(context.env, iterator);
     this.serverRendered = true;
 
     return this.serialize(element);

@@ -1,16 +1,12 @@
 import GlimmerComponent from '@glimmer/component';
-import type { Nullable, ResolutionTimeConstants, TemplateFactory } from '@glimmer/interfaces';
-import type { CurriedValue } from '@glimmer/runtime';
-import { CURRIED_COMPONENT } from '@glimmer/constants';
+import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
-import { curry, templateOnlyComponent } from '@glimmer/runtime';
+import { templateOnlyComponent } from '@glimmer/runtime';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type { TestOwner } from '../owner';
-import type { TestJitRegistry } from './registry';
-import type { TestJitRuntimeResolver } from './resolver';
 
 import { createTemplate } from '../../compile';
 import { defineUserHelper } from '../../helpers';
@@ -58,16 +54,20 @@ export function registerCurlyInvokedComponent(
   registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
-export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
-  registry.register('helper', name, defineUserHelper(helper));
+export function registerHelper(owner: TestOwner, name: string, helper: UserHelper) {
+  registerHelperDefinition(owner, name, defineUserHelper(helper));
+}
+
+export function registerHelperDefinition(owner: TestOwner, name: string, definition: object) {
+  owner.register(`helper:${name}`, definition, { instantiate: false });
 }
 
 export function registerModifier(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   ModifierClass?: TestModifierConstructor
 ) {
-  registry.register('modifier', name, defineTestModifier(ModifierClass));
+  owner.register(`modifier:${name}`, defineTestModifier(ModifierClass), { instantiate: false });
 }
 
 export function registerComponent<K extends ComponentKind>(
@@ -102,17 +102,4 @@ function registerSomeComponent(
   }
 
   owner.register(`component:${name}`, ComponentClass, { instantiate: false });
-}
-
-export function componentHelper(
-  resolver: TestJitRuntimeResolver,
-  owner: TestOwner,
-  name: string,
-  constants: ResolutionTimeConstants
-): CurriedValue | null {
-  let definition = resolver.lookupComponent(name, owner);
-
-  if (definition === null) return null;
-
-  return curry(CURRIED_COMPONENT, constants.resolvedComponent(definition, name), {}, null, true);
 }

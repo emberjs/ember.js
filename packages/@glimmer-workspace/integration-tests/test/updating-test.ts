@@ -1,10 +1,11 @@
+import { tracked } from '@glimmer/tracking';
 import GlimmerComponent from '@glimmer/component';
 import type { Arguments, Nullable, Owner, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 import {
   assertNodeTagName,
   getElementByClassName,
@@ -14,7 +15,6 @@ import {
   stripTight,
   test,
   TestHelper,
-  tracked,
   trimLines,
 } from '@glimmer-workspace/integration-tests';
 
@@ -470,7 +470,7 @@ class UpdatingTest extends RenderTest {
     let { template, truthyValue, falsyValue, element } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let tag = createTag();
+    let tag = trackedObject({ version: 0 });
     let currentValue: T | U = truthyValue;
 
     class StatefulHelper extends TestHelper {
@@ -480,7 +480,7 @@ class UpdatingTest extends RenderTest {
       }
 
       value() {
-        consumeTag(tag);
+        void tag['version'];
         return currentValue;
       }
 
@@ -507,7 +507,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
     currentValue = falsyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
@@ -515,7 +515,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
     currentValue = truthyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML('Yes', element, 'after reset');
@@ -863,7 +863,7 @@ class UpdatingTest extends RenderTest {
     this.registerHelper('hello', () => 'hello');
 
     assert.throws(() => {
-      this.delegate.compileTemplate('{{helo world}}');
+      this.render('{{helo world}}');
     }, /Error: Attempted to resolve `helo`, which was expected to be a component or helper, but nothing was found./u);
   }
 
@@ -1438,15 +1438,19 @@ class UpdatingTest extends RenderTest {
   }
 
   assertInvariants(msg?: string) {
-    let result = expect(this.renderResult, 'must render before asserting invariants');
+    let handle = expect(this.handle, 'must render before asserting invariants');
+    let bounds = expect(this.delegate.debugBounds, 'the delegate must provide debugBounds').call(
+      this.delegate,
+      handle
+    );
 
     assert.strictEqual(
-      result.firstNode(),
+      bounds.firstNode(),
       this.element.firstChild,
       `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`
     );
     assert.strictEqual(
-      result.lastNode(),
+      bounds.lastNode(),
       this.element.lastChild,
       `The lastNode of the result is the same as the roots's lastChild${msg ? ': ' + msg : ''}`
     );

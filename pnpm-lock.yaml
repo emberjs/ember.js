@@ -1416,9 +1416,24 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../../@ember/-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../../@ember/destroyable
       '@ember/owner':
         specifier: workspace:*
         version: link:../../@ember/owner
+      '@ember/reactive':
+        specifier: workspace:*
+        version: link:../../@ember/reactive
+      '@ember/renderer':
+        specifier: workspace:*
+        version: link:../../@ember/renderer
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop

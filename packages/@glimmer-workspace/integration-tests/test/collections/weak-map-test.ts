@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import { trackedWeakMap } from '@glimmer/validator';
+import { trackedWeakMap } from '@ember/reactive/collections';
 import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class TrackedWeakMapTest extends RenderTest {

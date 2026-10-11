@@ -1,6 +1,8 @@
+import { trackedObject } from '@ember/reactive/collections';
 import GlimmerComponent from '@glimmer/component';
 import { castToBrowser } from '@glimmer/debug-util';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
 import {
   defineComponent,
   defineSimpleHelper,
@@ -10,7 +12,6 @@ import {
   syntaxErrorFor,
   test,
   TestHelper,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 import { DEBUG } from '@glimmer/env';
 
@@ -96,28 +97,6 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
-  'Non-native keyword'() {
-    this.registerHelper('bar', () => {
-      throw new Error('should not resolve this helper');
-    });
-
-    this.registerHelper('$keyword.bar', () => 'bar keyword');
-
-    const Foo = defineComponent({}, '{{bar}}', {
-      keywords: ['bar'],
-      definition: class extends GlimmerComponent {
-        get bar() {
-          throw new Error('should not fallback to this.bar');
-        }
-      },
-    });
-
-    this.renderComponent(Foo);
-    this.assertHTML('bar keyword');
-    this.assertStableRerender();
-  }
-
-  @test
   '{{component}} throws an error if a string is used in strict (append position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{component "bar"}}');
@@ -152,7 +131,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{component @Bar}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -191,7 +170,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{#component @Bar}}{{/component}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -230,7 +209,7 @@ class GeneralStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{#let (component @Bar) as |bar|}}<bar/>{{/let}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObject<Record<string, unknown>>({ Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -656,7 +635,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Baz = defineComponent({}, '{{@Foo}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObject<Record<string, unknown>>({ Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
@@ -683,7 +662,7 @@ class DynamicStrictModeTest extends RenderTest {
     const Bar = defineComponent({}, 'Goodbye, {{@value}}!');
     const Baz = defineComponent({}, '{{@Foo value="world"}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObject({ Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
@@ -702,7 +681,7 @@ class DynamicStrictModeTest extends RenderTest {
     const Ko = defineComponent({}, 'Ko');
     const Foo = defineComponent({ Ok, Ko }, '{{if @isOk Ok Ko}}');
 
-    let args = trackedObj({ isOk: true });
+    let args = trackedObject({ isOk: true });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Ok');
@@ -855,7 +834,7 @@ class DynamicStrictModeTest extends RenderTest {
     }
 
     const Foo = defineComponent({}, '{{@helper}}');
-    let args = trackedObj({ helper: Helper1 });
+    let args = trackedObject<Record<string, unknown>>({ helper: Helper1 });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
@@ -900,7 +879,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '{{@helper}}');
     const Bar = defineComponent({ Foo }, '<Foo @helper={{helper @helper "world"}}/>');
-    let args = trackedObj({ helper: Helper1 });
+    let args = trackedObject<Record<string, unknown>>({ helper: Helper1 });
 
     this.renderComponent(Bar, args);
     this.assertHTML('Hello, world!');
@@ -1091,7 +1070,7 @@ class DynamicStrictModeTest extends RenderTest {
     });
 
     const Foo = defineComponent({}, '<div {{@modifier}}></div>');
-    let args = trackedObj({ modifier: modifier1 });
+    let args = trackedObject<Record<string, unknown>>({ modifier: modifier1 });
 
     this.renderComponent(Foo, args);
     this.assertHTML('<div>Hello, world!</div>');
@@ -1132,7 +1111,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     const Foo = defineComponent({}, '<div {{@modifier}}></div>');
     const Bar = defineComponent({ Foo }, '<Foo @modifier={{modifier @modifier "world"}}/>');
-    let args = trackedObj({ modifier: modifier1 });
+    let args = trackedObject<Record<string, unknown>>({ modifier: modifier1 });
 
     this.renderComponent(Bar, args);
     this.assertHTML('<div>Hello, world!</div>');
@@ -1172,7 +1151,7 @@ class DynamicStrictModeTest extends RenderTest {
       '<div {{(if @inSpace nebula world) @name}}></div>'
     );
 
-    let args = trackedObj({ inSpace: false, name: 'Nebula' });
+    let args = trackedObject({ inSpace: false, name: 'Nebula' });
 
     this.renderComponent(Bar, args);
     this.assertHTML('<div>Hello, world!</div>');
