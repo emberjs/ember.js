@@ -57,6 +57,22 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   */
   protected abstract helperName: string;
 
+  /**
+    Converts the arguments of a helper to the arguments of a router method.
+
+    A helper gets `(positional, named)`.
+    A router method gets `(routeName, ...models, { queryParams })`.
+    So a helper cannot be a plain alias of a router method.
+
+    The conversion also does these things, which each helper needs:
+
+    - It reads the `models` named argument of RFC 391.
+      The value is one model or an array of models.
+    - It asserts that the route name is a string.
+    - It asserts that `models` and positional models are not used together.
+    - It asserts that each model is the value of a dynamic segment.
+    - It asserts that `queryParams` is an object.
+  */
   protected routeArgs(positional: RoutePositional, named: RouteNamed): RouteArgs {
     let [route, ...models] = positional;
 

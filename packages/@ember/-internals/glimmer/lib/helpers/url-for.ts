@@ -64,7 +64,17 @@ export default class UrlForHelper extends RouteHelper<string> {
     let { route, models, queryParams } = this.routeArgs(positional, named);
 
     /**
-      The URL can contain dynamic segments and query params of the active routes.
+      `RouterService#urlFor` reads no tracked state.
+      Without this read, the helper does not run again after a transition.
+
+      The URL can change after a transition.
+      When the helper gets no value for a dynamic segment of a parent route,
+      `router_js` takes the value from the active routes.
+
+      For example, `{{urlFor "post.comments"}}` gives `/posts/1/comments` on `/posts/1`.
+      It must give `/posts/2/comments` after the application goes to `/posts/2`.
+
+      `<LinkTo>` consumes the `currentState` tag for the same reason.
     */
     void router.currentURL;
 
