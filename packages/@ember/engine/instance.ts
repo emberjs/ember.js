@@ -49,8 +49,7 @@ export interface EngineInstanceOptions {
   @public
   @class EngineInstance
   @extends EmberObject
-  @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
+  @uses RegistryProxy, ContainerProxy
 */
 
 // Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
