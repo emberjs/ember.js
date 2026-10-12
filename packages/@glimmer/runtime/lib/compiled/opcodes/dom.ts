@@ -180,7 +180,8 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
     owner,
     expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     definition.state,
-    capturedArgs
+    capturedArgs,
+    vm.env
   );
 
   let instance: ModifierInstance = {
@@ -280,7 +281,8 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
       owner,
       expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
       definition.state,
-      capturedArgs
+      capturedArgs,
+      vm.env
     );
 
     return {

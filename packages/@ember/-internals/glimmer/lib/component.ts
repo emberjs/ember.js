@@ -1098,7 +1098,11 @@ class Component<S = unknown>
 
     let element = _element;
     let isSVG = element.namespaceURI === 'http://www.w3.org/2000/svg';
-    let { type, normalized } = normalizeProperty(element as unknown as SimpleElement, name);
+    let { type, normalized } = normalizeProperty(
+      this.renderer._context.env.dom,
+      element as unknown as SimpleElement,
+      name
+    );
 
     if (isSVG || type === 'attr') {
       return element.getAttribute(normalized);
