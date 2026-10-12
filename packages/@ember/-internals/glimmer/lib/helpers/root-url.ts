@@ -1,23 +1,39 @@
-/**
-  The `{{rootUrl}}` helper returns the application's configured `rootURL`.
-
-  ```javascript
-  import { rootUrl } from '@ember/routing';
-  ```
-
-  ```gjs
-  <a href="{{rootUrl}}profile">Profile</a>
-  ```
-
-  @method root-url
-  @for Ember.Templates.helpers
-  @public
-*/
 import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
-import Helper from '@ember/component/helper';
+import Helper from '../helper';
 
-export default class RootUrlHelper extends Helper {
+/**
+  The `rootUrl` helper returns the `rootURL` of the application.
+
+  ```gjs
+  import { rootUrl } from '@ember/routing';
+
+  <template>
+    <p>The application starts at {{rootUrl}}</p>
+  </template>
+  ```
+
+  In an attribute, call the helper with parentheses.
+  Without the parentheses, Glimmer does not call a helper that has no arguments.
+
+  ```gjs
+  import { rootUrl } from '@ember/routing';
+
+  <template>
+    <a href="{{(rootUrl)}}profile">Profile</a>
+  </template>
+  ```
+
+  The helper uses the `router` service.
+  In an engine, the engine must supply that service.
+
+  @method rootUrl
+  @for @ember/routing
+  @static
+  @return {String} the `rootURL` of the application
+  @public
+*/
+export default class RootUrlHelper extends Helper<{ Args: { Positional: [] }; Return: string }> {
   @service('router') declare private router: RouterService;
 
   compute(): string {

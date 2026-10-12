@@ -1,59 +1,45 @@
+import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-helper';
+
 /**
-  The `{{isActive}}` helper returns `true` if the given route (and optional
-  models / query params) matches the application's current route state — the
-  same logic that `<LinkTo>` uses to apply its `active` CSS class.
+  The `isActive` helper returns `true` when the given route is active.
+  It uses the same logic as the `active` class of `<LinkTo>`.
 
-  ```javascript
+  ```gjs
+  import { isActive, urlFor } from '@ember/routing';
+
+  <template>
+    <a href={{urlFor "about"}} class={{if (isActive "about") "active"}}>About</a>
+  </template>
+  ```
+
+  The helper takes the same arguments as `urlFor`.
+
+  ```gjs
   import { isActive } from '@ember/routing';
+  import { hash } from '@ember/helper';
+
+  <template>
+    {{isActive "post" @post}}
+    {{isActive "post.comment" models=(Array.of @post @comment)}}
+    {{isActive "posts" queryParams=(hash page=2)}}
+  </template>
   ```
 
-  ```gjs
-  <a class={{if (isActive "about") "active"}}>About</a>
-  ```
+  The helper returns `false` when the route name or a model is missing.
 
-  With a dynamic segment:
-
-  ```gjs
-  {{isActive "post" this.post}}
-  ```
-
-  With query params:
-
-  ```gjs
-  {{isActive "posts" queryParams=(hash page=2)}}
-  ```
-
-  Returns `false` if the route name or any model is null/undefined (loading state).
-
-  @method is-active
-  @for Ember.Templates.helpers
+  @method isActive
+  @for @ember/routing
+  @static
+  @param {String} routeName the name of the route
+  @param {...Object} models the model(s) for the route
+  @param {Object} [named] the `models` and `queryParams` named arguments
+  @return {Boolean} `true` when the route is active
   @public
 */
-import type RouterService from '@ember/routing/router-service';
-import { service } from '@ember/service';
-import Helper from '@ember/component/helper';
-import { isMissing } from '../utils/is-missing';
+export default class IsActiveHelper extends RouteHelper<boolean> {
+  protected helperName = 'isActive';
 
-export default class IsActiveHelper extends Helper {
-  @service('router') declare private router: RouterService;
-
-  compute(
-    [routeName, ...models]: [string | null | undefined, ...unknown[]],
-    { queryParams }: { queryParams?: Record<string, unknown> }
-  ): boolean {
-    if (isMissing(routeName) || models.some(isMissing)) {
-      return false;
-    }
-
-    // Also entangle with currentRouteName. `isActive()` only consumes the
-    // `currentURL` tag (see emberjs/ember.js#19004), but a transition out of a
-    // loading/error substate keeps the URL at the destination while only the
-    // route name changes (e.g. `loading` -> `about`, with the URL already at
-    // `/about`). Without consuming currentRouteName the helper wouldn't
-    // recompute across that boundary and would render a stale value.
-    void this.router.currentRouteName;
-
-    const args = queryParams ? [...models, { queryParams }] : [...models];
-    return this.router.isActive(routeName, ...args);
+  compute(positional: RoutePositional, named: RouteNamed): boolean {
+    return this.isActive(this.routeArgs(positional, named));
   }
 }
