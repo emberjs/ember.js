@@ -358,6 +358,12 @@ Suggestions for the plan's author, based on what is still open:
    commit (`a46a65d019`, drops a comment in `each-test.js`). `origin/main` is `b76567026c`. 8–10
    rebased onto it cleanly: `dd38753669`, `796461517c`, `de819e1c2c`; PR 10 dev 9193, 0 fail,
    20 skip. Pre-rebase tips in the scratchpad `stack-before-pr7-landed.txt`. Not pushed.
+   2026-10-12 review of PR 8: three audits re-checked all 114 deleted tests against their twins;
+   no gaps. PR 8 amended: the Ember "custom lifecycle hooks" twin now pins hook order with
+   `assert.step` (the Glimmer original did; the twin only counted), the moved `on` DEBUG-only tests
+   use the file's `assert.expect(0)` guard, and the moved constructor-backtracking test uses
+   `expectAssertion` + `backtrackingMessageFor` like its sibling, without the restating comments.
+   Tips: 8 `01659f7ec8` (dev 9189, prod 9005, 0 fail), 9 `33ef02c039`, 10 `5262e7cab3` (dev 9193).
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
