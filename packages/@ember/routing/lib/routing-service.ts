@@ -4,7 +4,6 @@
 
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import type Route from '@ember/routing/route';
 import type { ModelFor } from '@ember/routing/route';
@@ -23,12 +22,23 @@ import { ROUTER } from '@ember/routing/router-service';
   @class RoutingService
 */
 export default class RoutingService<R extends Route> extends Service {
-  declare targetState: EmberRouter['targetState'];
-  declare currentState: EmberRouter['currentState'];
-  declare currentRouteName: EmberRouter['currentRouteName'];
-  declare currentPath: EmberRouter['currentPath'];
-
   [ROUTER]?: EmberRouter;
+
+  get targetState(): EmberRouter['targetState'] {
+    return this.router.targetState;
+  }
+
+  get currentState(): EmberRouter['currentState'] {
+    return this.router.currentState;
+  }
+
+  get currentRouteName(): EmberRouter['currentRouteName'] {
+    return this.router.currentRouteName;
+  }
+
+  get currentPath(): EmberRouter['currentPath'] {
+    return this.router.currentPath;
+  }
 
   get router(): EmberRouter {
     let router = this[ROUTER];
@@ -127,13 +137,6 @@ export default class RoutingService<R extends Route> extends Service {
     return routerState.isActiveIntent(routeName, contexts, queryParams);
   }
 }
-
-RoutingService.reopen({
-  targetState: readOnly('router.targetState'),
-  currentState: readOnly('router.currentState'),
-  currentRouteName: readOnly('router.currentRouteName'),
-  currentPath: readOnly('router.currentPath'),
-});
 
 function numberOfContextsAcceptedByHandler(handlerName: string, handlerInfos: any[]) {
   let req = 0;

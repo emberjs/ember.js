@@ -6,7 +6,10 @@ import {
   equalsElement,
   runTask,
   defineSimpleModifier,
+  expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
@@ -1571,7 +1574,12 @@ moduleFor(
       this.assertText('3');
     }
 
-    ['@test ensure aliases are watched properly [GH#17243]']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test ensure aliases are watched properly [GH#17243]`]() {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let fooInstance, barInstance;
 
       let FooComponent = class extends GlimmerComponent {

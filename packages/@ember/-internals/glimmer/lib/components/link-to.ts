@@ -328,7 +328,7 @@ class _LinkTo extends InternalComponent {
 
     // consume the current router state so we invalidate when QP changes
     // TODO: can we narrow this down to QP changes only?
-    consumeTag(tagFor(routing, 'currentState'));
+    consumeTag(tagFor(routing.router, 'currentState'));
 
     if (DEBUG) {
       try {
@@ -417,7 +417,7 @@ class _LinkTo extends InternalComponent {
 
   // GH #17963
   private currentRouteCache = createCache<Maybe<string>>(() => {
-    consumeTag(tagFor(this.routing, 'currentState'));
+    consumeTag(tagFor(this.routing.router, 'currentState'));
     return untrack(() => this.routing.currentRouteName);
   });
 

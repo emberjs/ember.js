@@ -1,6 +1,5 @@
 import { service } from '@ember/service';
-import { action } from '@ember/object';
-import { readOnly } from '@ember/object/computed';
+import { action, computed } from '@ember/object';
 import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import { get } from '@ember/object';
@@ -131,12 +130,18 @@ moduleFor(
       let CurrenURLComponent = class extends Component {
         @service('router')
         routerService;
-        @readOnly('routerService.currentURL')
-        currentURL;
-        @readOnly('routerService.currentRouteName')
-        currentRouteName;
-        @readOnly('routerService.currentRoute')
-        currentRoute;
+
+        get currentURL() {
+          return this.routerService.currentURL;
+        }
+
+        get currentRouteName() {
+          return this.routerService.currentRouteName;
+        }
+
+        get currentRoute() {
+          return this.routerService.currentRoute;
+        }
       };
 
       this.add(
@@ -292,6 +297,29 @@ moduleFor(
             ],
           ]);
         });
+    }
+
+    async ['@test a computed property can depend on RouterService#currentURL'](assert) {
+      await this.visit('/');
+
+      let routerService = this.routerService;
+
+      class Watcher {
+        routerService = routerService;
+
+        @computed('routerService.currentURL')
+        get currentURL() {
+          return this.routerService.currentURL;
+        }
+      }
+
+      let watcher = new Watcher();
+
+      assert.strictEqual(watcher.currentURL, '/');
+
+      await this.visit('/child');
+
+      assert.strictEqual(watcher.currentURL, '/child');
     }
 
     ['@test RouterService#currentURL is correctly set with component after consecutive visits'](
