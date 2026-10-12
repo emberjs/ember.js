@@ -28,7 +28,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @return {Boolean}
   @since 1.5.0
   @public
-  @deprecated Use native JavaScript instead.
+  @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export default function isBlank(obj: unknown): boolean {
   deprecateUntil(

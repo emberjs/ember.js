@@ -22,7 +22,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @param {Object} obj Value to test
   @return {Boolean}
   @public
-  @deprecated Use native JavaScript instead.
+  @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export default function isNone(obj: any): obj is null | undefined {
   deprecateUntil(

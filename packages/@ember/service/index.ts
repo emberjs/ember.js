@@ -21,7 +21,7 @@ import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-u
          the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
-  @deprecated Please import `service` instead.
+  @deprecated Please import `service` instead. See [RFC 1001](https://rfcs.emberjs.com/id/1001-deprecate-named-inject).
 */
 export function inject(name: string): InjectionDecorator;
 export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;

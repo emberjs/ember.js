@@ -109,7 +109,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
 
   @class PromiseProxyMixin
   @public
-  @deprecated Use native `async`/`await` and promises directly instead.
+  @deprecated Use native `async`/`await` and promises directly instead. See [RFC 1112](https://rfcs.emberjs.com/id/1112-deprecate-proxy).
 */
 interface PromiseProxyMixin<T> {
   /**

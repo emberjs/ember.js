@@ -110,7 +110,7 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
   function and false if the underlying value is not empty.
 
   @public
-  @deprecated Use a getter instead.
+  @deprecated Use a getter instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export function empty(dependentKey: string) {
   assert(
@@ -162,7 +162,7 @@ export function empty(dependentKey: string) {
   @return {ComputedProperty} computed property which returns true if original
   value for property is not empty.
   @public
-  @deprecated Use a getter instead.
+  @deprecated Use a getter instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export function notEmpty(dependentKey: string) {
   assert(
@@ -211,7 +211,7 @@ export function notEmpty(dependentKey: string) {
   @return {ComputedProperty} computed property which returns true if original
   value for property is null or undefined.
   @public
-  @deprecated Use a getter instead.
+  @deprecated Use a getter instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export function none(dependentKey: string) {
   assert(

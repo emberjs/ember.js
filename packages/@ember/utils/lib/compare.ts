@@ -95,7 +95,7 @@ function spaceship(a: number, b: number): Compare {
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
- @deprecated Use native JavaScript instead.
+ @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export default function compare<T>(v: T, w: T): Compare {
   deprecateUntil(

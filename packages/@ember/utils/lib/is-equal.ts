@@ -48,7 +48,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @param {Object} b second object to compare
   @return {Boolean}
   @public
-  @deprecated Use native JavaScript instead.
+  @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export default function isEqual(a: unknown, b: unknown): boolean {
   deprecateUntil(

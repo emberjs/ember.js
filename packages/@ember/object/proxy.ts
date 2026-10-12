@@ -82,7 +82,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @extends EmberObject
   @uses Ember.ProxyMixin
   @public
-  @deprecated Use tracked properties or a native `Proxy` instead.
+  @deprecated Use tracked properties or a native `Proxy` instead. See [RFC 1112](https://rfcs.emberjs.com/id/1112-deprecate-proxy).
 */
 interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
   // Proxies forward to their content. This behavior *actually* comes from the
