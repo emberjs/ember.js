@@ -168,7 +168,17 @@ module('Helpers test: {{fn}}', function (hooks) {
 
   test('there is no `this` context within the callback', async function (assert) {
     if (DEBUG) {
-      assert.expect(0);
+      let state = new State({
+        myFunc() {
+          assert.step('calling stashed function');
+          assert.throws(() => String(this), /not bound to a valid `this` context/u);
+        },
+      });
+
+      await render(<template><Stash @stashedFn={{fn state.myFunc state.arg1}} /></template>);
+
+      stashedFn();
+      assert.verifySteps(['calling stashed function']);
       return;
     }
 
@@ -181,6 +191,81 @@ module('Helpers test: {{fn}}', function (hooks) {
     await render(<template><Stash @stashedFn={{fn state.myFunc state.arg1}} /></template>);
 
     stashedFn();
+  });
+
+  test('asserts if no argument given', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    await assert.rejects(
+      render(<template>{{fn}}</template>),
+      /You must pass a function as the `fn` helper's first argument./u
+    );
+  });
+
+  test('asserts if the first argument is undefined', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    class Subject extends Component {
+      myFunc = undefined;
+      arg1 = 'foo';
+      arg2 = 'bar';
+
+      <template>{{fn this.myFunc this.arg1 this.arg2}}</template>
+    }
+
+    await assert.rejects(
+      render(<template><Subject /></template>),
+      /You must pass a function as the `fn` helper's first argument, you passed undefined. While rendering:\n{2}this.myFunc/u
+    );
+  });
+
+  test('asserts if the first argument is null', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    class Subject extends Component {
+      myFunc = null;
+      arg1 = 'foo';
+      arg2 = 'bar';
+
+      <template>{{fn this.myFunc this.arg1 this.arg2}}</template>
+    }
+
+    await assert.rejects(
+      render(<template><Subject /></template>),
+      /You must pass a function as the `fn` helper's first argument, you passed null. While rendering:\n{2}this.myFunc/u
+    );
+  });
+
+  test('asserts if the provided function accesses `this` without being bound prior to passing to fn', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    let state = new State({
+      myFunc(arg1) {
+        return `arg1: ${arg1}, arg2: ${this.arg2}`;
+      },
+
+      arg1: 'foo',
+      arg2: 'bar',
+    });
+
+    await render(<template><Stash @stashedFn={{fn state.myFunc state.arg1}} /></template>);
+
+    assert.throws(
+      () => stashedFn(),
+      /You accessed `this.arg2` from a function passed to the `fn` helper, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function./u
+    );
   });
 
   test('can use `this` if bound prior to passing to fn', async function (assert) {
