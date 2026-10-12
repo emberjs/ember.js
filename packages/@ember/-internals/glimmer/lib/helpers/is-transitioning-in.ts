@@ -31,7 +31,7 @@ export default class IsTransitioningInHelper extends RouteHelper<boolean> {
   protected helperName = 'isTransitioningIn';
 
   compute(positional: RoutePositional, named: RouteNamed): boolean {
-    let args = this.routeArgs(positional, named);
+    let args = this.routeStateArgs(positional, named);
 
     return !this.isActive(args) && this.willBeActive(args) === true;
   }

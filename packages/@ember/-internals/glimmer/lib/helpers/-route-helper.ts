@@ -85,6 +85,21 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   }
 
   /**
+    The arguments of a helper that reads the state of the router.
+
+    In an engine, route names are relative to the mount point of the engine.
+  */
+  protected routeStateArgs(positional: RoutePositional, named: RouteNamed): RouteArgs {
+    let args = this.routeArgs(positional, named);
+
+    if (!isMissing(args.route)) {
+      args.route = this.namespaceRoute(args.route);
+    }
+
+    return args;
+  }
+
+  /**
     `<LinkTo>` uses the same condition for its `loading` class.
   */
   protected hasMissingModels({ route, models }: RouteArgs): boolean {
@@ -109,23 +124,15 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   }
 
   private isActiveForState(args: RouteArgs, state: Maybe<RouterState>): boolean {
-    if (this.hasMissingModels(args)) {
+    if (isMissing(state) || this.hasMissingModels(args)) {
       return false;
     }
 
-    let { models, queryParams } = args;
-    let route = this.namespaceRoute(args.route as string);
+    let { route, models, queryParams } = args;
 
-    if (isMissing(state)) {
-      return false;
-    }
-
-    return this.routing.isActiveForRoute(models, queryParams, route, state);
+    return this.routing.isActiveForRoute(models, queryParams, route as string, state);
   }
 
-  /**
-    In an engine, route names are relative to the mount point of the engine.
-  */
   private namespaceRoute(route: string): string {
     let owner = getOwner(this) as EngineInstance;
     let { mountPoint } = owner;

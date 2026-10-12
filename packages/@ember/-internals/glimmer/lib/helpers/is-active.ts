@@ -40,6 +40,6 @@ export default class IsActiveHelper extends RouteHelper<boolean> {
   protected helperName = 'isActive';
 
   compute(positional: RoutePositional, named: RouteNamed): boolean {
-    return this.isActive(this.routeArgs(positional, named));
+    return this.isActive(this.routeStateArgs(positional, named));
   }
 }

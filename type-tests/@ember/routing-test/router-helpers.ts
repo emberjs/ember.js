@@ -1,6 +1,6 @@
 import {
-  hasMissingModels,
   isActive,
+  isLoading,
   isTransitioningIn,
   isTransitioningOut,
   rootUrl,
@@ -63,9 +63,9 @@ expectTypeOf(
 /**
   The models and the route name can be missing while the data loads.
 */
-expectTypeOf(resolve(hasMissingModels)('post', undefined)).toBeBoolean();
-expectTypeOf(resolve(hasMissingModels)(null)).toBeBoolean();
-expectTypeOf(resolve(hasMissingModels)('post', { models: [null], ...NamedArgsMarker })).toBeBoolean();
+expectTypeOf(resolve(isLoading)('post', undefined)).toBeBoolean();
+expectTypeOf(resolve(isLoading)(null)).toBeBoolean();
+expectTypeOf(resolve(isLoading)('post', { models: [null], ...NamedArgsMarker })).toBeBoolean();
 
 expectTypeOf(resolve(isTransitioningIn)('post', model)).toBeBoolean();
 expectTypeOf(resolve(isTransitioningOut)('post', model)).toBeBoolean();
