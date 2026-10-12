@@ -4,6 +4,7 @@ import { NodeDOMTreeConstruction } from '@glimmer/node';
 import { blockStack } from '../dom/blocks';
 import { toInnerHTML } from '../dom/simple-utils';
 import { AbstractNodeTest } from '../modes/node/env';
+import { withRoot } from '../markers';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip } from '../test-helpers/strings';
@@ -37,6 +38,23 @@ export class CompilationTests extends RenderTest {
 
 export class SerializedDOMHelperTests extends DOMHelperTests {
   static override suiteName = 'Server-side rendering in Node.js (serialize)';
+
+  @test
+  'modifiers do not run in a serialize render'() {
+    let installs: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          installs.push('install');
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+    this.assert.deepEqual(installs, [], 'the modifier did not run');
+  }
 
   @test
   'The compiler can handle unescaped HTML'() {
@@ -98,6 +116,6 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
   override assertHTML(html: string) {
     let b = blockStack();
     let serialized = toInnerHTML(this.element);
-    this.assert.strictEqual(serialized, `${b(0)}${html}${b(0)}`);
+    this.assert.strictEqual(serialized, withRoot(`${b(0)}${html}${b(0)}`));
   }
 }

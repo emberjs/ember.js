@@ -13,12 +13,10 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { castToBrowser, castToSimple } from '@glimmer/debug-util';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
-import { createConstRef } from '@glimmer/reference';
 import { clientBuilder, curry } from '@glimmer/runtime';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
@@ -30,7 +28,6 @@ import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
 import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
-import type { TemplateRootState as TemplateRoot } from '../template-root';
 
 import { preprocess } from '../../compile';
 import {
@@ -41,7 +38,7 @@ import {
 } from './register';
 import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
-import { TemplateRootState } from '../template-root';
+import { renderLooseTemplate } from '../loose-template';
 
 export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
@@ -53,13 +50,16 @@ export class JitRenderDelegate implements RenderDelegate {
   private _renderer: Nullable<BaseRenderer> = null;
   /** A real owner, destroyed in `teardown()`. */
   protected owner: TestOwner = createOwner();
-  private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
   private debugRenderTree: boolean;
 
   constructor({ doc, debugRenderTree = false }: RenderDelegateOptions = {}) {
     this.doc = castToSimple(doc ?? document);
     this.debugRenderTree = debugRenderTree;
+  }
+
+  protected get isInteractive(): boolean {
+    return true;
   }
 
   /** One Ember renderer per delegate, created on first use. */
@@ -70,7 +70,8 @@ export class JitRenderDelegate implements RenderDelegate {
         this.doc,
         this.resolver,
         (env, cursor) => this.getElementBuilder(env, cursor),
-        this.debugRenderTree
+        this.debugRenderTree,
+        this.isInteractive
       );
     }
 
@@ -170,25 +171,15 @@ export class JitRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(_env: Environment, context: unknown): Reference {
-    if (!this.self) {
-      this.self = createConstRef(context, 'this');
-    }
-
-    return this.self;
-  }
-
   renderTemplate(template: string, context: Dict, element: SimpleElement): RenderHandle {
     let cursor = { element, nextSibling: null };
-    let { state } = this.renderer;
-
-    let root = new TemplateRootState(
-      state,
+    let root = renderLooseTemplate(
+      this.renderer,
+      this.owner,
       preprocess(template, this.precompileOptions, this.owner),
-      this.getSelf(state.env, context),
+      context,
       cursor
     );
-    state.renderRoot(root);
 
     return this.handleFor(root);
   }
@@ -213,13 +204,13 @@ export class JitRenderDelegate implements RenderDelegate {
     };
   }
 
-  private handleFor(root: TemplateRoot): RenderHandle {
+  private handleFor(root: ReturnType<typeof renderLooseTemplate>): RenderHandle {
     return handleWithBounds(
       {
         rerender: () => this.renderer.rerender(),
         destroy: () => root.destroy(),
       },
-      () => expect(root.result, 'the template has rendered')
+      () => root.bounds()
     );
   }
 
