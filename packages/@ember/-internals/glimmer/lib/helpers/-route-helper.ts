@@ -43,7 +43,7 @@ export interface RouteArgs {
   @private
 */
 export default abstract class RouteHelper<Return> extends Helper<RouteHelperSignature<Return>> {
-  @service('-routing') declare protected routing: RoutingService<Route>;
+  @service('-routing') protected routing!: RoutingService<Route>;
 
   /**
     The name of the helper in assertion messages.

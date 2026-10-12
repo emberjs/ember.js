@@ -54,7 +54,7 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   @public
 */
 export default class UrlForHelper extends RouteHelper<string> {
-  @service('router') declare private router: RouterService;
+  @service('router') private router!: RouterService;
 
   protected helperName = 'urlFor';
 
