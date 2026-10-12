@@ -14,15 +14,16 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   </template>
   ```
 
-  Pass the models for the dynamic segments as positional arguments,
+  Pass the values of the dynamic segments as positional arguments,
   or as the `models` argument. You cannot use both.
+  Each value is a string or a number. A model object is not a valid value.
 
   ```gjs
   import { urlFor } from '@ember/routing';
 
   <template>
-    <a href={{urlFor "post.comment" @post @comment}}>Comment</a>
-    <a href={{urlFor "post.comment" models=(Array.of @post @comment)}}>Comment</a>
+    <a href={{urlFor "post.comment" @post.id @comment.id}}>Comment</a>
+    <a href={{urlFor "post.comment" models=(Array.of @post.id @comment.id)}}>Comment</a>
   </template>
   ```
 
@@ -39,7 +40,7 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   ```
 
   The helper gives its arguments to the `urlFor` method of the `router` service.
-  Use the `isLoading` helper when a model can be `null` or `undefined`.
+  The helper has no special case for a model that is `null` or `undefined`.
 
   The helper uses the `router` service.
   In an engine, the engine must supply that service.
@@ -48,7 +49,7 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   @for @ember/routing
   @static
   @param {String} routeName the name of the route
-  @param {...Object} models the model(s) for the route
+  @param {...String|Number} models the values of the dynamic segments of the route
   @param {Object} [named] the `models` and `queryParams` named arguments
   @return {String} the URL of the route
   @public

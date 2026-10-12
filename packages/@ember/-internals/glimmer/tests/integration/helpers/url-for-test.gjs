@@ -58,15 +58,12 @@ module('Helpers test: {{urlFor}}', function (hooks) {
   });
 
   test('it accepts the models as positional arguments', async function (assert) {
-    let post = { id: '42' };
-
     await render(
       <template>
         <a id='id' href={{urlFor 'post' '42'}}>Post</a>
-        <a id='object' href={{urlFor 'post' post}}>Post</a>
+        <a id='number' href={{urlFor 'post' 42}}>Post</a>
         <a id='two' href={{urlFor 'post.comment' '42' '7'}}>Comment</a>
 
-        <LinkTo id='link-object' @route='post' @model={{post}}>Post</LinkTo>
         <LinkTo id='link-two' @route='post.comment' @models={{Array.of '42' '7'}}>
           Comment
         </LinkTo>
@@ -74,8 +71,7 @@ module('Helpers test: {{urlFor}}', function (hooks) {
     );
 
     assert.dom('#id').hasAttribute('href', '/posts/42');
-    assert.dom('#object').hasAttribute('href', '/posts/42');
-    assert.dom('#link-object').hasAttribute('href', '/posts/42');
+    assert.dom('#number').hasAttribute('href', '/posts/42');
     assert.dom('#two').hasAttribute('href', '/posts/42/comments/7');
     assert.dom('#link-two').hasAttribute('href', '/posts/42/comments/7');
   });
@@ -105,6 +101,20 @@ module('Helpers test: {{urlFor}}', function (hooks) {
         </template>
       ),
       /You cannot provide both positional models and the `models` argument to the `urlFor` helper\./
+    );
+  });
+
+  test('it does not accept a model object', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    let post = { id: '1' };
+
+    await assert.rejects(
+      render(<template>{{urlFor 'post' post}}</template>),
+      /The models of the `urlFor` helper must be strings or numbers\. Pass the value of the dynamic segment, not a model object\./
     );
   });
 

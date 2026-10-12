@@ -244,6 +244,20 @@ module('Helpers test: {{isTransitioningOut}}', function (hooks) {
     );
   });
 
+  test('it does not accept a model object', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    let post = { id: '1' };
+
+    await assert.rejects(
+      render(<template>{{isTransitioningOut 'post' post}}</template>),
+      /The models of the `isTransitioningOut` helper must be strings or numbers\. Pass the value of the dynamic segment, not a model object\./
+    );
+  });
+
   test('it does not accept a route name that is not a string', async function (assert) {
     if (!DEBUG) {
       assert.expect(0);
