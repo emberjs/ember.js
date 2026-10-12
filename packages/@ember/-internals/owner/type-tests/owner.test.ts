@@ -191,6 +191,7 @@ class ExampleComponent<T> extends Component<Sig<T>> {
 
 declare let example: ExampleComponent<string>;
 expectTypeOf(getOwner(example)).toEqualTypeOf<InternalOwner | undefined>();
+expectTypeOf(getOwner()).toEqualTypeOf<InternalOwner | undefined>();
 
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:

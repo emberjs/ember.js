@@ -4,6 +4,10 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { action } from '@ember/object';
+import { getOwner, setOwner } from '@ember/owner';
+import Service from '@ember/service';
+import { invokeHelper } from '@ember/helper';
+import { getValue } from '@glimmer/tracking/primitives/cache';
 
 class State {
   @tracked foo = 123;
@@ -144,5 +148,102 @@ module('Helpers test: default helper manager', function (hooks) {
     await render(<template><FooBar /></template>);
 
     assert.dom().hasText('hello');
+  });
+
+  test('getOwner() returns the owner of the test', async function (assert) {
+    let owner = this.owner;
+
+    function hello() {
+      assert.strictEqual(getOwner(), owner);
+
+      return 'hello';
+    }
+
+    await render(<template>{{(hello)}}</template>);
+
+    assert.dom().hasText('hello');
+  });
+
+  test('getOwner() can look up a service', async function (assert) {
+    class Greeter extends Service {
+      @tracked greeting = 'hello';
+    }
+
+    this.owner.register('service:greeter', Greeter);
+
+    function greet(name) {
+      return `${getOwner().lookup('service:greeter').greeting} ${name}`;
+    }
+
+    await render(<template>{{greet "world"}}</template>);
+
+    assert.dom().hasText('hello world');
+
+    this.owner.lookup('service:greeter').greeting = 'goodbye';
+    await settled();
+
+    assert.dom().hasText('goodbye world');
+  });
+
+  test('getOwner() works in nested function helpers', async function (assert) {
+    let owner = this.owner;
+
+    function inner() {
+      assert.step('inner');
+      assert.strictEqual(getOwner(), owner);
+
+      return 'inner';
+    }
+
+    function outer(value) {
+      assert.step('outer');
+      assert.strictEqual(getOwner(), owner);
+
+      return `outer ${value}`;
+    }
+
+    await render(<template>{{outer (inner)}}</template>);
+
+    assert.dom().hasText('outer inner');
+    assert.verifySteps(['inner', 'outer']);
+  });
+
+  test('getOwner() works with invokeHelper', function (assert) {
+    let owner = this.owner;
+    let parent = {};
+
+    setOwner(parent, owner);
+
+    function hello() {
+      return getOwner();
+    }
+
+    assert.strictEqual(getValue(invokeHelper(parent, hello)), owner);
+  });
+
+  test('the owner scope ends when the function helper throws', function (assert) {
+    function hello() {
+      getOwner();
+
+      throw new Error('from the helper');
+    }
+
+    assert.throws(() => getValue(invokeHelper(this.owner, hello)), /from the helper/);
+    assert.throws(() => getOwner(), /there is no active owner/);
+  });
+
+  test('getOwner() throws outside of a function helper', async function (assert) {
+    let later;
+
+    function hello() {
+      later = () => getOwner();
+
+      return 'hello';
+    }
+
+    await render(<template>{{(hello)}}</template>);
+
+    assert.throws(() => getOwner(), /there is no active owner/);
+    assert.throws(() => later(), /there is no active owner/);
   });
 });

@@ -131,7 +131,7 @@ export function setInternalHelperManager<T extends object, O extends Owner>(
   return setManager(HELPER_MANAGERS, manager, definition);
 }
 
-const DEFAULT_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
+const DEFAULT_MANAGER = new CustomHelperManager((owner) => new FunctionHelperManager(owner));
 
 export function getInternalHelperManager(definition: object): CustomHelperManager | Helper;
 export function getInternalHelperManager(

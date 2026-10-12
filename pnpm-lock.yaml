@@ -1871,6 +1871,9 @@ importers:
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:../owner
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../reference

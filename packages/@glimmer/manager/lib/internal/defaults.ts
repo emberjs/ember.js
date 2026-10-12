@@ -3,6 +3,7 @@ import type {
   HelperCapabilities,
   HelperManagerWithValue,
 } from '@glimmer/interfaces';
+import { enterOwnerScope, exitOwnerScope } from '@glimmer/owner';
 
 import { buildCapabilities } from '../util/capabilities';
 
@@ -25,28 +26,36 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
     hasScheduledEffect: false,
   }) as HelperCapabilities;
 
+  constructor(private owner: object | undefined) {}
+
   createHelper(fn: AnyFunction, args: Arguments): State {
     return { fn, args };
   }
 
   getValue({ fn, args: { named, positional } }: State): unknown {
-    /**
-     * This is an untraditional use of for loop,
-     *   but note~
-     *     the immediate return within its body.
-     *
-     * This is done so that we don't need to allocate an array in order to
-     * check that `named` has contents
-     *   (and that array would be wasted
-     *    for all function calls with no named args)
-     */
-    for (const _ in named) {
-      let argsForFn: FnArgs = [...positional, named];
+    let previous = enterOwnerScope(this.owner);
 
-      return fn(...argsForFn);
+    try {
+      /**
+       * This is an untraditional use of for loop,
+       *   but note~
+       *     the immediate return within its body.
+       *
+       * This is done so that we don't need to allocate an array in order to
+       * check that `named` has contents
+       *   (and that array would be wasted
+       *    for all function calls with no named args)
+       */
+      for (const _ in named) {
+        let argsForFn: FnArgs = [...positional, named];
+
+        return fn(...argsForFn);
+      }
+
+      return fn(...positional);
+    } finally {
+      exitOwnerScope(previous);
     }
-
-    return fn(...positional);
   }
 
   getDebugName(fn: AnyFunction): string {

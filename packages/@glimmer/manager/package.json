@@ -40,6 +40,7 @@
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
+    "@glimmer/owner": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",

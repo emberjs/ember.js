@@ -18,8 +18,7 @@ declare class MyService extends Service {
 declare let myService: MyService;
 expectTypeOf(getOwner(myService)).toEqualTypeOf<Owner | undefined>();
 
-// @ts-expect-error
-getOwner();
+expectTypeOf(getOwner()).toEqualTypeOf<Owner | undefined>();
 
 declare let baseOwner: Owner;
 expectTypeOf(setOwner({}, baseOwner)).toBeVoid();
