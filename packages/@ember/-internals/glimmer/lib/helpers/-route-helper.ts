@@ -109,18 +109,18 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   }
 
   private isActiveForState(args: RouteArgs, state: Maybe<RouterState>): boolean {
-    if (isMissing(state) || this.isLoading(args)) {
+    if (this.isLoading(args)) {
       return false;
     }
 
-    let { route, models, queryParams } = args;
+    let { models, queryParams } = args;
+    let route = this.namespaceRoute(args.route as string);
 
-    return this.routing.isActiveForRoute(
-      models,
-      queryParams,
-      this.namespaceRoute(route as string),
-      state
-    );
+    if (isMissing(state)) {
+      return false;
+    }
+
+    return this.routing.isActiveForRoute(models, queryParams, route, state);
   }
 
   /**
