@@ -354,6 +354,10 @@ Suggestions for the plan's author, based on what is still open:
    then `first.type` read); it now leaves the call to the keyword's own validation. Found by
    PR 6's production CI run. 7–10 rebased onto it: `e1a4a6b9e0`, `6fd842093e`, `67bf90c131`,
    `4ca21f34e7`; PR 10 dev 9193 / prod 9030, 0 fail.
+   **PRs 6 and 7 landed (2026-10-11) as #21692 and #21695.** PR 7 merged with one extra author
+   commit (`a46a65d019`, drops a comment in `each-test.js`). `origin/main` is `b76567026c`. 8–10
+   rebased onto it cleanly: `dd38753669`, `796461517c`, `de819e1c2c`; PR 10 dev 9193, 0 fail,
+   20 skip. Pre-rebase tips in the scratchpad `stack-before-pr7-landed.txt`. Not pushed.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
