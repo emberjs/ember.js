@@ -166,7 +166,7 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     ```
 
     @property actions
-    @deprecated Use the `@action` decorator instead.
+    @deprecated Use the `@action` decorator instead. See [RFC 1041](https://rfcs.emberjs.com/id/1041-deprecate-target-action-support).
     @type Object
     @default null
     @public
@@ -200,7 +200,7 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     ```
 
     @method send
-    @deprecated Use direct method calls instead.
+    @deprecated Use direct method calls instead. See [RFC 1041](https://rfcs.emberjs.com/id/1041-deprecate-target-action-support).
     @param {String} actionName The action to trigger
     @param {*} context a context to send with the action
     @public

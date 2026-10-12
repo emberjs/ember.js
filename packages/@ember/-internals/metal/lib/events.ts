@@ -200,7 +200,7 @@ export function hasListeners(obj: object, eventName: string): boolean {
 
   @method on
   @static
-  @deprecated Use native JavaScript events or a dedicated event library instead.
+  @deprecated Use native JavaScript events or a dedicated event library instead. See [RFC 1111](https://rfcs.emberjs.com/id/1111-deprecate-evented-mixin).
   @for @ember/object/evented
   @param {String} eventNames*
   @param {Function} func

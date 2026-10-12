@@ -31,12 +31,12 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 
 /**
- * @deprecated Use `import { getOwner } from '@ember/owner';` instead.
+ * @deprecated Use `import { getOwner } from '@ember/owner';` instead. See [RFC 821](https://rfcs.emberjs.com/id/0821-public-types).
  */
 export const getOwner = actualGetOwner;
 
 /**
- * @deprecated Use `import { setOwner } from '@ember/owner';` instead.
+ * @deprecated Use `import { setOwner } from '@ember/owner';` instead. See [RFC 821](https://rfcs.emberjs.com/id/0821-public-types).
  */
 export const setOwner = actualSetOwner;
 

@@ -159,7 +159,7 @@ interface ControllerMixin<T> extends ActionHandler {
 
     @for Ember.ControllerMixin
     @method transitionToRoute
-    @deprecated Use transitionTo from the Router service instead.
+    @deprecated Use transitionTo from the Router service instead. See [RFC 674](https://rfcs.emberjs.com/id/0674-deprecate-transition-methods-of-controller-and-route).
     @param {String} [name] the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
       while transitioning to the route.
@@ -223,7 +223,7 @@ interface ControllerMixin<T> extends ActionHandler {
 
     @for Ember.ControllerMixin
     @method replaceRoute
-    @deprecated Use replaceWith from the Router service instead.
+    @deprecated Use replaceWith from the Router service instead. See [RFC 674](https://rfcs.emberjs.com/id/0674-deprecate-transition-methods-of-controller-and-route).
     @param {String} [name] the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
     while transitioning to the route.

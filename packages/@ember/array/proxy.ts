@@ -114,7 +114,7 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @extends EmberObject
   @uses MutableArray
   @public
-  @deprecated Use a tracked array or a native `Proxy` instead.
+  @deprecated Use a tracked array or a native `Proxy` instead. See [RFC 1112](https://rfcs.emberjs.com/id/1112-deprecate-proxy).
 */
 interface ArrayProxy<T> extends MutableArray<T> {
   /**

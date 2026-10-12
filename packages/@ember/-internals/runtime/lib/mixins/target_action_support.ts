@@ -106,7 +106,7 @@ const TargetActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   ```
 
   @method triggerAction
-  @deprecated Use a direct method call or closure action instead.
+  @deprecated Use a direct method call or closure action instead. See [RFC 1041](https://rfcs.emberjs.com/id/1041-deprecate-target-action-support).
   @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
   @return {Boolean} true if the action was sent successfully and did not return false
   @private

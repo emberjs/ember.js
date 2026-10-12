@@ -97,7 +97,7 @@ const { toString } = Object.prototype;
   @param item the item to check
   @return {String} the type
   @public
-  @deprecated Use native JavaScript instead.
+  @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
   @static
 */
 export default function typeOf(item: unknown): TypeName {

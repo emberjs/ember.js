@@ -31,7 +31,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @return {Boolean}
   @since 1.8.0
   @public
-  @deprecated Use native JavaScript instead.
+  @deprecated Use native JavaScript instead. See [RFC 334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils).
 */
 export default function isPresent<T>(obj: T | null | undefined): obj is T {
   deprecateUntil(
