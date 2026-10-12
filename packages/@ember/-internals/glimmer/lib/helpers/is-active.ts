@@ -16,11 +16,11 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
 
   ```gjs
   import { isActive } from '@ember/routing';
-  import { array, hash } from '@ember/helper';
+  import { hash } from '@ember/helper';
 
   <template>
     {{isActive "post" @post}}
-    {{isActive "post.comment" models=(array @post @comment)}}
+    {{isActive "post.comment" models=(Array.of @post @comment)}}
     {{isActive "posts" queryParams=(hash page=2)}}
   </template>
   ```

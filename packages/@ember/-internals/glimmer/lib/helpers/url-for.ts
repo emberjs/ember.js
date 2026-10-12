@@ -19,11 +19,10 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
 
   ```gjs
   import { urlFor } from '@ember/routing';
-  import { array } from '@ember/helper';
 
   <template>
     <a href={{urlFor "post.comment" @post @comment}}>Comment</a>
-    <a href={{urlFor "post.comment" models=(array @post @comment)}}>Comment</a>
+    <a href={{urlFor "post.comment" models=(Array.of @post @comment)}}>Comment</a>
   </template>
   ```
 
