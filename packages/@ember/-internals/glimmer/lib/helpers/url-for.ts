@@ -1,45 +1,74 @@
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
+import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-helper';
+
 /**
-  The `{{urlFor}}` helper returns a URL string for a given route, matching the
-  same arguments as `<LinkTo>`. Unlike `<LinkTo>`, it returns a string value
-  rather than rendering an anchor element.
+  The `urlFor` helper returns the URL of a route.
+  The URL includes the `rootURL` of the application.
 
-  ```javascript
+  ```gjs
   import { urlFor } from '@ember/routing';
+
+  <template>
+    <a href={{urlFor "about"}}>About</a>
+  </template>
   ```
+
+  Pass the models for the dynamic segments as positional arguments,
+  or as the `models` argument. You cannot use both.
 
   ```gjs
-  <a href={{urlFor "profile" this.user}}>Profile</a>
+  import { urlFor } from '@ember/routing';
+  import { array } from '@ember/helper';
+
+  <template>
+    <a href={{urlFor "post.comment" @post @comment}}>Comment</a>
+    <a href={{urlFor "post.comment" models=(array @post @comment)}}>Comment</a>
+  </template>
   ```
 
-  With query params:
+  The helper adds only the query params that you pass.
+  It does not add the query params of the controller.
 
   ```gjs
-  <a href={{urlFor "posts" queryParams=(hash page=2)}}>Page 2</a>
+  import { urlFor } from '@ember/routing';
+  import { hash } from '@ember/helper';
+
+  <template>
+    <a href={{urlFor "posts" queryParams=(hash page=2)}}>Page 2</a>
+  </template>
   ```
 
-  Returns `undefined` if the route name or any model is null/undefined (loading state).
+  The helper returns `undefined` when the route name or a model is missing.
+  This is the loading state of `<LinkTo>`.
 
-  @method url-for
-  @for Ember.Templates.helpers
+  @method urlFor
+  @for @ember/routing
+  @static
+  @param {String} routeName the name of the route
+  @param {...Object} models the model(s) for the route
+  @param {Object} [named] the `models` and `queryParams` named arguments
+  @return {String} the URL of the route
   @public
 */
-import type RouterService from '@ember/routing/router-service';
-import { service } from '@ember/service';
-import Helper from '@ember/component/helper';
-import { isMissing } from '../utils/is-missing';
+export default class UrlForHelper extends RouteHelper<string | undefined> {
+  protected helperName = 'urlFor';
 
-export default class UrlForHelper extends Helper {
-  @service('router') declare private router: RouterService;
+  compute(positional: RoutePositional, named: RouteNamed): string | undefined {
+    let args = this.routeArgs(positional, named);
 
-  compute(
-    [routeName, ...models]: [string | null | undefined, ...unknown[]],
-    { queryParams }: { queryParams?: Record<string, unknown> }
-  ): string | undefined {
-    if (isMissing(routeName) || models.some(isMissing)) {
+    if (this.isLoading(args)) {
       return undefined;
     }
 
-    const args = queryParams ? [...models, { queryParams }] : [...models];
-    return this.router.urlFor(routeName, ...args);
+    let { router } = this.routing;
+    let { route, models, queryParams } = args;
+
+    /**
+      The URL can contain dynamic segments and query params of the active routes.
+    */
+    consumeTag(tagFor(router, 'currentState'));
+
+    return router.generate(route as string, ...models, { queryParams: queryParams ?? {} });
   }
 }

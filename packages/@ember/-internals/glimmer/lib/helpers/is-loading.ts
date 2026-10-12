@@ -1,27 +1,36 @@
-/**
-  The `{{isLoading}}` helper returns `true` if the route name or any of the
-  passed models are null or undefined, mirroring the loading state that
-  `<LinkTo>` detects when it renders `#` as the href.
+import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-helper';
 
-  ```javascript
-  import { isLoading, urlFor } from '@ember/routing';
-  ```
+/**
+  The `isLoading` helper returns `true` when the route name or a model
+  is `null` or `undefined`.
+  It uses the same logic as the `loading` class of `<LinkTo>`.
 
   ```gjs
-  {{#if (isLoading "post" this.post)}}
-    Loading…
-  {{else}}
-    <a href={{urlFor "post" this.post}}>{{this.post.title}}</a>
-  {{/if}}
+  import { isLoading, urlFor } from '@ember/routing';
+
+  <template>
+    <a href={{urlFor "post" @post}} class={{if (isLoading "post" @post) "loading"}}>
+      Post
+    </a>
+  </template>
   ```
 
-  @method is-loading
-  @for Ember.Templates.helpers
+  The helper takes the same arguments as `urlFor`.
+  It does not use the query params.
+
+  @method isLoading
+  @for @ember/routing
+  @static
+  @param {String} routeName the name of the route
+  @param {...Object} models the model(s) for the route
+  @param {Object} [named] the `models` and `queryParams` named arguments
+  @return {Boolean} `true` when the route name or a model is missing
   @public
 */
+export default class IsLoadingHelper extends RouteHelper<boolean> {
+  protected helperName = 'isLoading';
 
-import { isMissing } from '../utils/is-missing';
-
-export default function isLoading(routeName: unknown, ...models: unknown[]): boolean {
-  return !routeName || models.some(isMissing);
+  compute(positional: RoutePositional, named: RouteNamed): boolean {
+    return this.isLoading(this.routeArgs(positional, named));
+  }
 }
