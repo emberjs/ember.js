@@ -119,3 +119,27 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
     this.assert.strictEqual(serialized, withRoot(`${b(0)}${html}${b(0)}`));
   }
 }
+
+export class InteractiveSerializedDOMHelperTests extends AbstractNodeTest {
+  static suiteName = 'Interactive server-side rendering in Node.js (serialize)';
+
+  @test
+  'modifiers run in an interactive serialize render'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          steps.push('install');
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+
+    let b = blockStack();
+    this.assertHTML(withRoot(`${b(0)}<div>content</div>${b(0)}`));
+    this.assert.deepEqual(steps, ['install'], 'the modifier ran one time');
+  }
+}

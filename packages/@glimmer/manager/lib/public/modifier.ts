@@ -10,7 +10,6 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { registerDestructor } from '@glimmer/destroyable';
 import { debugAssert } from '@glimmer/global-context';
 import { valueForRef } from '@glimmer/reference/lib/reference';
@@ -145,10 +144,16 @@ export class CustomModifierManager<
   install({ element, args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
+    /**
+     * An interactive server render installs modifiers on elements
+     * that the global `document` did not create.
+     */
+    let target = element as unknown as Element;
+
     if (capabilities.disableAutoTracking) {
-      untrack(() => delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args));
+      untrack(() => delegate.installModifier(modifier, target, args));
     } else {
-      delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args);
+      delegate.installModifier(modifier, target, args);
     }
   }
 
