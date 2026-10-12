@@ -94,7 +94,8 @@ export default class Mixin extends InternalMixin {
     @method create
     @for @ember/object/mixin
     @static
-    @param arguments*
+    @param args
+    @deprecated
     @public
   */
   static override create<M extends typeof InternalMixin>(...args: any[]): InstanceType<M> {
