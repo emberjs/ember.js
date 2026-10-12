@@ -51,8 +51,7 @@ export interface Initializer<T> {
   Engines can spawn `EngineInstance` instances via `buildInstance()`.
 
   @class Engine
-  @extends Ember.Namespace
-  @uses RegistryProxyMixin
+  @extends RegistryProxy
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
