@@ -338,7 +338,7 @@ module('Managers', () => {
         let manager = getInternalModifierManager(definition);
 
         assert.throws(() => {
-          manager.create({}, {} as any, {}, {} as any);
+          manager.create({}, {} as any, {}, {} as any, {} as any);
         }, /Custom modifier managers must have a `capabilities` property /u);
       });
 
@@ -352,7 +352,7 @@ module('Managers', () => {
         let manager = getInternalModifierManager(definition);
 
         assert.throws(() => {
-          manager.create({}, {} as any, {}, {} as any);
+          manager.create({}, {} as any, {}, {} as any, {} as any);
         }, /Custom modifier managers must have a `capabilities` property /u);
       });
 

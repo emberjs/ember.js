@@ -3,10 +3,9 @@ import type {
   AttrNamespace,
   Bounds,
   Cursor,
+  DOMRenderer,
   ElementOperations,
   Environment,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
   Maybe,
   ModifierInstance,
   Nullable,
@@ -84,8 +83,7 @@ export class NewTreeBuilder implements TreeBuilder {
     cursors: Cursor[];
   };
 
-  public dom: GlimmerTreeConstruction;
-  public updateOperations: GlimmerTreeChanges;
+  public dom: DOMRenderer;
   public constructing: Nullable<SimpleElement> = null;
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
@@ -109,10 +107,9 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
-    this.pushElement(parentNode, nextSibling);
     this.env = env;
-    this.dom = env.getAppendOperations();
-    this.updateOperations = env.getDOM();
+    this.dom = env.dom;
+    this.pushElement(parentNode, nextSibling);
 
     if (LOCAL_DEBUG) {
       this.debug = () => ({
@@ -245,12 +242,10 @@ export class NewTreeBuilder implements TreeBuilder {
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
-      while (element.lastChild) {
-        element.removeChild(element.lastChild);
-      }
+      this.dom.clearChildren(element);
     }
 
-    let block = new RemoteBlock(element);
+    let block = new RemoteBlock(this.dom, element);
 
     return this.pushBlock(block, true);
   }
@@ -310,11 +305,11 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
-    let first = fragment.firstChild;
+    let first = this.dom.firstChild(fragment);
 
     if (first) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
+      let ret = new ConcreteBounds(this.element, first, this.dom.lastChild(fragment)!);
       this.dom.insertBefore(this.element, fragment, this.nextSibling);
       return ret;
     } else {
@@ -375,7 +370,7 @@ export class NewTreeBuilder implements TreeBuilder {
 
   __setProperty(name: string, value: unknown): void {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    (this.constructing! as unknown as Element)[name as MutableKey<Element>] = value as never;
+    this.dom.setProperty(this.constructing!, name, value);
   }
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
@@ -390,7 +385,7 @@ export class NewTreeBuilder implements TreeBuilder {
   ): DynamicAttribute {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let element = this.constructing!;
-    let attribute = dynamicAttribute(element, name, namespace, trusting);
+    let attribute = dynamicAttribute(this.dom, element, name, namespace, trusting);
     attribute.set(this, value, this.env);
     return attribute;
   }
@@ -475,7 +470,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
+  constructor(dom: DOMRenderer, parent: SimpleElement) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -505,8 +500,8 @@ export class RemoteBlock extends AppendingBlockImpl {
       // and avoid clearing the node if it was. In most cases this shouldn't happen,
       // so this might hide bugs where the code clears nested nodes unnecessarily,
       // so we should eventually try to do the correct fix.
-      if (this.parentElement() === this.firstNode().parentNode) {
-        clear(this);
+      if (this.parentElement() === dom.parentNode(this.firstNode())) {
+        clear(dom, this);
       }
     });
   }
@@ -518,9 +513,9 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
     setLocalDebugType('block:resettable', this);
   }
 
-  reset(): Nullable<SimpleNode> {
+  reset(env: Environment): Nullable<SimpleNode> {
     destroy(this);
-    let nextSibling = clear(this);
+    let nextSibling = clear(env.dom, this);
 
     this.first = null;
     this.last = null;
@@ -586,13 +581,3 @@ export class AppendingBlockList implements AppendingBlock {
 export function clientBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
   return NewTreeBuilder.forInitialRender(env, cursor);
 }
-
-export type MutableKey<T> = {
-  [P in keyof T]-?: (<U>() => U extends { [K in P]: T[P] } ? 1 : 2) extends <U>() => U extends {
-    -readonly [K in P]: T[P];
-  }
-    ? 1
-    : 2
-    ? P
-    : never;
-}[keyof T];

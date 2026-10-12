@@ -6,10 +6,10 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
-import { DOMTreeConstruction } from '@glimmer/runtime/lib/dom/api';
+import { DOMRendererImpl } from '@glimmer/runtime/lib/dom/renderer';
 import createHTMLDocument from '@simple-dom/document';
 
-export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
+export default class NodeDOMRenderer extends DOMRendererImpl {
   declare protected document: SimpleDocument; // Hides property on base class
   constructor(doc: Nullable<SimpleDocument>) {
     super(doc || createHTMLDocument());

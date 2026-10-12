@@ -1,4 +1,11 @@
-import type { Bounds, Cursor, Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import type {
+  Bounds,
+  Cursor,
+  DOMRenderer,
+  Nullable,
+  SimpleElement,
+  SimpleNode,
+} from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 
@@ -33,7 +40,11 @@ export class ConcreteBounds implements Bounds {
   }
 }
 
-export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<SimpleNode> {
+export function move(
+  dom: DOMRenderer,
+  bounds: Bounds,
+  reference: Nullable<SimpleNode>
+): Nullable<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
@@ -41,9 +52,9 @@ export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<
   let current: SimpleNode = first;
 
   while (true) {
-    let next = current.nextSibling;
+    let next = dom.nextSibling(current);
 
-    parent.insertBefore(current, reference);
+    dom.insertBefore(parent, current, reference);
 
     if (current === last) {
       return next;
@@ -53,7 +64,7 @@ export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<
   }
 }
 
-export function clear(bounds: Bounds): Nullable<SimpleNode> {
+export function clear(dom: DOMRenderer, bounds: Bounds): Nullable<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
@@ -61,9 +72,9 @@ export function clear(bounds: Bounds): Nullable<SimpleNode> {
   let current: SimpleNode = first;
 
   while (true) {
-    let next = current.nextSibling;
+    let next = dom.nextSibling(current);
 
-    parent.removeChild(current);
+    dom.removeChild(parent, current);
 
     if (current === last) {
       return next;
