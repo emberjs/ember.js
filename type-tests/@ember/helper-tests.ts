@@ -9,6 +9,7 @@ import {
   type GetHelper,
   hash,
   type HashHelper,
+  setHelperManager,
   uniqueId,
   type UniqueIdHelper,
 } from '@ember/helper';
@@ -20,3 +21,7 @@ expectTypeOf(fn).toEqualTypeOf<FnHelper>();
 expectTypeOf(get).toEqualTypeOf<GetHelper>();
 expectTypeOf(hash).toEqualTypeOf<HashHelper>();
 expectTypeOf(uniqueId).toEqualTypeOf<UniqueIdHelper>();
+
+type HelperManager = ReturnType<Parameters<typeof setHelperManager>[0]>;
+expectTypeOf<HelperManager['capabilities']>().not.toBeAny();
+expectTypeOf<Parameters<HelperManager['createHelper']>[1]>().not.toBeAny();
