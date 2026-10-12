@@ -39,7 +39,7 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   ```
 
   The helper gives its arguments to the `urlFor` method of the `router` service.
-  Use the `isLoading` helper when a model can be `null` or `undefined`.
+  Use the `hasMissingModels` helper when a model can be `null` or `undefined`.
 
   The helper uses the `router` service.
   In an engine, the engine must supply that service.

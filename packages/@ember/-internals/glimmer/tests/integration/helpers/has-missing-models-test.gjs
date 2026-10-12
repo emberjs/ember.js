@@ -4,7 +4,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { hash } from '@ember/helper';
-import { LinkTo, isLoading } from '@ember/routing';
+import { LinkTo, hasMissingModels } from '@ember/routing';
 import EmberRouter from '@ember/routing/router';
 
 class Router extends EmberRouter {
@@ -22,7 +22,7 @@ class State {
   @tracked postId = '1';
 }
 
-module('Helpers test: {{isLoading}}', function (hooks) {
+module('Helpers test: {{hasMissingModels}}', function (hooks) {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function () {
@@ -33,16 +33,16 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   test('it returns false when the route and all models are present', async function (assert) {
     await render(
       <template>
-        <span id='route'>{{isLoading 'index'}}</span>
+        <span id='route'>{{hasMissingModels 'index'}}</span>
         <LinkTo id='link-route' @route='index'>Home</LinkTo>
 
-        <span id='model'>{{isLoading 'post' '42'}}</span>
+        <span id='model'>{{hasMissingModels 'post' '42'}}</span>
         <LinkTo id='link-model' @route='post' @model='42'>Post</LinkTo>
 
-        <span id='models'>{{isLoading 'post.comment' '42' '7'}}</span>
-        <span id='named'>{{isLoading 'post.comment' models=(Array.of '42' '7')}}</span>
-        <span id='named-single'>{{isLoading 'post' models='42'}}</span>
-        <span id='query'>{{isLoading 'post' '42' queryParams=(hash q='ember')}}</span>
+        <span id='models'>{{hasMissingModels 'post.comment' '42' '7'}}</span>
+        <span id='named'>{{hasMissingModels 'post.comment' models=(Array.of '42' '7')}}</span>
+        <span id='named-single'>{{hasMissingModels 'post' models='42'}}</span>
+        <span id='query'>{{hasMissingModels 'post' '42' queryParams=(hash q='ember')}}</span>
       </template>
     );
 
@@ -59,12 +59,12 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   test('it does not treat falsy values as missing', async function (assert) {
     await render(
       <template>
-        <span id='zero'>{{isLoading 'post' 0}}</span>
+        <span id='zero'>{{hasMissingModels 'post' 0}}</span>
         <LinkTo id='link-zero' @route='post' @model={{0}}>Post</LinkTo>
 
-        <span id='empty'>{{isLoading 'post' ''}}</span>
-        <span id='false'>{{isLoading 'post' false}}</span>
-        <span id='empty-route'>{{isLoading ''}}</span>
+        <span id='empty'>{{hasMissingModels 'post' ''}}</span>
+        <span id='false'>{{hasMissingModels 'post' false}}</span>
+        <span id='empty-route'>{{hasMissingModels ''}}</span>
       </template>
     );
 
@@ -78,15 +78,15 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   test('it returns true when a positional model is missing', async function (assert) {
     await render(
       <template>
-        <span id='null'>{{isLoading 'post' null}}</span>
+        <span id='null'>{{hasMissingModels 'post' null}}</span>
         <LinkTo id='link-null' @route='post' @model={{null}}>Post</LinkTo>
 
-        <span id='undefined'>{{isLoading 'post' undefined}}</span>
+        <span id='undefined'>{{hasMissingModels 'post' undefined}}</span>
         <LinkTo id='link-undefined' @route='post' @model={{undefined}}>Post</LinkTo>
 
-        <span id='first'>{{isLoading 'post.comment' null '7'}}</span>
-        <span id='last'>{{isLoading 'post.comment' '42' undefined}}</span>
-        <span id='query'>{{isLoading 'post' null queryParams=(hash q='ember')}}</span>
+        <span id='first'>{{hasMissingModels 'post.comment' null '7'}}</span>
+        <span id='last'>{{hasMissingModels 'post.comment' '42' undefined}}</span>
+        <span id='query'>{{hasMissingModels 'post' null queryParams=(hash q='ember')}}</span>
       </template>
     );
 
@@ -102,14 +102,14 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   test('it returns true when a model in `models` is missing', async function (assert) {
     await render(
       <template>
-        <span id='list'>{{isLoading 'post.comment' models=(Array.of '42' null)}}</span>
+        <span id='list'>{{hasMissingModels 'post.comment' models=(Array.of '42' null)}}</span>
         <LinkTo id='link-list' @route='post.comment' @models={{Array.of '42' null}}>
           Comment
         </LinkTo>
 
-        <span id='single'>{{isLoading 'post' models=null}}</span>
+        <span id='single'>{{hasMissingModels 'post' models=null}}</span>
         <span id='query'>
-          {{isLoading 'post' models=(Array.of null) queryParams=(hash q='ember')}}
+          {{hasMissingModels 'post' models=(Array.of null) queryParams=(hash q='ember')}}
         </span>
       </template>
     );
@@ -123,10 +123,10 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   test('it returns true when the route is missing', async function (assert) {
     await render(
       <template>
-        <span id='null'>{{isLoading null}}</span>
+        <span id='null'>{{hasMissingModels null}}</span>
         <LinkTo id='link-null' @route={{null}}>Unknown</LinkTo>
 
-        <span id='undefined'>{{isLoading undefined}}</span>
+        <span id='undefined'>{{hasMissingModels undefined}}</span>
         <LinkTo id='link-undefined' @route={{undefined}}>Unknown</LinkTo>
       </template>
     );
@@ -144,8 +144,8 @@ module('Helpers test: {{isLoading}}', function (hooks) {
     }
 
     await assert.rejects(
-      render(<template>{{isLoading 'post' '42' models='42'}}</template>),
-      /You cannot provide both positional models and the `models` argument to the `isLoading` helper\./
+      render(<template>{{hasMissingModels 'post' '42' models='42'}}</template>),
+      /You cannot provide both positional models and the `models` argument to the `hasMissingModels` helper\./
     );
   });
 
@@ -156,8 +156,8 @@ module('Helpers test: {{isLoading}}', function (hooks) {
     }
 
     await assert.rejects(
-      render(<template>{{isLoading 42}}</template>),
-      /The route name of the `isLoading` helper must be a string\./
+      render(<template>{{hasMissingModels 42}}</template>),
+      /The route name of the `hasMissingModels` helper must be a string\./
     );
   });
 
@@ -168,8 +168,8 @@ module('Helpers test: {{isLoading}}', function (hooks) {
     }
 
     await assert.rejects(
-      render(<template>{{isLoading 'post' '1' queryParams='q=ember'}}</template>),
-      /The `queryParams` argument to the `isLoading` helper must be an object\./
+      render(<template>{{hasMissingModels 'post' '1' queryParams='q=ember'}}</template>),
+      /The `queryParams` argument to the `hasMissingModels` helper must be an object\./
     );
   });
 
@@ -178,8 +178,8 @@ module('Helpers test: {{isLoading}}', function (hooks) {
 
     await render(
       <template>
-        <span id='positional'>{{isLoading 'post' state.postId}}</span>
-        <span id='named'>{{isLoading 'post' models=(Array.of state.postId)}}</span>
+        <span id='positional'>{{hasMissingModels 'post' state.postId}}</span>
+        <span id='named'>{{hasMissingModels 'post' models=(Array.of state.postId)}}</span>
       </template>
     );
 

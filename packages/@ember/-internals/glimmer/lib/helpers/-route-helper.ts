@@ -87,7 +87,7 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   /**
     `<LinkTo>` uses the same condition for its `loading` class.
   */
-  protected isLoading({ route, models }: RouteArgs): boolean {
+  protected hasMissingModels({ route, models }: RouteArgs): boolean {
     return isMissing(route) || models.some(isMissing);
   }
 
@@ -109,7 +109,7 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   }
 
   private isActiveForState(args: RouteArgs, state: Maybe<RouterState>): boolean {
-    if (this.isLoading(args)) {
+    if (this.hasMissingModels(args)) {
       return false;
     }
 
