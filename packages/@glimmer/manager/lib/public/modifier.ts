@@ -144,10 +144,6 @@ export class CustomModifierManager<
   install({ element, args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
-    /**
-     * An interactive server render installs modifiers on elements
-     * that the global `document` did not create.
-     */
     let target = element as unknown as Element;
 
     if (capabilities.disableAutoTracking) {

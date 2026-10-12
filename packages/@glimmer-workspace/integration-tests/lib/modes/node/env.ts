@@ -43,7 +43,6 @@ export class JitSerializationDelegate extends NodeJitRenderDelegate {
   }
 }
 
-/** A server render that runs modifiers, as a renderer with `isInteractive: true` does. */
 export class InteractiveNodeJitRenderDelegate extends NodeJitRenderDelegate {
   static override style = 'interactive node jit';
 
