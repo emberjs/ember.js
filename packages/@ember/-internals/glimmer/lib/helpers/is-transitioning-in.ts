@@ -25,7 +25,7 @@ import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
 import { service } from '@ember/service';
 import Helper from '@ember/component/helper';
-import { isMissing } from './-router-helpers-utils';
+import { isMissing } from '../utils/is-missing';
 
 export default class IsTransitioningInHelper extends Helper {
   @service('-routing') declare private routing: RoutingService<Route>;

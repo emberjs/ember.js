@@ -19,7 +19,8 @@
   @for Ember.Templates.helpers
   @public
 */
-import { isMissing } from './-router-helpers-utils';
+
+import { isMissing } from '../utils/is-missing';
 
 export default function isLoading(routeName: unknown, ...models: unknown[]): boolean {
   return !routeName || models.some(isMissing);

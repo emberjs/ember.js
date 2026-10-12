@@ -32,7 +32,7 @@
 import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
 import Helper from '@ember/component/helper';
-import { isMissing } from './-router-helpers-utils';
+import { isMissing } from '../utils/is-missing';
 
 export default class IsActiveHelper extends Helper {
   @service('router') declare private router: RouterService;
