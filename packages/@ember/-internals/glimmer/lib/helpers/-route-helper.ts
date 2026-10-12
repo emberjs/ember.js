@@ -37,6 +37,9 @@ export interface RouteArgs {
   It reads the arguments in the same way for each helper,
   and it holds the route state logic of `<LinkTo>`.
 
+  The route state logic needs `currentState` and `targetState`,
+  which the public router service does not have.
+
   @private
 */
 export default abstract class RouteHelper<Return> extends Helper<RouteHelperSignature<Return>> {
@@ -74,7 +77,7 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
     );
 
     return {
-      route: isMissing(route) ? route : this.namespaceRoute(route),
+      route,
       // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       models: models as {}[],
       queryParams: isMissing(queryParams) ? undefined : { ...queryParams },
@@ -112,7 +115,12 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
 
     let { route, models, queryParams } = args;
 
-    return this.routing.isActiveForRoute(models, queryParams, route as string, state);
+    return this.routing.isActiveForRoute(
+      models,
+      queryParams,
+      this.namespaceRoute(route as string),
+      state
+    );
   }
 
   /**

@@ -1,5 +1,5 @@
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import type RouterService from '@ember/routing/router-service';
+import { service } from '@ember/service';
 import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-helper';
 
 /**
@@ -42,6 +42,9 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   The helper returns `undefined` when the route name or a model is missing.
   This is the loading state of `<LinkTo>`.
 
+  The helper uses the `router` service.
+  In an engine, the engine must supply that service.
+
   @method urlFor
   @for @ember/routing
   @static
@@ -52,6 +55,8 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   @public
 */
 export default class UrlForHelper extends RouteHelper<string | undefined> {
+  @service('router') declare private router: RouterService;
+
   protected helperName = 'urlFor';
 
   compute(positional: RoutePositional, named: RouteNamed): string | undefined {
@@ -61,14 +66,14 @@ export default class UrlForHelper extends RouteHelper<string | undefined> {
       return undefined;
     }
 
-    let { router } = this.routing;
+    let { router } = this;
     let { route, models, queryParams } = args;
 
     /**
       The URL can contain dynamic segments and query params of the active routes.
     */
-    consumeTag(tagFor(router, 'currentState'));
+    void router.currentURL;
 
-    return router.generate(route as string, ...models, { queryParams: queryParams ?? {} });
+    return router.urlFor(route as string, ...models, { queryParams: queryParams ?? {} });
   }
 }

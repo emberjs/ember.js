@@ -1,5 +1,4 @@
-import type Route from '@ember/routing/route';
-import type { RoutingService } from '@ember/routing/-internals';
+import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
 import Helper from '../helper';
 
@@ -25,6 +24,9 @@ import Helper from '../helper';
   </template>
   ```
 
+  The helper uses the `router` service.
+  In an engine, the engine must supply that service.
+
   @method rootUrl
   @for @ember/routing
   @static
@@ -32,9 +34,9 @@ import Helper from '../helper';
   @public
 */
 export default class RootUrlHelper extends Helper<{ Args: { Positional: [] }; Return: string }> {
-  @service('-routing') declare private routing: RoutingService<Route>;
+  @service('router') declare private router: RouterService;
 
   compute(): string {
-    return this.routing.router.rootURL;
+    return this.router.rootURL;
   }
 }

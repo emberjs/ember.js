@@ -1066,14 +1066,6 @@ moduleFor(
               'template:application',
               strictTemplate(`
                 {{outlet}}
-                <span id="root-url">{{rootUrl}}</span>
-
-                <a id="url-about" href={{urlFor "about"}}>About</a>
-                <LinkTo id="link-url-about" @route="about">About</LinkTo>
-
-                <a id="url-post" href={{urlFor "post" "1"}}>Post</a>
-                <a id="url-application" href={{urlFor "application"}}>Blog</a>
-
                 <span id="about">{{isActive "about"}}</span>
                 <LinkTo id="link-about" @route="about">About</LinkTo>
 
@@ -1106,14 +1098,8 @@ moduleFor(
       });
     }
 
-    async ['@test the helpers resolve route names from the mount point of the engine']() {
+    async ['@test the route state helpers resolve route names from the mount point of the engine']() {
       await this.visit('/blog');
-
-      this.assert.strictEqual(this.text('root-url'), '/');
-      this.assert.strictEqual(this.href('url-about'), '/blog/about');
-      this.assert.strictEqual(this.href('link-url-about'), '/blog/about');
-      this.assert.strictEqual(this.href('url-post'), '/blog/posts/1');
-      this.assert.strictEqual(this.href('url-application'), '/blog');
 
       this.assertMatchesLinkTo('index', 'active', true, 'engine index on /blog');
       this.assertMatchesLinkTo('about', 'active', false, 'engine about on /blog');
@@ -1140,7 +1126,7 @@ moduleFor(
 moduleFor(
   'Router helpers: in a routeless engine',
   class extends RouterHelpersTestCase {
-    async ['@test the helpers that use a route name are not supported']() {
+    async ['@test the route state helpers are not supported']() {
       this.add(
         'engine:widget',
         class extends Engine {
@@ -1151,7 +1137,7 @@ moduleFor(
 
             this.register(
               'template:application',
-              strictTemplate(`<a href={{urlFor "about"}}>About</a>`)
+              strictTemplate(`<span>{{isActive "about"}}</span>`)
             );
           }
         }
@@ -1160,7 +1146,7 @@ moduleFor(
 
       await this.assert.rejectsAssertion(
         this.visit('/'),
-        'You attempted to use the `urlFor` helper within a routeless engine, this is not supported.'
+        'You attempted to use the `isActive` helper within a routeless engine, this is not supported.'
       );
     }
   }
