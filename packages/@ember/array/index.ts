@@ -1033,7 +1033,6 @@ const EmberArray = DeprecatedMixin.create(InternalEmberArrayMixin, {
 
   @class MutableArray
   @uses EmberArray
-  @uses MutableEnumerable
   @public
 */
 interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
