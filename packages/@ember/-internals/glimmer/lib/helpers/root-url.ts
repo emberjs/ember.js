@@ -34,7 +34,7 @@ import Helper from '../helper';
   @public
 */
 export default class RootUrlHelper extends Helper<{ Args: { Positional: [] }; Return: string }> {
-  @service('router') declare private router: RouterService;
+  @service('router') private router!: RouterService;
 
   compute(): string {
     return this.router.rootURL;

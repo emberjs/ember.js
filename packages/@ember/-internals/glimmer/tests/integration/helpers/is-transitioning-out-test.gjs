@@ -1,5 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { module, test } from 'qunit';
+import { defer } from 'rsvp';
 import { setupRenderingTest } from 'ember-qunit';
 import { find, render, settled } from '@ember/test-helpers';
 import Controller from '@ember/controller';
@@ -34,7 +35,7 @@ module('Helpers test: {{isTransitioningOut}}', function (hooks) {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function () {
-    let model = (this.model = Promise.withResolvers());
+    let model = (this.model = defer());
 
     /**
       A test registers this class for the route that must stay in the transition.

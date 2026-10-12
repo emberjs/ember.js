@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@glimmer/tracking';
 import { module, test } from 'qunit';
+import { defer } from 'rsvp';
 import { setupRenderingTest } from 'ember-qunit';
 import { find, render, settled } from '@ember/test-helpers';
 import Controller from '@ember/controller';
@@ -348,7 +349,7 @@ module('Helpers test: {{isActive}}', function (hooks) {
 
   test('it matches the active class of `<LinkTo>` in a loading substate', async function (assert) {
     let router = this.owner.lookup('service:router');
-    let model = Promise.withResolvers();
+    let model = defer();
 
     this.owner.register(
       'route:slow',
