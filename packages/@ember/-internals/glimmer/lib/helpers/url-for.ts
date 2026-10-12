@@ -38,8 +38,8 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   </template>
   ```
 
-  The helper returns `undefined` when the route name or a model is missing.
-  This is the loading state of `<LinkTo>`.
+  The helper gives its arguments to the `urlFor` method of the `router` service.
+  Use the `isLoading` helper when a model can be `null` or `undefined`.
 
   The helper uses the `router` service.
   In an engine, the engine must supply that service.
@@ -53,20 +53,14 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   @return {String} the URL of the route
   @public
 */
-export default class UrlForHelper extends RouteHelper<string | undefined> {
+export default class UrlForHelper extends RouteHelper<string> {
   @service('router') declare private router: RouterService;
 
   protected helperName = 'urlFor';
 
-  compute(positional: RoutePositional, named: RouteNamed): string | undefined {
-    let args = this.routeArgs(positional, named);
-
-    if (this.isLoading(args)) {
-      return undefined;
-    }
-
+  compute(positional: RoutePositional, named: RouteNamed): string {
     let { router } = this;
-    let { route, models, queryParams } = args;
+    let { route, models, queryParams } = this.routeArgs(positional, named);
 
     /**
       The URL can contain dynamic segments and query params of the active routes.

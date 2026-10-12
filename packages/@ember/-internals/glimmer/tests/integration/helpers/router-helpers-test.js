@@ -33,6 +33,10 @@ const scope = () => ({
   isTransitioningOut,
 });
 
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function strictTemplate(source) {
   return compile(source, { strictMode: true, scope });
 }
@@ -212,17 +216,13 @@ moduleFor(
       this.assert.strictEqual(this.href('link'), '/search');
     }
 
-    async ['@test it returns no URL when the route or a model is missing']() {
+    async ['@test it gives a missing model to the router service']() {
       this.add(
-        'template:index',
-        strictTemplate(`
-          <a id="model" href={{urlFor "post" this.missing}}>Post</a>
-          <a id="models" href={{urlFor "post.comment" models=(array "42" this.missing)}}>Comment</a>
-          <a id="route" href={{urlFor this.missing}}>Unknown</a>
-        `)
+        'template:about',
+        strictTemplate(`<a id="model" href={{urlFor "post" this.missing}}>Post</a>`)
       );
       this.add(
-        'controller:index',
+        'controller:about',
         class extends Controller {
           missing = null;
         }
@@ -230,9 +230,18 @@ moduleFor(
 
       await this.visit('/');
 
-      this.assert.strictEqual(this.href('model'), null);
-      this.assert.strictEqual(this.href('models'), null);
-      this.assert.strictEqual(this.href('route'), null);
+      let router = this.applicationInstance.lookup('service:router');
+      let expected;
+
+      try {
+        router.urlFor('post', null);
+      } catch (error) {
+        expected = error.message;
+      }
+
+      this.assert.strictEqual(typeof expected, 'string', 'the router service throws');
+
+      await this.assert.rejects(this.visit('/about'), new RegExp(escapeRegExp(expected)));
     }
 
     async ['@test it updates when a model changes']() {
@@ -243,17 +252,14 @@ moduleFor(
       this.add(
         'controller:index',
         class extends Controller {
-          @tracked postId = null;
+          @tracked postId = '1';
         }
       );
 
       await this.visit('/');
-      this.assert.strictEqual(this.href('link'), null);
+      this.assert.strictEqual(this.href('link'), '/posts/1');
 
       let controller = this.controllerFor('index');
-
-      runTask(() => (controller.postId = '1'));
-      this.assert.strictEqual(this.href('link'), '/posts/1');
 
       runTask(() => (controller.postId = '2'));
       this.assert.strictEqual(this.href('link'), '/posts/2');

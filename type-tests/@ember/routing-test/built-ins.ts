@@ -18,7 +18,7 @@ expectTypeOf(LinkTo.create()).toEqualTypeOf<never>();
 expectTypeOf(LinkTo.toString()).toBeString();
 
 // The router helpers of RFC 391.
-expectTypeOf(urlFor.prototype.compute).returns.toEqualTypeOf<string | undefined>();
+expectTypeOf(urlFor.prototype.compute).returns.toBeString();
 expectTypeOf(rootUrl.prototype.compute).returns.toBeString();
 expectTypeOf(isActive.prototype.compute).returns.toBeBoolean();
 expectTypeOf(isLoading.prototype.compute).returns.toBeBoolean();
