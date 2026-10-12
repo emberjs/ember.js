@@ -365,6 +365,17 @@ Suggestions for the plan's author, based on what is still open:
    `expectAssertion` + `backtrackingMessageFor` like its sibling, without the restating comments.
    Tips: 8 `01659f7ec8` (dev 9189, prod 9005, 0 fail), 9 `33ef02c039`, 10 `5262e7cab3` (dev 9193).
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
+   **PRs 8 and 9 landed (2026-10-12) as #21702 and #21703.** `origin/main` is `afe5bdcdef`; PR 10
+   rebased onto it cleanly. Final review of PR 10: no coverage loss (the two deleted `owner-test.ts`
+   tests are ledger rows 9.2). PR 10 amended: comments citing `spec/` chapters (not upstream) dropped
+   or reworded, the four restating "server render is non-interactive" comments removed, the unused
+   `expect` import in `jit/delegate.ts` moved to `loose-template.ts` (replacing a hand-rolled
+   throw), the vestigial `element?` field and `this.delegate.registerModifier` in the rehydration
+   modifier test fixed, `this.assert` used throughout the new `mount-test.js` tests, and the stale
+   "Depends on ef4/test-cleanup-9" line removed from the message. Tip `6520d1e676`, dev 9215 / 9195 /
+   0 fail / 20 skip (+22 from main). Not pushed. Pre-existing oddity, not changed: the kept
+   `owner-test.ts` test "owner can be changed by a component with the hasSubOwner capability"
+   asserts `owner1` inside the `owner2` sub-owner, so its name and its assertion disagree.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
    (re-derive moved and deleted test citations), and the W2-branch citations added in 8.4
