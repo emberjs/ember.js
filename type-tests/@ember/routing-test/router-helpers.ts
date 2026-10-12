@@ -20,22 +20,39 @@ declare module '@ember/component/helper' {
 }
 
 declare let model: { id: string };
+declare let id: string | undefined;
 
 /**
-  `{{urlFor "post" model}}`
+  `{{urlFor "post" model.id}}`
 */
 expectTypeOf(resolve(urlFor)('about')).toBeString();
-expectTypeOf(resolve(urlFor)('post', model)).toBeString();
-expectTypeOf(resolve(urlFor)('post.comment', model, 7)).toBeString();
-expectTypeOf(resolve(urlFor)('post', { models: [model], ...NamedArgsMarker })).toBeString();
+expectTypeOf(resolve(urlFor)('post', model.id)).toBeString();
+expectTypeOf(resolve(urlFor)('post', id)).toBeString();
+expectTypeOf(resolve(urlFor)('post.comment', model.id, 7)).toBeString();
+expectTypeOf(resolve(urlFor)('post', { models: [model.id], ...NamedArgsMarker })).toBeString();
 expectTypeOf(
-  resolve(urlFor)('post', model, { queryParams: { page: 2 }, ...NamedArgsMarker })
+  resolve(urlFor)('post', model.id, { queryParams: { page: 2 }, ...NamedArgsMarker })
 ).toBeString();
 
 resolve(urlFor)(
   // @ts-expect-error the route name is a string
   42
 );
+resolve(urlFor)(
+  'post',
+  // @ts-expect-error a model object is not the value of a dynamic segment
+  model
+);
+resolve(urlFor)('post', {
+  // @ts-expect-error a model object is not the value of a dynamic segment
+  models: [model],
+  ...NamedArgsMarker,
+});
+resolve(urlFor)('post', {
+  // @ts-expect-error the query params are an object
+  queryParams: 'page=2',
+  ...NamedArgsMarker,
+});
 
 /**
   `{{rootUrl}}`
@@ -48,13 +65,13 @@ resolve(rootUrl)(
 );
 
 /**
-  `{{isActive "post" model}}`
+  `{{isActive "post" model.id}}`
 */
 expectTypeOf(resolve(isActive)('about')).toBeBoolean();
-expectTypeOf(resolve(isActive)('post', model)).toBeBoolean();
+expectTypeOf(resolve(isActive)('post', model.id)).toBeBoolean();
 expectTypeOf(
   resolve(isActive)('post', {
-    models: [model],
+    models: [model.id],
     queryParams: { page: 2 },
     ...NamedArgsMarker,
   })
@@ -67,5 +84,5 @@ expectTypeOf(resolve(isLoading)('post', undefined)).toBeBoolean();
 expectTypeOf(resolve(isLoading)(null)).toBeBoolean();
 expectTypeOf(resolve(isLoading)('post', { models: [null], ...NamedArgsMarker })).toBeBoolean();
 
-expectTypeOf(resolve(isTransitioningIn)('post', model)).toBeBoolean();
-expectTypeOf(resolve(isTransitioningOut)('post', model)).toBeBoolean();
+expectTypeOf(resolve(isTransitioningIn)('post', model.id)).toBeBoolean();
+expectTypeOf(resolve(isTransitioningOut)('post', model.id)).toBeBoolean();

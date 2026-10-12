@@ -10,11 +10,19 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import Helper from '../helper';
 import { isMissing } from '../utils/is-missing';
 
+/**
+  The value of one dynamic segment of a route.
+
+  A model object is not a valid value. A helper cannot compare an object
+  with the state of the router before a route serializes the object.
+*/
+export type RouteSegment = string | number;
+
 export interface RouteHelperSignature<Return> {
   Args: {
-    Positional: [route?: Maybe<string>, ...models: unknown[]];
+    Positional: [route?: Maybe<string>, ...models: Maybe<RouteSegment>[]];
     Named: {
-      models?: unknown;
+      models?: Maybe<RouteSegment> | Maybe<RouteSegment>[];
       queryParams?: Maybe<Record<string, unknown>>;
     };
   };
@@ -26,8 +34,7 @@ export type RouteNamed = RouteHelperSignature<unknown>['Args']['Named'];
 
 export interface RouteArgs {
   route: Maybe<string>;
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  models: {}[];
+  models: RouteSegment[];
   queryParams: Record<string, unknown> | undefined;
 }
 
@@ -69,6 +76,13 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
       models = Array.isArray(namedModels) ? namedModels : [namedModels];
     }
 
+    assert(
+      `The models of the \`${this.helperName}\` helper must be strings or numbers. Pass the value of the dynamic segment, not a model object.`,
+      models.every(
+        (model) => isMissing(model) || typeof model === 'string' || typeof model === 'number'
+      )
+    );
+
     let { queryParams } = named;
 
     assert(
@@ -78,8 +92,7 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
 
     return {
       route,
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      models: models as {}[],
+      models: models as RouteSegment[],
       queryParams: isMissing(queryParams) ? undefined : { ...queryParams },
     };
   }
@@ -100,7 +113,8 @@ export default abstract class RouteHelper<Return> extends Helper<RouteHelperSign
   }
 
   /**
-    `<LinkTo>` uses the same condition for its `loading` class.
+    With a missing route name or model,
+    a helper cannot compare its arguments with the state of the router.
   */
   protected hasMissingModels({ route, models }: RouteArgs): boolean {
     return isMissing(route) || models.some(isMissing);

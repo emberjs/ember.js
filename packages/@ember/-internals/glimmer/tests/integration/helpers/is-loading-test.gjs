@@ -259,11 +259,6 @@ module('Helpers test: {{isLoading}}', function (hooks) {
     await visited;
 
     assert.dom('#post').hasText('false');
-
-    state.postId = undefined;
-    await settled();
-
-    assert.dom('#post').hasText('true', 'a missing model');
   });
 
   test('it resolves route names from the mount point of the engine', async function (assert) {
@@ -288,10 +283,18 @@ module('Helpers test: {{isLoading}}', function (hooks) {
   });
 });
 
-module('Helpers test: {{isLoading}} with missing arguments', function (hooks) {
+module('Helpers test: {{isLoading}} arguments', function (hooks) {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function () {
+    let model = (this.model = defer());
+
+    this.SlowRoute = class extends Route {
+      model() {
+        return model.promise;
+      }
+    };
+
     this.owner.register('router:main', Router);
     this.owner.register(
       'engine:blog',
@@ -303,105 +306,37 @@ module('Helpers test: {{isLoading}} with missing arguments', function (hooks) {
     this.owner.setupRouter();
   });
 
-  test('it returns false when the route and all models are present', async function (assert) {
+  test('it returns false when the route or a model is missing', async function (assert) {
+    let router = this.owner.lookup('service:router');
+
+    this.owner.register('route:post', this.SlowRoute);
+
+    await router.transitionTo('/');
+
     await render(
       <template>
-        <span id='route'>{{isLoading 'index'}}</span>
-        <LinkTo id='link-route' @route='index'>Home</LinkTo>
-
-        <span id='model'>{{isLoading 'post' '42'}}</span>
-        <LinkTo id='link-model' @route='post' @model='42'>Post</LinkTo>
-
-        <span id='models'>{{isLoading 'post.comment' '42' '7'}}</span>
-        <span id='named'>{{isLoading 'post.comment' models=(Array.of '42' '7')}}</span>
-        <span id='named-single'>{{isLoading 'post' models='42'}}</span>
-        <span id='query'>{{isLoading 'post' '42' queryParams=(hash q='ember')}}</span>
+        <span id='present'>{{isLoading 'post' '1'}}</span>
+        <span id='null'>{{isLoading 'post' null}}</span>
+        <span id='undefined'>{{isLoading 'post' undefined}}</span>
+        <span id='named'>{{isLoading 'post' models=(Array.of null)}}</span>
+        <span id='named-single'>{{isLoading 'post' models=undefined}}</span>
+        <span id='route'>{{isLoading null}}</span>
       </template>
     );
 
-    assert.dom('#route').hasText('false');
-    assert.dom('#link-route').doesNotHaveClass('loading');
-    assert.dom('#model').hasText('false');
-    assert.dom('#link-model').doesNotHaveClass('loading');
-    assert.dom('#models').hasText('false');
+    let transition = router.transitionTo('/posts/1');
+    await renderSettled();
+
+    assert.dom('#present').hasText('true');
+    assert.dom('#null').hasText('false');
+    assert.dom('#undefined').hasText('false');
     assert.dom('#named').hasText('false');
     assert.dom('#named-single').hasText('false');
-    assert.dom('#query').hasText('false');
-  });
+    assert.dom('#route').hasText('false');
 
-  test('it does not treat falsy values as missing', async function (assert) {
-    await render(
-      <template>
-        <span id='zero'>{{isLoading 'post' 0}}</span>
-        <LinkTo id='link-zero' @route='post' @model={{0}}>Post</LinkTo>
-
-        <span id='empty'>{{isLoading 'post' ''}}</span>
-        <span id='false'>{{isLoading 'post' false}}</span>
-      </template>
-    );
-
-    assert.dom('#zero').hasText('false');
-    assert.dom('#link-zero').doesNotHaveClass('loading');
-    assert.dom('#empty').hasText('false');
-    assert.dom('#false').hasText('false');
-  });
-
-  test('it returns true when a positional model is missing', async function (assert) {
-    await render(
-      <template>
-        <span id='null'>{{isLoading 'post' null}}</span>
-        <LinkTo id='link-null' @route='post' @model={{null}}>Post</LinkTo>
-
-        <span id='undefined'>{{isLoading 'post' undefined}}</span>
-        <LinkTo id='link-undefined' @route='post' @model={{undefined}}>Post</LinkTo>
-
-        <span id='first'>{{isLoading 'post.comment' null '7'}}</span>
-        <span id='last'>{{isLoading 'post.comment' '42' undefined}}</span>
-        <span id='query'>{{isLoading 'post' null queryParams=(hash q='ember')}}</span>
-      </template>
-    );
-
-    assert.dom('#null').hasText('true');
-    assert.dom('#link-null').hasClass('loading');
-    assert.dom('#undefined').hasText('true');
-    assert.dom('#link-undefined').hasClass('loading');
-    assert.dom('#first').hasText('true');
-    assert.dom('#last').hasText('true');
-    assert.dom('#query').hasText('true');
-  });
-
-  test('it returns true when a model in `models` is missing', async function (assert) {
-    await render(
-      <template>
-        <span id='list'>{{isLoading 'post.comment' models=(Array.of '42' null)}}</span>
-        <LinkTo id='link-list' @route='post.comment' @models={{Array.of '42' null}}>
-          Comment
-        </LinkTo>
-
-        <span id='single'>{{isLoading 'post' models=null}}</span>
-      </template>
-    );
-
-    assert.dom('#list').hasText('true');
-    assert.dom('#link-list').hasClass('loading');
-    assert.dom('#single').hasText('true');
-  });
-
-  test('it returns true when the route is missing', async function (assert) {
-    await render(
-      <template>
-        <span id='null'>{{isLoading null}}</span>
-        <LinkTo id='link-null' @route={{null}}>Unknown</LinkTo>
-
-        <span id='undefined'>{{isLoading undefined}}</span>
-        <LinkTo id='link-undefined' @route={{undefined}}>Unknown</LinkTo>
-      </template>
-    );
-
-    assert.dom('#null').hasText('true');
-    assert.dom('#link-null').hasClass('loading');
-    assert.dom('#undefined').hasText('true');
-    assert.dom('#link-undefined').hasClass('loading');
+    this.model.resolve();
+    await transition;
+    await settled();
   });
 
   test('it does not accept positional models together with `models`', async function (assert) {
@@ -413,6 +348,20 @@ module('Helpers test: {{isLoading}} with missing arguments', function (hooks) {
     await assert.rejects(
       render(<template>{{isLoading 'post' '42' models='42'}}</template>),
       /You cannot provide both positional models and the `models` argument to the `isLoading` helper\./
+    );
+  });
+
+  test('it does not accept a model object', async function (assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    let post = { id: '1' };
+
+    await assert.rejects(
+      render(<template>{{isLoading 'post' post}}</template>),
+      /The models of the `isLoading` helper must be strings or numbers\. Pass the value of the dynamic segment, not a model object\./
     );
   });
 

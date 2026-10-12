@@ -22,7 +22,7 @@ import RouteHelper, { type RouteNamed, type RoutePositional } from './-route-hel
   @for @ember/routing
   @static
   @param {String} routeName the name of the route
-  @param {...Object} models the model(s) for the route
+  @param {...String|Number} models the values of the dynamic segments of the route
   @param {Object} [named] the `models` and `queryParams` named arguments
   @return {Boolean} `true` when the transition makes the route inactive
   @public
