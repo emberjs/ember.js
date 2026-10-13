@@ -40,10 +40,11 @@ button exercises `{{on "click"}}` → classic `set()` → GXT cell reactivity.
 `<Counter />` is a BUILD-TIME-compiled `.gjs` component resolved by name
 from the owner registry (the strict resolver's `./components/*.gjs` glob);
 its `@count`/`@increment` args prove reactivity flows across the
-runtime↔build-time boundary in both directions. `<ForwardedLink />`, another
+runtime↔build-time boundary in both directions. `<ForwardedLink>`, another
 build-time `.gjs` component, proves the invocation's attributes and
 `{{on}}` modifier reach its element through `...attributes`, with a bound
-`javascript:` URL sanitized as Glimmer does.
+`javascript:` URL sanitized as Glimmer does, and that its block renders
+with the yielded block param.
 
 CI coverage: `smoke-tests/scenarios/gxt-boot-test.ts` (build + headless boot
 + click reactivity over both pipelines), matrix name

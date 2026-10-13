@@ -154,6 +154,11 @@ gxtBootAppScenarios
             '4',
             'a bound attribute is forwarded by ...attributes and kept current'
           );
+          assert.equal(
+            await page.textContent('[data-test-forwarded-link]'),
+            'forwarded link 4',
+            'the block renders with its block param and is kept current'
+          );
           await page.click('[data-test-forwarded-link]');
           await page.waitForFunction(
             () =>

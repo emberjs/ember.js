@@ -10,7 +10,7 @@ export default precompileTemplate(
   <p data-test-count>Count: {{this.count}}</p>
   <button type="button" data-test-increment {{on "click" this.increment}}>+1</button>
   <Counter @count={{this.count}} @increment={{this.increment}} />
-  <ForwardedLink href={{this.linkUrl}} title="static" data-count={{this.count}} {{on "click" this.followLink}} />
+  <ForwardedLink href={{this.linkUrl}} title="static" data-count={{this.count}} {{on "click" this.followLink}} as |kind|>{{kind}} link {{this.count}}</ForwardedLink>
   <button type="button" data-test-swap-link {{on "click" this.swapLink}}>swap link</button>
   <p data-test-link-clicks>Link clicks: {{this.linkClicks}}</p>`
 );

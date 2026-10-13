@@ -1,3 +1,3 @@
 <template>
-  <a data-test-forwarded-link ...attributes>forwarded link</a>
+  <a data-test-forwarded-link ...attributes>{{yield "forwarded"}}</a>
 </template>
