@@ -49,6 +49,7 @@ export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
   @class EmberArray
   @since Ember 0.9.0
   @public
+  @deprecated Use Native array methods instead. 
 */
 interface EmberArray<T> {
   /**
@@ -1031,6 +1032,7 @@ const EmberArray = DeprecatedMixin.create(InternalEmberArrayMixin, {
   @class MutableArray
   @uses EmberArray
   @public
+  @deprecated Use Native array methods instead. 
 */
 interface MutableArray<T> extends EmberArray<T> {
   /**
@@ -1468,6 +1470,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
   @uses MutableArray
   @uses Observable
   @public
+  @deprecated Use native array methods
 */
 interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative<T> {}
 
