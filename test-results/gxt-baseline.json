@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T12:46:11.831Z",
+    "capturedAt": "2026-10-13T13:57:52.473Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "430658f1c2",
-    "totalTests": 9948,
-    "totalModules": 961,
+    "emberCommit": "018eac1fe1",
+    "totalTests": 9990,
+    "totalModules": 966,
     "quarantinedTests": 0,
-    "totalAssertions": 58693,
-    "totalAssertionsPassing": 55530,
-    "note": "Compat full run on the rebase of #21340 onto main a9501d5d40 (gxt 0.0.82) with the hang1 fix (helper args / (hash) args re-render loops) and the hang2 fixes ((fn) arguments, trackedArray in-place changes, helper named args, per-call-site helper instances), written by runner.mjs; emberCommit is the last code commit. 8804/9948 green, no timeouts. Main rewrote the @glimmer-workspace integration harness (Test cleanup 3-10/10): the [integration] suites now render through Ember's renderComponent, which under GXT_MODE is GXT, instead of driving the Glimmer VM, so their reds are GXT conformance gaps (1143/2144 green). The three modules that hung the renderer before hang1 are included ([integration] jit :: Components :: Glimmer, its > [integration] Glimmer sub-module, and argument-less helper paren-less invoke). The other reds are tests main added or rewrote (Glimmer components instead of classic ones, .gjs conversions, route managers, standalone tracked(), {{#each-in}} key, {{on}} listener order). 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT (gxt-delegate.ts GXT_UNSUPPORTED). The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 58902,
+    "totalAssertionsPassing": 55737,
+    "note": "Compat full run on the rebase of #21340 onto main a9501d5d40 (gxt 0.0.82) with the hang1 fix (helper args / (hash) args re-render loops) and the hang2 fixes ((fn) arguments, trackedArray in-place changes, helper named args, per-call-site helper instances) and track1 (@glimmer/tracking is metal's tracked / cached; a @tracked accessor is no longer shadowed by a gxt cell accessor), written by runner.mjs; emberCommit is the last code commit (the run was on c16139a876; 018eac1fe1 differs from it only by renaming @glimmer/component-gxt's type declarations, which the test page does not load). 8846/9990 green, no timeouts; track1 added the five GXT @glimmer/tracking modules (42 tests, all green) and changed nothing else. Main rewrote the @glimmer-workspace integration harness (Test cleanup 3-10/10): the [integration] suites now render through Ember's renderComponent, which under GXT_MODE is GXT, instead of driving the Glimmer VM, so their reds are GXT conformance gaps (1143/2144 green). The three modules that hung the renderer before hang1 are included ([integration] jit :: Components :: Glimmer, its > [integration] Glimmer sub-module, and argument-less helper paren-less invoke). The other reds are tests main added or rewrote (Glimmer components instead of classic ones, .gjs conversions, route managers, standalone tracked(), {{#each-in}} key, {{on}} listener order). 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT (gxt-delegate.ts GXT_UNSUPPORTED). The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (rendering tests)": {
@@ -2500,6 +2500,41 @@
       "assertionsPassing": 2,
       "failingTests": []
     },
+    "GXT @glimmer/tracking: @cached (port)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 39,
+      "assertionsPassing": 39,
+      "failingTests": []
+    },
+    "GXT @glimmer/tracking: Component Tracked Properties (port)": {
+      "total": 13,
+      "passing": 13,
+      "assertionsTotal": 36,
+      "assertionsPassing": 36,
+      "failingTests": []
+    },
+    "GXT @glimmer/tracking: DOM after writes": {
+      "total": 13,
+      "passing": 13,
+      "assertionsTotal": 69,
+      "assertionsPassing": 69,
+      "failingTests": []
+    },
+    "GXT @glimmer/tracking: Helper Tracked Properties (port)": {
+      "total": 8,
+      "passing": 8,
+      "assertionsTotal": 38,
+      "assertionsPassing": 38,
+      "failingTests": []
+    },
+    "GXT @glimmer/tracking: the forms of metal tracked": {
+      "total": 6,
+      "passing": 6,
+      "assertionsTotal": 17,
+      "assertionsPassing": 17,
+      "failingTests": []
+    },
     "GXT Integration": {
       "total": 7,
       "passing": 7,
@@ -2756,7 +2791,7 @@
       "total": 12,
       "passing": 7,
       "assertionsTotal": 38,
-      "assertionsPassing": 27,
+      "assertionsPassing": 26,
       "failingTests": [
         {
           "name": "the array helper can be shadowed",
@@ -4573,8 +4608,8 @@
     "Strict Mode - renderComponent": {
       "total": 29,
       "passing": 27,
-      "assertionsTotal": 147,
-      "assertionsPassing": 142,
+      "assertionsTotal": 148,
+      "assertionsPassing": 143,
       "failingTests": [
         {
           "name": " destroying the result removes its root from a shared renderer",
@@ -5461,8 +5496,8 @@
     "[integration] jit :: #each": {
       "total": 25,
       "passing": 0,
-      "assertionsTotal": 1869,
-      "assertionsPassing": 1428,
+      "assertionsTotal": 1878,
+      "assertionsPassing": 1436,
       "failingTests": [
         {
           "name": "basic #each",
