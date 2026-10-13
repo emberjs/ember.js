@@ -11,6 +11,14 @@
       "@glimmer/component": ["./packages/@glimmer/component/src/index.ts"]
     }
   },
-  "include": ["packages/**/*.ts"],
-  "exclude": ["dist", "node_modules", "tmp", "types"]
+  "include": ["packages/**/*.ts", "types/gxt-ambient.d.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types/stable",
+    "types/preview",
+    "packages/@ember/-internals/gxt-backend/**",
+    "packages/@glimmer/component-gxt/**"
+  ]
 }

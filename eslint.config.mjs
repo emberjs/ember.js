@@ -32,6 +32,18 @@ export default [
       'packages/@handlebars/parser/lib/parser.js',
       'packages/@handlebars/parser/src/**',
       'tracerbench-testing/',
+      'packages/@ember/-internals/gxt-backend/**',
+      // Excluded from the root tsconfig project (like gxt-backend), so the
+      // typed-lint parserOptions.project cannot parse it.
+      'packages/@glimmer/component-gxt/**',
+      'scripts/gxt-test-runner/**',
+      // Assembled ember-source-gxt package output (git-ignored build artifact;
+      // scripts/build-gxt-package.mjs) — lint the sources, not the dist.
+      'dist-gxt-package/',
+      'dist-gxt-native-package/',
+      // Type declarations shipped by the gxt-native package; not part of the
+      // root tsconfig project that typed linting uses.
+      'scripts/gxt-native-package/*.d.ts',
     ],
   },
   pluginJs.configs.recommended,
@@ -161,6 +173,10 @@ export default [
         DOMRect: true,
         DOMRectList: true,
         globalThis: true,
+        // Build-time constant: inlined to true/false by the vite/rollup GXT
+        // wiring (see scripts/gxt-alias-map.mjs consumers); declared ambiently
+        // for TS in types/gxt-ambient.d.ts.
+        __GXT_MODE__: true,
       },
 
       ecmaVersion: 2017,
@@ -232,6 +248,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -253,6 +271,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -273,6 +293,15 @@ export default [
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
+    },
+  },
+  {
+    files: ['**/vite.config.mjs', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'n/no-process-exit': 'off',
+      'n/hashbang': 'off',
+      'n/no-unpublished-bin': 'off',
     },
   },
   {

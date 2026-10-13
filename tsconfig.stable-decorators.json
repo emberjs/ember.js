@@ -8,5 +8,14 @@
   "compilerOptions": {
     "experimentalDecorators": false
   },
-  "exclude": ["dist", "node_modules", "tmp", "types", "packages/**/type-tests/**"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types/stable",
+    "types/preview",
+    "packages/**/type-tests/**",
+    "packages/@ember/-internals/gxt-backend/**",
+    "packages/@glimmer/component-gxt/**"
+  ]
 }
