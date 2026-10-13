@@ -44,7 +44,7 @@ out of scope.
       it ("… is inherited from Handlebars and not supported"), with tests in
       `packages/@glimmer/syntax/test/parser-error-test.ts`.
       Nothing to remove (step 2).
-- [ ] 4. Coverage PRs for each usable feature: parser tests in `packages/@glimmer/syntax/test/`
+- [x] 4. Coverage PRs for each usable feature: parser tests in `packages/@glimmer/syntax/test/`
       and rendering tests, each in a module or with a comment that marks it as "inherited from
       Handlebars, legacy behavior" (agree the exact wording once and reuse it). Prefer tests that
       the §09 conformance suite can run unchanged. Wording chosen: module names start with
@@ -52,6 +52,14 @@ out of scope.
       these features are inherited from Handlebars, kept for compatibility, and not to be extended.
       Branch `test/handlebars-legacy-features` in the t21 worktree (the spike branch had no
       commits and is replaced by it).
+      Done (2026-10-13), branch `test/handlebars-legacy-features` in `/Users/edward/hacking/ember.js-t21`
+      (from origin/main, not pushed):
+      - `19b4f331e0`: `packages/@glimmer/syntax/test/handlebars-legacy-test.ts`, 24 parser tests (F1-F8).
+      - `466996dd68`: `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts`, 28 rendering
+        tests (strict and loose for F1, F2, F3, F5, F6, F7, F8; F4 loose only, registered as `foo/bar` through the
+        glimmer harness, so no Ember-internals test was needed).
+      - Filter `Inherited from Handlebars`: 52 tests, 52 pass. `[glimmer-syntax]`: 367 pass. Full suite: 9281 tests,
+        9261 pass, 20 skip, 0 fail.
 - [ ] 5. Spec follow-up: mark each kept feature **[Legacy]** in its §02 section and cite the new
       tests; describe the removed ones as errors (new E-catalogue rows); remove §02-11 item 15.
 
@@ -93,3 +101,10 @@ a scope object (harness-only, see F4), `template()` from `@ember/template-compil
   on it could wrongly suggest strict-mode slash paths work.
 - Parse-only coverage not re-run via the `hbs` babel target for every feature: the loose babel path is `precompileTemplate(..., {strictMode:false})`,
   which shares the parser and compiler with the rest (probed for F1-F6, F8).
+
+### Findings (step 4)
+
+- Every step 1 behavior reproduced; no test needed a changed expectation.
+- Raw blocks record empty strip flags (`openStrip`, `inverseStrip`, `closeStrip` are `{}`), whereas `{{#raw}}` records
+  `{open:false, close:false}`. So `astEqual` of a raw block against the same `{{#raw}}` block fails, and the raw-block parser
+  tests assert structure instead. Not observable in rendering.
