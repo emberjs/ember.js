@@ -141,6 +141,32 @@ gxtBootAppScenarios
             'the build-time component\'s {{on "click" @increment}} round trip works'
           );
 
+          // `<ForwardedLink>` is a BUILD-TIME-compiled .gjs component resolved
+          // by name from the runtime-compiled route template: its <a> receives
+          // the invocation's attributes and modifier through `...attributes`.
+          assert.equal(
+            await page.getAttribute('[data-test-forwarded-link]', 'title'),
+            'static',
+            'a static attribute is forwarded by ...attributes'
+          );
+          assert.equal(
+            await page.getAttribute('[data-test-forwarded-link]', 'data-count'),
+            '4',
+            'a bound attribute is forwarded by ...attributes and kept current'
+          );
+          await page.click('[data-test-forwarded-link]');
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-test-link-clicks]')?.textContent === 'Link clicks: 1',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.textContent('[data-test-link-clicks]'),
+            'Link clicks: 1',
+            'an {{on "click"}} modifier is forwarded by ...attributes'
+          );
+
           // A production build has no DEBUG-only safety net: a bound URL that a
           // component forwards to its <a> through `...attributes` is sanitized
           // by the runtime itself, on render and on update, as Glimmer does.
