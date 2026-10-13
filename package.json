@@ -84,7 +84,6 @@
   "dependencies": {
     "@babel/core": "^7.24.4",
     "@embroider/addon-shim": "^1.10.2",
-    "@lifeart/gxt": "0.0.82",
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
@@ -113,6 +112,7 @@
     "@embroider/vite": "^1.7.2",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
+    "@lifeart/gxt": "0.0.82",
     "@octokit/rest": "^22.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",

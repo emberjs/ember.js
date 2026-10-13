@@ -4,7 +4,7 @@ name: GXT native
 # no Glimmer VM). Its rollup dist is built, size-checked and asserted VM-free in
 # the `gxt-native` leg of gxt-dual-build.yml; this workflow boots apps on it,
 # packages it, and runs its test suite. Everything resolves the @lifeart/gxt
-# pinned in package.json (one copy in the install).
+# pinned in package.json devDependencies (one copy in the install).
 
 on:
   push:
@@ -56,8 +56,8 @@ jobs:
             --pack "$RUNNER_TEMP/tarballs"
       - name: Pack the pinned @lifeart/gxt from npm
         run: |
-          gxt_version="$(node -p "require('./package.json').dependencies['@lifeart/gxt']")"
-          echo "@lifeart/gxt pinned in package.json: $gxt_version"
+          gxt_version="$(node -p "require('./package.json').devDependencies['@lifeart/gxt']")"
+          echo "@lifeart/gxt pinned in package.json devDependencies: $gxt_version"
           npm pack "@lifeart/gxt@$gxt_version" --pack-destination "$RUNNER_TEMP/tarballs"
       - name: Consumer app acceptance (npm install of both tarballs, prod + dev boot)
         run: |

@@ -174,9 +174,19 @@ const gxtMeta = existsSync(gxtMetaPath) ? JSON.parse(readFileSync(gxtMetaPath, '
 if (gxtMeta?.gitDirty) {
   fail(`the gxt dist at ${gxtRoot} was built from a dirty tree (${gxtMeta.gitHash}); rebuild it`);
 }
-const gxtVersion = opt('--gxt-version', gxtPkg.version);
+// The repo's one gxt pin is ember-source's devDependency (the classic package
+// ships without gxt); this package depends on exactly that version.
+const gxtVersion = opt('--gxt-version', rootPkg.devDependencies?.['@lifeart/gxt']);
+if (!gxtVersion) fail('package.json has no @lifeart/gxt devDependency to pin');
 if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(gxtVersion)) {
   fail(`@lifeart/gxt must be pinned to an EXACT version, got "${gxtVersion}"`);
+}
+// An npm-installed gxt (no build meta) must be the pinned one: the dist is
+// compiled against it. A local gxt build is reported by the warning below.
+if (!gxtMeta && !argv.includes('--gxt-version') && gxtPkg.version !== gxtVersion) {
+  fail(
+    `node_modules has @lifeart/gxt ${gxtPkg.version}, package.json pins ${gxtVersion}; run pnpm install`
+  );
 }
 const gxtIsLocal = lstatSync(gxtLink).isSymbolicLink() || gxtMeta !== null;
 log(

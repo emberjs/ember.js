@@ -408,6 +408,26 @@ function buildGxtPackageJson() {
   pkg.name = 'ember-source-gxt';
   pkg.description = 'Ember built on the GXT rendering backend (preview, outside SemVer).';
 
+  // ember-source lists @lifeart/gxt only as a devDependency (its classic dist
+  // never imports it), and that devDependency is the repo's one exact pin.
+  // This dist imports it, so it becomes a real dependency here: a peer or an
+  // optional dependency would let an install go without it.
+  const gxtPin = pkg.devDependencies?.['@lifeart/gxt'];
+  if (!gxtPin) fail('root package.json has no @lifeart/gxt devDependency to pin');
+  // MUST be an exact pin, never a range: the dist is built against one gxt
+  // runtime and ships in lockstep with it.
+  if (/[\^~xX*]|\s-\s/.test(gxtPin)) {
+    fail(`@lifeart/gxt must be an EXACT pin, got "${gxtPin}"`);
+  }
+  for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+    if (pkg[field]?.['@lifeart/gxt']) {
+      fail(
+        `root package.json must not list @lifeart/gxt in ${field} (ember-source ships without it)`
+      );
+    }
+  }
+  pkg.dependencies = { ...pkg.dependencies, '@lifeart/gxt': gxtPin };
+
   // Strip repo-dev-only fields that must not ship (workspace:* refs in
   // devDependencies would break a real install; scripts/pnpm/resolutions are
   // repo-build-only).
@@ -417,15 +437,7 @@ function buildGxtPackageJson() {
   delete pkg.resolutions;
   delete pkg._originalVersion;
   delete pkg._versionPreviouslyCalculated;
-
-  // @lifeart/gxt MUST be an exact pin — never a range: the dist is built
-  // against one gxt runtime and ships in lockstep with it.
-  if (!pkg.dependencies || !pkg.dependencies['@lifeart/gxt']) {
-    fail('derived package.json is missing the @lifeart/gxt dependency');
-  }
-  if (/[\^~xX*]|\s-\s/.test(pkg.dependencies['@lifeart/gxt'])) {
-    fail(`@lifeart/gxt must be an EXACT pin, got "${pkg.dependencies['@lifeart/gxt']}"`);
-  }
+  log(`derived package.json: dependencies["@lifeart/gxt"] = "${gxtPin}" (exact pin)`);
 
   pkg['ember-addon'] = {
     after: pkg['ember-addon']?.after ?? 'ember-cli-legacy-blueprints',

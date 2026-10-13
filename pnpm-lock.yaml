@@ -30,9 +30,6 @@ importers:
       '@embroider/addon-shim':
         specifier: ^1.10.2
         version: 1.10.2
-      '@lifeart/gxt':
-        specifier: 0.0.82
-        version: 0.0.82(typescript@5.9.3)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -112,6 +109,9 @@ importers:
       '@glimmer/component':
         specifier: workspace:*
         version: link:packages/@glimmer/component
+      '@lifeart/gxt':
+        specifier: 0.0.82
+        version: 0.0.82(typescript@5.9.3)
       '@octokit/rest':
         specifier: ^22.0.0
         version: 22.0.1
@@ -400,9 +400,6 @@ importers:
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../../@glimmer/vm
-      '@lifeart/gxt':
-        specifier: 0.0.82
-        version: 0.0.82(typescript@5.9.3)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0

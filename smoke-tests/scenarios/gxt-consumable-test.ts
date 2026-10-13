@@ -73,9 +73,18 @@ function gxtConsumableTests(scenarios: Scenarios) {
             'ember-source-gxt',
             'the linked ember-source IS the GXT-backend package'
           );
-          assert.ok(
-            esPkg.dependencies && esPkg.dependencies['@lifeart/gxt'],
-            '@lifeart/gxt is a declared dependency of the GXT package'
+          // ember-source itself only has gxt as a devDependency (the repo's
+          // exact pin); the GXT package must carry it as a real dependency.
+          const gxtPin = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'))
+            .devDependencies['@lifeart/gxt'];
+          assert.equal(
+            esPkg.dependencies?.['@lifeart/gxt'],
+            gxtPin,
+            `@lifeart/gxt is a dependency of the GXT package, pinned to the repo's ${gxtPin}`
+          );
+          assert.notOk(
+            esPkg.peerDependencies?.['@lifeart/gxt'] || esPkg.optionalDependencies?.['@lifeart/gxt'],
+            '@lifeart/gxt is not a peer or optional dependency of the GXT package'
           );
 
           // @lifeart/gxt must be installed adjacent to ember-source (the GXT dist

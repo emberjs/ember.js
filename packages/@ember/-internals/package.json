@@ -72,8 +72,7 @@
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
     "router_js": "workspace:*",
-    "rsvp": "^4.8.5",
-    "@lifeart/gxt": "0.0.82"
+    "rsvp": "^4.8.5"
   },
   "devDependencies": {
     "@ember/reactive": "workspace:*",

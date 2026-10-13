@@ -65,10 +65,10 @@ default: ./dist/prod/packages/* }`, plus `"./types"` and `"./package.json"`.
   `wire-format`, `opcode-compiler`, …).
 - `bin`: `ember-cli-gxt` → `scripts/ember-cli-gxt.mjs`.
 - `files`: `build-metadata.json`, `blueprints`, `dist`, `docs/data.json`, `lib`, `types/stable`.
-- `dependencies` **already include** `"@lifeart/gxt": "0.0.67"` (exact pin) and
-  `@embroider/addon-shim`. (The in-repo `@ember/-internals/metal` statically imports
-  `@lifeart/gxt/glimmer-compatibility` even on the classic path, which is why it is already a
-  hard dependency.)
+- `dependencies` include `@embroider/addon-shim` but **not** `@lifeart/gxt`: the classic dist
+  never imports it, so it is a `devDependency` (the repo's one exact pin) and a classic install
+  does not pull it. `scripts/build-gxt-package.mjs` writes that pin into the GXT package's
+  `dependencies`.
 - `peerDependencies`: `"@glimmer/component": ">= 1.1.2"` — this is the RFC §6 symbol-identity
   fork surface.
 - `ember-addon`: `{ version: 2, type: "addon", renamed-modules: {…classic set…} }`. The
@@ -93,7 +93,7 @@ vm,util,global-context,node,owner}` from the **entry map** (they are not emitted
   `@lifeart/gxt/glimmer-compatibility` — both are real exports of `@lifeart/gxt@0.0.67`
   (`.`, `./glimmer-compatibility`, `./compiler`, `./runtime-compiler`, `./ember-inspector`,
   `./test-utils`, `./suspense`). So a normal `node_modules` install resolves them, **provided
-  `@lifeart/gxt` is a declared dependency** (it is).
+  `@lifeart/gxt` is a declared dependency** (the derived `package.json` declares it, §3).
 
 ### 1.3 ⚠️ CRITICAL: Rollup does NOT clean `dist/` — stale classic VM files contaminate a GXT build
 
@@ -169,8 +169,9 @@ Project.fromDir(<v2-app-template>, { linkDevDeps: true })).expand({ embroiderVit
 { project }`. **`{ target: <abs dir of a real package> }` links that on-disk package under
   `name`** — i.e. you can link the assembled GXT package dir _as_ `ember-source` with zero
   app-code change.
-- `@lifeart/gxt@0.0.67` is installed in the repo root `node_modules` (pnpm), so an assembled
-  package placed inside the repo resolves `@lifeart/gxt` by walking up to the repo root.
+- `@lifeart/gxt@0.0.67` is installed in the repo root `node_modules` (pnpm, as a root
+  `devDependency`), so an assembled package placed inside the repo resolves `@lifeart/gxt` by
+  walking up to the repo root.
 
 ### 1.8 `ember-addon.backend` means nothing today
 
@@ -271,8 +272,8 @@ assembly (§4), shown abbreviated here.
   "repository": { "type": "git", "url": "git+https://github.com/emberjs/ember.js.git" },
 
   "dependencies": {
-    // ── identical to ember-source's dependencies, with one hard requirement: ──
-    "@lifeart/gxt": "0.0.67", // EXACT pin, lockstep (RFC §10). NEVER a range, NEVER peer.
+    // ── ember-source's dependencies, plus one hard requirement: ──
+    "@lifeart/gxt": "0.0.67", // EXACT pin from ember-source's devDependencies, lockstep (RFC §10). NEVER a range, NEVER peer.
     "@embroider/addon-shim": "^1.10.2",
     "@babel/core": "^7.24.4",
     "@simple-dom/interface": "^1.4.0",
