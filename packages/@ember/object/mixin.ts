@@ -1,5 +1,6 @@
 /**
 @module @ember/object/mixin
+@deprecated
 */
 import { InternalMixin } from '@ember/object/mixin-internal';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';

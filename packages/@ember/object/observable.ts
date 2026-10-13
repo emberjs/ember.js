@@ -1,5 +1,6 @@
 /**
 @module @ember/object/observable
+@deprecated
 */
 
 import { DeprecatedMixin } from '@ember/object/mixin-internal';

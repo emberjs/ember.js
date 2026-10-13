@@ -1,5 +1,6 @@
 /**
 @module @ember/array/proxy
+@deprecated
 */
 
 import { objectAt } from '@ember/-internals/metal/lib/object-at';

@@ -1,5 +1,6 @@
 /**
 @module @ember/object/proxy
+@deprecated
 */
 
 import { FrameworkObject } from '@ember/object/-internals';

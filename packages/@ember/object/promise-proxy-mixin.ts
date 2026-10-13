@@ -9,6 +9,7 @@ import type CoreObject from '@ember/object/core';
 
 /**
   @module @ember/object/promise-proxy-mixin
+  @deprecated
 */
 
 function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
