@@ -2,7 +2,7 @@
 
 This file is the single source of truth for resuming work on the spec. Keep it current: an
 agent or session that has only this file, `plan.md`, and the git history must be able to
-continue the work. Last updated: 2026-10-08.
+continue the work. Last updated: 2026-10-12.
 
 ## Working protocol
 
@@ -97,8 +97,10 @@ continue the work. Last updated: 2026-10-08.
 ## Upstream fix branches
 
 Fixes requested by the author during review. The spec branch has `origin/main` merged in at
-`def1faa2cf` (upstream base `9bec1cb2a8`; earlier merges at `98fa794473`, base `675744ab35`), so
-the landed fixes below are in this checkout and the spec cites their code directly. Branches still open for review are based on that `origin/main`.
+`a7fc67e74b` (upstream base `a9501d5d40`, 2026-10-12; earlier merges at `def1faa2cf`, base
+`9bec1cb2a8`, and `98fa794473`, base `675744ab35`), so the landed fixes below are in this
+checkout. The spec's citations still use base `9bec1cb2a8` until T18 is done. Branches still open
+for review are based on `9bec1cb2a8`.
 
 | Spec item | Repo | Branch | State | Summary |
 |---|---|---|---|---|
@@ -167,8 +169,8 @@ Run these in order, one at a time.
 | T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
-| W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18). Code in worktree `../ember.js-w2`, branch `test/w2-glimmer-harness` (from `origin/main` `9bec1cb2a8`); status and coverage ledger here | Sonnet per step; Opus for the step-5 API, the step-4 ledger review and the exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done (2026-10-08) on branch `test/w2-glimmer-harness` (worktree `../ember.js-w2`, 43 commits on `origin/main` `9bec1cb2a8`, last `8939c50aff` after W2-9), not yet upstreamed. No fake stubs left (C18 table empty, 8.2); the import boundary holds except for the W5-listed implementation tests (8.1); every removed test is in the coverage ledger (8.3: 0 unmatched, `tools/w2-coverage-diff.py`). Suite 9017 / 8999 pass / 0 fail / 18 skip after W2-9 (baseline 9541 / 9523 / 0 / 18). §09 updated (adapter, seam B, C1/C2/C6/C18, Q7/Q8); findings carried into §05-7.6, §05-5.8 (dynamic scope), §06-2.2 (owner; then §06-12 Q3), §08-6.1, §08-6.6; the four open ones were ruled in `eb4f794d62` (W2-9). Ready to split into upstream PRs by step (Next steps item 6) |
-| W2-9 | Follow-up to the author rulings of `eb4f794d62` (dynamic scope, engine owner, top-level `this`, non-interactive serialize): spec text, then code on `test/w2-glimmer-harness` | Opus (9.1), Sonnet (9.2–9.5) | `.work/W2-glimmer-harness.md` step 9 | done; suite 9017 / 0 fail; no internal template root left |
+| W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18), including the follow-ups to the rulings of `eb4f794d62` (W2-9) | Sonnet per step; Opus for the API, ledger review and exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done and **landed upstream** as ten PRs, emberjs/ember.js#21676–#21679, #21684, #21692, #21695, #21702, #21703, #21709 (last merge `11cd0007d2`, 2026-10-12). No fake stubs left (C18 table empty); every removed test has a twin in the ledger. The PR branches, the `test/w2-glimmer-harness` branch and the `../ember.js-w2` worktree are deleted locally |
+| T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | — (write `.work/T18-merge-w2-landed.md` first) | **next**; not started |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -264,127 +266,31 @@ Suggestions for the plan's author, based on what is still open:
    against source and `dist/dev`.
 6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
    W3 (Ember harness) needs no decisions and can start now, as a separate task with a
-   checklist, upstreamable to ember.js on its own. The four questions W2 raised were ruled in
-   `eb4f794d62` (Decisions); their code follow-ups are W2-9 (9.2–9.5).
-   **W2 is done** on branch `test/w2-glimmer-harness` (worktree `../ember.js-w2`, from
-   `origin/main` `9bec1cb2a8`; not on this branch, not pushed). Suggested upstream PRs, one per
-   step, in this order (each was green on the whole suite with a per-test diff; the
-   `test(ember-glimmer)` commits touch only Ember tests and could go first):
-   1. *Use the real `@glimmer/component` and public imports* (step 1): `37682d8d97`,
-      `548bc5cdb3`, `c163fc1ba4`.
-   2. *Delete fakes that have twins* (step 2: fake `mut`, fake `SafeString`, per-template-owner
-      tests, 34 `ember-component-test.ts` tests): `c1e68fe3ff`, `1cbe9f6b78`, `fc8536394f`,
-      `93d54aa9f9`, `8d8030598c`.
-   3. *Helpers and modifiers through the public managers* (step 3): `e8163f76b0`, `29e2f90191`,
-      `cce8d18557`.
-   4. *Run the component fan-out on real Glimmer components; delete the fake classic component*
-      (step 4; ports to real classic components first): `f76a25d5ce`, `79517d806a`, `73aa8f83c3`,
-      `dd4714ac3c`, `eac1ad7182`, `bf935f7c7a`; rebuilt in step 10 (see below), so the branch, not
-      these commits, is the reference.
-   5. *Render through Ember's renderer with a real owner and resolver* (5.2a–5.4b):
-      `5f76825492`, `c562908ff0`, `5c0b5156be`, `e41d3c7792`, `3ebe247030`, `fedd0647fb`,
-      `f482d68ebb`.
-   6. *One compile for both harnesses, with Ember's compile options; classic rehydration*
-      (5.5a–5.6): `a6ae9273b9`, `0f5d5afdbe`, `bf7d0d21ec`.
-   7. *Move the remaining stubs* (step 6: style warnings, `PositionalComponent`,
-      `iterable-test`): `4b82b0fea8`, `545a412a29`, `62ccb8ba1f`.
-   8. *Merge duplicated suites* (step 7): `a135f9b3b0`, `9a486d218e`, `c7f204af33`,
-      `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`.
-   9. *Exit-check follow-ups* (step 8; small, can be folded into PRs 4 and 8): `13ed9f038c`
-      (rename the `Glimmerish`/`Emberish` suites), `246792a82d` (has-block port).
-   10. *Author rulings of `eb4f794d62`* (step 9): `79d130ff3b` (engine owner of a curried
-       component), `b9cdcda432` + `0121b60d62` (non-interactive server render and its pins),
-       `8939c50aff` (loose templates through `renderComponent` + a custom manager).
-   These ten PRs exist as stacked branches `ef4/test-cleanup-1` … `ef4/test-cleanup-10` (one
-   commit each, its message the PR description; branch N's tree equalled the W2 branch at the
-   last commit of PR N until step 10, below). On 2026-10-09 PR 1 was amended to
-   type test-component owners as `Owner` from `@ember/owner` (new devDependency) instead of
-   `ConstructorParameters<typeof Component>[0]`, and 2–10 were rebased onto it; every branch
-   type-checks, and `-10` passed the full suite (9017 / 8999 / 0 / 18).
-   Also on 2026-10-09 (review of PR 4): "components inside the root are destroyed when the
-   render result is destroyed" had vacuous DOM assertions after its port to `@glimmer/component`
-   (invocation `id`s went nowhere without `...attributes`); PR 4 now adds `...attributes` and
-   asserts the elements exist before `destroy()` (fails without the fix), and 5–10 were rebased.
-   No other PR 4 port has the problem. The stack is based on `9bec1cb2a8`; `origin/main` has
-   since moved on. Not pushed.
-   **Step 10 (2026-10-09):** review showed that dropping the Curly and Dynamic kinds lost the
-   caller side of `{{#foo-bar}}…{{else}}` / `{{#component x}}…{{else}}` across the has-block /
-   has-block-params / yield matrix (the 4.1 rationale covered the layout side only). PR 4 was
-   rebuilt to keep both kinds as invocations of a real `@glimmer/component` on a real owner and
-   Ember's `ResolverImpl` (the owner/component-resolver part of step 5 moved into PR 4), and 5–10
-   were rebased; `.work/W2-glimmer-harness.md` step 10. Tips and full-suite totals (all 0 fail,
-   18 skip): 1 `41f1a0199d` 9541, 2 `cb4772c2e1` 9504, 3 `86fe1ea485` 9504 (unchanged),
-   4 `8ac18e59e3` 9290, 5 `f77c03a8d4` 9289, 6 `e49cee1db1` 9293, 7 `8be5c5cb72` 9287,
-   8 `41d16395a0` 9192, 9 `edcba6a5cb` 9193, 10 `835eeacb63` 9196 (each the old count + 179).
-   So `-10` differs from `test/w2-glimmer-harness` by the owner-type fix, the PR 4 teardown-test
-   fix and step 10; the cleanup branches are the reference.
-   **Rebase onto main `e436b92b11` (2026-10-09):** PRs 1-4 landed upstream as #21676-#21679;
-   `ef4/test-cleanup-5` ... `-10` now sit on `e436b92b11` (one commit each, stacked), nothing
-   pushed. Tips and totals (0 fail, 18 skip): 5 `ed6014eb69` 9289, 6 `688ac9d380` 9293,
-   7 `767a55f920` 9287, 8 `d557386498` 9192, 9 `66ca368c66` 9193, 10 `912c417af6` 9196. Only
-   PR 8 conflicted (upstream renamed `fn-test.js` and `hash-test.js` to `.gjs`); its moved
-   tests were rewritten in the plain style. The hashes in the paragraphs above for 5-10
-   are the pre-rebase ones; `.work/W2-glimmer-harness.md` 10.6.
-   2026-10-10, review of PR 5: `trackedObj` flattened into direct `trackedObject` imports, and
-   the author's commit "removing unhelpful comments" (`ee24031cdb`) kept on top of PR 5's main
-   commit (`2413654dbf`); 6–10 rebased: `3838692714`, `74fa889361`, `9cfd7f93bb`, `f324fc4d98`,
-   `c33c938db4`. Suites unchanged (PR 5 9289, PR 10 9196, 0 fail). Still on `e436b92b11`.
-   Then: the author's "simplify custom iterable implementation" (`35172dfa90`) and a commit
-   importing `tracked` from `@glimmer/tracking` directly (`1dc78237f2`, resolves the TODO in the
-   deleted `lib/test-helpers/tracked.ts`); 6–10 rebased: `5984c57b5f`, `c17d762457`,
-   `881ede071d`, `86c4967de5`, `5e7d5cd727`. Suites unchanged.
-   Then the author's "drop silly vestigial test helper" (`59bb3d06de`) and a commit using public
-   APIs where helpers only wrapped them (`5813fb78d7`: `defComponent` → runtime `template()`,
-   dead `elementId`, unused imports); 6–10: `b85f83f8ff`, `2139643e50`, `c710ee0fd0`,
-   `28553335d0`, `f3a9ef4622`. Suites unchanged. Deferred by the author: `defineSimpleHelper` →
-   plain-function helpers, and Ember's `tests/utils/helpers.js` re-exports → public modules.
-   **PR 5 landed (2026-10-11) as #21684; PR 6 without plain mode (author decision).** `origin/main`
-   is `c49d802ba0` (PR 5 merged as-is, plus the `@ember/test-helpers` 5.7.0 upgrade). 6-10 are
-   rebased onto it (one commit each; only PR 8 and PR 10 needed hand merges, in `in-element.ts` and
-   the delegates). PR 6 no longer has `lib/modes/plain/`, `test/vm/in-element-vm-test.ts` or the
-   `compileTemplate` hook: the 2 null-destination `in-element` tests are back in the normal suite as
-   `@test({ skip: DEBUG })` (pass in a production build, skipped in development), and the 3
-   `insertBefore` = element tests are deleted (twin `public-in-element-test.js`). Ledger rows
-   `PR6-plain`. New tips and development totals (0 fail, 20 skip): 6 `e68582364f` 9290, 7 `80cd8345f0`
-   9284, 8 `9bbae31d7e` 9189, 9 `f6e36dfbc6` 9190, 10 `09d8662798` 9193 (each old count - 3). Per-test
-   diff against the old PR 6 and PR 10: only the 5 named tests changed, plus the 2 restored. The
-   pre-change tips are in the scratchpad `stack-before-pr6-plain.txt`. Not pushed.
-   2026-10-11: PR 6 gained a bugfix commit (`427e2c3958`): `transform-resolutions` crashed with
-   a TypeError on a bare `{{modifier}}`/`{{helper}}` in production builds (assertion stripped,
-   then `first.type` read); it now leaves the call to the keyword's own validation. Found by
-   PR 6's production CI run. 7–10 rebased onto it: `e1a4a6b9e0`, `6fd842093e`, `67bf90c131`,
-   `4ca21f34e7`; PR 10 dev 9193 / prod 9030, 0 fail.
-   **PRs 6 and 7 landed (2026-10-11) as #21692 and #21695.** PR 7 merged with one extra author
-   commit (`a46a65d019`, drops a comment in `each-test.js`). `origin/main` is `b76567026c`. 8–10
-   rebased onto it cleanly: `dd38753669`, `796461517c`, `de819e1c2c`; PR 10 dev 9193, 0 fail,
-   20 skip. Pre-rebase tips in the scratchpad `stack-before-pr7-landed.txt`. Not pushed.
-   2026-10-12 review of PR 8: three audits re-checked all 114 deleted tests against their twins;
-   no gaps. PR 8 amended: the Ember "custom lifecycle hooks" twin now pins hook order with
-   `assert.step` (the Glimmer original did; the twin only counted), the moved `on` DEBUG-only tests
-   use the file's `assert.expect(0)` guard, and the moved constructor-backtracking test uses
-   `expectAssertion` + `backtrackingMessageFor` like its sibling, without the restating comments.
-   Tips: 8 `01659f7ec8` (dev 9189, prod 9005, 0 fail), 9 `33ef02c039`, 10 `5262e7cab3` (dev 9193).
-   The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
-   **PRs 8 and 9 landed (2026-10-12) as #21702 and #21703.** `origin/main` is `afe5bdcdef`; PR 10
-   rebased onto it cleanly. Final review of PR 10: no coverage loss (the two deleted `owner-test.ts`
-   tests are ledger rows 9.2). PR 10 amended: comments citing `spec/` chapters (not upstream) dropped
-   or reworded, the four restating "server render is non-interactive" comments removed, the unused
-   `expect` import in `jit/delegate.ts` moved to `loose-template.ts` (replacing a hand-rolled
-   throw), the vestigial `element?` field and `this.delegate.registerModifier` in the rehydration
-   modifier test fixed, `this.assert` used throughout the new `mount-test.js` tests, and the stale
-   "Depends on ef4/test-cleanup-9" line removed from the message. Tip `6520d1e676`, dev 9215 / 9195 /
-   0 fail / 20 skip (+22 from main). Not pushed. Pre-existing oddity, not changed: the kept
-   `owner-test.ts` test "owner can be changed by a component with the hasSubOwner capability"
-   asserts `owner1` inside the `owner2` sub-owner, so its name and its assertion disagree.
-   Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
-   `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
-   (re-derive moved and deleted test citations), and the W2-branch citations added in 8.4
-   (§05-7.6, §06-2.2, §08-6.1, §08-6.6) can get line numbers.
-7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
-   merged at `def1faa2cf`, upstream base `9bec1cb2a8`). After the next merge, run
-   `python3 spec/tools/remap-citations.py 9bec1cb2a8 <new base> --apply` once, fix its FLAG lines
+   checklist, upstreamable to ember.js on its own. **W2 has landed upstream** (ten PRs, last
+   #21709, 2026-10-12) and is merged into this branch. The landed code differs from the old
+   `test/w2-glimmer-harness` branch (owner types, PR 4 rebuilt to keep the Curly and Dynamic kinds
+   on a real `@glimmer/component`, no plain mode in PR 6, review fixes), so `origin/main` is the
+   reference; `.work/W2-glimmer-harness.md` has the history (step 10 onward) and
+   `.work/W2-coverage-ledger.md` the twin of every removed test. Follow-up is T18:
+   - remap citations (item 7) and re-derive the citations into `integration-tests/lib/suites/*`,
+     `test/ember-component-test.ts` and other moved or deleted test files (e.g. §05-6.3, §05-14
+     item 12), as T17 did;
+   - give the W2 citations added in 8.4 (§05-7.6, §06-2.2, §08-6.1, §08-6.6) line numbers, and
+     rewrite the "on branch `test/w2-glimmer-harness`, not yet upstream" wording in §05-7.6,
+     §06-2.2, §08 and §09 (C1, C18, W2 row, seam B) to cite `main`;
+   - update §09's counts and harness description against the landed code.
+   Pre-existing oddity, not changed by W2: the `owner-test.ts` test "owner can be changed by a
+   component with the hasSubOwner capability" asserts `owner1` inside the `owner2` sub-owner, so
+   its name and its assertion disagree.
+   The remote branch `test/w2-glimmer-harness` still exists on `origin` (emberjs/ember.js) at
+   `8939c50aff`; it is superseded and can be deleted.
+7. **Keep citations current.** Line numbers are accurate for upstream base `9bec1cb2a8`, not
+   yet for this checkout (`origin/main` `a9501d5d40` merged at `a7fc67e74b`; T18). A dry run of
+   `remap-citations.py 9bec1cb2a8 a9501d5d40` gives 26 FLAG lines; `check-citations.py` reports 44
+   problems, the same 44 as before the merge. For T18 and after each later merge, run
+   `python3 spec/tools/remap-citations.py <old base> <new base> --apply` once, fix its FLAG lines
    by hand, then run `check-citations.py` and check the prose against what the merge changed
-   (`git diff 9bec1cb2a8 <new base> -- packages`), as T8, T13 and T17 did. The tool follows
+   (`git diff <old base> <new base> -- packages`), as T8, T13 and T17 did. The tool follows
    hunks only: it mis-shifts citations to files that were moved or split (T17 re-derived the
    test citations by matching unique source lines of the old file against the new files), so
    re-check every citation to a test file that `git diff -M --stat` shows as moved.
