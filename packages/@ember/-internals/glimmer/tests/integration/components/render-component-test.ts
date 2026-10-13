@@ -16,8 +16,9 @@ import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
-import GlimmerishComponent from '../../utils/glimmerish-component';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
+import GlimmerComponent from '@glimmer/component';
 
 import { destroy, associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, renderSettled, type RenderResult } from '../../../lib/renderer';
@@ -377,7 +378,7 @@ moduleFor(
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<this.Foo/>'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
@@ -389,7 +390,7 @@ moduleFor(
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('{{this.Foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
@@ -401,7 +402,7 @@ moduleFor(
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let Root = setComponentTemplate(
         precompileTemplate('{{this.foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           foo = foo;
         }
       );
@@ -561,7 +562,7 @@ moduleFor(
       let element = document.createElement('div');
       let attach: () => void;
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked attached: Element | undefined;
 
         constructor(owner: any, args: any) {
@@ -593,7 +594,7 @@ moduleFor(
       let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createTextNode('');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked attached: Element | undefined;
 
         constructor(owner: any, args: any) {
@@ -624,7 +625,7 @@ moduleFor(
 
       let render: () => void;
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, args: any) {
           super(owner, args);
 
@@ -658,7 +659,7 @@ moduleFor(
       );
 
       let element = document.createElement('div');
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked foo = 2;
         increment = () => this.foo++;
 
@@ -733,7 +734,7 @@ moduleFor(
       element1.setAttribute('data-one', '');
       element2.setAttribute('data-two', '');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, _args: any) {
           super(owner, _args);
 
@@ -772,10 +773,10 @@ moduleFor(
 
       this.owner.register('service:state', State);
 
-      class _One extends GlimmerishComponent {
+      class _One extends GlimmerComponent {
         @service state!: State;
       }
-      class _Two extends GlimmerishComponent {
+      class _Two extends GlimmerComponent {
         @service state!: State;
       }
       let InnerOne = setComponentTemplate(precompileTemplate('{{this.state.foo}}'), _One);
@@ -787,7 +788,7 @@ moduleFor(
       element1.setAttribute('data-one', '');
       element2.setAttribute('data-two', '');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, _args: any) {
           super(owner, _args);
 
@@ -831,7 +832,7 @@ moduleFor(
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -876,7 +877,7 @@ moduleFor(
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -920,7 +921,7 @@ moduleFor(
       );
 
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -1000,7 +1001,7 @@ moduleFor(
       let get = (id: string) => this.element.querySelector(id);
       let promises: Promise<unknown>[] = [];
 
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         let promise = (async () => {
           await Promise.resolve();
           let element = get(`#${id}`);
@@ -1088,7 +1089,7 @@ moduleFor(
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,

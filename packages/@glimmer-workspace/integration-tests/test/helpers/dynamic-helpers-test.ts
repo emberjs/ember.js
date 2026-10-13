@@ -1,7 +1,7 @@
+import GlimmerComponent from '@glimmer/component';
 import {
   defineComponent,
   defineSimpleHelper,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   test,
@@ -25,7 +25,7 @@ class DynamicHelpersResolutionModeTest extends RenderTest {
     const foo = defineSimpleHelper(() => 'world!');
     const bar = defineSimpleHelper((value: string) => 'Hello, ' + value);
     const Bar = defineComponent({ foo }, '{{this.bar (foo)}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = bar;
       },
     });
@@ -40,7 +40,7 @@ class DynamicHelpersResolutionModeTest extends RenderTest {
     const foo = defineSimpleHelper(() => 'world!');
     const bar = defineSimpleHelper((value: string) => 'Hello, ' + value);
     const Bar = defineComponent({}, '{{this.bar (this.foo)}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
         bar = bar;
       },

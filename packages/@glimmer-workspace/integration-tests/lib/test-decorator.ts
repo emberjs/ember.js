@@ -4,7 +4,7 @@ export type DeclaredComponentKind = 'glimmer' | 'curly' | 'dynamic' | 'templateO
 
 export interface ComponentTestMeta {
   kind?: DeclaredComponentKind;
-  skip?: boolean | DeclaredComponentKind;
+  skip?: boolean;
 }
 
 type LegacyMethodDecorator = <T>(

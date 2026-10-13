@@ -102,7 +102,14 @@ async function main() {
   await fs.rm(TYPES_DIR, { recursive: true, force: true });
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
-  doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
+  doOrDie(() => {
+    let result = spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']);
+    if (result.status !== 0) {
+      console.log(`ember-source types build failed:`);
+      console.error(result.output.toString());
+      process.exit(1);
+    }
+  });
 
   let remappedLocationExcludes = await doOrDie(() => copyHandwrittenDefinitions('packages'));
 
@@ -230,11 +237,9 @@ async function processModule(moduleName) {
     return 'failure';
   }
 
-  let moduleNameForDeclaration = moduleName.replace('/index.d.ts', '');
-
   let rewrittenModule;
   try {
-    rewrittenModule = rewriteModule(contents, moduleNameForDeclaration);
+    rewrittenModule = rewriteModule(contents, moduleName);
   } catch (e) {
     console.error(`Error rewriting ${moduleName}`, e);
     return 'failure';
@@ -262,10 +267,10 @@ async function processModule(moduleName) {
     declaration merging continues to work correctly.
 
   @param {string} code The initial code to rewrite.
-  @param {string} moduleName The name of the module to use.
+  @param {string} filePath The path of the module, relative to `TYPES_DIR`.
   @returns {string}
  */
-export function rewriteModule(code, moduleName) {
+export function rewriteModule(code, filePath) {
   let ast = parse(code, { parser });
 
   /** @type {Array<import("ast-types/gen/namedTypes").namedTypes.TSModuleDeclaration>} */
@@ -336,7 +341,7 @@ export function rewriteModule(code, moduleName) {
     visitImportDeclaration(path) {
       let source = path.node.source;
       if (isStringLiteral(source)) {
-        source.value = normalizeSpecifier(moduleName, source.value);
+        source.value = normalizeSpecifier(filePath, source.value);
 
         // This makes it so that the types we publish point to the types defined
         // by `backburner.js`, basically doing the type-time equivalent of the
@@ -353,7 +358,7 @@ export function rewriteModule(code, moduleName) {
     visitExportNamedDeclaration(path) {
       let specifier = path.node.source;
       if (isStringLiteral(specifier)) {
-        specifier.value = normalizeSpecifier(moduleName, specifier.value);
+        specifier.value = normalizeSpecifier(filePath, specifier.value);
       }
       this.traverse(path);
     },
@@ -361,7 +366,7 @@ export function rewriteModule(code, moduleName) {
     visitExportAllDeclaration(path) {
       let specifier = path.node.source;
       if (isStringLiteral(specifier)) {
-        specifier.value = normalizeSpecifier(moduleName, specifier.value);
+        specifier.value = normalizeSpecifier(filePath, specifier.value);
       }
       this.traverse(path);
     },
@@ -370,7 +375,7 @@ export function rewriteModule(code, moduleName) {
     // to use relative paths, as well.
     visitTSImportType(path) {
       let specifier = path.node.argument.value;
-      path.node.argument.value = normalizeSpecifier(moduleName, specifier);
+      path.node.argument.value = normalizeSpecifier(filePath, specifier);
       this.traverse(path);
     },
   });
@@ -378,7 +383,7 @@ export function rewriteModule(code, moduleName) {
   let newAST = b.file(
     b.program([
       b.declareModule(
-        b.identifier(`'${moduleName.replace('.d.ts', '')}'`),
+        b.identifier(`'${toModuleName(filePath)}'`),
         b.blockStatement(ast.program.body)
       ),
       ...otherModuleDeclarations,
@@ -406,18 +411,32 @@ function hasParentModuleDeclarationBlock(path) {
   return false;
 }
 
-const TERMINAL_MODULE_RE = /\/[\w-_]+\.d\.ts$/;
-const NEIGHBOR_PATH_RE = /^(\.)\//;
 const SHOULD_BE_ABSOLUTE = /(\.\.\/)+(@.*)/;
+const INTERNAL_PACKAGE_RE = /^@(ember|glimmer)\//;
 
 /**
-  Given a relative path, `'.'`, `./`, or `(../)+`, rewrite it as an absolute path.
+  Turn a path to a module (as a file path or a specifier pointing at one) into
+  the name we declare it under: no extension, and no trailing `/index`.
 
-  @param {string} moduleName The name of the host module we are declaring.
+  Declarations and references *must* both go through this: any mismatch between
+  them means the reference resolves to nothing, which TS silently treats as
+  `any` for consumers with `skipLibCheck` enabled.
+
+  @param {string} modulePath
+  @return {string}
+ */
+function toModuleName(modulePath) {
+  return modulePath.replace(/\.(d\.ts|ts|js)$/, '').replace(/\/index$/, '');
+}
+
+/**
+  Rewrite a specifier as the absolute module name it refers to.
+
+  @param {string} filePath The path of the host module, relative to `TYPES_DIR`.
   @param {string} specifier The name of the module it is importing.
   @return {string}
  */
-function normalizeSpecifier(moduleName, specifier) {
+function normalizeSpecifier(filePath, specifier) {
   // One particularly degenerate case is `import()` type annotations which TS
   // generates as relative paths, e.g. `'../../@ember/object'`, since we cannot
   // yet use project references and therefore also cannot use dependencies
@@ -427,65 +446,26 @@ function normalizeSpecifier(moduleName, specifier) {
   // First match is the whole string, second match is the (last) leading `../`,
   // third match is the package we care about.
   if (nonsensicalRelativePath && nonsensicalRelativePath[2]) {
-    return nonsensicalRelativePath[2];
+    return toModuleName(nonsensicalRelativePath[2]);
   }
 
-  // The other cases are more normal: we replace
-  if (specifier === '.') {
-    return moduleName.replace(TERMINAL_MODULE_RE, '');
-  } else if (specifier.startsWith('./')) {
-    let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
-    let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
-    if (sansLeadingDot.endsWith('.d.ts')) {
-      sansLeadingDot = sansLeadingDot.slice(0, -5);
+  if (specifier === '.' || specifier === '..' || /^\.\.?\//.test(specifier)) {
+    let resolved = path.posix.join(path.posix.dirname(filePath), specifier);
+    if (resolved.startsWith('..')) {
+      throw new Error(
+        `Could not generate a valid path for relative path specifier ${specifier} in ${filePath}`
+      );
     }
-    let newImportName = `${parentModuleName}/${sansLeadingDot}`;
-    return newImportName;
-  } else if (specifier.startsWith('../')) {
-    // Reverse it so we can just `pop` from `parentPathChunks` as we go: walking
-    // backward through the specifier means as soon as we hit the `..` we can
-    // start using the chunks from the end of the hosting module.
-    let reversedSpecifierChunks = specifier.split('/').reverse();
-    let parentPathChunks = moduleName.split('/');
-
-    // To make that logic work, though, we need to drop the last item from the
-    // chunks comprising host module, because we need to *not* treat the current
-    // module itself as a parent. If we're not in a "root" module, we need to
-    // do it an extra time to get rid of the terminal `foo.d.ts` as well.
-    parentPathChunks.pop();
-
-    // Walk back from the end of the specifier, replacing `..` with chunks from
-    // the parent paths.
-    /** @type {string[]} */
-    let merged = [];
-    for (let chunk of reversedSpecifierChunks) {
-      if (chunk === '..') {
-        let parent = parentPathChunks.pop();
-        if (!parent) {
-          throw new Error(
-            `Could not generate a valid path for relative path specifier ${specifier} in ${moduleName}`
-          );
-        }
-
-        // If we get to `@ember`, we know we're at the root and we *need* to
-        // retain it. Otherwise, we're not there yet and should keep moving up.
-        if (parent === '@ember') {
-          merged.push(parent);
-        }
-      } else {
-        merged.push(chunk);
-      }
-    }
-
-    // Reverse them again so we have the correct ordering.
-    merged.reverse();
-    // Then incorporate the rest of the parent path chunks.
-    merged.unshift(...parentPathChunks);
-
-    return merged.join('/');
-  } else {
-    return specifier;
+    return toModuleName(resolved);
   }
+
+  // Leave external packages alone: some, like `backburner.js`, really do have
+  // an extension in their name.
+  if (INTERNAL_PACKAGE_RE.test(specifier)) {
+    return toModuleName(specifier);
+  }
+
+  return specifier;
 }
 
 /**

@@ -16,7 +16,7 @@ import { tracked } from '@ember/-internals/metal';
 import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
 import { set, get, computed, observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1143,7 +1143,7 @@ moduleFor(
       );
 
       this.render('{{sample-component names=this.things}}', {
-        things: emberA(['Foo', 4, 'Bar']),
+        things: trackedArray(['Foo', 4, 'Bar']),
       });
 
       this.assertText('Foo4Bar');
@@ -1152,19 +1152,19 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      runTask(() => this.context.get('things').pushObject(5));
+      runTask(() => this.context.get('things').push(5));
 
       this.assertText('Foo4Bar5');
 
-      runTask(() => this.context.get('things').shiftObject());
+      runTask(() => this.context.get('things').shift());
 
       this.assertText('4Bar5');
 
-      runTask(() => this.context.get('things').clear());
+      runTask(() => this.context.get('things').splice(0));
 
       this.assertText('');
 
-      runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
+      runTask(() => this.context.set('things', ['Foo', 4, 'Bar']));
 
       this.assertText('Foo4Bar');
     }
@@ -1882,22 +1882,22 @@ moduleFor(
 
             init() {
               super.init(...arguments);
-              this.options = emberA([]);
+              this.options = [];
               this.value = null;
             }
 
             updateValue() {
-              let newValue = this.get('options.lastObject.value');
+              let newValue = this.options.at(-1)?.value;
 
               this.set('value', newValue);
             }
 
             registerOption(option) {
-              this.get('options').addObject(option);
+              this.options.push(option);
             }
 
             unregisterOption(option) {
-              this.get('options').removeObject(option);
+              this.options.splice(this.options.indexOf(option), 1);
 
               this.updateValue();
             }
@@ -2289,6 +2289,189 @@ moduleFor(
       this.render('<FooBar />');
 
       this.assertComponentElement(this.firstChild, { content: '1' });
+    }
+
+    '@test a block yielded by a tagless component sees the caller scope, the layout sees its own'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            '[Layout: {{this.zomg}}][Layout: {{this.lol}}][Layout: {{this.foo}}]{{yield}}'
+          ),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render(
+        strip`
+          <div>
+            [Outside: {{this.zomg}}]
+            {{#let this.zomg as |lol|}}
+              [Inside: {{this.zomg}}]
+              [Inside: {{lol}}]
+              {{#foo-bar foo=this.zomg}}
+                [Block: {{this.zomg}}]
+                [Block: {{lol}}]
+              {{/foo-bar}}
+            {{/let}}
+          </div>`,
+        { zomg: 'zomg' }
+      );
+
+      this.assertText(
+        '[Outside: zomg][Inside: zomg][Inside: zomg][Layout: ][Layout: ][Layout: zomg][Block: zomg][Block: zomg]'
+      );
+
+      this.assertStableRerender();
+    }
+
+    '@test a component with a slashed name can be invoked with curlies'() {
+      this.owner.register(
+        'component:fizz-bar/baz-bar',
+        setComponentTemplate(precompileTemplate('{{this.hey}}'), class extends Component {})
+      );
+
+      this.render('{{fizz-bar/baz-bar hey="hello"}}');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+
+      this.assertStableRerender();
+    }
+
+    '@test static arbitrary number of positional parameters'() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.names key="@index" as |name|}}{{name}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'names';
+          }
+        )
+      );
+
+      this.render(strip`
+        {{sample-component "Foo" 4 "Bar"}}
+        {{sample-component "Foo" 4 "Bar" 5 "Baz"}}
+      `);
+
+      this.assertComponentElement(this.nthChild(0), { tagName: 'div', content: 'Foo4Bar' });
+      this.assertComponentElement(this.nthChild(1), { tagName: 'div', content: 'Foo4Bar5Baz' });
+    }
+
+    '@test dynamic arbitrary number of positional parameters'() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.n key="@index" as |name|}}{{name}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'n';
+          }
+        )
+      );
+
+      this.render('{{sample-component this.user1 this.user2}}', { user1: 'Foo', user2: 4 });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Foo4' });
+
+      runTask(() => {
+        set(this.context, 'user1', 'Bar');
+        set(this.context, 'user2', '5');
+      });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Bar5' });
+
+      runTask(() => set(this.context, 'user2', '6'));
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Bar6' });
+    }
+
+    '@test the {{component}} helper works with positional params'() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}}{{this.age}}'),
+          class extends Component {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
+
+      this.render('{{component "sample-component" this.myName this.myAge}}', {
+        myName: 'Quint',
+        myAge: 4,
+      });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Quint4' });
+
+      runTask(() => {
+        set(this.context, 'myName', 'Edward');
+        set(this.context, 'myAge', '5');
+      });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Edward5' });
+
+      runTask(() => {
+        set(this.context, 'myName', 'Quint');
+        set(this.context, 'myAge', '4');
+      });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Quint4' });
+    }
+
+    '@test every component instance gets a unique element id'(assert) {
+      this.owner.register(
+        'component:x-curly',
+        setComponentTemplate(precompileTemplate(''), class extends Component {})
+      );
+
+      this.render(strip`
+        {{x-curly}}
+        {{x-curly}}
+        {{x-curly}}
+      `);
+
+      let ids = [0, 1, 2].map((i) => {
+        let element = this.nthChild(i);
+        assert.ok(/^ember\d+$/.test(element.id), `element ${i} has a generated id`);
+        return element.id;
+      });
+
+      assert.strictEqual(new Set(ids).size, 3, 'the components each have a unique id');
+    }
+
+    '@test a classic component removed by an `if` is destroyed once'(assert) {
+      let willDestroyElement = 0;
+      let destroyed = 0;
+
+      this.owner.register(
+        'component:destroy-me',
+        setComponentTemplate(
+          precompileTemplate('destroy me!'),
+          class extends Component {
+            willDestroyElement() {
+              super.willDestroyElement(...arguments);
+              willDestroyElement++;
+            }
+
+            destroy() {
+              super.destroy(...arguments);
+              destroyed++;
+            }
+          }
+        )
+      );
+
+      this.render('{{#if this.cond}}{{destroy-me}}{{/if}}', { cond: true });
+
+      assert.strictEqual(willDestroyElement, 0, 'willDestroyElement is not called initially');
+      assert.strictEqual(destroyed, 0, 'destroy is not called initially');
+
+      runTask(() => set(this.context, 'cond', false));
+
+      assert.strictEqual(willDestroyElement, 1, 'willDestroyElement is called exactly once');
+      assert.strictEqual(destroyed, 1, 'destroy is called exactly once');
     }
   }
 );

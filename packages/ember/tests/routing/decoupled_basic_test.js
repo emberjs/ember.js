@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
 import { getOwner } from '@ember/-internals/owner';
+import { createCache, getValue } from '@glimmer/validator';
 import RSVP from 'rsvp';
 import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import EmberObject, { set } from '@ember/object';
+import { set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -140,9 +141,13 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class {
+        constructor(id) {
+          this.id = id;
+        }
+
         static find(id) {
-          menuItem = MenuItem.create({ id: id });
+          menuItem = new MenuItem(id);
 
           return new RSVP.Promise(function (res) {
             resolve = res;
@@ -185,7 +190,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class {
         static find(id) {
           return { id: id };
         }
@@ -267,9 +272,13 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class {
+        constructor(id) {
+          this.id = id;
+        }
+
         static find(id) {
-          menuItem = MenuItem.create({ id: id });
+          menuItem = new MenuItem(id);
           return new RSVP.Promise((res) => (resolve = res));
         }
       };
@@ -322,7 +331,7 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function (path) {
+        router.location.setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
@@ -335,7 +344,7 @@ moduleFor(
         });
 
         assert.equal(urlSetCount, 1);
-        assert.equal(router.get('location').getURL(), '/bar');
+        assert.equal(router.location.getURL(), '/bar');
       });
     }
 
@@ -358,22 +367,47 @@ moduleFor(
       });
     }
 
+    async ['@test a plain read of the router properties is reactive'](assert) {
+      this.router.map(function () {
+        this.route('root', { path: '/' });
+        this.route('foo', { path: '/foo' });
+      });
+
+      await this.visit('/');
+
+      let router = this.applicationInstance.lookup('router:main');
+      let summary = createCache(
+        () =>
+          `${router.currentRouteName} ${router.currentPath} ${router.currentURL} ${router.currentRoute.name}`
+      );
+
+      assert.strictEqual(getValue(summary), 'root root / root');
+
+      await this.visit('/foo');
+
+      assert.strictEqual(getValue(summary), 'foo foo /foo foo');
+    }
+
     ['@test using replaceWith calls location.replaceURL if available'](assert) {
       let setCount = 0;
       let replaceCount = 0;
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = NoneLocation.create({
+              setURL(path) {
+                setCount++;
+                set(this, 'path', path);
+              },
 
-          replaceURL(path) {
-            replaceCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
+              replaceURL(path) {
+                replaceCount++;
+                set(this, 'path', path);
+              },
+            });
+          }
+      );
 
       this.router.map(function () {
         this.route('root', { path: '/' });
@@ -389,21 +423,25 @@ moduleFor(
 
         assert.equal(setCount, 1, 'should not call setURL');
         assert.equal(replaceCount, 1, 'should call replaceURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(router.location.getURL(), '/foo');
       });
     }
 
     ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
       let setCount = 0;
 
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = NoneLocation.create({
+              setURL(path) {
+                setCount++;
+                set(this, 'path', path);
+              },
+            });
+          }
+      );
 
       this.router.map(function () {
         this.route('root', { path: '/' });
@@ -416,7 +454,7 @@ moduleFor(
         assert.equal(setCount, 1);
         run(() => router.replaceWith('foo'));
         assert.equal(setCount, 2, 'should call setURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(router.location.getURL(), '/foo');
       });
     }
 
@@ -501,7 +539,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
         assert.equal(router.currentPath, 'home');
-        assert.equal(router.get('location').getURL(), '/home');
+        assert.equal(router.location.getURL(), '/home');
       });
     }
 
@@ -600,7 +638,7 @@ moduleFor(
         this.handleURLAborts(assert, '/foo/bar/1/baz');
         assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
         assert.equal(
-          this.applicationInstance.lookup('router:main').get('location').getURL(),
+          this.applicationInstance.lookup('router:main').location.getURL(),
           '/foo/bar/2/baz'
         );
       });
@@ -638,7 +676,7 @@ moduleFor(
         assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
         assert.equal(router.currentPath, 'foo.qux');
-        assert.equal(router.get('location').getURL(), '/foo/qux');
+        assert.equal(router.location.getURL(), '/foo/qux');
       });
     }
 
@@ -648,7 +686,7 @@ moduleFor(
       let setHistory;
 
       setHistory = function (obj, path) {
-        obj.set('history', { state: { path: path } });
+        set(obj, 'history', { state: { path: path } });
       };
 
       let location = HistoryLocation.create({
@@ -656,7 +694,7 @@ moduleFor(
           let path = rootURL + '/posts';
 
           setHistory(this, path);
-          this.set('location', {
+          set(this, 'location', {
             pathname: path,
             href: 'http://localhost/' + path,
           });
@@ -671,11 +709,15 @@ moduleFor(
         },
       });
 
-      this.router.reopen({
-        // location: 'historyTest',
-        location,
-        rootURL: rootURL,
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = location;
+
+            rootURL = rootURL;
+          }
+      );
 
       this.router.map(function () {
         this.route('posts', { path: '/posts' });
@@ -711,24 +753,28 @@ moduleFor(
             pushState() {},
           };
           initState() {
-            assert.equal(this.get('rootURL'), rootURL);
+            assert.equal(this.rootURL, rootURL);
           }
         }
       );
 
-      this.router.reopen({
-        location: 'history-test',
-        rootURL: rootURL,
-        // if we transition in this test we will receive failures
-        // if the tests are run from a static file
-        _doURLTransition() {
-          return {
-            followRedirects() {
-              return RSVP.resolve('');
-            },
-          };
-        },
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            location = 'history-test';
+
+            rootURL = rootURL;
+
+            _doURLTransition() {
+              return {
+                followRedirects() {
+                  return RSVP.resolve('');
+                },
+              };
+            }
+          }
+      );
 
       return this.visit('/');
     }
@@ -1105,7 +1151,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+        assert.equal(router.location.path, '/about/TreeklesMcGeekles');
       });
     }
 

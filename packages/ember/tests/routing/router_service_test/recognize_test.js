@@ -33,9 +33,13 @@ moduleFor(
     }
 
     '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
-        rootURL: '/app/',
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            rootURL = '/app/';
+          }
+      );
 
       return this.visit('/app').then(() => {
         let routeInfo = this.routerService.recognize('/app/child/');
@@ -51,9 +55,13 @@ moduleFor(
       this.add('template:parent', precompileTemplate('Parent'));
       this.add('template:dynamic-with-child.child', precompileTemplate('Dynamic Child'));
 
-      this.router.reopen({
-        rootURL: '/app/',
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            rootURL = '/app/';
+          }
+      );
 
       return this.visit('/app').then(() => {
         expectAssertion(() => {
@@ -138,9 +146,13 @@ moduleFor(
     }
 
     '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
-        rootURL: '/app/',
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            rootURL = '/app/';
+          }
+      );
 
       return this.visit('/app')
         .then(() => {
@@ -156,9 +168,13 @@ moduleFor(
     }
 
     '@test must include rootURL'() {
-      this.router.reopen({
-        rootURL: '/app/',
-      });
+      this.subclass(
+        'router:main',
+        (Router) =>
+          class extends Router {
+            rootURL = '/app/';
+          }
+      );
 
       return this.visit('/app').then(() => {
         expectAssertion(() => {

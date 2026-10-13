@@ -1,62 +1,34 @@
-import type {
-  Helper as GlimmerHelper,
-  InternalModifierManager,
-  Nullable,
-  ResolutionTimeConstants,
-  TemplateFactory,
-} from '@glimmer/interfaces';
-import type { CurriedValue } from '@glimmer/runtime';
-import { CURRIED_COMPONENT } from '@glimmer/constants';
-import {
-  getInternalComponentManager,
-  setComponentTemplate,
-  setInternalHelperManager,
-  setInternalModifierManager,
-} from '@glimmer/manager';
-import { curry, templateOnlyComponent } from '@glimmer/runtime';
+import { dasherize } from '@ember/-internals/string';
+import Component from '@ember/component';
+import GlimmerComponent from '@glimmer/component';
+import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
+import { setComponentTemplate } from '@glimmer/manager';
+import { templateOnlyComponent } from '@glimmer/runtime';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
-import type { TestJitRegistry } from './registry';
+import type { TestOwner } from '../owner';
 
 import { createTemplate } from '../../compile';
-import { EmberishCurlyComponent } from '../../components/emberish-curly';
-import { GlimmerishComponent } from '../../components/emberish-glimmer';
-import { createHelperRef } from '../../helpers';
-import { TestModifierDefinitionState, TestModifierManager } from '../../modifiers';
+import { defineUserHelper } from '../../helpers';
+import { defineTestModifier } from '../../modifiers';
 
 export function registerTemplateOnlyComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   layoutSource: string
 ): void {
   registerSomeComponent(
-    registry,
+    owner,
     name,
     createTemplate(layoutSource),
     templateOnlyComponent(undefined, name)
   );
 }
 
-export function registerEmberishCurlyComponent(
-  registry: TestJitRegistry,
-  name: string,
-  Component: Nullable<ComponentTypes['Curly']>,
-  layoutSource: Nullable<string>
-): void {
-  let ComponentClass = Component || class extends EmberishCurlyComponent {};
-
-  registerSomeComponent(
-    registry,
-    name,
-    layoutSource !== null ? createTemplate(layoutSource) : null,
-    ComponentClass
-  );
-}
-
-export function registerGlimmerishComponent(
-  registry: TestJitRegistry,
+export function registerGlimmerComponent(
+  owner: TestOwner,
   name: string,
   Component: Nullable<ComponentTypes['Glimmer']>,
   layoutSource: Nullable<string>
@@ -64,51 +36,58 @@ export function registerGlimmerishComponent(
   if (name.indexOf('-') !== -1) {
     throw new Error('DEPRECATED: dasherized components');
   }
-  let ComponentClass = Component || class extends GlimmerishComponent {};
+  let ComponentClass = Component || class extends GlimmerComponent {};
 
-  registerSomeComponent(registry, name, createTemplate(layoutSource), ComponentClass);
+  registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
-export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
-  let state = {};
-  let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args);
-  setInternalHelperManager(glimmerHelper, state);
-  registry.register('helper', name, state);
-}
-
-export function registerInternalHelper(
-  registry: TestJitRegistry,
+/**
+ * A Glimmer component for the curly invocation kinds (`{{#test-component}}`,
+ * `{{component this.componentName}}`), whose names may be dasherized.
+ */
+export function registerCurlyInvokedComponent(
+  owner: TestOwner,
   name: string,
-  helper: GlimmerHelper
-) {
-  let state = {};
-  setInternalHelperManager(helper, state);
-  registry.register('helper', name, state);
+  Component: Nullable<ComponentTypes['Curly']>,
+  layoutSource: Nullable<string>
+): void {
+  let ComponentClass = Component || class extends GlimmerComponent {};
+
+  registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
-export function registerInternalModifier(
-  registry: TestJitRegistry,
+/**
+ * Registers a real classic `Component` (`@ember/component`) under `component:<name>`, to be
+ * invoked with curly syntax (`{{foo-bar}}`, `{{#foo-bar}}`, `{{component "foo-bar"}}`). Always
+ * registers a fresh subclass: `setComponentTemplate` can be called once per class.
+ */
+export function registerClassicComponent(
+  owner: TestOwner,
   name: string,
-  manager: InternalModifierManager,
-  state: object
-) {
-  setInternalModifierManager(manager, state);
-  registry.register('modifier', name, state);
+  layoutSource: string,
+  Class: typeof Component = Component
+): void {
+  registerSomeComponent(owner, name, createTemplate(layoutSource), class extends Class {});
+}
+
+export function registerHelper(owner: TestOwner, name: string, helper: UserHelper) {
+  registerHelperDefinition(owner, name, defineUserHelper(helper));
+}
+
+export function registerHelperDefinition(owner: TestOwner, name: string, definition: object) {
+  owner.register(`helper:${name}`, definition, { instantiate: false });
 }
 
 export function registerModifier(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   ModifierClass?: TestModifierConstructor
 ) {
-  let state = new TestModifierDefinitionState(ModifierClass);
-  let manager = new TestModifierManager();
-  setInternalModifierManager(manager, state);
-  registry.register('modifier', name, state);
+  owner.register(`modifier:${name}`, defineTestModifier(ModifierClass), { instantiate: false });
 }
 
 export function registerComponent<K extends ComponentKind>(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   type: K,
   name: string,
   layout: Nullable<string>,
@@ -116,28 +95,20 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerGlimmerishComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
+      registerGlimmerComponent(owner, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'Curly':
-      registerEmberishCurlyComponent(registry, name, Class as ComponentTypes['Curly'], layout);
-      break;
-
     case 'Dynamic':
-      registerEmberishCurlyComponent(
-        registry,
-        name,
-        Class as any as typeof EmberishCurlyComponent,
-        layout
-      );
+      registerCurlyInvokedComponent(owner, name, Class as ComponentTypes['Curly'], layout);
       break;
     case 'TemplateOnly':
-      registerTemplateOnlyComponent(registry, name, layout ?? '');
+      registerTemplateOnlyComponent(owner, name, layout ?? '');
       break;
   }
 }
 
 function registerSomeComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   templateFactory: TemplateFactory | null,
   ComponentClass: object
@@ -146,27 +117,5 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  let manager = getInternalComponentManager(ComponentClass);
-
-  let definition = {
-    name,
-    state: ComponentClass,
-    manager,
-    template: null,
-  };
-
-  registry.register('component', name, definition);
-  return definition;
-}
-
-export function componentHelper(
-  registry: TestJitRegistry,
-  name: string,
-  constants: ResolutionTimeConstants
-): CurriedValue | null {
-  let definition = registry.lookupComponent(name);
-
-  if (definition === null) return null;
-
-  return curry(CURRIED_COMPONENT, constants.resolvedComponent(definition, name), {}, null, true);
+  owner.register(`component:${dasherize(name)}`, ComponentClass, { instantiate: false });
 }

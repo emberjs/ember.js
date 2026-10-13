@@ -1,9 +1,10 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
 import type { BootEnvironment } from '@ember/engine/instance';
 import { OutletState } from '@ember/-internals/routing/route-managers/outlet-state';
-import computed from '@ember/-internals/metal/lib/computed';
-import { get } from '@ember/-internals/metal/lib/property_get';
-import { set } from '@ember/-internals/metal/lib/property_set';
+import { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
@@ -78,8 +79,8 @@ import {
 function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo[]) {
   updatePaths(this);
 
-  this.notifyPropertyChange('url');
-  this.set('currentState', this.targetState);
+  notifyPropertyChange(this, 'url');
+  this.currentState = this.targetState;
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -180,14 +181,20 @@ class EmberRouter extends EmberObject {
   // Set with reopen to allow overriding via extend
   declare location: (keyof LocationRegistry & string) | EmberLocation;
 
+  /**
+    The URL for the first transition. When it is not set, the router asks the
+    location for the URL.
+  */
+  declare initialURL?: string;
+
   _routerMicrolib!: Router;
   _didSetupRouter = false;
   _initialTransitionStarted = false;
 
-  currentURL: string | null = null;
-  currentRouteName: string | null = null;
-  currentPath: string | null = null;
-  currentRoute: RouteInfo | RouteInfoWithAttributes | null = null;
+  @tracked currentURL: string | null = null;
+  @tracked currentRouteName: string | null = null;
+  @tracked currentPath: string | null = null;
+  @tracked currentRoute: RouteInfo | RouteInfoWithAttributes | null = null;
 
   _qpCache: Record<string, { qps: QueryParam[]; map: QueryParamMeta['map'] }> = Object.create(null);
 
@@ -472,7 +479,7 @@ class EmberRouter extends EmberObject {
   }
 
   _initRouterJs(): void {
-    let location = get(this, 'location') as EmberLocation;
+    let location = this.location as EmberLocation;
     let router = this;
     const owner = getOwner(this);
     assert('Router is unexpectedly missing an owner', owner);
@@ -505,7 +512,7 @@ class EmberRouter extends EmberObject {
       updateURL(path: string) {
         once(() => {
           location.setURL(path);
-          set(router, 'currentURL', path);
+          router.currentURL = path;
         });
       }
 
@@ -548,12 +555,12 @@ class EmberRouter extends EmberObject {
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
         if (transition.isIntermediate) {
-          router.set('currentRoute', transition.to);
+          router.currentRoute = transition.to!;
         }
       }
 
       routeDidChange(transition: Transition) {
-        router.set('currentRoute', transition.to);
+        router.currentRoute = transition.to!;
         once(() => {
           sendEvent(router, 'routeDidChange', [transition]);
 
@@ -599,7 +606,7 @@ class EmberRouter extends EmberObject {
         if (location.replaceURL) {
           let doReplaceURL = () => {
             location.replaceURL!(url);
-            set(router, 'currentURL', url);
+            router.currentURL = url;
           };
           once(doReplaceURL);
         } else {
@@ -718,8 +725,8 @@ class EmberRouter extends EmberObject {
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
     assert('Router is unexpectedly missing an owner', owner);
-    let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
-    return Boolean(resolver);
+    let application = (owner as { application?: any }).application;
+    return Boolean(application?.__registry__?.resolver?.moduleBasedResolver);
   }
 
   /**
@@ -734,9 +741,9 @@ class EmberRouter extends EmberObject {
   */
   startRouting() {
     if (this.setupRouter()) {
-      let initialURL = get(this, 'initialURL') as string | undefined;
+      let initialURL = this.initialURL;
       if (initialURL === undefined) {
-        initialURL = (get(this, 'location') as EmberLocation).getURL();
+        initialURL = (this.location as EmberLocation).getURL();
       }
       let initialTransition = this.handleURL(initialURL);
       if (initialTransition && initialTransition.error) {
@@ -752,11 +759,11 @@ class EmberRouter extends EmberObject {
     this._didSetupRouter = true;
     this._setupLocation();
 
-    let location = get(this, 'location') as EmberLocation;
+    let location = this.location as EmberLocation;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
-    if (get(location, 'cancelRouterSetup')) {
+    if (location.cancelRouterSetup) {
       return false;
     }
 
@@ -1059,12 +1066,12 @@ class EmberRouter extends EmberObject {
       let resolvedLocation = owner.lookup(`location:${location}`);
 
       assert(`Could not resolve a location class at 'location:${location}'`, resolvedLocation);
-      location = set(this, 'location', resolvedLocation);
+      location = this.location = resolvedLocation;
     }
 
     if (location !== null && typeof location === 'object') {
       if (rootURL) {
-        set(location, 'rootURL', rootURL);
+        (location as { rootURL?: string }).rootURL = rootURL;
       }
 
       // ensure that initState is called AFTER the rootURL is set on
@@ -1479,8 +1486,8 @@ class EmberRouter extends EmberObject {
     }
   }
 
-  currentState: null | RouterState = null;
-  targetState: null | RouterState = null;
+  @tracked currentState: null | RouterState = null;
+  @tracked targetState: null | RouterState = null;
 
   // These three helper functions are used to ensure errors aren't
   // re-raised if they're handled in a route's error action.
@@ -1598,8 +1605,21 @@ class EmberRouter extends EmberObject {
     @type {String}
     @private
   */
-  // Set with reopen to allow overriding via extend
-  declare url: string;
+  get url(): string | undefined {
+    /**
+      The location is not reactive, so `didTransition` reports a change of
+      this property.
+    */
+    consumeTag(tagFor(this, 'url'));
+
+    let location = this.location;
+
+    if (typeof location === 'string') {
+      return undefined;
+    }
+
+    return location.getURL();
+  }
 }
 
 // These get invoked when an action bubbles above ApplicationRoute
@@ -1773,18 +1793,18 @@ function updatePaths(router: EmberRouter) {
   assert('expected location to not be a string', typeof location !== 'string');
   let currentURL = location.getURL();
 
-  set(router, 'currentPath', path);
-  set(router, 'currentRouteName', currentRouteName);
-  set(router, 'currentURL', currentURL);
+  router.currentPath = path;
+  router.currentRouteName = currentRouteName;
+  router.currentURL = currentURL;
 }
 
 function didBeginTransition(transition: Transition, router: EmberRouter) {
   let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
 
   if (!router.currentState) {
-    router.set('currentState', routerState);
+    router.currentState = routerState;
   }
-  router.set('targetState', routerState);
+  router.targetState = routerState;
 
   transition.promise = transition.catch((error: any) => {
     if (router._isErrorHandled(error)) {
@@ -1834,17 +1854,6 @@ EmberRouter.reopen({
   willTransition: defaultWillTransition,
   rootURL: '/',
   location: 'hash',
-
-  // FIXME: Does this need to be overrideable via extend?
-  url: computed(function (this: EmberRouter) {
-    let location = get(this, 'location');
-
-    if (typeof location === 'string') {
-      return undefined;
-    }
-
-    return location.getURL();
-  }),
 });
 
 export default EmberRouter;

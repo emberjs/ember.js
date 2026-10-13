@@ -994,5 +994,79 @@ moduleFor(
       this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
       this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
     }
+
+    '@test setting a value attributeBinding to null results in an empty string value'(assert) {
+      this.owner.register(
+        'component:input-component',
+        setComponentTemplate(
+          precompileTemplate('input component'),
+          class extends Component {
+            tagName = 'input';
+            attributeBindings = ['value'];
+          }
+        )
+      );
+
+      this.render('{{input-component value=this.someProp}}', { someProp: null });
+
+      let element = this.firstChild;
+      assert.strictEqual(element.value, '');
+
+      runTask(() => set(this.context, 'someProp', 'wycats'));
+      assert.strictEqual(element.value, 'wycats');
+
+      runTask(() => set(this.context, 'someProp', null));
+      assert.strictEqual(element.value, '');
+    }
+
+    // https://github.com/emberjs/ember.js/issues/15675
+    renderRange(value) {
+      this.owner.register(
+        'component:range-input',
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends Component {
+            tagName = 'input';
+            type = 'range';
+            attributeBindings = ['type', 'value', 'min', 'max'];
+          }
+        )
+      );
+
+      this.render('{{range-input max=this.max min=this.min value=this.value}}', {
+        max: 50,
+        min: -5,
+        value,
+      });
+    }
+
+    '@test [emberjs/ember.js#15675] range input: value over the default max but below the set max is kept'(
+      assert
+    ) {
+      this.renderRange(25);
+      assert.strictEqual(this.firstChild.value, '25');
+    }
+
+    '@test [emberjs/ember.js#15675] range input: value below the default min but above the set min is kept'(
+      assert
+    ) {
+      this.renderRange(-2);
+      assert.strictEqual(this.firstChild.value, '-2');
+    }
+
+    '@test [emberjs/ember.js#15675] range input: value in the valid default range is kept'(assert) {
+      this.renderRange(5);
+      assert.strictEqual(this.firstChild.value, '5');
+    }
+
+    '@test [emberjs/ember.js#15675] range input: value above max is reset to max'(assert) {
+      this.renderRange(55);
+      assert.strictEqual(this.firstChild.value, '50');
+    }
+
+    '@test [emberjs/ember.js#15675] range input: value below min is reset to min'(assert) {
+      this.renderRange(-10);
+      assert.strictEqual(this.firstChild.value, '-5');
+    }
   }
 );

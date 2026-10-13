@@ -1,13 +1,13 @@
+import { trackedObject } from '@ember/reactive/collections';
+import GlimmerComponent from '@glimmer/component';
 import {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   syntaxErrorFor,
   test,
-  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
@@ -21,7 +21,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       'Glimmer',
       'Bar',
       '<div {{this.foo}}></div>',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         foo = foo;
       }
     );
@@ -173,7 +173,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       (element: Element, value: string) => (element.innerHTML = value)
     );
     const Bar = defineComponent({ foo }, '<div {{this.bar (foo)}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = bar;
       },
     });
@@ -190,7 +190,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       (element: Element, value: string) => (element.innerHTML = value)
     );
     const Bar = defineComponent({}, '<div {{this.bar (this.foo)}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
         bar = bar;
       },
@@ -212,7 +212,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     });
 
     const Bar = defineComponent({}, '{{#if @show}}<div {{@foo}}></div>{{/if}}');
-    const args = trackedObj({ show: true, foo: undefined });
+    const args = trackedObject<Record<string, unknown>>({ show: true, foo: undefined });
 
     this.renderComponent(Bar, args);
     assert.verifySteps([]);
@@ -237,7 +237,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     });
 
     const Bar = defineComponent({}, '<div {{@foo}}></div>');
-    const args = trackedObj({ foo: undefined });
+    const args = trackedObject<Record<string, unknown>>({ foo: undefined });
 
     this.renderComponent(Bar, args);
     assert.verifySteps([]);

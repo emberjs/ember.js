@@ -168,6 +168,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-utils',
   }),
+  DEPRECATE_COMPUTED_MACROS: deprecation({
+    id: 'deprecate-computed-macros',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '9.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-computed-macros',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

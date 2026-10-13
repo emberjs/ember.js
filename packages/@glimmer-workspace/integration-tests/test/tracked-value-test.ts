@@ -1,11 +1,6 @@
+import Component from '@glimmer/component';
 import { trackedValue } from '@glimmer/validator';
-import {
-  defineComponent,
-  GlimmerishComponent as Component,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class TrackedValueTest extends RenderTest {
   static suiteName = `trackedValue() (rendering)`;

@@ -1,8 +1,8 @@
 import {
+  ComponentInvocationTests,
   DebuggerSuite,
   EachSuite,
-  EmberishComponentTests,
-  GlimmerishComponents,
+  GlimmerComponents,
   HasBlockParamsHelperSuite,
   HasBlockSuite,
   InElementSuite,
@@ -19,9 +19,9 @@ jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
 
-jitComponentSuite(GlimmerishComponents);
+jitComponentSuite(GlimmerComponents);
 jitComponentSuite(TemplateOnlyComponents);
-jitComponentSuite(EmberishComponentTests);
+jitComponentSuite(ComponentInvocationTests);
 jitComponentSuite(HasBlockSuite);
 jitComponentSuite(HasBlockParamsHelperSuite);
 jitComponentSuite(ScopeSuite);

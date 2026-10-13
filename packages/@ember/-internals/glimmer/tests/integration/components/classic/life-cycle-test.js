@@ -2,7 +2,7 @@ import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1469,7 +1469,7 @@ moduleFor(
         setComponentTemplate(precompileTemplate('{{yield}}'), NestedComponent)
       );
 
-      let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
+      let array = trackedArray([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
       this.render(
         strip`
@@ -1492,8 +1492,7 @@ moduleFor(
       this.assertText('1AB2AB3AB4AB5AB6AB7AB');
 
       runTask(() => {
-        array.removeAt(2);
-        array.removeAt(2);
+        array.splice(2, 2);
         set(this.context, 'model.shouldShow', false);
       });
 

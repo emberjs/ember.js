@@ -1,26 +1,34 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
 
-moduleFor(
-  'Helpers test: inline {{if}} subexpression laziness',
-  class extends RenderingTestCase {
-    '@test it does not evaluate a subexpression with only const arguments when the branch is not taken (GH#21030)'(
-      assert
-    ) {
-      let called = 0;
+module('Helpers test: inline {{if}} subexpression laziness', function (hooks) {
+  setupRenderingTest(hooks);
 
-      function sideEffect() {
-        called++;
-        return 'value';
-      }
+  test('it does not evaluate a subexpression with only const arguments when the branch is not taken (GH#21030)', async function (assert) {
+    let called = 0;
 
-      let TestComponent = <template>{{if false (sideEffect)}}</template>;
-
-      this.render('<this.TestComponent />', { TestComponent });
-
-      assert.strictEqual(called, 0, 'helper was not evaluated for the untaken branch');
-      this.assertText('');
-      this.assertStableRerender();
-      assert.strictEqual(called, 0, 'helper was not evaluated on rerender');
+    function sideEffect() {
+      called++;
+      return 'value';
     }
-  }
-);
+
+    class State {
+      @tracked text = '';
+    }
+
+    let state = new State();
+
+    await render(<template>{{if false (sideEffect)}}{{state.text}}</template>);
+
+    assert.strictEqual(called, 0, 'helper was not evaluated for the untaken branch');
+    await assert.stableRender('');
+
+    state.text = 'updated';
+    await settled();
+
+    assert.dom().hasText('updated');
+    assert.strictEqual(called, 0, 'helper was not evaluated on rerender');
+  });
+});

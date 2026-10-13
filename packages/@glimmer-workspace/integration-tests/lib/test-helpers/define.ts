@@ -15,7 +15,7 @@ import {
   setModifierManager,
 } from '@glimmer/manager';
 import { setOwner } from '@glimmer/owner';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 
 import { createTemplate } from '../compile';
 
@@ -100,19 +100,6 @@ export interface DefineComponentOptions {
 
   // additional strict-mode keywords
   keywords?: string[];
-}
-
-export function defComponent(
-  templateSource: string,
-  options?: {
-    component?: object | undefined;
-    scope?: Record<string, unknown> | undefined;
-  }
-) {
-  let definition = options?.component ?? templateOnlyComponent();
-  let templateFactory = createTemplate(templateSource, { strictMode: true }, options?.scope ?? {});
-  setComponentTemplate(templateFactory, definition);
-  return definition;
 }
 
 export function defineComponent(

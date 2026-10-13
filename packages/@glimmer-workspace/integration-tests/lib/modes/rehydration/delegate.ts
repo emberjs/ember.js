@@ -3,10 +3,7 @@ import type {
   Dict,
   ElementNamespace,
   Environment,
-  EvaluationContext,
-  Helper,
   Nullable,
-  RenderResult,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
@@ -14,33 +11,33 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type Component from '@ember/component';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
-import { createConstRef } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import createHTMLDocument from '@simple-dom/document';
 
 import type { ComponentKind } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions } from '../../render-delegate';
+import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { DebugRehydrateTree } from './builder';
 
-import { BaseEnv } from '../../base-env';
+import { preprocess } from '../../compile';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
-import { JitDelegateContext } from '../jit/delegate';
 import {
+  registerClassicComponent,
   registerComponent,
   registerHelper,
-  registerInternalHelper,
+  registerHelperDefinition,
   registerModifier,
 } from '../jit/register';
-import { TestJitRegistry } from '../jit/registry';
-import { renderTemplate } from '../jit/render';
-import { TestJitRuntimeResolver } from '../jit/resolver';
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
+import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
+import { renderLooseTemplate } from '../loose-template';
 import { debugRehydrateTree } from './builder';
 
 export interface RehydrationStats {
@@ -53,34 +50,60 @@ export class RehydrationDelegate implements RenderDelegate {
 
   private plugins: ASTPluginBuilder[] = [];
 
-  public clientContext: EvaluationContext;
-  public serverContext: EvaluationContext;
-
-  private clientResolver: TestJitRuntimeResolver;
-  private serverResolver: TestJitRuntimeResolver;
-
-  protected clientRegistry: TestJitRegistry;
-  protected serverRegistry: TestJitRegistry;
+  /** The renderers are Ember's `BaseRenderer`, one per side, each with its own owner and document. */
+  protected clientOwner: TestOwner = createOwner();
+  protected serverOwner: TestOwner = createOwner();
+  protected clientRenderer: BaseRenderer;
+  protected serverRenderer: BaseRenderer;
 
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
 
+  /**
+   * Registration follows the phase: both owners until the server has rendered, then the client
+   * owner only. Server and client are separate apps with separate registries, and Ember's registry
+   * refuses to re-register a name that has been resolved. The server owner has resolved the
+   * components by then, while the client owner has resolved nothing before `renderClientSide`, so a
+   * registration made in the client phase (possibly a different layout under the same name)
+   * replaces the earlier one on the client owner.
+   */
+  protected serverRendered = false;
+
   declare public rehydrationStats: RehydrationStats;
 
-  private self: Nullable<Reference> = null;
+  /** The tree builder of the most recent client render, for `rehydrationStats`. */
+  protected lastClientTree: Nullable<DebugRehydrateTree> = null;
 
   constructor(options?: RenderDelegateOptions) {
-    let delegate = assign(options?.env ?? {}, BaseEnv);
+    let debugRenderTree = options?.debugRenderTree ?? false;
 
     this.clientDoc = castToSimple(document);
-    this.clientRegistry = new TestJitRegistry();
-    this.clientResolver = new TestJitRuntimeResolver(this.clientRegistry);
-    this.clientContext = JitDelegateContext(this.clientDoc, this.clientResolver, delegate);
+    this.clientRenderer = createRenderer(
+      this.clientOwner,
+      this.clientDoc,
+      new ResolverImpl(),
+      (env, cursor) => {
+        let tree = debugRehydrateTree(env, cursor) as DebugRehydrateTree;
+        this.lastClientTree = tree;
+        return tree;
+      },
+      debugRenderTree
+    );
 
     this.serverDoc = createHTMLDocument();
-    this.serverRegistry = new TestJitRegistry();
-    this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
-    this.serverContext = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
+    this.serverRenderer = createRenderer(
+      this.serverOwner,
+      this.serverDoc,
+      new ResolverImpl(),
+      serializeBuilder,
+      debugRenderTree,
+      false
+    );
+  }
+
+  /** Called after each test: see `JitRenderDelegate.teardown`. */
+  teardown(): void {
+    teardownOwners(this.clientOwner, this.serverOwner);
   }
 
   getInitialElement(): SimpleElement {
@@ -103,6 +126,10 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.clientDoc.createDocumentFragment();
   }
 
+  debugBounds(handle: RenderHandle): DebugBounds {
+    return boundsOf(handle);
+  }
+
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     if (cursor.element instanceof Node) {
       return debugRehydrateTree(env, cursor);
@@ -119,53 +146,47 @@ export class RehydrationDelegate implements RenderDelegate {
   ): string {
     element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
-    let { env } = this.serverContext;
 
     // Emulate server-side render
-    renderTemplate(
-      template,
-      this.serverContext,
-      this.getSelf(env, context),
-      this.getElementBuilder(env, cursor),
-      this.precompileOptions
+    renderLooseTemplate(
+      this.serverRenderer,
+      this.serverOwner,
+      preprocess(template, this.precompileOptions, this.serverOwner),
+      context,
+      cursor
     );
 
+    this.serverRendered = true;
     takeSnapshot();
     return this.serialize(element);
-  }
-
-  getSelf(_env: Environment, context: unknown): Reference {
-    if (!this.self) {
-      this.self = createConstRef(context, 'this');
-    }
-
-    return this.self;
   }
 
   serialize(element: SimpleElement): string {
     return toInnerHTML(element);
   }
 
-  renderClientSide(template: string, context: Dict, element: SimpleElement): RenderResult {
-    let { env } = this.clientContext;
-    this.self = null;
-
+  renderClientSide(template: string, context: Dict, element: SimpleElement): RenderHandle {
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor) as DebugRehydrateTree;
-    let result = renderTemplate(
-      template,
-      this.clientContext,
-      this.getSelf(env, context),
-      builder,
-      this.precompileOptions
+    let root = renderLooseTemplate(
+      this.clientRenderer,
+      this.clientOwner,
+      preprocess(template, this.precompileOptions, this.clientOwner),
+      context,
+      cursor
     );
 
     this.rehydrationStats = {
-      clearedNodes: builder['clearedNodes'],
+      clearedNodes: this.lastClientTree!.clearedNodes,
     };
 
-    return result;
+    return handleWithBounds(
+      {
+        rerender: () => this.clientRenderer.rerender(),
+        destroy: () => root.destroy(),
+      },
+      () => root.bounds()
+    );
   }
 
   renderTemplate(
@@ -173,7 +194,7 @@ export class RehydrationDelegate implements RenderDelegate {
     context: Dict,
     element: SimpleElement,
     snapshot: () => void
-  ): RenderResult {
+  ): RenderHandle {
     let serialized = this.renderServerSide(template, context, snapshot);
     replaceHTML(element, serialized);
     qunitFixture().appendChild(element);
@@ -186,23 +207,29 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
-    registerComponent(this.clientRegistry, type, name, layout);
-    registerComponent(this.serverRegistry, type, name, layout);
+    registerComponent(this.clientOwner, type, name, layout);
+    if (!this.serverRendered) registerComponent(this.serverOwner, type, name, layout);
+  }
+
+  /** A real classic `Component` for curly invocation (see `registerClassicComponent`). */
+  registerClassicComponent(name: string, layout: string, Class?: typeof Component): void {
+    registerClassicComponent(this.clientOwner, name, layout, Class);
+    if (!this.serverRendered) registerClassicComponent(this.serverOwner, name, layout, Class);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.clientRegistry, name, helper);
-    registerHelper(this.serverRegistry, name, helper);
+    registerHelper(this.clientOwner, name, helper);
+    if (!this.serverRendered) registerHelper(this.serverOwner, name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper) {
-    registerInternalHelper(this.clientRegistry, name, helper);
-    registerInternalHelper(this.serverRegistry, name, helper);
+  registerHelperDefinition(name: string, definition: object) {
+    registerHelperDefinition(this.clientOwner, name, definition);
+    if (!this.serverRendered) registerHelperDefinition(this.serverOwner, name, definition);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.clientRegistry, name, ModifierClass);
-    registerModifier(this.serverRegistry, name, ModifierClass);
+    registerModifier(this.clientOwner, name, ModifierClass);
+    if (!this.serverRendered) registerModifier(this.serverOwner, name, ModifierClass);
   }
 
   private get precompileOptions(): PrecompileOptions {

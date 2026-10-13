@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 import { action } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { Component as EmberComponent } from '../../../utils/helpers';
@@ -246,7 +246,7 @@ moduleFor(
       );
 
       this.render('{{component (component "my-link") params=this.allParams}}', {
-        allParams: emberA(['a', 'b']),
+        allParams: trackedArray(['a', 'b']),
       });
 
       this.assertText('ab');
@@ -255,23 +255,23 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').splice(0));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', ['a', 'b']));
 
       this.assertText('ab');
     }
@@ -290,7 +290,7 @@ moduleFor(
       this.render(
         '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=this.allParams}}{{/let}}',
         {
-          allParams: emberA(['a', 'b']),
+          allParams: trackedArray(['a', 'b']),
         }
       );
 
@@ -300,25 +300,76 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').splice(0));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', ['a', 'b']));
 
       this.assertText('ab');
+    }
+
+    '@test component helper can curry arguments'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            '1. [{{this.one}}]2. [{{this.two}}]3. [{{this.three}}]4. [{{this.four}}]5. [{{this.five}}]6. [{{this.six}}]{{yield}}a. [{{this.a}}]b. [{{this.b}}]c. [{{this.c}}]d. [{{this.d}}]e. [{{this.e}}]f. [{{this.f}}]'
+          ),
+          class extends EmberComponent {
+            static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+          }
+        )
+      );
+
+      this.render(strip`
+        {{#let (component "foo-bar" "outer 1" "outer 2" a="outer a" b="outer b" c="outer c" e="outer e") as |outer|}}
+          {{#let (component outer "inner 1" a="inner a" d="inner d" e="inner e") as |inner|}}
+            {{#component inner "invocation 1" "invocation 2" a="invocation a" b="invocation b"}}---{{/component}}
+          {{/let}}
+        {{/let}}
+      `);
+
+      this.assertText(
+        '1. [outer 1]2. [outer 2]3. [inner 1]4. [invocation 1]5. [invocation 2]6. []---a. [invocation a]b. [invocation b]c. [outer c]d. [inner d]e. [inner e]f. []'
+      );
+    }
+
+    '@test component helper: currying works inline'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            '1. [{{this.one}}]2. [{{this.two}}]3. [{{this.three}}]4. [{{this.four}}]5. [{{this.five}}]6. [{{this.six}}]'
+          ),
+          class extends EmberComponent {
+            static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+          }
+        )
+      );
+
+      this.render(
+        strip`
+          {{component (component (component 'foo-bar' this.foo.first this.foo.second) 'inner 1') 'invocation 1' 'invocation 2'}}
+        `,
+        { foo: { first: 'outer 1', second: 'outer 2' } }
+      );
+
+      this.assertText(
+        '1. [outer 1]2. [outer 2]3. [inner 1]4. [invocation 1]5. [invocation 2]6. []'
+      );
     }
   }
 );

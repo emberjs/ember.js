@@ -6,16 +6,19 @@ import {
   equalsElement,
   runTask,
   defineSimpleModifier,
+  expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
 import EmberObject, { set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
-import PositionalComponent from '../../utils/positional-component';
+import ClassicComponent from '@ember/component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -667,7 +670,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends PositionalComponent {
+            component: class extends ClassicComponent {
               static positionalParams = 'names';
             },
             strictMode: false,
@@ -698,7 +701,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends PositionalComponent {
+            component: class extends ClassicComponent {
               static positionalParams = 'n';
             },
             strictMode: false,
@@ -843,7 +846,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -863,7 +866,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -938,6 +941,48 @@ moduleFor(
       this.assertText('Yes:Hello42');
     }
 
+    ['@test yield to else']() {
+      this.owner.register(
+        'component:my-if',
+        template(
+          strip`
+            {{#if @predicate}}
+              Yes:{{yield @someValue}}
+            {{else}}
+              No:{{yield to="else"}}
+            {{/if}}
+          `,
+          { component: templateOnly(), strictMode: false }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#my-if predicate=this.activated someValue=42 as |result|}}
+        Hello{{result}}
+      {{else}}
+        Goodbye
+      {{/my-if}}`,
+        {
+          activated: true,
+        }
+      );
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.context.set('activated', false));
+
+      this.assertText('No:Goodbye');
+
+      runTask(() => this.context.set('activated', true));
+
+      this.assertText('Yes:Hello42');
+    }
+
     ['@test expression (has-block) inverse']() {
       this.owner.register(
         'component:check-inverse',
@@ -958,6 +1003,24 @@ moduleFor(
       {{#check-inverse}}{{else}}{{/check-inverse}}`);
 
       this.assertHTML('NoYes');
+
+      this.assertStableRerender();
+    }
+
+    ['@test (has-block "inverse") in content position']() {
+      this.owner.register(
+        'component:check-inverse',
+        template('[{{has-block "inverse"}}]', {
+          component: templateOnly(),
+          strictMode: false,
+        })
+      );
+
+      this.render(strip`
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse}}{{else}}{{/check-inverse}}`);
+
+      this.assertHTML('[false][true]');
 
       this.assertStableRerender();
     }
@@ -1327,7 +1390,7 @@ moduleFor(
         setComponentTemplate(precompileTemplate('Child: {{@item}}.'), templateOnly())
       );
 
-      let items = emberA(['Tom', 'Dick', 'Harry']);
+      let items = trackedArray(['Tom', 'Dick', 'Harry']);
 
       this.render('{{non-block items=this.items}}', { items });
 
@@ -1337,15 +1400,15 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').pushObject('Sergio'));
+      runTask(() => this.context.get('items').push('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shiftObject());
+      runTask(() => this.context.get('items').shift());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+      runTask(() => this.context.set('items', ['Tom', 'Dick', 'Harry']));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
@@ -1518,7 +1581,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate(`{{this.things.length}}`),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'things';
           }
         )
@@ -1529,7 +1592,12 @@ moduleFor(
       this.assertText('3');
     }
 
-    ['@test ensure aliases are watched properly [GH#17243]']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test ensure aliases are watched properly [GH#17243]`]() {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let fooInstance, barInstance;
 
       let FooComponent = class extends GlimmerComponent {

@@ -1,121 +1,106 @@
+import { dasherize } from '@ember/-internals/string';
 import type {
   CapturedRenderNode,
   Cursor,
   Dict,
-  DynamicScope,
   ElementNamespace,
   Environment,
   EvaluationContext,
-  HandleResult,
-  Helper,
   Nullable,
-  RenderResult,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import type { CurriedValue, EnvironmentDelegate } from '@glimmer/runtime';
+import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
-import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import { createConstRef } from '@glimmer/reference';
-import {
-  array,
-  clientBuilder,
-  concat,
-  fn,
-  get,
-  hash,
-  on,
-  renderComponent,
-  renderSync,
-  runtimeOptions,
-} from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
+import { castToBrowser, castToSimple } from '@glimmer/debug-util';
+import { CURRIED_COMPONENT } from '@glimmer/constants';
+import { clientBuilder, curry } from '@glimmer/runtime';
+import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
+import { captureRenderTree } from '@ember/debug';
+import { renderComponent } from '@ember/renderer';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions } from '../../render-delegate';
+import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 
-import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
-import JitCompileTimeLookup from './compilation-context';
 import {
-  componentHelper,
   registerComponent,
   registerHelper,
-  registerInternalHelper,
+  registerHelperDefinition,
   registerModifier,
 } from './register';
-import { TestJitRegistry } from './registry';
-import { renderTemplate } from './render';
-import { TestJitRuntimeResolver } from './resolver';
-
-export function JitDelegateContext(
-  doc: SimpleDocument,
-  resolver: TestJitRuntimeResolver,
-  env: EnvironmentDelegate
-): EvaluationContext {
-  let sharedArtifacts = artifacts();
-  let runtime = runtimeOptions(
-    { document: doc },
-    env,
-    sharedArtifacts,
-    new JitCompileTimeLookup(resolver)
-  );
-
-  return new EvaluationContextImpl(sharedArtifacts, (heap) => new RuntimeOpImpl(heap), runtime);
-}
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
+import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
+import { renderLooseTemplate } from '../loose-template';
 
 export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
   static style = 'jit';
 
-  protected registry: TestJitRegistry;
-  protected resolver: TestJitRuntimeResolver;
+  protected resolver = new ResolverImpl();
 
   private plugins: ASTPluginBuilder[] = [];
-  private _context: Nullable<EvaluationContext> = null;
-  private self: Nullable<Reference> = null;
+  private _renderer: Nullable<BaseRenderer> = null;
+  /** A real owner, destroyed in `teardown()`. */
+  protected owner: TestOwner = createOwner();
   private doc: SimpleDocument;
-  private env: EnvironmentDelegate;
+  private debugRenderTree: boolean;
 
-  constructor({
-    doc,
-    env,
-    resolver = (registry) => new TestJitRuntimeResolver(registry),
-  }: RenderDelegateOptions = {}) {
-    this.registry = new TestJitRegistry();
-    this.resolver = resolver(this.registry);
+  constructor({ doc, debugRenderTree = false }: RenderDelegateOptions = {}) {
     this.doc = castToSimple(doc ?? document);
-    this.env = assign({}, env ?? BaseEnv);
-    this.registry.register('modifier', 'on', on);
-    this.registry.register('helper', 'fn', fn);
-    this.registry.register('helper', 'hash', hash);
-    this.registry.register('helper', 'array', array);
-    this.registry.register('helper', 'get', get);
-    this.registry.register('helper', 'concat', concat);
+    this.debugRenderTree = debugRenderTree;
+  }
+
+  protected get isInteractive(): boolean {
+    return true;
+  }
+
+  /** One Ember renderer per delegate, created on first use. */
+  protected get renderer(): BaseRenderer {
+    if (this._renderer === null) {
+      this._renderer = createRenderer(
+        this.owner,
+        this.doc,
+        this.resolver,
+        (env, cursor) => this.getElementBuilder(env, cursor),
+        this.debugRenderTree,
+        this.isInteractive
+      );
+    }
+
+    return this._renderer;
   }
 
   get context(): EvaluationContext {
-    if (this._context === null) {
-      this._context = JitDelegateContext(this.doc, this.resolver, this.env);
-    }
+    return this.renderer.state.context;
+  }
 
-    return this._context;
+  /**
+   * Called after each test. Destroys the owner and with it the renderer and its roots.
+   * Renderers stay in Ember's global list while they have roots, and every later run
+   * loop would revalidate them.
+   */
+  teardown(): void {
+    teardownOwners(this.owner);
   }
 
   getCapturedRenderTree(): CapturedRenderNode[] {
-    return expect(
-      this.context.env.debugRenderTree,
-      'Attempted to capture the DebugRenderTree during tests, but it was not created. Did you enable it in the environment?'
-    ).capture();
+    return captureRenderTree(this.owner);
+  }
+
+  debugBounds(handle: RenderHandle): DebugBounds {
+    return boundsOf(handle);
+  }
+
+  isArgumentCaptureError(value: unknown): boolean {
+    return this.context.env.isArgumentCaptureError?.(value) ?? false;
   }
 
   getInitialElement(): SimpleElement {
@@ -143,27 +128,23 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
-    return componentHelper(this.registry, name, this.context.program.constants);
+    let definition = this.resolver.lookupComponent(dasherize(name), this.owner);
+
+    if (definition === null) return null;
+
+    return curry(
+      CURRIED_COMPONENT,
+      this.context.program.constants.resolvedComponent(definition, name),
+      {},
+      null,
+      true
+    );
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {
     this.plugins.push(plugin);
   }
 
-  registerComponent<K extends 'TemplateOnly' | 'Glimmer', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: string,
-    Class?: ComponentTypes[K]
-  ): void;
-  registerComponent<K extends 'Curly' | 'Dynamic', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: Nullable<string>,
-    Class?: ComponentTypes[K]
-  ): void;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     _testType: L,
@@ -171,65 +152,66 @@ export class JitRenderDelegate implements RenderDelegate {
     layout: Nullable<string>,
     Class?: ComponentTypes[K]
   ) {
-    registerComponent(this.registry, type, name, layout, Class);
+    registerComponent(this.owner, type, name, layout, Class);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.registry, name, ModifierClass);
+    registerModifier(this.owner, name, ModifierClass);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.registry, name, helper);
+    registerHelper(this.owner, name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper) {
-    registerInternalHelper(this.registry, name, helper);
+  registerHelperDefinition(name: string, definition: object) {
+    registerHelperDefinition(this.owner, name, definition);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(_env: Environment, context: unknown): Reference {
-    if (!this.self) {
-      this.self = createConstRef(context, 'this');
-    }
-
-    return this.self;
-  }
-
-  compileTemplate(template: string): HandleResult {
-    let compiled = preprocess(template, this.precompileOptions);
-
-    return unwrapTemplate(compiled).asLayout().compile(this.context);
-  }
-
-  renderTemplate(template: string, context: Dict, element: SimpleElement): RenderResult {
+  renderTemplate(template: string, context: Dict, element: SimpleElement): RenderHandle {
     let cursor = { element, nextSibling: null };
-
-    let { env } = this.context;
-
-    return renderTemplate(
-      template,
-      this.context,
-      this.getSelf(env, context),
-      this.getElementBuilder(env, cursor),
-      this.precompileOptions
+    let root = renderLooseTemplate(
+      this.renderer,
+      this.owner,
+      preprocess(template, this.precompileOptions, this.owner),
+      context,
+      cursor
     );
+
+    return this.handleFor(root);
   }
 
   renderComponent(
     component: object,
     args: Record<string, unknown>,
-    element: SimpleElement,
-    dynamicScope?: DynamicScope
-  ): RenderResult {
-    let cursor = { element, nextSibling: null };
-    let { env } = this.context;
-    let builder = this.getElementBuilder(env, cursor);
-    let iterator = renderComponent(this.context, builder, {}, component, args, dynamicScope);
+    element: SimpleElement
+  ): RenderHandle {
+    // Make sure the public `renderComponent` finds this delegate's renderer.
+    void this.renderer;
 
-    return renderSync(env, iterator);
+    let result = renderComponent(component, {
+      into: { element, nextSibling: null } as unknown as Element,
+      owner: this.owner,
+      args,
+    });
+
+    return {
+      rerender: () => this.renderer.rerender(),
+      destroy: () => result.destroy(),
+    };
+  }
+
+  private handleFor(root: ReturnType<typeof renderLooseTemplate>): RenderHandle {
+    return handleWithBounds(
+      {
+        rerender: () => this.renderer.rerender(),
+        destroy: () => root.destroy(),
+      },
+      () => root.bounds()
+    );
   }
 
   private get precompileOptions(): PrecompileOptions {

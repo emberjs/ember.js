@@ -3,6 +3,10 @@
   "compilerOptions": {
     // downgrade from @tsconfig/ember@>=3.0.9 (which sets es2023)
     "target": "es2022",
+    // Consumers typically skip lib checks, which hides any broken references
+    // inside our published types: TS just makes whatever they import `any`.
+    // Checking them here is what catches that.
+    "skipLibCheck": false,
   },
   // These are checked with standard decorators by their own tsconfig.
   "exclude": ["stable-decorators"]
