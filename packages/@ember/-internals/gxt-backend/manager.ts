@@ -99,6 +99,8 @@ import {
   // gxt's render-context keys for the slots and the forwarded-attributes tuple.
   $SLOTS_SYMBOL,
   $PROPS_SYMBOL,
+  // gxt's component args object (named args, slots, forwarded attributes).
+  $_args as _gxtArgs,
 } from '@lifeart/gxt';
 // The members of `@lifeart/gxt` that glimmer-package call sites read through
 // the typed bridge as `gxtLib` (see the setGxtRenderer install at file EOF).
@@ -9209,16 +9211,50 @@ const $_MANAGERS = {
 // Component Handling by Type
 // =============================================================================
 
-// Synthesized one-tag wrapper templates for build-time-compiled components
-// resolved by NAME from the owner registry (see the branch in
-// handleStringComponent), per component function: one name can be registered
-// with different functions (another owner, another test). Each function gets
-// its own tag name, because compile.ts keeps ONE scope-value slot per template
-// source and every compiled body reads the latest value: two functions whose
-// templates had the same source (same arg names) would render each other.
-// The compiled factories are kept by arg-key signature.
-const _gxtBuildTimeComponentTpls = new WeakMap<object, { tag: string; byArgs: Map<string, any> }>();
+// Build-time-compiled components resolved by NAME from the owner registry
+// (see the branch in handleStringComponent) render through a synthesized
+// one-tag template, compiled once per component function: one name can be
+// registered with different functions (another owner, another test). Each
+// function gets its own tag name, because compile.ts keeps ONE scope-value
+// slot per template source and every compiled body reads the latest value:
+// two functions sharing a template source would render each other.
+const _gxtBuildTimeComponentTpls = new WeakMap<object, any>();
 let _gxtBuildTimeComponentCount = 0;
+
+// The invocation's blocks in gxt's slot shape. A gxt template reads
+// `(has-block-params)` for block `name` from `slots[name + '_']`; the slots
+// compile.ts builds for a by-name invocation carry it on the slot function
+// (`__hasBlockParams`). Both slot kinds are called as `(slotCtx, ...params)`.
+function _gxtInvocationSlots(slots: any): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (!slots || typeof slots !== 'object') return out;
+  for (const name of Object.keys(slots)) out[name] = slots[name];
+  for (const name of Object.keys(slots)) {
+    const slot = slots[name];
+    if (typeof slot === 'function' && out[`${name}_`] === undefined) {
+      out[`${name}_`] = slot.__hasBlockParams === true;
+    }
+  }
+  return out;
+}
+
+// The component the synthesized template invokes for `fn`: it calls `fn` as
+// gxt calls a component (`new fn(args, fw)`), with the by-name invocation's
+// named arguments, blocks and forwarded attributes. The invocation's args
+// object arrives as the synthesized template's `@invocation`; `fw` is the
+// synthesized element's `...attributes`, i.e. the invocation's.
+function _gxtBuildTimeInvoker(fn: any): (gxtArgs: any, fw: any) => any {
+  return function GxtBuildTimeInvocation(gxtArgs: any, fw: any) {
+    const invocation = gxtArgs.invocation;
+    const named: Record<string, () => unknown> = {};
+    for (const key of Object.keys(invocation || {})) {
+      if (key.startsWith('__') || key.startsWith('$') || key === 'args') continue;
+      named[key] = () => invocation[key];
+    }
+    const slots = _gxtInvocationSlots(invocation?.[$SLOTS_SYMBOL] || invocation?.$slots);
+    return new fn(_gxtArgs(named, slots, fw), fw);
+  };
+}
 
 /**
  * Handle a string-based component name (e.g., 'foo-bar').
@@ -9244,14 +9280,14 @@ function handleStringComponent(
   // and no manager/template association — so the classic instantiation path
   // below would throw container's "Failed to create an instance" assert.
   // Detect that shape and invoke it GXT-natively by synthesizing a one-tag
-  // runtime template that references the function lexically (scopeValues) —
-  // the same `$_c(<lexical>)` path build-time-compiled callers use, so all
-  // root/tree/args wiring is inherited from the runtime pipeline. The
+  // runtime template that references it lexically (scopeValues) — the same
+  // `$_c(<lexical>)` path build-time-compiled callers use, so all
+  // root/tree wiring is inherited from the runtime pipeline. The tag is
+  // `_gxtBuildTimeInvoker(fn)`, which hands `fn` the invocation's named
+  // arguments and blocks (block params, named blocks, has-block). The
   // invocation's attributes and modifiers (`fw`) become the synthesized
   // template's own (`$fw`), which its `...attributes` hands on, so the
-  // component's `...attributes` receives them as Glimmer's would. Block/slot
-  // forwarding is not supported for registry-resolved build-time components;
-  // lexical invocation supports blocks.
+  // component's `...attributes` receives them as Glimmer's would.
   const _btClass = factory?.class;
   if (
     !manager &&
@@ -9266,26 +9302,15 @@ function handleStringComponent(
   ) {
     const compileFn = getGxtRenderer()?.compilePipeline.compileTemplate;
     if (typeof compileFn === 'function') {
-      const argKeys = Object.keys(args || {}).filter(
-        (k) => !k.startsWith('__') && !k.startsWith('$') && k !== 'args'
-      );
-      const argSignature = argKeys.join(',');
-      let tpls = _gxtBuildTimeComponentTpls.get(_btClass);
-      if (!tpls) {
-        tpls = { tag: `GxtBuildTimeComponent${++_gxtBuildTimeComponentCount}`, byArgs: new Map() };
-        _gxtBuildTimeComponentTpls.set(_btClass, tpls);
-      }
-      let tplFactory = tpls.byArgs.get(argSignature);
+      let tplFactory = _gxtBuildTimeComponentTpls.get(_btClass);
       if (!tplFactory) {
-        const src = `<${tpls.tag} ...attributes ${argKeys
-          .map((k) => `@${k}={{this.__gxtBtArgs.${k}}}`)
-          .join(' ')} />`;
-        tplFactory = compileFn(src, {
+        const tag = `GxtBuildTimeComponent${++_gxtBuildTimeComponentCount}`;
+        tplFactory = compileFn(`<${tag} ...attributes @invocation={{this.__gxtBtArgs}} />`, {
           strictMode: true,
-          scopeValues: { [tpls.tag]: _btClass },
+          scopeValues: { [tag]: _gxtBuildTimeInvoker(_btClass) },
           moduleName: `gxt-build-time:${name}`,
         });
-        tpls.byArgs.set(argSignature, tplFactory);
+        _gxtBuildTimeComponentTpls.set(_btClass, tplFactory);
       }
       return () => {
         const resolvedTpl =

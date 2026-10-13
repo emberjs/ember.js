@@ -13,6 +13,24 @@ const TitledLink = <template>
   <a data-test-link ...attributes>[{{@title}}]</a>
 </template>;
 
+const Yielder = <template>
+  <p data-test-yielder ...attributes>{{yield "p"}}</p>
+</template>;
+
+const Sections = <template>
+  <header>{{yield "h" to="header"}}</header>
+  <main>{{yield to="body"}}</main>
+  {{#if (has-block "footer")}}<footer>footer</footer>{{/if}}
+</template>;
+
+const BlockInfo = <template>
+  [{{if (has-block) "block" "no block"}}][{{if
+      (has-block-params)
+      "params"
+      "no params"
+    }}]{{yield "y"}}
+</template>;
+
 const ForwardedButton = <template>
   <button type="button" data-test-button ...attributes>{{@label}}</button>
 </template>;
@@ -80,6 +98,77 @@ moduleFor(
       runTask(() => set(this.context, 'title', 'changed'));
       assert.strictEqual(link.getAttribute('title'), 'changed');
       assert.strictEqual(link.textContent, '[]');
+    }
+
+    '@test it renders its block with the block params, kept current'(assert) {
+      this.owner.register('component:x-block', Yielder);
+
+      this.render('<XBlock title="t" as |v|>body-{{v}}-{{this.suffix}}</XBlock>', {
+        suffix: 'a',
+      });
+
+      let p = () => this.element.querySelector('p[data-test-yielder]');
+      assert.strictEqual(p()?.getAttribute('title'), 't');
+      assert.strictEqual(p().textContent, 'body-p-a');
+
+      runTask(() => set(this.context, 'suffix', 'b'));
+      assert.strictEqual(p().textContent, 'body-p-b');
+    }
+
+    '@test its block is torn down and rendered again with it'(assert) {
+      this.owner.register('component:x-block', Yielder);
+
+      this.render('{{#if this.show}}<XBlock as |v|>body-{{v}}</XBlock>{{/if}}<span>end</span>', {
+        show: true,
+      });
+
+      let blocks = () => [...this.element.querySelectorAll('p')].map((p) => p.textContent);
+      assert.deepEqual(blocks(), ['body-p']);
+
+      runTask(() => set(this.context, 'show', false));
+      assert.deepEqual(blocks(), []);
+      assert.strictEqual(this.element.textContent.trim(), 'end');
+
+      runTask(() => set(this.context, 'show', true));
+      assert.deepEqual(blocks(), ['body-p']);
+    }
+
+    '@test a curly block invocation renders its block'(assert) {
+      this.owner.register('component:x-block', Yielder);
+
+      this.render('{{#x-block as |v|}}curly-{{v}}{{/x-block}}');
+
+      assert.strictEqual(this.element.querySelector('p[data-test-yielder]')?.textContent, 'curly-p');
+    }
+
+    '@test it renders named blocks'(assert) {
+      this.owner.register('component:x-sections', Sections);
+
+      this.render(
+        '<XSections><:header>H</:header><:body>B-{{this.body}}</:body></XSections>',
+        { body: 'one' }
+      );
+
+      let text = (selector) => this.element.querySelector(selector)?.textContent;
+      assert.strictEqual(text('header'), 'H');
+      assert.strictEqual(text('main'), 'B-one');
+      assert.strictEqual(this.element.querySelector('footer'), null);
+
+      runTask(() => set(this.context, 'body', 'two'));
+      assert.strictEqual(text('main'), 'B-two');
+    }
+
+    '@test has-block and has-block-params see the invocation block'(assert) {
+      this.owner.register('component:x-info', BlockInfo);
+
+      this.render(
+        '<div id="none"><XInfo /></div><div id="block"><XInfo>b</XInfo></div><div id="params"><XInfo as |y|>p-{{y}}</XInfo></div>'
+      );
+
+      let text = (id) => this.element.querySelector(`#${id}`).textContent.trim();
+      assert.strictEqual(text('none'), '[no block][no params]');
+      assert.strictEqual(text('block'), '[block][no params]b');
+      assert.strictEqual(text('params'), '[block][params]p-y');
     }
 
     '@test a curly invocation, which forwards no attributes, renders it'(assert) {
