@@ -24,6 +24,12 @@
 // `trackedData` / `dirtyTagFor` assert "You attempted to update X, but it had
 // already been used previously in the same computation".
 import { DEBUG } from '@glimmer/env';
+import type { SimpleElement } from '@glimmer/interfaces';
+import { isSafeString, normalizeStringValue } from '@glimmer/runtime/lib/dom/normalize';
+import {
+  requiresSanitization,
+  sanitizeAttributeValue,
+} from '@glimmer/runtime/lib/dom/sanitized-values';
 import { ENV } from '@ember/-internals/environment';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views/lib/system/utils';
 import { warn } from '@ember/debug';
@@ -155,64 +161,13 @@ export function resetRenderLoop(): void {
 // ---------------------------------------------------------------- attributes
 // Ember/Glimmer attribute write semantics at gxt's single attr/prop write seam
 // (`$attr` / `$prop`, initial write AND every reactive re-apply; gxt
-// WITH_EMBER_INTEGRATION builds only). Ported from Glimmer's
-// `vm/attributes/dynamic.ts` normalizeValue + `dom/sanitized-values.ts`.
-// On the attribute side, returning `undefined` makes gxt remove the attribute.
-const BAD_PROTOCOLS = ['javascript:', 'vbscript:'];
-const BAD_TAGS = ['A', 'AREA', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM', 'BUTTON', 'INPUT'];
-const BAD_TAGS_FOR_DATA_URI = ['EMBED'];
-const BAD_TAGS_FOR_DATA_PROTOCOL = ['IFRAME', 'OBJECT'];
-const BAD_ATTRIBUTES = ['href', 'src', 'background', 'action', 'formaction', 'xlink:href'];
-const BAD_ATTRIBUTES_FOR_DATA_URI = ['src'];
-const BAD_ATTRIBUTES_FOR_DATA_PROTOCOL = ['src', 'data'];
-
-function protocolForUrl(url: string): string {
-  try {
-    return new URL(url).protocol;
-  } catch {
-    // Not an absolute URL: there is no scheme, so it cannot be one of the bad
-    // protocols (none of them can be a base URI either) — Glimmer parity.
-    return ':';
-  }
-}
-
-function sanitize(element: Element, name: string, value: string): string {
-  const tagName = element.tagName.toUpperCase();
-  if (BAD_TAGS.includes(tagName) && BAD_ATTRIBUTES.includes(name)) {
-    if (BAD_PROTOCOLS.includes(protocolForUrl(value))) return `unsafe:${value}`;
-  }
-  if (
-    BAD_TAGS_FOR_DATA_PROTOCOL.includes(tagName) &&
-    BAD_ATTRIBUTES_FOR_DATA_PROTOCOL.includes(name)
-  ) {
-    const protocol = protocolForUrl(value);
-    if (protocol === 'data:' || BAD_PROTOCOLS.includes(protocol)) return `unsafe:${value}`;
-  }
-  if (BAD_TAGS_FOR_DATA_URI.includes(tagName) && BAD_ATTRIBUTES_FOR_DATA_URI.includes(name)) {
-    return `unsafe:${value}`;
-  }
-  return value;
-}
-
-function isSafeString(value: unknown): value is { toHTML(): string } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as { toHTML?: unknown }).toHTML === 'function'
-  );
-}
-
-// Glimmer's `normalizeStringValue` (dom/normalize.ts).
-function normalizeStringValue(value: unknown): string {
-  if (
-    value === null ||
-    value === undefined ||
-    typeof (value as { toString?: unknown }).toString !== 'function'
-  ) {
-    return '';
-  }
-  return String(value);
-}
+// WITH_EMBER_INTEGRATION builds only): Glimmer's `vm/attributes/dynamic.ts`
+// normalizeValue, with Glimmer's own URL sanitization and value normalization
+// (`@glimmer/runtime/lib/dom/sanitized-values` and `dom/normalize`, imported
+// above: DOM-value code with no VM dependency, the two `@glimmer/runtime`
+// modules scripts/gxt-alias-map.mjs GXT_NATIVE_FORBIDDEN lets the native
+// closure ship). On the attribute side, returning `undefined` makes gxt remove
+// the attribute.
 
 // A trusting attribute value (`style={{{value}}}`: gxt `$_trustAttr` → the
 // `trustedAttrValue` hook, registered in DEBUG only — install.ts), unwrapped by
@@ -256,6 +211,14 @@ export function normalizeAttrValue(
       warnIfStyleNotTrusted(value);
     }
   }
+  // A URL-bearing attribute or property is sanitized first, as Glimmer's
+  // SafeDynamicAttribute / SafeDynamicProperty do. Glimmer matches the
+  // upper-cased tag and the lower-cased name, so an SVG `<a>` and a camelCased
+  // `formAction` are URL attributes too; any value but null / undefined comes
+  // out a string (a SafeString's HTML is trusted, `false` is "false").
+  if (requiresSanitization(element.tagName, name)) {
+    value = sanitizeAttributeValue(element as unknown as SimpleElement, name, value);
+  }
   if (isProp) {
     // Glimmer InputValueDynamicAttribute: an <input> / <textarea> `value`
     // is the string `normalizeStringValue` gives (null, undefined, a value
@@ -264,11 +227,8 @@ export function normalizeAttrValue(
       return normalizeStringValue(value);
     }
     // Glimmer DefaultDynamicProperty assigns the value as-is (SafeStrings
-    // become their HTML); URL-bearing properties are sanitized.
-    const resolved = isSafeString(value) ? value.toHTML() : value;
-    return typeof resolved === 'string' && BAD_ATTRIBUTES.includes(name)
-      ? sanitize(element, name, resolved)
-      : resolved;
+    // become their HTML).
+    return isSafeString(value) ? value.toHTML() : value;
   }
   if (
     value === false ||
@@ -280,6 +240,5 @@ export function normalizeAttrValue(
     return undefined; // remove the attribute
   }
   if (value === true) return '';
-  const str = isSafeString(value) ? value.toHTML() : String(value);
-  return sanitize(element, name, str);
+  return isSafeString(value) ? value.toHTML() : String(value);
 }

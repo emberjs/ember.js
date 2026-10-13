@@ -2,7 +2,8 @@
 // Boot + interaction check for a built modern-app variant (NOT a test-runner
 // invocation): static-serves dist/<variant>, loads it in headless Chromium and
 // asserts render, a tracked update, the tracked collection, the custom modifier,
-// and LinkTo navigation across both routes.
+// URL sanitization of a bound attribute, and LinkTo navigation across both
+// routes.
 //
 //   node smoke-tests/modern-app/boot-check.mjs <distDir> [--json out.json]
 //   node smoke-tests/modern-app/boot-check.mjs --url <running app URL> [--json out.json]
@@ -110,6 +111,14 @@ try {
       'modifier: setModifierManager function modifier',
       tagged === 'main',
       `data-tagged=${tagged}`
+    );
+    const formUrl = await page
+      .$eval('[data-test-form-url]', (el) => el.getAttribute('formaction'))
+      .catch(() => null);
+    record(
+      'attributes: a bound camelCased URL attribute (formAction) is sanitized',
+      formUrl === 'unsafe:javascript:alert(1)',
+      `formaction=${formUrl}`
     );
     record(
       'each/let: template-only component list',

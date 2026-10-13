@@ -55,6 +55,70 @@ module('gxt-native | attributes', function (hooks) {
     assert.strictEqual(this.element.querySelector('#a').getAttribute('href'), '/relative/path');
   });
 
+  // Glimmer's sanitizer (`@glimmer/runtime/lib/dom/sanitized-values`) upper-cases
+  // the tag and lower-cases the attribute before matching, and sanitizes the
+  // property side (SafeDynamicProperty) like the attribute side: a camelCased
+  // `formAction`, written through the DOM property, is a URL attribute too.
+  test('a camelCased URL attribute (formAction) is sanitized, also on update', function (assert) {
+    const args = trackedObject({ url: 'javascript:alert(1)' });
+    const Root = <template><button id="b" formAction={{@url}}></button></template>;
+    this.render(Root, args);
+    const formaction = () => this.element.querySelector('#b').getAttribute('formaction');
+    assert.strictEqual(formaction(), 'unsafe:javascript:alert(1)');
+    run(() => (args.url = 'https://emberjs.com/'));
+    assert.strictEqual(formaction(), 'https://emberjs.com/');
+    run(() => (args.url = 'vbscript:alert(1)'));
+    assert.strictEqual(formaction(), 'unsafe:vbscript:alert(1)');
+  });
+
+  test('URL values are normalized as Glimmer does: a toString object is sanitized, false is "false"', function (assert) {
+    const unsafe = { toString: () => 'javascript:alert(1)' };
+    const args = trackedObject({ url: unsafe });
+    const Root = <template><a id="a" href={{@url}}>x</a><button id="b" formAction={{@url}}></button></template>;
+    this.render(Root, args);
+    const urls = () => [
+      this.element.querySelector('#a').getAttribute('href'),
+      this.element.querySelector('#b').getAttribute('formaction'),
+    ];
+    assert.deepEqual(urls(), ['unsafe:javascript:alert(1)', 'unsafe:javascript:alert(1)']);
+    run(() => (args.url = false));
+    assert.strictEqual(urls()[0], 'false', 'a URL attribute writes `false` as the string "false"');
+    run(() => (args.url = htmlSafe('javascript:trusted()')));
+    assert.strictEqual(urls()[0], 'javascript:trusted()', 'a SafeString is trusted');
+  });
+
+  test('data: URLs: unsafe on iframe[src] / object[data], always prefixed on embed[src]', function (assert) {
+    const args = trackedObject({ url: 'data:text/html,<script>alert(1)</script>' });
+    const Root = <template>
+      <iframe id="f" src={{@url}}></iframe>
+      <object id="o" data={{@url}}></object>
+      <embed id="e" src={{@url}} />
+    </template>;
+    this.render(Root, args);
+    const urls = () => [
+      this.element.querySelector('#f').getAttribute('src'),
+      this.element.querySelector('#o').getAttribute('data'),
+      this.element.querySelector('#e').getAttribute('src'),
+    ];
+    const prefixed = 'unsafe:data:text/html,<script>alert(1)</script>';
+    assert.deepEqual(urls(), [prefixed, prefixed, prefixed]);
+    run(() => (args.url = 'https://emberjs.com/'));
+    assert.deepEqual(urls(), ['https://emberjs.com/', 'https://emberjs.com/', 'unsafe:https://emberjs.com/']);
+  });
+
+  test('a URL attribute forwarded by ...attributes is sanitized, also on update', function (assert) {
+    const args = trackedObject({ url: 'javascript:alert(1)' });
+    const Link = <template><a id="a" ...attributes>link</a></template>;
+    const Root = <template><Link href={{@url}} /></template>;
+    this.render(Root, args);
+    const href = () => this.element.querySelector('#a').getAttribute('href');
+    assert.strictEqual(href(), 'unsafe:javascript:alert(1)');
+    run(() => (args.url = 'https://emberjs.com/'));
+    assert.strictEqual(href(), 'https://emberjs.com/');
+    run(() => (args.url = 'vbscript:alert(1)'));
+    assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
+  });
+
   test('...attributes precedence: attributes after it win, before it lose; classes in source order', function (assert) {
     const Before = <template><div class="own" data-x="own" title="own" ...attributes></div></template>;
     const After = <template><div ...attributes class="own" data-x="own" title={{@title}}></div></template>;
