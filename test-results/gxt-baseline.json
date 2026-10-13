@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T16:30:54.395Z",
+    "capturedAt": "2026-10-13T17:02:43.789Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "e54de0c87e",
-    "totalTests": 9992,
+    "emberCommit": "18037c8e71",
+    "totalTests": 9993,
     "totalModules": 966,
     "quarantinedTests": 0,
-    "totalAssertions": 59716,
-    "totalAssertionsPassing": 58034,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after GXT renderComponent started running the custom component manager of a plain-object definition, written by runner.mjs. The @glimmer-workspace integration harness renders every loose template that way, so root {{this.x}} reads now see the test context: 9139/9992 green (was 8846/9990), no timeouts, no harness errors; 280 [integration] rows turned green and the two new renderComponent tests pass. Six [integration] rows that passed only because the loose-template context was {} now fail on their real behaviour and are recorded red: 'Element modifier with hooks' (modifiers, Components :: Invocation and its Glimmer sub-module) and 'didUpdate is not called when params are constants' (a write to the context re-renders the whole root, so the modifier installs again instead of updating), and '`false` / `null` class name do not render' (a compat class binding is the className property, which cannot remove the attribute). The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59734,
+    "totalAssertionsPassing": 58054,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a render started throwing only its own render errors, written by runner.mjs. The render-error queue is global: a render now takes a mark when it starts, throws only the errors queued after the mark, and drops them when its own error reaches the caller, so an error a test has already caught is no longer thrown by the next test's render, and a renderComponent call that throws stops re-rendering. 9142/9993 green (was 9139/9992), no timeouts, no harness errors, no green->red. Two [integration] strict-mode rows turned green ('Can pass helper as argument and invoke dynamically' and 'works with a curried string component defined in a resolution mode component'), and the new renderComponent test passes. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (rendering tests)": {
@@ -4626,10 +4626,10 @@
       ]
     },
     "Strict Mode - renderComponent (direct)": {
-      "total": 4,
-      "passing": 4,
-      "assertionsTotal": 25,
-      "assertionsPassing": 25,
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 27,
+      "assertionsPassing": 27,
       "failingTests": []
     },
     "Strict Mode - renderComponent - built ins": {
@@ -8346,9 +8346,9 @@
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
-      "passing": 29,
-      "assertionsTotal": 287,
-      "assertionsPassing": 259,
+      "passing": 30,
+      "assertionsTotal": 290,
+      "assertionsPassing": 263,
       "failingTests": [
         {
           "name": "Can use a dynamic component in append position (with args)",
@@ -8399,10 +8399,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "Can pass helper as argument and invoke dynamically",
-          "category": "gxt:triage"
-        },
-        {
           "name": "Can pass helper as argument and invoke dynamically (with args)",
           "category": "gxt:triage"
         },
@@ -8418,9 +8414,9 @@
     },
     "[integration] jit :: strict mode: general properties": {
       "total": 17,
-      "passing": 5,
-      "assertionsTotal": 57,
-      "assertionsPassing": 45,
+      "passing": 6,
+      "assertionsTotal": 70,
+      "assertionsPassing": 59,
       "failingTests": [
         {
           "name": "Undefined references is an error",
@@ -8464,10 +8460,6 @@
         },
         {
           "name": "{{component}} throws an error if a string is used indirectly in strict after first render (expression position)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "works with a curried string component defined in a resolution mode component",
           "category": "gxt:triage"
         }
       ]
@@ -10480,6 +10472,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 853
+    "gxt:triage": 851
   }
 }
