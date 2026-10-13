@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T20:21:14.584Z",
+    "capturedAt": "2026-10-13T21:59:36.272Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "a55171ef7e",
-    "totalTests": 10006,
-    "totalModules": 971,
+    "emberCommit": "3e211a1483",
+    "totalTests": 10017,
+    "totalModules": 972,
     "quarantinedTests": 0,
-    "totalAssertions": 59793,
-    "totalAssertionsPassing": 58159,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a build-time-compiled <template> component invoked by name from a runtime-compiled template receives the invocation's attributes and modifiers through ...attributes, each such component renders its own function (one synthesized tag per function, so two components invoked with the same argument names no longer share a scope slot) and the compiled wrapper templates are cached per function rather than per name, written by runner.mjs. 9177/10006 green (was 9172/10001), no timeouts, no harness errors, no green->red. The five new tests pass (Components test: a <template> component invoked by name): static, bound, class and URL attributes on render and update, a curly invocation, a forwarded {{on}}, two components with the same argument names, and one name registered with two components. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59845,
+    "totalAssertionsPassing": 58211,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after an invocation's attributes stop being arguments (a by-name invocation's plain attributes and class reach the component only through ...attributes; <LinkTo href> renders LinkTo's own href without the @href assertion; invocation attributes win over a classic component's attributeBindings; a bound forwarded attribute change runs a custom component manager's update hooks) and a build-time-compiled <template> component invoked by name renders its blocks (default and named blocks, block params, has-block, has-block-params), written by runner.mjs. 9188/10017 green (was 9177/10006), no timeouts, no harness errors, no green->red. The eleven new tests pass: AngleBracket Invocation (attributes are not arguments) 4, <LinkTo /> component (rendering tests) 1, Components test: a <template> component invoked by name 6. A GXT integration test that expected an id attribute to set this.id on a classic component now expects Glimmer's output. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -20,10 +20,10 @@
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests)": {
-      "total": 6,
-      "passing": 6,
-      "assertionsTotal": 8,
-      "assertionsPassing": 8,
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests, with router not started)": {
@@ -475,6 +475,13 @@
       "passing": 3,
       "assertionsTotal": 8,
       "assertionsPassing": 8,
+      "failingTests": []
+    },
+    "AngleBracket Invocation (attributes are not arguments)": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 31,
+      "assertionsPassing": 31,
       "failingTests": []
     },
     "AngleBracket Invocation (classic component)": {
@@ -1537,10 +1544,10 @@
       ]
     },
     "Components test: a <template> component invoked by name": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 15,
-      "assertionsPassing": 15,
+      "total": 11,
+      "passing": 11,
+      "assertionsTotal": 34,
+      "assertionsPassing": 34,
       "failingTests": []
     },
     "Components test: attrs lookup": {

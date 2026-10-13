@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7077/7119, 42 known red. emberCommit is the last code commit of the series.",
+    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7088/7130, 42 known red. emberCommit is the last code commit of the series.",
     "The 8 reds of the pre-rebase baseline are unchanged. 7 of them need @lifeart/gxt with lifeart/glimmer-next#266 ({{#if}} renders Glimmer block bounds: no anchor comment while the branch has content); regenerate this baseline after pinning that release:",
     "  Application test: debug render tree :: template-only components",
     "  Application test: debug render tree :: custom components",
@@ -12,18 +12,18 @@
     "The 8th is the pre-existing native red, unrelated to #266:",
     "  Component Tracked Properties w/ Args Proxy :: downstream property changes do not invalidate upstream component getters/arguments",
     "The other 34 are tests main added (19) or rewrote (15): the .gjs rewrites of the {{array}} / {{hash}} / {{fn}} / {{element}} helper tests, {{get}} tests moved from the Glimmer integration suite, renderComponent roots in the debug render tree, {{#each-in}} key=, {{#each}} @key, {{on}} asserts and spellcheck, custom modifier destruction order, a dynamic style warning with an element modifier, Evented.detect on Component (Evented deprecation), and the argument-less helper test now on a Glimmer component.",
-    "Since the previous regeneration (7061/7103) the run gained 16 tests, all green: 3 in Strict Mode - renderComponent (direct) (renderComponent runs a plain-object definition's custom manager; a render throws only its own errors), 4 in gxt-native | attributes plus the two URL sanitization of forwarded attributes modules (Glimmer's URL sanitization), and Components test: a <template> component invoked by name (5). The 42 known reds are the same tests as before."
+    "Since the previous regeneration (7077/7119) the run gained 11 tests, all green (one is a documented-drop skip): AngleBracket Invocation (attributes are not arguments) (4, an invocation's attributes are not arguments; the classic-component case is skipped), <LinkTo /> component (rendering tests) (1, LinkTo's own href wins over an href attribute), and 6 in Components test: a <template> component invoked by name (an attribute is not an argument; blocks, block params, named blocks, has-block and has-block-params). The 42 known reds are the same tests as before."
   ],
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T20:33:33.990Z",
+    "capturedAt": "2026-10-13T22:10:56.250Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "a55171ef7e",
-    "totalTests": 7119,
-    "totalModules": 675,
+    "emberCommit": "3e211a1483",
+    "totalTests": 7130,
+    "totalModules": 676,
     "quarantinedTests": 0,
-    "totalAssertions": 35515,
-    "totalAssertionsPassing": 35438
+    "totalAssertions": 35564,
+    "totalAssertionsPassing": 35487
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -34,10 +34,10 @@
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests)": {
-      "total": 6,
-      "passing": 6,
-      "assertionsTotal": 8,
-      "assertionsPassing": 8,
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests, with router not started)": {
@@ -492,6 +492,16 @@
       "failingTests": [],
       "skippedTests": [
         " a bound URL attribute on a classic component element is sanitized, also on update"
+      ]
+    },
+    "AngleBracket Invocation (attributes are not arguments)": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 28,
+      "assertionsPassing": 28,
+      "failingTests": [],
+      "skippedTests": [
+        " a classic component does not see an attribute as a property"
       ]
     },
     "AngleBracket Invocation (splattributes)": {
@@ -1187,10 +1197,10 @@
       ]
     },
     "Components test: a <template> component invoked by name": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 15,
-      "assertionsPassing": 15,
+      "total": 11,
+      "passing": 11,
+      "assertionsTotal": 34,
+      "assertionsPassing": 34,
       "failingTests": []
     },
     "Components test: contextual components": {
