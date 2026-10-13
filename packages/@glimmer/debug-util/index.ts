@@ -4,7 +4,6 @@ export { default as debugToString } from './lib/debug-to-string';
 export * from './lib/platform-utils';
 export * from './lib/present';
 export {
-  castToBrowser,
   castToSimple,
   checkBrowserNode as checkNode,
   isElement,

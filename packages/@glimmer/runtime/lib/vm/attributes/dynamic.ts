@@ -10,7 +10,6 @@ import type {
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants/lib/dom';
-import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 
 import type { MutableKey } from '../element-builder';
@@ -190,7 +189,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   }
 
   override update(value: unknown) {
-    const input = castToBrowser(this.attribute.element, ['input', 'textarea']);
+    const input = this.attribute.element as unknown as HTMLInputElement | HTMLTextAreaElement;
     const currentValue = input.value;
     const normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
@@ -207,7 +206,7 @@ export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
   }
 
   override update(value: unknown): void {
-    const option = castToBrowser(this.attribute.element, 'option');
+    const option = this.attribute.element as unknown as HTMLOptionElement;
 
     if (value) {
       option.selected = true;

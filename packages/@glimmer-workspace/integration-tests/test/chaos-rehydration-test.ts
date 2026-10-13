@@ -1,6 +1,6 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
-import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { castToSimple, expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
 import { run } from '@ember/runloop';
 import {
@@ -57,7 +57,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
   }
 
   wreakHavoc(iteration = 0, shouldLog = false) {
-    const element = castToBrowser(this.element, 'HTML');
+    const element = this.element as unknown as HTMLElement;
 
     const original = element.innerHTML;
 
@@ -95,7 +95,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
         break;
 
       case 1 satisfies typeof Node.ELEMENT_NODE:
-        removedNodeDisplay = castToBrowser(nodeToRemove, ['HTML', 'SVG']).outerHTML;
+        removedNodeDisplay = (nodeToRemove as HTMLElement | SVGElement).outerHTML;
         break;
       default:
         removedNodeDisplay = nodeToRemove.nodeValue;
@@ -115,7 +115,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
   }
 
   runIterations(template: string, context: Dict, expectedHTML: string, count: number) {
-    const element = castToBrowser(this.element, 'HTML');
+    const element = this.element as unknown as HTMLElement;
     const elementResetValue = element.innerHTML;
 
     const urlParams = (QUnit as any).urlParams as Dict<string>;
@@ -126,7 +126,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
       this.renderClientSide(template, context);
 
-      const element = castToBrowser(this.element, 'HTML');
+      const element = this.element as unknown as HTMLElement;
       this.assert.strictEqual(element.innerHTML, expectedHTML);
     } else {
       for (let i = 0; i < count; i++) {
@@ -138,7 +138,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
           this.renderClientSide(template, context);
 
-          const element = castToBrowser(this.element, 'HTML');
+          const element = this.element as unknown as HTMLElement;
           this.assert.strictEqual(
             element.innerHTML,
             expectedHTML,
@@ -293,7 +293,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
       'server html is correct'
     );
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple(castToBrowser(qunitFixture(), 'HTML').querySelector('div')!);
+    this.element = castToSimple((qunitFixture() as unknown as HTMLElement).querySelector('div')!);
     this.runIterations('RehydratingComponent', args, 'a bcd', 100);
   }
 
@@ -331,7 +331,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
     );
 
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple(castToBrowser(qunitFixture(), 'HTML').querySelector('div')!);
+    this.element = castToSimple((qunitFixture() as unknown as HTMLElement).querySelector('div')!);
     this.runIterations('RehydratingComponent', args, '<p>hello <div>world!</div></p>', 100);
   }
 }

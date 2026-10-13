@@ -1,4 +1,3 @@
-import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 
@@ -29,7 +28,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -50,7 +49,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -70,7 +69,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -95,7 +94,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['shadowed:success']);
   }
 }

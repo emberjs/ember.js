@@ -1,5 +1,4 @@
 import type { Maybe, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 import { unreachable } from './platform-utils';
 
@@ -13,10 +12,7 @@ interface GenericNodeTags {
   NODE: Node;
 }
 
-type GenericNodeTag = keyof GenericNodeTags;
-
 interface BrowserElementTags extends HTMLElementTagNameMap, GenericElementTags {}
-type BrowserElementTag = keyof BrowserElementTags;
 
 interface BrowserTags extends BrowserElementTags, GenericNodeTags {}
 type BrowserTag = keyof BrowserTags;
@@ -32,8 +28,6 @@ type NodeForSugaryCheck<S extends SugaryNodeCheck> =
         ? BrowserTags[S[number]]
         : never;
 
-type BrowserNode = Element | Document | DocumentFragment | Text | Comment | Node;
-
 export function castToSimple(doc: Document | SimpleDocument): SimpleDocument;
 export function castToSimple(elem: Element | SimpleElement): SimpleElement;
 export function castToSimple(node: Node | SimpleNode): SimpleNode;
@@ -47,54 +41,6 @@ export function castToSimple(
   } else {
     return node as SimpleNode;
   }
-}
-
-// If passed a document, verify we're in the browser and return it as a Document
-export function castToBrowser(doc: Document | SimpleDocument): Document;
-// If we don't know what this is, but the check requires it to be an element,
-// the cast will mandate that it's a browser element
-export function castToBrowser<S extends SugaryNodeCheck<BrowserElementTag>>(
-  node: BrowserNode | SimpleNode,
-  check: S
-): NodeForSugaryCheck<S>;
-// Finally, if it's a more generic check, the cast will mandate that it's a
-// browser node and return a BrowserNodeUtils corresponding to the check
-export function castToBrowser<S extends SugaryNodeCheck<GenericNodeTag>>(
-  element: BrowserNode | SimpleNode,
-  check: S
-): NodeForSugaryCheck<S>;
-export function castToBrowser<K extends keyof HTMLElementTagNameMap>(
-  element: SimpleElement | Element,
-  check: K
-): HTMLElementTagNameMap[K];
-export function castToBrowser<S extends SugaryNodeCheck>(
-  node: SimpleNode | BrowserNode | null | undefined,
-  sugaryCheck?: S
-): Document | NodeForSugaryCheck<S> | null {
-  if (!LOCAL_DEBUG) {
-    return node as Document | NodeForSugaryCheck<S> | null;
-  }
-
-  if (node === null || node === undefined) {
-    return null;
-  }
-
-  if (typeof document === 'undefined') {
-    throw new Error('Attempted to cast to a browser node in a non-browser context');
-  }
-
-  if (isDocument(node)) {
-    return node as Document;
-  }
-
-  if (node.ownerDocument !== document) {
-    throw new Error(
-      'Attempted to cast to a browser node with a node that was not created from this document'
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return checkBrowserNode(node, sugaryCheck!);
 }
 
 function checkError(from: string, check: SugaryNodeCheck): Error {

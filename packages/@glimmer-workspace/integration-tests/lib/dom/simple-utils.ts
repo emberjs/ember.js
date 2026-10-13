@@ -42,41 +42,8 @@ export interface CastToBrowserDom {
 
 export type CastableSimpleDOM<Type extends CastableNodeType = CastableNodeType> =
   CastToBrowserDom[Type]['simple'];
-export type CastableBrowserDom<Type extends CastableNodeType = CastableNodeType> =
-  CastToBrowserDom[Type]['browser'];
-
-type NodeTypeFor<C extends CastableSimpleDOM> = C['nodeType'];
 
 export type CastableNodeType = Exclude<keyof CastToBrowserDom, 'Node'>;
-
-export function castToBrowser(node: null): null;
-export function castToBrowser<N extends CastableSimpleDOM>(
-  node: N
-): CastableBrowserDom<NodeTypeFor<N>>;
-export function castToBrowser(
-  node: SimpleNode,
-  nodeType: 'Node'
-): CastToBrowserDom['Node']['browser'];
-export function castToBrowser<N extends CastableNodeType>(
-  node: SimpleNode,
-  nodeType: N
-): CastableBrowserDom<N>;
-export function castToBrowser(
-  node: SimpleNode | null,
-  nodeType?: CastableNodeType | 'Node'
-): CastToBrowserDom[keyof CastToBrowserDom]['browser'] | null {
-  if (node === null) {
-    return null;
-  } else if (nodeType !== undefined) {
-    if (node.nodeType === nodeType) {
-      return node as unknown as CastableBrowserDom;
-    } else {
-      throw new Error(`ASSERT: invalid cast to ${nodeType}`);
-    }
-  } else {
-    return node as unknown as CastableBrowserDom;
-  }
-}
 
 export function castToSimple<Type extends CastableNodeType>(
   node: null,

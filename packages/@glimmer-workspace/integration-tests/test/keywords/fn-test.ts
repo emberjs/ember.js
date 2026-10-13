@@ -1,4 +1,3 @@
-import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
@@ -32,7 +31,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -53,7 +52,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -79,7 +78,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 

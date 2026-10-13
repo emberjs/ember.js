@@ -1,7 +1,7 @@
 import { tracked } from '@glimmer/tracking';
 import type { SimpleElement } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants';
-import { castToBrowser, expect } from '@glimmer/debug-util';
+import { expect } from '@glimmer/debug-util';
 import { normalizeProperty } from '@glimmer/runtime';
 import {
   assertingElement,
@@ -260,10 +260,10 @@ export class AttributesTests extends RenderTest {
     this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
-    const inputElement = castToBrowser(
-      expect(this.element.firstChild, 'expected input to exist'),
-      'input'
-    );
+    const inputElement = expect(
+      this.element.firstChild,
+      'expected input to exist'
+    ) as unknown as HTMLInputElement;
 
     inputElement.value = 'bar';
     this.assert.strictEqual(this.readDOMAttr('value'), 'bar');

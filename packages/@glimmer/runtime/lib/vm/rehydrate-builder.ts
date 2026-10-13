@@ -13,7 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
-import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast';
+import { castToSimple } from '@glimmer/debug-util/lib/simple-cast';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
@@ -470,7 +470,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
-    const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
+    const marker = this.getMarker(element as unknown as HTMLElement, cursorId);
 
     assert(
       !marker || marker.parentNode === element,

@@ -1,7 +1,7 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
-import { castToBrowser, expect } from '@glimmer/debug-util';
+import { expect } from '@glimmer/debug-util';
 import {
   assertElementShape,
   assertingElement,
@@ -237,7 +237,7 @@ class Rehydration extends AbstractRehydrationTests {
     );
 
     // remove the first `<!--%-b:1%-->`
-    let element = castToBrowser(this.element, 'HTML');
+    let element = this.element as unknown as HTMLElement;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     let commentToRemove = this.guardArray({ children: div.childNodes }, { min: 4 })[3];
     div.removeChild(commentToRemove);
@@ -353,7 +353,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // remove the attribute
-    let element = castToBrowser(this.element, 'HTML');
+    let element = this.element as unknown as HTMLElement;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.removeAttribute('data-foo');
 
@@ -370,7 +370,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // add an extra attribute
-    let element = castToBrowser(this.element, 'HTML');
+    let element = this.element as unknown as HTMLElement;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('data-bar', 'oops');
 
@@ -387,7 +387,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div class="always-present show-me"></div>');
 
     // mutate the attribute
-    let element = castToBrowser(this.element, 'HTML');
+    let element = this.element as unknown as HTMLElement;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('class', 'zomg');
 
@@ -401,7 +401,7 @@ class Rehydration extends AbstractRehydrationTests {
   'does not mutate attributes that already match'() {
     let observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
-        let target = castToBrowser(mutation.target, 'HTML');
+        let target = mutation.target as HTMLElement;
         this.assert.ok(
           false,
           `should not have updated ${mutation.attributeName} on ${target.outerHTML}`
@@ -413,7 +413,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.renderServerSide(template, {});
     this.assertServerOutput('<div data-foo="whatever"></div>');
 
-    observer.observe(castToBrowser(this.element, 'HTML'), { attributes: true, subtree: true });
+    observer.observe(this.element as unknown as HTMLElement, { attributes: true, subtree: true });
 
     this.renderClientSide(template, {});
     this.assertRehydrationStats({ nodesRemoved: 0 });

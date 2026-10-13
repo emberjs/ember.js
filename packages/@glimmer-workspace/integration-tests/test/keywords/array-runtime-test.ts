@@ -1,5 +1,4 @@
 import GlimmerComponent from '@glimmer/component';
-import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
@@ -83,7 +82,7 @@ class KeywordArrayRuntime extends RenderTest {
 
     this.renderComponent(Foo);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.deepEqual(receivedData, ['hello', 'goodbye']);
   }
