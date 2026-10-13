@@ -9173,10 +9173,14 @@ const $_MANAGERS = {
 
 // Synthesized one-tag wrapper templates for build-time-compiled components
 // resolved by NAME from the owner registry (see the branch in
-// handleStringComponent). Keyed by component name + arg-key signature; the
-// compiled factory closes over the component function via scopeValues, which
-// is stable for a given registry entry.
-const _gxtBuildTimeComponentTplCache = new Map<string, any>();
+// handleStringComponent), per component function: one name can be registered
+// with different functions (another owner, another test). Each function gets
+// its own tag name, because compile.ts keeps ONE scope-value slot per template
+// source and every compiled body reads the latest value: two functions whose
+// templates had the same source (same arg names) would render each other.
+// The compiled factories are kept by arg-key signature.
+const _gxtBuildTimeComponentTpls = new WeakMap<object, { tag: string; byArgs: Map<string, any> }>();
+let _gxtBuildTimeComponentCount = 0;
 
 /**
  * Handle a string-based component name (e.g., 'foo-bar').
@@ -9204,7 +9208,10 @@ function handleStringComponent(
   // Detect that shape and invoke it GXT-natively by synthesizing a one-tag
   // runtime template that references the function lexically (scopeValues) —
   // the same `$_c(<lexical>)` path build-time-compiled callers use, so all
-  // root/tree/args wiring is inherited from the runtime pipeline. Block/slot
+  // root/tree/args wiring is inherited from the runtime pipeline. The
+  // invocation's attributes and modifiers (`fw`) become the synthesized
+  // template's own (`$fw`), which its `...attributes` hands on, so the
+  // component's `...attributes` receives them as Glimmer's would. Block/slot
   // forwarding is not supported for registry-resolved build-time components;
   // lexical invocation supports blocks.
   const _btClass = factory?.class;
@@ -9224,18 +9231,23 @@ function handleStringComponent(
       const argKeys = Object.keys(args || {}).filter(
         (k) => !k.startsWith('__') && !k.startsWith('$') && k !== 'args'
       );
-      const cacheKey = `${name}|${argKeys.join(',')}`;
-      let tplFactory = _gxtBuildTimeComponentTplCache.get(cacheKey);
+      const argSignature = argKeys.join(',');
+      let tpls = _gxtBuildTimeComponentTpls.get(_btClass);
+      if (!tpls) {
+        tpls = { tag: `GxtBuildTimeComponent${++_gxtBuildTimeComponentCount}`, byArgs: new Map() };
+        _gxtBuildTimeComponentTpls.set(_btClass, tpls);
+      }
+      let tplFactory = tpls.byArgs.get(argSignature);
       if (!tplFactory) {
-        const src = `<GxtBuildTimeComponent ${argKeys
+        const src = `<${tpls.tag} ...attributes ${argKeys
           .map((k) => `@${k}={{this.__gxtBtArgs.${k}}}`)
           .join(' ')} />`;
         tplFactory = compileFn(src, {
           strictMode: true,
-          scopeValues: { GxtBuildTimeComponent: _btClass },
+          scopeValues: { [tpls.tag]: _btClass },
           moduleName: `gxt-build-time:${name}`,
         });
-        _gxtBuildTimeComponentTplCache.set(cacheKey, tplFactory);
+        tpls.byArgs.set(argSignature, tplFactory);
       }
       return () => {
         const resolvedTpl =
@@ -9243,7 +9255,12 @@ function handleStringComponent(
             ? (tplFactory as any)(owner)
             : tplFactory;
         if (!resolvedTpl?.render) return null;
-        const renderCtx: any = { __gxtBtArgs: args, owner };
+        // Forward splat-attrs into `$fw` (see the template-only branches in
+        // `handle`): gxt passes `$_edp`, not a tuple, when there are none.
+        const propsFromArgs = args?.[$PROPS_SYMBOL];
+        const $fw = (Array.isArray(fw) ? fw : null) ||
+          (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
+        const renderCtx: any = { __gxtBtArgs: args, owner, $fw };
         const container = document.createDocumentFragment();
         renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
         return container;
