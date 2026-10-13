@@ -216,50 +216,48 @@ choice breaks someone.
 2. Duplicate attributes and duplicate named arguments are accepted. A component's layout
    sees the first `@a` while its manager sees the last, and `class` is merged only when the
    element has modifiers or `...attributes`. Should duplicates become a compile-time error?
-   A proposal branch makes them errors, for team discussion. (§05-14 item 13)
+   A proposal to make them errors is open as emberjs/ember.js#21718. (§05-14 item 13)
 3. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
    `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 12)
 4. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
-   this. (§02-11 item 7)
+   this. (§02-11 item 6)
 
 ### 0.7.2 Parser robustness
 
-5. `{{^foo}}a{{else}}b{{/foo}}` is accepted and means `{{#foo}}b{{else}}a{{/foo}}`; no test
-   covers it, and the form without `{{else}}` is now an error. (§02-11 item 1)
-6. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
+5. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
    unterminated tag or comment at EOF. A block's `{{else}}` or closer inside a tag or HTML
-   comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`), and
-   Handlebars grammar errors outrank earlier HTML errors; both are artifacts of the two-pass
-   parser that a single-pass one could drop. (§02-11 items 5, 18, 19)
-7. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
-   errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 2, 3;
+   comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`), an
+   artifact of the two-pass parser; an upstream PR to make it an error is planned (T22).
+   (§02-11 items 4, 17)
+6. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
+   errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 1, 2;
    §03-10 item 8)
-8. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
+7. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
    `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
    case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
    `foo`) and `<É />` (compiled to nothing), and segments containing `.`
    (`{{foo.[bar.baz]}}`), give surprising results. After an `{{else if}}` chain, whether the
-   closer's line is standalone depends on the first link's text. (§02-11 items 4, 8–10, 20;
+   closer's line is standalone depends on the first link's text. (§02-11 items 3, 7–9, 18;
    §03-10 item 19)
 
 ### 0.7.3 Strict vs loose divergence
 
-9. A strict `<x.y/>` with `x` unbound becomes an element named `x.y`. Loose mode reports
+8. A strict `<x.y/>` with `x` unbound becomes an element named `x.y`. Loose mode reports
    an error. (§03-10 item 3)
-10. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
+9. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
     keyword, and the error message says "strict mode". Should this be a compile-time error?
     (§08-14 Q16, §03-5.3)
-11. `{{#let v as |this|}}` rebinds `this`, although element block params forbid it.
+10. `{{#let v as |this|}}` rebinds `this`, although element block params forbid it.
     (§03-10 item 4)
 
 ### 0.7.4 Babel vs runtime compile paths
 
-12. `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
+11. `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
     `lexicalScope` but not by babel's `locals`. (§03-10 item 1)
-13. The runtime implicit form misses locals that are `undefined`, that shadow a global
+12. The runtime implicit form misses locals that are `undefined`, that shadow a global
     (`name`, `status`, …), or that are `this`. The explicit form uses `in`, so it accepts
     inherited names such as `toString`, and it calls `scope()` twice. (§01-1.11 items 2, 3)
-14. The Ember AST transforms mishandle shadowing. The `trackLocals` counter bug lets an
+13. The Ember AST transforms mishandle shadowing. The `trackLocals` counter bug lets an
     inner block param delete an outer one, so the outer `{{on}}` becomes the built-in.
     Element block params are visible to the Ember plugins but not to normalization. A block
     param named `helper`, `modifier`, `each-in` or `in-element` is still rewritten.
@@ -270,64 +268,64 @@ choice breaks someone.
 §0.1 "Non-goals" puts the `hbs` re-printing outside the primary scope, so these items matter only
 to addon tooling.
 
-15. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
+14. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
     ASTv1 marker. The upstream-Handlebars leftovers (`{{&x}}`, `{{^}}`, `foo/bar`,
     standalone-line stripping) are only partly tested, so their re-printed form is also
-    unpinned. (§02-11 items 10, 13, 16)
+    unpinned. (§02-11 items 9, 12, 15)
 
 ### 0.7.6 Runtime DOM behavior
 
-16. Namespaces: a namespaced attribute that is removed and then set again loses its
+15. Namespaces: a namespaced attribute that is removed and then set again loses its
     namespace, and an `<svg>` or `<math>` inside `<foreignObject>` is created in the HTML
     namespace. Fixes proposed for both. (§05-14 items 1, 6)
-17. `false` in a merged `class` becomes the class `"false"`. (§05-14 item 2)
-18. SSR `in-element` never clears its destination, unlike client rendering and rehydration.
+16. `false` in a merged `class` becomes the class `"false"`. (§05-14 item 2)
+17. SSR `in-element` never clears its destination, unlike client rendering and rehydration.
     (§05-14 item 7)
-19. `NaN` keys never match (`===`), so an item keyed by `NaN` is re-created on every sync.
+18. `NaN` keys never match (`===`), so an item keyed by `NaN` is re-created on every sync.
     (§05-14 item 3)
-20. `{{this.str 1}}` on a primitive silently renders nothing. Any function in content
+19. `{{this.str 1}}` on a primitive silently renders nothing. Any function in content
     position is called as a helper, and a value with both managers renders as a component.
     (§05-14 items 4, 5)
-21. `element` with `null` or `undefined`: the docs, the dev build and the production build
+20. `element` with `null` or `undefined`: the docs, the dev build and the production build
     all disagree. (§08-14 Q4)
 
 ### 0.7.7 Managers and owners
 
-22. Owners are inconsistent. The component-definition cache ignores the owner, so a template
+21. Owners are inconsistent. The component-definition cache ignores the owner, so a template
     factory runs with whichever owner renders it first. An `undefined` owner throws a raw
     `TypeError` in component and modifier managers. (§06-12 Q15, Q4. That a curried
     component's `create` gets the invoking owner while its layout gets the curried one is
     ruled a compatibility quirk to preserve, §06-2.2.)
-23. Capability handling: the dev-only `willDestroy` check never fires (`'string' in d`), and
+22. Capability handling: the dev-only `willDestroy` check never fires (`'string' in d`), and
     with `disableAutoTracking: true` `updateModifier` never runs, even when arguments
     change. (§06-12 Q8, Q2)
-24. A curried dynamic helper re-prepends its curried positional arguments each time it is
+23. A curried dynamic helper re-prepends its curried positional arguments each time it is
     re-created. (§06-12 Q11)
-25. Production differs from development in ways code can observe.
+24. Production differs from development in ways code can observe.
     `Object.isExtensible(args.named)` throws, writes to the args proxy are silently lost,
     capability versions are not checked, and `on` reads different arguments.
     (§06-12 Q7, Q1, Q9) After a render error, production also leaves tracking frames open,
     which leaks memory in a long-lived server renderer; upstream PR #21634 would fix it.
     (§05-14 item 15)
-26. `(helper "name")` in loose mode bypasses classic-helper factory injection.
+25. `(helper "name")` in loose mode bypasses classic-helper factory injection.
     (§08-14 Q6)
 
 ### 0.7.8 Reactivity
 
-27. Invalidation is coarser than it looks. `trackedArray`'s per-index cells never narrow
+26. Invalidation is coarser than it looks. `trackedArray`'s per-index cells never narrow
     invalidation, because every access also uses the collection cell. `trackedObject` breaks
     `instanceof`. (§07-5 items 6, 7)
-28. Validity edge cases: `getValue` after a throw returns a stale value and does not
+27. Validity edge cases: `getValue` after a throw returns a stale value and does not
     rethrow; a write during a computation's own evaluation is invisible in production; and
     a write to a never-read cell does not schedule a run loop. (§07-5 items 1, 3, 4)
 
 ### 0.7.9 Ordering that is inferred or untested
 
-29. Several orderings are confirmed only by T9b's throwaway experiments, with no upstream tests,
+28. Several orderings are confirmed only by T9b's throwaway experiments, with no upstream tests,
     and `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 14)
-30. `createModifier` sees an element that has no attributes yet and is not in the document.
+29. `createModifier` sees an element that has no attributes yet and is not in the document.
     (§05-14 item 11)
-31. Ember render timing: `renderComponent` called during a render defers the new root. Its
+30. Ember render timing: `renderComponent` called during a render defers the new root. Its
     `destroy()` works (resolved: it destroys the root before or after its first render), but
     the replace-previous-render logic sees no previous render, so both renders stay live. Each
     outlet level renders one microtask late, and nothing tests whether the empty intermediate state can be observed.

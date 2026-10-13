@@ -70,6 +70,15 @@ continue the work. Last updated: 2026-10-13.
     refactored to plain `renderComponent` (§09-9.4.2; was §09-9.8 Q7).
   - *Serialize is non-interactive,* as in Ember under FastBoot: no modifier runs during a server
     render (§05-13, §09-9.4.2; was §09-9.8 Q8).
+- **Author rulings of 2026-10-13** (on §02-11, feedback commits `8dd43f4d83`, `1871c6cf4a`):
+  - *Error priority is not specified.* For a template with several errors, an implementation may
+    report any of them (§02-9.1). §02-1.1 now has three HTML-blind properties, not four.
+  - *Inverse section with `{{else}}`* (`{{^foo}}a{{else}}b{{/foo}}`) is **[Out of spec]**: the
+    existing implementation keeps it, a new one SHOULD NOT accept it (§02-3.3). The marker is new
+    in CONVENTIONS.
+  - *Planned upstream work*: T20 (literal mustache with arguments becomes an error), T21 (audit
+    the Handlebars leftovers: remove what Ember cannot use, test the rest as legacy), T22
+    (blocks that straddle markup become parse errors).
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
   revalidation without reverse edges: the core may schedule effects that are not stale, and
   filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
@@ -88,7 +97,7 @@ continue the work. Last updated: 2026-10-13.
     production (child-first) order is correct for both (2026-09-30, after T9b).
   - Loose mode stays as stable as possible while it is phased out: the silent `{{foo}}` is
     kept (2026-09-30, commit `fa282f6d78`; §08-5.1).
-  - Upstream fixes were requested for the parser `TypeError` crashes (§0.7.2 item 5), the
+  - Upstream fixes were requested for the parser `TypeError` crashes (§0.7.2 (parser crashes)), the
     content-tag indentation panic (§01-1.11 item 7), and `@tracked accessor` not dirtying the
     object-level cell (§07-3.1.5). Their branches are listed under "Upstream fix branches".
 - **Suspected bugs are recorded, not "fixed" in the spec.** Each goes in its chapter's
@@ -104,7 +113,7 @@ review are based on `9bec1cb2a8`.
 
 | Spec item | Repo | Branch | State | Summary |
 |---|---|---|---|---|
-| §0.7.2 item 5 | ember.js | `fix/parser-typeerror-crashes` | **Landed on main** (emberjs/ember.js#21635, merge `e1d334284e`) | Syntax errors for inverse sections without `{{else}}`, hash literals, sub-expression-rooted paths, mustaches or comments in end tags, and mustaches in markup declarations. Handlebars syntax in any HTML-comment state becomes comment text. `<div /{{x}}>` treats the stray `/` as HTML does (ignored). `{{#each-in}}` with no params is a syntax error. |
+| §0.7.2 (parser crashes) | ember.js | `fix/parser-typeerror-crashes` | **Landed on main** (emberjs/ember.js#21635, merge `e1d334284e`) | Syntax errors for inverse sections without `{{else}}`, hash literals, sub-expression-rooted paths, mustaches or comments in end tags, and mustaches in markup declarations. Handlebars syntax in any HTML-comment state becomes comment text. `<div /{{x}}>` treats the stray `/` as HTML does (ignored). `{{#each-in}}` with no params is a syntax error. |
 | §01-1.11 item 7 | content-tag | `fix-multibyte-indentation-panic` | **Shipped in content-tag 4.2.1** (embroider-build/content-tag#134) | `strip_indent` counts only ASCII spaces and tabs as indentation. |
 | §07-3.1.5 | ember.js | `fix/tracked-accessor-object-tag` | **Landed on main** (emberjs/ember.js#21636) | The `@tracked accessor` setter also dirties the object-level cell. Test in the stable-decorator smoke tests. |
 | §05-11.3 | ember.js | `fix/modifier-destruction-order` | **Landed on main** (emberjs/ember.js#21639) | With the debug render tree on, modifiers are now destroyed child-first, as in production (author ruling, 2026-09-30). |
@@ -113,7 +122,7 @@ review are based on `9bec1cb2a8`.
 | §05-14 item 12 | ember.js | `fix/triple-curly-literals-and-keywords` | Open for review | String literals and append keywords (`if`, `unless`, `helper`, …) honour `{{{…}}}`. |
 | §05-14 item 1 | ember.js | `fix/namespaced-attribute-updates` | Open for review | Updates of a namespaced attribute keep its namespace after removal. |
 | §05-14 item 6 | ember.js | `fix/svg-inside-foreign-object` | Open for review | `<svg>`/`<math>` inside `<foreignObject>` get their own namespace. |
-| §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | For team discussion (author opens the PR) | Duplicate attributes and named arguments become compile errors; the commit message is the full explainer. |
+| §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | **PR open**: emberjs/ember.js#21718 | Duplicate attributes and named arguments become compile errors; the PR description is the full explainer. |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
 that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
@@ -171,7 +180,10 @@ Run these in order, one at a time.
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
 | W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18), including the follow-ups to the rulings of `eb4f794d62` (W2-9) | Sonnet per step; Opus for the API, ledger review and exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done and **landed upstream** as ten PRs, emberjs/ember.js#21676–#21679, #21684, #21692, #21695, #21702, #21703, #21709 (last merge `11cd0007d2`, 2026-10-12). No fake stubs left (C18 table empty); every removed test has a twin in the ledger. The PR branches, the `test/w2-glimmer-harness` branch and the `../ember.js-w2` worktree are deleted locally |
 | T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | `.work/T18-merge-w2-landed.md` | done; 142 citations remapped, 26 FLAGs and about 100 moved or deleted test spans fixed by hand (deleted tests now cite their Ember twins); W2 tests cited on `main` (§05-7.6, §06-2.2, §08-6.1, §08-6.6); §05-14 item 12 resolved (the yield and has-block suites now run under angle brackets); §09 harness description and counts; behavior changes written in: render-error cleanup is development-only (new §05-14 item 15, upstream PR #21634), `transform-resolutions` in production (§03-7.11), `@dependentKeyCompat` read fix and computed-macro deprecation (§07-3.6.5, §07-3.6.7). Two claims lost their only test and are now marked untested: the compiler `keywords` option (§01, §03) and `insertBefore=<node>` (§05) |
-| T19 | Author question: can §02 be a single-pass parser (HTML tokenizer with mustache states) instead of Handlebars-then-HTML layering? | Opus | `.work/T19-single-pass-parser.md` | done; yes. Compatibility does not preclude it, but four HTML-blind properties must hold (§02-1.1): Handlebars lexing, whitespace control, block structure, and error priority. §02-1 rewritten (model, rationale §02-1.4, implementation note §02-1.5), §02-6.1 is the scan, §02-6.11 states the block-straddling rule, §02-9.1 the error priority. §02-5.3 corrected: a closer's standalone check uses the *first* inverse. New §02-11 items 18–20 (straddling and error priority could be relaxed; the `else if` standalone quirk) |
+| T19 | Author question: can §02 be a single-pass parser (HTML tokenizer with mustache states) instead of Handlebars-then-HTML layering? | Opus | `.work/T19-single-pass-parser.md` | done; yes. Compatibility does not preclude it, but four HTML-blind properties must hold (§02-1.1): Handlebars lexing, whitespace control, block structure, and error priority. §02-1 rewritten (model, rationale §02-1.4, implementation note §02-1.5), §02-6.1 is the scan, §02-6.11 states the block-straddling rule, §02-9.1 the error priority. §02-5.3 corrected: a closer's standalone check uses the *first* inverse. New §02-11 open questions on block straddling, error priority and the `else if` standalone quirk. Author feedback (`1871c6cf4a`) applied: error priority relaxed, out-of-spec marker, T20–T22 planned |
+| T20 | Upstream PR: a literal mustache with arguments (`{{"foo" bar}}`) becomes an error instead of dropping them (§02-11 item 1) | Opus (decision), Sonnet (PR) | `.work/T20-literal-mustache-params.md` | planned; step 1 needs the author (error now, or deprecation first) |
+| T21 | Audit the Handlebars leftovers (§02-11 item 15): prove which Ember cannot use, remove those from the parser, add legacy-designated tests for the rest | Sonnet (experiments), Opus (case for removal) | `.work/T21-handlebars-leftovers.md` | planned |
+| T22 | Upstream PR: blocks whose `{{else}}` or closer is inside a tag or HTML comment become parse errors, with tests and the no-sane-template-breaks argument (§02-11 item 17) | Opus | `.work/T22-straddling-blocks-errors.md` | planned; step 3 needs the author (comment case) |
 
 ## Cross-chapter findings (from chapter authors' reports)
 

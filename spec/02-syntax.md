@@ -43,7 +43,7 @@ an HTML comment, or a syntax error. Put another way, every HTML tokenizer state 
 transition: on an unescaped `{{`, lex one construct, act on it according to that state, and
 continue in the state the placement rule names (usually the same one).
 
-Four properties of the scan are fixed by compatibility (rationale in §02-1.4). Each says that the
+Three properties of the scan are fixed by compatibility (rationale in §02-1.4). Each says that the
 Handlebars side does not look at HTML state:
 
 1. **Handlebars lexing is HTML-blind.** Constructs and escapes are recognized by the rules of
@@ -64,9 +64,10 @@ Handlebars side does not look at HTML state:
    closed in the block program that opened it (E22, E23), but a partially tokenized tag or HTML
    comment is not an element. A block's `{{else}}` or closer therefore ends the program in any
    HTML state, and the partial tag or comment continues into what follows (§02-6.11).
-4. **Handlebars grammar errors come first.** If the input has a lexical or grammar error
-   anywhere (§02-9.1 kinds 2 and 3), that error is reported, even when an HTML error comes
-   earlier in the source (§02-9.1, "Error priority").
+
+Which error is reported for a template with more than one error is not specified (§02-9.1,
+"Error priority"). The current parser reports Handlebars lexical and grammar errors before any
+HTML error, but a single-pass implementation need not.
 
 The scan has observable **boundaries**: every construct, every nested raw-block delimiter, and
 the start and end of every text run that begins with an escape. At a boundary:
@@ -86,7 +87,7 @@ The end of the input is not a signal to the HTML tokenizer: whatever it has part
 when the input ends is discarded (§02-6.12).
 
 A conforming implementation MUST accept and reject the same inputs as this scan, report the same
-errors, and give every accepted input the structure that the ASTv1 described here records,
+error for an input with exactly one error, and give every accepted input the structure that the ASTv1 described here records,
 including the quirks recorded in this chapter. It need not build ASTv1 or expose any parse tree
 (§00-0.1 "Non-goals"), and it need not scan in one pass: the current implementation uses two
 (§02-1.5).
@@ -138,10 +139,10 @@ before any HTML tokenization (§02-1.5), and templates depend on the result:
   otherwise have seen, inside tags and attribute values as well as in content
   (`<div class="a  {{~x}}">` has the static part `a`). Making the deletion depend on HTML state
   would change rendered whitespace in existing templates.
-- *Block structure and error priority.* The two properties change only what happens to inputs
-  that are errors today, or that are accepted with a garbled tree (§02-6.11, "Blocks that
-  straddle markup"). They could be relaxed without breaking a working template; §02-11 items 18
-  and 19 ask whether to.
+- *Block structure.* This property changes only what happens to inputs that are accepted with
+  a garbled tree today (§02-6.11, "Blocks that straddle markup"). It could be relaxed without
+  breaking a working template; §02-11 item 17 plans to make those inputs errors. Error priority
+  was in the same position and has been relaxed (§02-9.1).
 
 The single-scan statement of §02-1.1 removes what is *not* fixed: the Handlebars parse tree, the
 walk over it, and the feeding of text to the HTML tokenizer in chunks are implementation
@@ -162,8 +163,8 @@ inverse program, which the scan has already passed (§02-5.3).
    about HTML. The result is a Handlebars AST (`Program`, `ContentStatement`,
    `MustacheStatement`, `BlockStatement`, `CommentStatement`, …), on which the
    whitespace-control pass (§02-5) then edits the `ContentStatement`s. Every lexical and grammar
-   error is thrown here, before any HTML is looked at, which is where property 4 of §02-1.1 comes
-   from.
+   error is thrown here, before any HTML is looked at, which is why the current parser reports
+   them ahead of HTML errors (§02-9.1, "Error priority").
 2. **The HTML pass** (`simple-html-tokenizer` 0.5.11, driven by
    `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts` and
    `packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts`). The Handlebars AST is
@@ -532,8 +533,10 @@ the `program`. Glimmer handles the two forms differently:
   ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead``
   (span: the whole block; `handlebars-node-visitors.ts:133-140`; test
   `parser-error-test.ts:110-119`).
-- **With `{{else}}`**, `{{^foo}}a{{else}}b{{/foo}}` is accepted and means
-  `{{#foo}}b{{else}}a{{/foo}}` (untested).
+- **With `{{else}}`**, `{{^foo}}a{{else}}b{{/foo}}` is accepted by the current implementation
+  and means `{{#foo}}b{{else}}a{{/foo}}` (untested). **[Out of spec]** (author ruling,
+  2026-10-13): the existing implementation need not change, but a new implementation SHOULD NOT
+  accept this form, and SHOULD reject it with the same error as the form without `{{else}}`.
 
 `{{^}}` *inside* a block is fully supported as a synonym for `{{else}}`.
 
@@ -1144,7 +1147,7 @@ For each mustache (`handlebars-node-visitors.ts:228-321`):
    comment (§02-6.7); done.
 3. If the Handlebars path `original` (§02-4.1) is `...attributes` (i.e. `{{...attributes}}`) → syntax error
    `Illegal use of ...attributes` (span: the mustache) in any position — content, attribute
-   value, or modifier (tests `parser-node-test.ts:124-152`; see Open question 15 for how this
+   value, or modifier (tests `parser-node-test.ts:124-152`; see §02-11 item 14 for how this
    path lexes).
 4. Build an ASTv1 `MustacheStatement` (§02-3.2, §02-3.7).
 5. Dispatch on tokenizer state:
@@ -1221,7 +1224,7 @@ is current when it is finished. By experiment (no test pins these down):
 | `{{#if x}}<!--{{else}}-->{{/if}}` | an empty default program; an empty HTML comment in the inverse |
 | `{{#if x}}\n<!-- a\n{{/if}}\n-->` | an empty block, then the HTML comment ` a\n` after it |
 
-See §02-11 item 18.
+See §02-11 item 17.
 
 Block params on blocks are converted to `VarHead`s with locations found by searching the source
 between the end of the hash and the start of the program for the `|…|` list
@@ -1447,16 +1450,14 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
    match; implementations MUST report `Parse error on line N` with the correct line (tests
    `packages/@handlebars/parser/spec/parser.js:346-434`).
 
-**Error priority.** Only the first error is reported. Errors of kinds 2 and 3 come from the
-Handlebars lexer and grammar, which do not depend on HTML (§02-1.1 property 4). If the input has
-one, the first of them is reported, wherever it is, even when an error of kind 1 comes earlier in
-the source: `</div>{{#a}}{{/b}}` reports `a doesn't match b` (E3), and `</div>{{foo.this}}`
-reports `Invalid path` (E4). Otherwise the first kind-1 error in scan order is reported:
-`</div>{{./foo}}` reports `Closing tag </div> without an open tag` (E23), not E10. A single-pass
-implementation that meets a kind-1 error MUST therefore read the rest of the input by the
-Handlebars rules alone (§02-2, §02-3) before reporting it, to check for an error of kind 2 or 3. In the current parser this order arises
-because the Handlebars pass runs to completion first (§02-1.5). By experiment; see §02-11
-item 19.
+**Error priority.** Only one error is reported. For a template with more than one error, which
+one is not specified: a conforming implementation MUST reject the template and MAY report any of
+its errors (author ruling, 2026-10-13). *Note:* the current parser reports the first Handlebars
+lexical or grammar error (kinds 2 and 3) wherever it is, because the Handlebars pass runs to
+completion first (§02-1.5): `</div>{{#a}}{{/b}}` reports `a doesn't match b` (E3). Otherwise it
+reports the first kind-1 error in scan order: `</div>{{./foo}}` reports
+`Closing tag </div> without an open tag` (E23), not E10. A single-pass implementation can report
+the first error it meets and stop.
 
 ### 9.2 Catalogue
 
@@ -1494,7 +1495,7 @@ item 19.
 | E30 | `" is not a valid character within attribute names` (also `'`, `<`) | 1 (collapsed span) | | s-h-t `:466-470` |
 | E31 | `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'` | 1 | §02-6.5 | `tokenizer-event-handlers.ts:617-622` |
 | E32–E41 | `Invalid block parameters syntax: …` (10 variants in §02-6.6, plus "block parameters must be preceded by the `as` keyword") | 1 | §02-6.6 | `:300-306, 316-558` |
-| E42 | ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead`` | 1 | `{{^x}}…{{/x}}` without `{{else}}` (§02-3.3) | `handlebars-node-visitors.ts:133-140` |
+| E42 | ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead`` | 1 | `{{^x}}…{{/x}}` without `{{else}}`; a new implementation SHOULD also raise it with `{{else}}` (§02-3.3) | `handlebars-node-visitors.ts:133-140` |
 | E43 | ``Hash literals are not supported. Use named arguments (`{{helper foo=bar}}`) or the `hash` helper (`(hash foo=bar)`) instead`` | 1 | hash literal as a callee, param or hash value (§02-3.8) | `handlebars-node-visitors.ts:450-455` |
 | E44 | ``A path cannot start with a sub-expression. Use the `get` helper (`(get (foo) "bar")`) instead`` | 1 | `(foo).bar` (§02-3.8) | `handlebars-node-visitors.ts:461-466` |
 | E45 | `Invalid end tag: closing tag must not contain mustaches` | 1 | mustache in an end tag's attribute area (§02-6.9) | `handlebars-node-visitors.ts:352-356` |
@@ -1537,73 +1538,67 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 
 ## 11. Open questions / inconsistencies
 
-1. **Inverse sections with `{{else}}`.** `{{^foo}}a{{else}}b{{/foo}}` is accepted as
-   `{{#foo}}b{{else}}a{{/foo}}` (§02-3.3), has no test, and could reasonably be an error like the
-   form without `{{else}}`.
-
-  > While we don't need to go breaking this in the existing implementation, we should consider it outside-the-spec behavior and new implementations *should not* implement it.
-
-2. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
+1. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
-   should be an error.
+   should be an error. *Planned* (author ruling, 2026-10-13): fix it in the existing
+   implementation, task T20 (`spec/.work/T20-literal-mustache-params.md`).
 
-  > Let's plan a work stream to fix this in the existing implementation.
-
-3. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
+2. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
    `this` regex is `^this(\..+)?$` while §02-4.1 has already dropped the `this` segment. Loose
    mode would then resolve `foo` differently from `this.foo`. Untested.
-4. **Literal segments containing `.`** (`{{[foo.bar]}}`, `{{foo.[bar.baz]}}`) produce heads/tails
+3. **Literal segments containing `.`** (`{{[foo.bar]}}`, `{{foo.[bar.baz]}}`) produce heads/tails
    containing `.`, violating debug-build builder assertions and making `original` ambiguous.
    `{{foo.[]}}` produces an empty-string tail segment. Semantics for chapter 03 are unclear.
-5. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
+4. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
    characters after `<` / `</` / `<!` are silently discarded (§02-6.12). The code comment at
    `handlebars-node-visitors.ts:54-56` acknowledges this. Recommend errors.
-6. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
+5. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
    element's block-params list (`<Foo as |a {{! c}}|>`) is accepted onto `comments` and the
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
    block there errors with E21.
-7. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
+6. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
    replacement of 0, surrogates, or C1 controls). `&#128512;` yields U+F600. Likely a bug that
    templates might nonetheless depend on.
-8. **`<pre>`/`<textarea>` newline** is keyed off the most recent start-tag name (compared
+7. **`<pre>`/`<textarea>` newline** is keyed off the most recent start-tag name (compared
    case-insensitively, cleared by any end tag) and is re-applied at every content chunk starting in `beforeData`
    (e.g. after a mustache inside `<pre>`), which does not match HTML parsing (only the newline
    immediately after the start tag). Meanwhile the runtime DOM parser is never involved, so this
    determines the rendered text.
-9. **`<title>`/`<script>`/`<style>` handling** is keyed off the last tag name, case-sensitive,
+8. **`<title>`/`<script>`/`<style>` handling** is keyed off the last tag name, case-sensitive,
    and applies inside SVG `<title>` too. Entity decoding is suppressed in `script`/`style` but
    not `title`.
-10. **Void elements are case-sensitive in the parser** (`voidMap.has(name)`) but the printer's
+9. **Void elements are case-sensitive in the parser** (`voidMap.has(name)`) but the printer's
     `isVoidTag` lower-cases (`printer.ts:57-59`). `<BR>` needs a close tag in the parser.
-11. **Location oddities:** chained inverse `Block.loc` covers only the chained block's default
+10. **Location oddities:** chained inverse `Block.loc` covers only the chained block's default
     program; empty-program fallback spans can cover the block params and closer; valueless
     attribute spans include trailing whitespace; `calculateRightStrippedOffsets` uses the first
     occurrence of the retained text, which is wrong when the stripped prefix contains the same
     text (unlikely since the prefix is whitespace, but `value === ''` handling counts `\n` in
     the whole original).
-12. **CR handling:** the HTML tokenizer normalizes lone `\r` to `\n`, but `Source` line tables only split on
+11. **CR handling:** the HTML tokenizer normalizes lone `\r` to `\n`, but `Source` line tables only split on
     `\n` (while `Parser.lines` splits on `\r\n?|\n`). Templates with lone CR line endings get
     inconsistent line numbers between Handlebars locs, tokenizer positions and `Source`.
-13. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
+12. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
     marker and no test in `@glimmer/syntax`. Their runtime meaning is whatever the block helper
     does (chapter 03/05).
-14. **Private-field-looking segments** `foo.#bar` / `this.#foo` parse (tail `"#bar"`); no
+13. **Private-field-looking segments** `foo.#bar` / `this.#foo` parse (tail `"#bar"`); no
     Glimmer test pins down their meaning.
-15. **The `...attributes` check** (E17) compares the Handlebars `original` to `...attributes`.
+14. **The `...attributes` check** (E17) compares the Handlebars `original` to `...attributes`.
     The lexer lexes `...attributes` as `..` (ID) `.` (SEP) `attributes`; `preparePath` drops `..`
     (depth 1) giving `original = "...attributes"` — the check works only by this coincidence.
     `{{../attributes}}` is a different error. `<div ...attributes={{x}}>` is accepted by the
     parser (validated, if at all, in chapter 03).
-16. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`, `foo/bar`
+15. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`, `foo/bar`
     paths, `{{{{raw}}}}` blocks, `\{{` escapes and standalone-line stripping are all inherited
     from Handlebars and only partially tested in Glimmer. They are specified here as current
-    behavior and should be marked **[Legacy]**.
+    behavior and should be marked **[Legacy]**. *Planned* (author ruling, 2026-10-13): task
+    T21 (`spec/.work/T21-handlebars-leftovers.md`) proves which of them current Ember can use,
+    removes the unusable ones from the parser, and adds tests marked as inherited from
+    Handlebars, legacy behavior for the rest.
 
-    > Plan a work stream to (1) prove which of these feature cannot actually be used in current ember, (2) for each of the ones that cannot be used, remove it from the parser entirely. (3) for each of the ones that *can* be used, add test coverage for it, carefully designated as "inherited from handlebars, legacy behavior".
-
-17. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
+16. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
     runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 13.
-18. **Blocks that straddle markup** (§02-6.11). A block's `{{else}}` or closer inside a tag, an
+17. **Blocks that straddle markup** (§02-6.11). A block's `{{else}}` or closer inside a tag, an
     attribute value or an HTML comment ends the block's program, and the half-built tag or
     comment lands in the next program or after the block (`{{#if x}}<div class="{{/if}}"></div>`
     is an empty block followed by `<div class="">`). Nothing tested relies on it, and the trees
@@ -1611,17 +1606,11 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     and the comment states an error like E21, and treating a closer in a comment state as
     comment text when its opener is outside the comment, which is what an HTML-aware single-pass
     parser does naturally. Templates that parse today with a sensible tree would be unaffected.
+    *Planned* (author ruling, 2026-10-13): an upstream PR that makes these parse errors, with
+    tests and the case that no sane template breaks, task T22
+    (`spec/.work/T22-straddling-blocks-errors.md`).
 
-    > Plan a work stream to make a PR that turns these into parse errors in the existing implementation, with good test coverage and a convincing argument for why this won't break anybody with a sane template.
-
-19. **Error priority** (§02-9.1). Handlebars lexical and grammar errors outrank earlier HTML
-    errors only because the current parser runs the Handlebars pass first. It affects only
-    templates with more than one error. If source order were allowed instead, a single-pass
-    parser could report the first error it meets and stop.
-
-    > Maintaining existing error priority is not important. Let's not obligate a new implementation to emit exactly the same error priority. 
-
-20. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
+18. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
     standalone is decided by the end of the first chain link's program, not by the text before
     the closer, and the indentation before such a closer is never deleted. This comes from
     upstream Handlebars (`whitespace-control.js:71-94`) and is untested in Glimmer. Changing it

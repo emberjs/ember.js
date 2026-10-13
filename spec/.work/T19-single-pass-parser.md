@@ -26,3 +26,13 @@ inverse (`{{else if b}}\n  y\n  {{/if}}` keeps `"  y\n  "`).
 - [x] §11 new open questions
 - [x] §00 diagram line, CONVENTIONS table, STATUS row
 - [x] xref.py, check-citations.py
+
+## Author feedback (`8dd43f4d83`, `1871c6cf4a`)
+
+- [x] §02-11 item 1 (inverse section with `{{else}}`): **[Out of spec]**; new CONVENTIONS marker;
+      §02-3.3 and E42 row; item removed (and §00-0.7.2 old item 5)
+- [x] §02-11 item 19 (error priority): not specified; §02-1.1 (three properties), §02-1.4,
+      §02-1.5, §02-9.1; item removed
+- [x] §02-11 items 2, 16, 18: planned as T20, T21, T22 (checklists in `.work/`); items annotated
+- [x] §05-14 item 13: PR emberjs/ember.js#21718; §00-0.7.1 item 2, STATUS table
+- [x] Pruned with `tools/prune-open-questions.py --apply`; bare references fixed by hand

@@ -18,6 +18,9 @@ it *is* behavior and must be specified.
 - Mark behaviors that exist only for legacy compatibility with **[Legacy]**, and behaviors
   that only apply in loose (non-strict) mode with **[Loose mode]**.
 - Mark development-only behavior (assertions, deprecations, debug-only checks) with **[Dev]**.
+- Mark current behavior that is outside the spec with **[Out of spec]**: the existing
+  implementation keeps it, but a new implementation SHOULD NOT reproduce it, and the text says
+  what it should do instead. It is documented so the existing behavior stays known.
 
 ## Abstraction rules
 

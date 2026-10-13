@@ -824,7 +824,7 @@ with the contents of `...attributes` recorded at the position of `...attributes`
 - A `<tr>` written directly inside `<table>` is created directly as a child of the `<table>`
   on the client (no implicit `<tbody>` is inserted by the DOM builder); the SSR serializer
   inserts one (§05-13.1).
-- **Duplicate attribute names** are kept by the parser (§02-11 item 17) and compiled as
+- **Duplicate attribute names** are kept by the parser (§02-11 item 16) and compiled as
   separate attributes (verified: `<div title="a" title="b">` compiles to two static
   attributes). At runtime (from source, untested):
   - On a *simple* element (§4.1), each occurrence is applied in order, so the last one wins
@@ -2316,18 +2316,17 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     `fix/triple-curly-literals-and-keywords`: string literals and append keywords honour triple
     curlies.
 13. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
-    accepts both (§02-11 item 17). For attributes, the result depends on whether the element
+    accepts both (§02-11 item 16). For attributes, the result depends on whether the element
     has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
     with `class` merging). For named arguments, a component's layout sees the first
     occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
     of this was derived from source; T12 confirmed it by experiment on `main` (development build):
     `<div title={{this.a}} title={{this.b}}>` shows `this.b` at first and `this.a` after only
     `this.a` changes, but stays `this.b` once a modifier is added; a helper's `named.a` is the
-    last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
-    (its commit message is the full explainer, for team discussion): every duplicate attribute,
-    component argument or named argument is a compile-time syntax error.
-
-    > This is now an open PR at https://github.com/emberjs/ember.js/pull/21718
+    last occurrence. *Proposal*, now open as emberjs/ember.js#21718 (branch
+    `proposal/duplicate-attributes-and-arguments-are-errors`; the PR description is the full
+    explainer): every duplicate attribute, component argument or named argument is a
+    compile-time syntax error.
 
 14. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
