@@ -57,3 +57,4 @@ a scope object (harness-only, see F4), `template()` from `@ember/template-compil
 | # | Feature | Strict usable? | Loose usable? | Evidence | Notes |
 |---|---|---|---|---|---|
 | F1 | `{{&foo}}` | yes | yes | `[{{&this.x}}]` with x=`<b>x</b>` renders `[<b>x</b>]` in both modes (control `{{this.x}}` renders `[&lt;b&gt;x&lt;/b&gt;]`). Babel: block `[[[2,[30,0,["x"]]]],[],[]]` for both `<template>` and `precompileTemplate(strictMode:false)` (opcode 2 = trusting append, same as `{{{x}}}`). | In an attribute (`title={{&this.x}}`) it is escaped, like `{{{x}}}`; no effect there. |
+| F2 | `{{^}}` as `{{else}}` | yes | yes | `{{#if this.x}}A{{^}}B{{/if}}`: x=false renders `B`, x=true renders `A`; `{{#unless this.x}}A{{^}}B{{/unless}}` x=true renders `B`. Same in both modes. Babel output identical to the `{{else}}` form. | |
