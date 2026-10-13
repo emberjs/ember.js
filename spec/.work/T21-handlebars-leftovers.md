@@ -31,17 +31,27 @@ out of scope.
       `template()`. Use throwaway rendering tests in `packages/@ember/-internals/glimmer/tests/`
       (as T9b did) and `spec/tools/probe-precompile.mjs`. Record per feature: strict usable?
       loose usable? the evidence (test name or probe output).
-- [ ] 2. For each feature that is usable in neither mode, check that no published usage
+- [x] 2. For each feature that is usable in neither mode, check that no published usage
       exists that still compiles (e.g. search addons on GitHub code search) and write the case for
       removal. Ask the author before opening the removal PR, since a removal turns accepted
       source into a syntax error.
-- [ ] 3. Removal PRs: make the parser reject the feature with a Glimmer syntax error that names
+      Done (2026-10-13): no feature is usable in neither mode (step 1), so none qualifies for
+      removal. **Question for the author:** `foo/bar` slash paths can never resolve in strict mode
+      (no public pipeline can bind such a name). That is not "unusable in current Ember" (loose
+      mode uses them), so it is out of this rule; a strict-mode compile error with a clear message
+      (§03) would be a separate, optional change.
+- [x] 3. Removal PRs: make the parser reject the feature with a Glimmer syntax error that names
       it ("… is inherited from Handlebars and not supported"), with tests in
       `packages/@glimmer/syntax/test/parser-error-test.ts`.
+      Nothing to remove (step 2).
 - [ ] 4. Coverage PRs for each usable feature: parser tests in `packages/@glimmer/syntax/test/`
       and rendering tests, each in a module or with a comment that marks it as "inherited from
       Handlebars, legacy behavior" (agree the exact wording once and reuse it). Prefer tests that
-      the §09 conformance suite can run unchanged.
+      the §09 conformance suite can run unchanged. Wording chosen: module names start with
+      `Inherited from Handlebars (legacy behavior):`, and each file starts with a comment saying
+      these features are inherited from Handlebars, kept for compatibility, and not to be extended.
+      Branch `test/handlebars-legacy-features` in the t21 worktree (the spike branch had no
+      commits and is replaced by it).
 - [ ] 5. Spec follow-up: mark each kept feature **[Legacy]** in its §02 section and cite the new
       tests; describe the removed ones as errors (new E-catalogue rows); remove §02-11 item 15.
 
