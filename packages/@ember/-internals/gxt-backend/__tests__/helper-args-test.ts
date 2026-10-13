@@ -23,7 +23,9 @@
  * when an argument it consumed changed; reading a helper never writes reactive
  * state; a `(hash)` / `(array)` is the same object until something it read
  * changes; an `(fn …)` is one function per call site, which reads the callback
- * and the partial arguments when it is called.
+ * and the partial arguments when it is called; a helper re-computes when a
+ * tracked collection it read (a `trackedArray` argument) changes in place, by
+ * the end of the run loop that changed it.
  *
  * The first module renders through the public `renderComponent` with a
  * loose-mode template, as the `[integration]` harness does (helpers and
@@ -48,6 +50,7 @@ import templateOnly from '@ember/component/template-only';
 import { capabilities as helperCapabilities, setHelperManager } from '@ember/helper';
 import { A } from '@ember/array';
 import { set } from '@ember/object';
+import { trackedArray } from '@ember/reactive/collections';
 import type Owner from '@ember/owner';
 import { renderComponent, renderSettled } from '@ember/renderer';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -558,6 +561,43 @@ moduleFor(
 
       runTask(() => set(this.context, 'name', 'b'));
       assert.strictEqual(stashed?.(), 'hi b', 'the stashed function reads the current argument');
+    }
+
+    ['@test a trackedArray changed in place re-renders what read it when the run loop ends']() {
+      this.registerUserHelper('join-words', ([list]) => (list as string[]).join(','));
+      this.owner.register('helper:plain-join', (list: string[]) => list.join(','));
+
+      this.render('[{{this.list.length}}][{{plain-join this.list}}][{{join-words this.list}}]', {
+        list: trackedArray(['a', 'b']),
+      });
+      this.assertText('[2][a,b][a,b]');
+
+      runTask(() => this.context.list.push('c'));
+      this.assertText('[3][a,b,c][a,b,c]');
+
+      runTask(() => this.context.list.splice(0, 1));
+      this.assertText('[2][b,c][b,c]');
+    }
+
+    ['@test a trackedArray argument changed in place re-computes the helper']() {
+      this.registerUserHelper('join-words', ([list]) => (list as string[]).join(','));
+
+      this.render('{{join-words this.list}}', { list: trackedArray(['a', 'b']) });
+      this.assertText('a,b');
+
+      runTask(() => this.context.list.push('c'));
+      this.assertText('a,b,c');
+    }
+
+    ['@test a trackedArray component argument changed in place re-computes the helper']() {
+      this.registerUserHelper('join-words', ([list]) => (list as string[]).join(','));
+      this.registerTemplateOnly('words', precompileTemplate('[{{join-words @list}}]'));
+
+      this.render('<Words @list={{this.list}} />', { list: trackedArray(['a', 'b']) });
+      this.assertText('[a,b]');
+
+      runTask(() => this.context.list.push('c'));
+      this.assertText('[a,b,c]');
     }
   }
 );

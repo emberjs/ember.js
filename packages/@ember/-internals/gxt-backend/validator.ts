@@ -1626,6 +1626,33 @@ export function _scheduleCollectionFlush(): void {
   });
 }
 
+// A change of a collection whose native GXT cell the formulas that read it
+// subscribe to directly (trackedArray's `collection` tag,
+// `createUpdatableTagNative`). Besides the coalesced flush above, the change
+// is recorded as a pending state change, as a `@tracked` write records it
+// (glimmer-tracking.ts `trackedSet`), and a revalidation is scheduled, so the
+// runloop's DOM sync renders it (Glimmer: dirtying a tag schedules a
+// revalidation, rendered when the current runloop ends). `_gxtSyncDomNow`
+// runs gxt's `syncDom()` only for a sync recorded as a property change; any
+// other sync discards gxt's pending invalidations as initial-render noise.
+// Without the record, a sync that ran before the flush microtask (a
+// `runTask` / `rerender()` ending, a sync something else in the same runloop
+// asked for) dropped the collection cell's invalidation, and every formula
+// that read the collection — a helper over a `trackedArray` argument,
+// `{{this.list.length}}` — kept its old value. While a render is in progress
+// only the pending sync is recorded, as `trackedSet` does: the formulas that
+// render after the change read the changed collection.
+export function _scheduleNativeCollectionFlush(): void {
+  const pipeline = getGxtRenderer()?.compilePipeline;
+  pipeline?.setPendingSync?.(true);
+  if (!pipeline?.isCurrentlyRendering?.()) {
+    pipeline?.setPendingSyncFromPropertyChange?.(true);
+  }
+  const scheduleRevalidate = (_glimmerGlobalContext as any).scheduleRevalidate;
+  if (typeof scheduleRevalidate === 'function') scheduleRevalidate();
+  _scheduleCollectionFlush();
+}
+
 // Raw lib-level aliases for upstream's vendored @glimmer/* deep-path imports.
 // Upstream migrated the vendored @glimmer packages to import the un-renamed
 // names directly from `@glimmer/validator/lib/validators` (e.g.

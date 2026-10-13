@@ -27,7 +27,7 @@ import {
   consumeTag,
   dirtyTag,
   dirtyTagFor,
-  _scheduleCollectionFlush,
+  _scheduleNativeCollectionFlush,
 } from './validator';
 
 // A volatile tag that always needs recomputation.
@@ -166,12 +166,13 @@ export function trackedArray<T = unknown>(
     // cell stale → the each-source-formula/list opcode entangled with it
     // (compile.ts `_gxtSubscribeBackingArray` for `$_eachSync`, list.ts
     // `subscribeReactiveCollection` for `$_each`) is enqueued. The actual DOM
-    // sync is COALESCED into ONE GXT `syncDom()` microtask (see
-    // `_scheduleCollectionFlush`) — so a `push(...N)` re-renders the keyed list
-    // ONCE, not N times.
+    // sync is COALESCED: the change is recorded for the runloop's DOM sync and
+    // ONE GXT `syncDom()` microtask is scheduled (see
+    // `_scheduleNativeCollectionFlush`) — so a `push(...N)` re-renders the
+    // keyed list ONCE, not N times.
     collection.dirty();
     storages.clear();
-    _scheduleCollectionFlush();
+    _scheduleNativeCollectionFlush();
   };
 
   proxy = new Proxy(arr, {
