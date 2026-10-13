@@ -1,8 +1,7 @@
 import { get } from '@ember/-internals/metal/lib/property_get';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import computed from '@ember/-internals/metal/lib/computed';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';
@@ -10,6 +9,7 @@ import type CoreObject from '@ember/object/core';
 
 /**
   @module @ember/object/promise-proxy-mixin
+  @deprecated
 */
 
 function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
@@ -214,7 +214,7 @@ interface PromiseProxyMixin<T> {
   */
   finally: this['promise']['finally'];
 }
-const PromiseProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
+const PromiseProxyMixin = InternalMixin.create({
   init() {
     this._super(...arguments);
 

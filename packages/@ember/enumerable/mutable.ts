@@ -1,6 +1,6 @@
 import Enumerable from '@ember/enumerable';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
 @module ember
@@ -13,11 +13,19 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 
   @class MutableEnumerable
   @namespace Ember
-  @uses Enumerable
   @private
+  @deprecated Use native arrays and array methods instead.
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface MutableEnumerable extends Enumerable {}
-const MutableEnumerable = Mixin[INTERNAL_MIXIN_CREATE](Enumerable);
+const MutableEnumerable = InternalMixin.create(Enumerable, {
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `MutableEnumerable` mixin is deprecated. Use native arrays and array methods instead.',
+      DEPRECATIONS.DEPRECATE_MUTABLE_ENUMERABLE_MIXIN
+    );
+  },
+});
 
 export default MutableEnumerable;

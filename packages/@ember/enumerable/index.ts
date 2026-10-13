@@ -1,9 +1,10 @@
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
 @module @ember/enumerable
 @private
+@deprecated
 */
 
 /**
@@ -13,9 +14,18 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 
   @class Enumerable
   @private
+  @deprecated Use native arrays and array methods instead.
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Enumerable {}
-const Enumerable = Mixin[INTERNAL_MIXIN_CREATE]();
+const Enumerable = InternalMixin.create({
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `Enumerable` mixin is deprecated. Use native arrays and array methods instead.',
+      DEPRECATIONS.DEPRECATE_ENUMERABLE_MIXIN
+    );
+  },
+});
 
 export default Enumerable;

@@ -4,60 +4,106 @@
 
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { RegistryProxy } from '@ember/-internals/owner';
-import type { AnyFn } from '@ember/-internals/utility-types';
 
-import { assert } from '@ember/debug';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { DeprecatedMixin } from '@ember/object/mixin-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
   registry functionality.
 
   @class RegistryProxyMixin
-  @extends RegistryProxy
   @private
+  @deprecated Use the owner API from `@ember/owner` instead. See https://deprecations.emberjs.com/id/deprecate-registry-proxy-mixin.
 */
+
+/* The following documentation is duplicated to properly show deprecated on
+   the instances on the RegistryProxyMixin
+ */
+
+/**
+ Registers a factory that can be used for dependency injection (with
+ `inject`) or for service lookup. Each factory is registered with
+ a full name including two parts: `type:name`.
+
+ A simple example:
+
+ ```javascript
+ import Application from '@ember/application';
+ import EmberObject from '@ember/object';
+
+ let App = Application.create();
+
+ App.Orange = EmberObject.extend();
+ App.register('fruit:favorite', App.Orange);
+ ```
+
+ Ember will resolve factories from the `App` namespace automatically.
+ For example `App.CarsController` will be discovered and returned if
+ an application requests `controller:cars`.
+
+ An example of registering a controller with a non-standard name:
+
+ ```javascript
+ import Application from '@ember/application';
+ import Controller from '@ember/controller';
+
+ let App = Application.create();
+ let Session = Controller.extend();
+
+ App.register('controller:session', Session);
+
+ // The Session controller can now be treated like a normal controller,
+ // despite its non-standard name.
+ App.ApplicationController = Controller.extend({
+ needs: ['session']
+ });
+ ```
+
+ Registered factories are **instantiated** by having `create`
+ called on them. Additionally they are **singletons**, each time
+ they are looked up they return the same instance.
+
+ Some examples modifying that default behavior:
+
+ ```javascript
+ import Application from '@ember/application';
+ import EmberObject from '@ember/object';
+
+ let App = Application.create();
+
+ App.Person = EmberObject.extend();
+ App.Orange = EmberObject.extend();
+ App.Email = EmberObject.extend();
+ App.session = EmberObject.create();
+
+ App.register('model:user', App.Person, { singleton: false });
+ App.register('fruit:favorite', App.Orange);
+ App.register('communication:main', App.Email, { singleton: false });
+ App.register('session', App.session, { instantiate: false });
+ ```
+
+ @method register
+ @param  fullName {String} type:name (e.g., 'model:user')
+ @param  factory {Factory|object} (e.g., App.Person)
+ @param  options {Object} (optional) disable instantiation or singleton usage
+ @public
+ @deprecated Use the owner API from `@ember/owner` instead. See https://deprecations.emberjs.com/id/deprecate-registry-proxy-mixin.
+ */
+
 interface RegistryProxyMixin extends RegistryProxy {
   /** @internal */
   __registry__: Registry;
 }
-const RegistryProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
-  __registry__: null,
-
-  resolveRegistration(fullName: string) {
-    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
-    return this.__registry__.resolve(fullName);
+const RegistryProxyMixin = DeprecatedMixin.create(InternalRegistryProxyMixin, {
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `RegistryProxyMixin` mixin is deprecated. Use the owner API from `@ember/owner` instead.',
+      DEPRECATIONS.DEPRECATE_REGISTRY_PROXY_MIXIN
+    );
   },
-
-  register: registryAlias('register'),
-  unregister: registryAlias('unregister'),
-  hasRegistration: registryAlias('has'),
-  registeredOption: registryAlias('getOption'),
-  registerOptions: registryAlias('options'),
-  registeredOptions: registryAlias('getOptions'),
-  registerOptionsForType: registryAlias('optionsForType'),
-  registeredOptionsForType: registryAlias('getOptionsForType'),
 });
-
-type AliasMethods =
-  | 'register'
-  | 'unregister'
-  | 'has'
-  | 'getOption'
-  | 'options'
-  | 'getOptions'
-  | 'optionsForType'
-  | 'getOptionsForType';
-
-function registryAlias<N extends AliasMethods>(name: N) {
-  return function (this: RegistryProxyMixin, ...args: Parameters<Registry[N]>) {
-    // We need this cast because `Parameters` is deferred so that it is not
-    // possible for TS to see it will always produce the right type. However,
-    // since `AnyFn` has a rest type, it is allowed. See discussion on [this
-    // issue](https://github.com/microsoft/TypeScript/issues/47615).
-    return (this.__registry__[name] as AnyFn)(...args);
-  };
-}
 
 export default RegistryProxyMixin;
