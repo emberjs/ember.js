@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T21:59:36.272Z",
+    "capturedAt": "2026-10-13T23:23:08.233Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "3e211a1483",
-    "totalTests": 10017,
-    "totalModules": 972,
+    "emberCommit": "b45fb02823",
+    "totalTests": 10024,
+    "totalModules": 974,
     "quarantinedTests": 0,
-    "totalAssertions": 59845,
-    "totalAssertionsPassing": 58211,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after an invocation's attributes stop being arguments (a by-name invocation's plain attributes and class reach the component only through ...attributes; <LinkTo href> renders LinkTo's own href without the @href assertion; invocation attributes win over a classic component's attributeBindings; a bound forwarded attribute change runs a custom component manager's update hooks) and a build-time-compiled <template> component invoked by name renders its blocks (default and named blocks, block params, has-block, has-block-params), written by runner.mjs. 9188/10017 green (was 9177/10006), no timeouts, no harness errors, no green->red. The eleven new tests pass: AngleBracket Invocation (attributes are not arguments) 4, <LinkTo /> component (rendering tests) 1, Components test: a <template> component invoked by name 6. A GXT integration test that expected an id attribute to set this.id on a classic component now expects Glimmer's output. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59885,
+    "totalAssertionsPassing": 58299,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a component class with a class-body <template> renders through its component manager (gxt compiles that template to an instance field, not a setComponentTemplate call: a lexical invocation constructed the class itself and @glimmer/component threw 'You must pass both the owner and args to super()', and a by-name invocation or a renderComponent root rendered nothing; the manager now creates the component from the invocation's arguments, the template renders with it as this, its blocks and ...attributes included, the manager destroys it with the render tree it joined, and a class without a template renders the default {{yield}}), written by runner.mjs. 9211/10024 green (was 9188/10017), no timeouts, no harness errors, no green->red. The seven new tests pass: Components test: a class-body <template> component 5, Components test: a class-body <template> component invoked by name 2. Sixteen known reds turn green: Components test: @glimmer/component 1, Helpers test: default helper manager 3, Helpers test: {{log}} 3, Helpers test: {{fn}} 5, Helpers test: {{hash}} 2, Helpers test: {{array}} 1, and Application Lifecycle - Component Context 1 (a Glimmer component with no template yields its block). The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -566,15 +566,10 @@
     },
     "Application Lifecycle - Component Context": {
       "total": 5,
-      "passing": 4,
+      "passing": 5,
       "assertionsTotal": 5,
-      "assertionsPassing": 4,
-      "failingTests": [
-        {
-          "name": " Components with a block should yield the proper content without a template provided",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 5,
+      "failingTests": []
     },
     "Application Lifecycle - Component Context (classic component)": {
       "total": 3,
@@ -1525,14 +1520,10 @@
     },
     "Components test: @glimmer/component": {
       "total": 3,
-      "passing": 0,
-      "assertionsTotal": 21,
-      "assertionsPassing": 4,
+      "passing": 1,
+      "assertionsTotal": 44,
+      "assertionsPassing": 37,
       "failingTests": [
-        {
-          "name": "isDestroying and isDestroyed transition as the component is torn down",
-          "category": "gxt:triage"
-        },
         {
           "name": "tracked state and args are reactive without re-constructing the component",
           "category": "gxt:triage"
@@ -1548,6 +1539,20 @@
       "passing": 11,
       "assertionsTotal": 34,
       "assertionsPassing": 34,
+      "failingTests": []
+    },
+    "Components test: a class-body <template> component": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
+      "failingTests": []
+    },
+    "Components test: a class-body <template> component invoked by name": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 13,
+      "assertionsPassing": 13,
       "failingTests": []
     },
     "Components test: attrs lookup": {
@@ -2720,23 +2725,10 @@
     },
     "Helpers test: default helper manager": {
       "total": 9,
-      "passing": 6,
-      "assertionsTotal": 25,
-      "assertionsPassing": 19,
-      "failingTests": [
-        {
-          "name": "plain functions stored as class properties can be used as helpers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "class methods can be used as helpers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "actions can be used as helpers",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 9,
+      "assertionsTotal": 22,
+      "assertionsPassing": 22,
+      "failingTests": []
     },
     "Helpers test: helper managers": {
       "total": 15,
@@ -2831,9 +2823,9 @@
     },
     "Helpers test: {{array}}": {
       "total": 12,
-      "passing": 7,
+      "passing": 8,
       "assertionsTotal": 38,
-      "assertionsPassing": 26,
+      "assertionsPassing": 31,
       "failingTests": [
         {
           "name": "the array helper can be shadowed",
@@ -2849,10 +2841,6 @@
         },
         {
           "name": "should yield hash of an array of internal and external properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "should return an entirely new array when any argument change",
           "category": "gxt:triage"
         }
       ]
@@ -2897,9 +2885,9 @@
     },
     "Helpers test: {{fn}}": {
       "total": 14,
-      "passing": 1,
-      "assertionsTotal": 39,
-      "assertionsPassing": 5,
+      "passing": 6,
+      "assertionsTotal": 41,
+      "assertionsPassing": 17,
       "failingTests": [
         {
           "name": "updates when arguments change",
@@ -2907,18 +2895,6 @@
         },
         {
           "name": "updates when the function changes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a stashed fn result update arguments when invoked",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a stashed fn result invokes the correct function when the bound function changes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "there is no `this` context within the callback",
           "category": "gxt:triage"
         },
         {
@@ -2931,14 +2907,6 @@
         },
         {
           "name": "asserts if the first argument is null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "asserts if the provided function accesses `this` without being bound prior to passing to fn",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can use `this` if bound prior to passing to fn",
           "category": "gxt:triage"
         },
         {
@@ -2964,9 +2932,9 @@
     },
     "Helpers test: {{hash}}": {
       "total": 10,
-      "passing": 3,
-      "assertionsTotal": 34,
-      "assertionsPassing": 15,
+      "passing": 5,
+      "assertionsTotal": 32,
+      "assertionsPassing": 20,
       "failingTests": [
         {
           "name": "can have more than one key-value",
@@ -2986,14 +2954,6 @@
         },
         {
           "name": "should yield hash of internal and external properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "individual hash values are accessed lazily",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "works with computeds",
           "category": "gxt:triage"
         }
       ]
@@ -3021,23 +2981,10 @@
     },
     "Helpers test: {{log}}": {
       "total": 4,
-      "passing": 1,
-      "assertionsTotal": 18,
-      "assertionsPassing": 9,
-      "failingTests": [
-        {
-          "name": "correctly logs a property",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correctly logs multiple arguments",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correctly logs `this`",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 4,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "Helpers test: {{mut}}": {
       "total": 6,
@@ -10423,6 +10370,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 829
+    "gxt:triage": 813
   }
 }
