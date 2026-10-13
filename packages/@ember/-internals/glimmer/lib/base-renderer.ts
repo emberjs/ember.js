@@ -1075,6 +1075,26 @@ function rawGxtTemplate(fn: (...args: unknown[]) => unknown, entry: GxtRenderEnt
 }
 
 /**
+ * The custom component manager factory (`setComponentManager`) of a component
+ * definition: its own or the nearest one on its prototype chain, as
+ * `getInternalComponentManager` finds it in @glimmer/manager. A definition can
+ * be a class or a plain object.
+ */
+function gxtCustomComponentManagerFactory(
+  definition: object
+): ((owner: object) => any) | undefined {
+  const managers = getGxtRenderer()?.registries.componentManagers;
+  if (!managers) return undefined;
+  let pointer: object | null = definition;
+  while (pointer && pointer !== Object.prototype && pointer !== Function.prototype) {
+    const factory = managers.get(pointer);
+    if (typeof factory === 'function') return factory;
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return undefined;
+}
+
+/**
  * GXT-specific renderComponent implementation.
  * Bypasses Glimmer VM bytecode compilation entirely.
  */
@@ -1187,6 +1207,10 @@ function _renderComponentGxt(
   let destroyed = false;
   let domCleanupDone = false;
   let classicReactorUnsub: (() => void) | null = null;
+  // A custom component manager (`setComponentManager`) and the component it
+  // created, for its destroyComponent hook.
+  let customManager: any = null;
+  let customComponent: unknown = undefined;
 
   // Remove all DOM nodes belonging to this entry's range (firstNode through
   // lastNode, inclusive). Used for both destroy and the re-render
@@ -1248,6 +1272,12 @@ function _renderComponentGxt(
     }
     entry.teardownRendered?.();
     doDomCleanup();
+    if (
+      customManager?.capabilities?.destructor &&
+      typeof customManager.destroyComponent === 'function'
+    ) {
+      customManager.destroyComponent(customComponent);
+    }
   };
   entry.destroy = doDestroy;
 
@@ -1389,49 +1419,48 @@ function _renderComponentGxt(
       return result;
     }
 
-    // Determine if the component is a class (needs instantiation) or template-only
+    // A definition with a custom component manager (a class or a plain
+    // object) renders the context its manager creates; a class without one is
+    // instantiated; anything else is template-only and renders with `{}`.
     const isClass = typeof component === 'function' && component.prototype;
+    const customManagerFactory = gxtCustomComponentManagerFactory(component);
     const isTemplateOnly =
-      !isClass ||
+      (!isClass && !customManagerFactory) ||
       (component as any).__templateOnly === true ||
       getGxtRenderer()?.compilePipeline.isTemplateOnlyDefinition?.(component) === true ||
       getGxtRenderer()?.registries.internalManagers.has(component) === true;
 
     let instance: any = null;
 
-    if (!isTemplateOnly && isClass) {
-      // Instantiate the component class
+    if (!isTemplateOnly) {
       const ComponentClass = component as any;
 
-      // Check for custom component manager (from setComponentManager)
-      let customManager: any = null;
-      const _componentManagers = getGxtRenderer()?.registries.componentManagers;
-      let managerFactory: any = _componentManagers?.get(ComponentClass);
-      if (!managerFactory) {
-        let proto = Object.getPrototypeOf(ComponentClass);
-        while (proto && proto !== Object.prototype && proto !== Function.prototype) {
-          managerFactory = _componentManagers?.get(proto);
-          if (managerFactory) break;
-          proto = Object.getPrototypeOf(proto);
-        }
-      }
-
-      if (typeof managerFactory === 'function') {
-        // Use the custom manager to create the instance
-        customManager = managerFactory(owner);
-        if (customManager && typeof customManager.createComponent === 'function') {
-          // Build named args for the custom manager
-          const namedArgs: Record<string, any> = {};
+      if (customManagerFactory) {
+        const manager = customManagerFactory(owner);
+        if (manager && typeof manager.createComponent === 'function') {
+          customManager = manager;
+          // The named args are read lazily, like Glimmer's args proxy.
+          const namedArgs: Record<string, unknown> = {};
           if (args) {
-            for (const [key, value] of Object.entries(args)) {
-              namedArgs[key] = value;
+            for (const key of Object.keys(args)) {
+              Object.defineProperty(namedArgs, key, {
+                get: () => {
+                  touchClassicBridge();
+                  return (args as any)[key];
+                },
+                enumerable: true,
+                configurable: true,
+              });
             }
           }
-          const capturedArgs = { named: namedArgs, positional: [] };
-          instance = customManager.createComponent(ComponentClass, capturedArgs);
+          customComponent = manager.createComponent(component, {
+            named: namedArgs,
+            positional: [],
+          });
+          instance = customComponent;
           // Get the rendering context from the manager
-          if (typeof customManager.getContext === 'function') {
-            const ctx = customManager.getContext(instance);
+          if (typeof manager.getContext === 'function') {
+            const ctx = manager.getContext(customComponent);
             if (ctx && ctx !== instance) {
               // Use the manager's context as the render context
               instance = ctx;
@@ -1440,7 +1469,7 @@ function _renderComponentGxt(
         }
       }
 
-      if (!instance) {
+      if (!instance && isClass) {
         if (typeof ComponentClass.create === 'function') {
           instance = ComponentClass.create(Object.assign({}, args || {}, { owner }));
         } else {
@@ -1521,7 +1550,18 @@ function _renderComponentGxt(
       }
       renderContext.args = argsObj;
     }
-    renderContext.owner = owner;
+    if (!customManager) {
+      renderContext.owner = owner;
+    } else if (!('owner' in renderContext)) {
+      // A custom manager's context is its own object: it keeps an `owner` it
+      // already has, and the one added here is not enumerable.
+      Object.defineProperty(renderContext, 'owner', {
+        value: owner,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    }
 
     // Render inside `withRendering` so GXT formulas created during
     // template.render() properly track cell dependencies (e.g., trackedObject
@@ -1683,6 +1723,14 @@ function _renderComponentGxt(
       gxtRenderPass().flushAfterInsertQueue();
     } catch {
       // Ignore flush errors in renderComponent context
+    }
+    // didCreateComponent runs once the render and its children's hooks are
+    // done, as Glimmer's transaction commit runs it.
+    if (
+      customManager?.capabilities?.asyncLifecycleCallbacks &&
+      typeof customManager.didCreateComponent === 'function'
+    ) {
+      customManager.didCreateComponent(customComponent);
     }
     gxtRenderPass().flushRenderErrors();
   } finally {
