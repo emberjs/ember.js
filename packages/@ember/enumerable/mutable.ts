@@ -13,7 +13,6 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
   @class MutableEnumerable
   @namespace Ember
-  @uses Enumerable
   @private
   @deprecated Use native arrays and array methods instead.
 */
