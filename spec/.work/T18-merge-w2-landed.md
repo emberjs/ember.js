@@ -28,19 +28,19 @@ removed test are in `.work/W2-glimmer-harness.md` and `.work/W2-coverage-ledger.
 
 ## B. Prose (Opus)
 
-- [ ] B1. W2 is upstream: rewrite every "on branch `test/w2-glimmer-harness`" / "not yet
+- [x] B1. W2 is upstream: rewrite every "on branch `test/w2-glimmer-harness`" / "not yet
       upstream" passage (§05-7.6 ~l.1616, §06-2.2 ~l.351, §08 ~l.954 and ~l.1108, §09 seam B
       ~l.194, C1, C18, W2 row) to describe and cite `main`; give the W2 citations added in W2 step
       8.4 line numbers.
-- [ ] B2. §09 against the landed code: harness description (adapter, `RenderHandle`, delegates,
+- [x] B2. §09 against the landed code: harness description (adapter, `RenderHandle`, delegates,
       `lib/modes/`), C-table rows touched by W2, test counts (re-run `tools/test-coverage.py` and
       the T17 C1 counts), W3+ plan items that W2 changed.
-- [ ] B3. Prose vs behavior for the non-W2 changes: read
+- [x] B3. Prose vs behavior for the non-W2 changes: read
       `git diff 9bec1cb2a8 a9501d5d40 -- packages ':!*test*'` for changes to cited behavior
       (#21685 tracking reset on cleanup throw, #21688 computed-macro deprecations, #21707 types,
       `transform-resolutions` fix from PR 6, server render non-interactive from PR 10, router
       service getters) and update the owning items; record each in the notes.
-- [ ] B4. STATUS: base line, T18 row, "Keep citations current"; `xref.py` and
+- [x] B4. STATUS: base line, T18 row, "Keep citations current"; `xref.py` and
       `check-citations.py` clean.
 
 ## Notes
@@ -83,4 +83,26 @@ removed test are in `.work/W2-glimmer-harness.md` and `.work/W2-coverage-ledger.
     displayed with context' (twins in syntax/each-test.js, §05:992/1093 now cite each-test.js:655-674).
   - Several W2-moved tests are Ember-harness now (async, ember-qunit .gjs); §09 counts need re-run.
 - A4: `check-citations.py` reports every citation ok (no problems); `xref.py` prints nothing.
-
+- B1 (Opus): W2 tests in §05-7.6, §06-2.2, §08-6.1, §08-6.6 cited on `main` with line ranges.
+  §05-14 item 12 removed (`prune-open-questions.py`): the yield and has-block-params suites run
+  for angle-bracket invocation too, with `{{else}}` passed as `<:else>` (`render-test.ts:207-210`);
+  §05-6.2/§05-6.3 prose updated; old items 13-15 are now 12-14.
+- B2 (Opus): §09 item 3 (one compile), item 4 (delegates on Ember's renderer), item 6 counts at
+  `a9501d5d40` (runTask 1,582 / 71 files; await settled() 80 / 12; setupRenderingTest 16 files;
+  moduleFor 98 files; Glimmer `test/*.ts` 72), seam B, `RenderDelegate` interface, C1, C11, C15
+  (style warnings moved to `content-test.js`), C18, W2/W3 rows, §9.6.2 table re-run.
+- B3 (Opus), behavior changes:
+  - #21685: the render-error cleanup (close blocks, `resetTracking`) is inside `if (DEBUG)`;
+    production does neither. §05-12 and §07-1.2 had stated it unconditionally. Recorded as a
+    suspected bug, new §05-14 item 15, plus §00-0.7 item 25 and STATUS; open upstream PR #21634
+    fixes it.
+  - `transform-resolutions` (PR 6 bugfix): production leaves a bare `{{helper}}`/`{{modifier}}`
+    to the keyword's validation (§03-7.11, §08-3).
+  - `@dependentKeyCompat` read fix (`cca9b7ab39`) and the sync-observer limitation (§07-3.6.7).
+  - Computed-macro deprecation (#21688, available, not enabled) (§07-3.6.5).
+  - Router state `@tracked`, router-service getters, `LinkTo` consuming the router's tag
+    (`2c39804641`, `f6f874acc2`): §08 only says "reactive to router state"; no change.
+  - `castToBrowser` removed from `CustomModifierManager.install`: not in the spec; no change.
+  - In-element 'Changing to falsey' / 'With pre-existing content' are production-only now
+    (`skip: DEBUG`); §05 does not cite them by name; no change.
+- B4: STATUS updated; `xref.py` silent, `check-citations.py` all ok.

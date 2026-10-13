@@ -99,8 +99,8 @@ continue the work. Last updated: 2026-10-12.
 Fixes requested by the author during review. The spec branch has `origin/main` merged in at
 `a7fc67e74b` (upstream base `a9501d5d40`, 2026-10-12; earlier merges at `def1faa2cf`, base
 `9bec1cb2a8`, and `98fa794473`, base `675744ab35`), so the landed fixes below are in this
-checkout. The spec's citations still use base `9bec1cb2a8` until T18 is done. Branches still open
-for review are based on `9bec1cb2a8`.
+checkout, and the spec's citations are against `a9501d5d40` (T18). Branches still open for
+review are based on `9bec1cb2a8`.
 
 | Spec item | Repo | Branch | State | Summary |
 |---|---|---|---|---|
@@ -170,7 +170,7 @@ Run these in order, one at a time.
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
 | W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18), including the follow-ups to the rulings of `eb4f794d62` (W2-9) | Sonnet per step; Opus for the API, ledger review and exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done and **landed upstream** as ten PRs, emberjs/ember.js#21676–#21679, #21684, #21692, #21695, #21702, #21703, #21709 (last merge `11cd0007d2`, 2026-10-12). No fake stubs left (C18 table empty); every removed test has a twin in the ledger. The PR branches, the `test/w2-glimmer-harness` branch and the `../ember.js-w2` worktree are deleted locally |
-| T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | — (write `.work/T18-merge-w2-landed.md` first) | **next**; not started |
+| T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | `.work/T18-merge-w2-landed.md` | done; 142 citations remapped, 26 FLAGs and about 100 moved or deleted test spans fixed by hand (deleted tests now cite their Ember twins); W2 tests cited on `main` (§05-7.6, §06-2.2, §08-6.1, §08-6.6); §05-14 item 12 resolved (the yield and has-block suites now run under angle brackets); §09 harness description and counts; behavior changes written in: render-error cleanup is development-only (new §05-14 item 15, upstream PR #21634), `transform-resolutions` in production (§03-7.11), `@dependentKeyCompat` read fix and computed-macro deprecation (§07-3.6.5, §07-3.6.7). Two claims lost their only test and are now marked untested: the compiler `keywords` option (§01, §03) and `insertBefore=<node>` (§05) |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -224,6 +224,8 @@ into §00-0.7.
   - SSR `in-element` never clears its destination.
   - The `each` `key=` value is read only once.
   - `{{this.str 1}}` on a primitive silently renders nothing.
+  - After a render error, production builds neither close open blocks nor reset tracking (T18,
+    §05-14 item 15; upstream PR #21634).
 - **Managers.**
   - The dev-only `willDestroy` capability check never fires (`'string' in d`).
   - `disableAutoTracking: true` means `updateModifier` never runs.
@@ -264,32 +266,31 @@ Suggestions for the plan's author, based on what is still open:
 5. **Remaining verification gaps.** §05-14 item 14 still lists the `each`, `in-element` and
    `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
    against source and `dist/dev`.
-6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
-   W3 (Ember harness) needs no decisions and can start now, as a separate task with a
-   checklist, upstreamable to ember.js on its own. **W2 has landed upstream** (ten PRs, last
+6. **Conformance suite (§09).** Answer §09-9.8 Q2 (W0, the last open one), then run the
+   workstreams of §09-9.7. W3 (Ember harness to the app-style form) is under way upstream by
+   other contributors: 16 files use `setupRenderingTest` at `a9501d5d40` (§09-9.3 item 6), so a
+   W3 task here should first agree with them which files to take. W1 and W4–W9 wait on Q2 or on
+   other workstreams. **W2 has landed upstream** (ten PRs, last
    #21709, 2026-10-12) and is merged into this branch. The landed code differs from the old
    `test/w2-glimmer-harness` branch (owner types, PR 4 rebuilt to keep the Curly and Dynamic kinds
    on a real `@glimmer/component`, no plain mode in PR 6, review fixes), so `origin/main` is the
    reference; `.work/W2-glimmer-harness.md` has the history (step 10 onward) and
-   `.work/W2-coverage-ledger.md` the twin of every removed test. Follow-up is T18:
-   - remap citations (item 7) and re-derive the citations into `integration-tests/lib/suites/*`,
-     `test/ember-component-test.ts` and other moved or deleted test files (e.g. §05-6.3), as T17 did;
-   - give the W2 citations added in 8.4 (§05-7.6, §06-2.2, §08-6.1, §08-6.6) line numbers, and
-     rewrite the "on branch `test/w2-glimmer-harness`, not yet upstream" wording in §05-7.6,
-     §06-2.2, §08 and §09 (C1, C18, W2 row, seam B) to cite `main`;
-   - update §09's counts and harness description against the landed code.
+   `.work/W2-coverage-ledger.md` the twin of every removed test. The spec follow-up (citations,
+   §09) was T18.
    Pre-existing oddity, not changed by W2: the `owner-test.ts` test "owner can be changed by a
    component with the hasSubOwner capability" asserts `owner1` inside the `owner2` sub-owner, so
    its name and its assertion disagree.
    The remote branch `test/w2-glimmer-harness` still exists on `origin` (emberjs/ember.js) at
    `8939c50aff`; it is superseded and can be deleted.
-7. **Keep citations current.** Line numbers are accurate for upstream base `9bec1cb2a8`, not
-   yet for this checkout (`origin/main` `a9501d5d40` merged at `a7fc67e74b`; T18). A dry run of
-   `remap-citations.py 9bec1cb2a8 a9501d5d40` gives 26 FLAG lines; `check-citations.py` reports 44
-   problems, the same 44 as before the merge. For T18 and after each later merge, run
-   `python3 spec/tools/remap-citations.py <old base> <new base> --apply` once, fix its FLAG lines
+7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
+   merged at `a7fc67e74b`, upstream base `a9501d5d40`). After the next merge, run
+   `python3 spec/tools/remap-citations.py a9501d5d40 <new base> --apply` once, fix its FLAG lines
    by hand, then run `check-citations.py` and check the prose against what the merge changed
-   (`git diff <old base> <new base> -- packages`), as T8, T13 and T17 did. The tool follows
-   hunks only: it mis-shifts citations to files that were moved or split (T17 re-derived the
-   test citations by matching unique source lines of the old file against the new files), so
-   re-check every citation to a test file that `git diff -M --stat` shows as moved.
+   (`git diff a9501d5d40 <new base> -- packages`), as T8, T13, T17 and T18 did. The tool follows
+   hunks only: it mis-shifts citations to files that were moved or split (T17 and T18 re-derived
+   the test citations by matching unique source lines of the old file against the new files), so
+   re-check every citation to a test file that `git diff -M --stat` shows as moved. Neither
+   `remap-citations.py` nor `check-citations.py` sees bare continuation spans (`` `573-595` ``
+   after a citation, with no file name); check those by hand. `check-citations.py` always reads
+   `/Users/edward/hacking/ember.js`, whatever the working directory, so it cannot check an older
+   tree from a second worktree.
