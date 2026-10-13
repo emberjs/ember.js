@@ -467,6 +467,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
@@ -744,6 +747,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner

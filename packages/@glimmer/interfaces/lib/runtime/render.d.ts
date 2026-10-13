@@ -1,4 +1,4 @@
-import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode } from '../dom/simple';
 
 import type { RichIteratorResult } from '../core.js';
 import type { Bounds } from '../dom/bounds.js';

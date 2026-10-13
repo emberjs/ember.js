@@ -34,21 +34,6 @@ type NodeForSugaryCheck<S extends SugaryNodeCheck> =
 
 type BrowserNode = Element | Document | DocumentFragment | Text | Comment | Node;
 
-export function castToSimple(doc: Document | SimpleDocument): SimpleDocument;
-export function castToSimple(elem: Element | SimpleElement): SimpleElement;
-export function castToSimple(node: Node | SimpleNode): SimpleNode;
-export function castToSimple(
-  node: Document | Element | Node | SimpleDocument | SimpleElement | SimpleNode
-) {
-  if (isDocument(node)) {
-    return node as SimpleDocument;
-  } else if (isSimpleElement(node)) {
-    return node;
-  } else {
-    return node as SimpleNode;
-  }
-}
-
 // If passed a document, verify we're in the browser and return it as a Document
 export function castToBrowser(doc: Document | SimpleDocument): Document;
 // If we don't know what this is, but the check requires it to be an element,

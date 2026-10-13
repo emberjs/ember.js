@@ -1,4 +1,3 @@
-import { castToSimple } from '@glimmer/debug-util';
 import {
   CLOSE,
   content,
@@ -61,7 +60,7 @@ export class PartialRehydrationTest extends RenderTest {
     this.handle = this.delegate.renderComponentClientSide(
       'RehydratingComponent',
       args,
-      castToSimple(document.getElementById('placeholder')!)
+      document.getElementById('placeholder')!
     );
     this.assertHTML(content([OPEN, OPEN, '<div id="placeholder">abc</div>', CLOSE, CLOSE]));
     this.assert.ok(
@@ -135,7 +134,7 @@ export class PartialRehydrationTest extends RenderTest {
     this.handle = this.delegate.renderComponentClientSide(
       'Nav',
       args.nav,
-      castToSimple(document.querySelector('.nav-container')!)
+      document.querySelector('.nav-container')!
     );
     this.assertHTML(
       content([
@@ -167,7 +166,7 @@ export class PartialRehydrationTest extends RenderTest {
     this.handle = this.delegate.renderComponentClientSide(
       'Carousel',
       args.carousel,
-      castToSimple(document.querySelector('.carousel-container')!)
+      document.querySelector('.carousel-container')!
     );
     this.assertHTML(
       content([

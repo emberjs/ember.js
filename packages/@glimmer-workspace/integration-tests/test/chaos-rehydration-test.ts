@@ -1,6 +1,6 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
-import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { castToBrowser, expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
 import { run } from '@ember/runloop';
 import {
@@ -293,7 +293,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
       'server html is correct'
     );
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple(castToBrowser(qunitFixture(), 'HTML').querySelector('div')!);
+    this.element = castToBrowser(qunitFixture(), 'HTML').querySelector('div')!;
     this.runIterations('RehydratingComponent', args, 'a bcd', 100);
   }
 
@@ -331,7 +331,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
     );
 
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple(castToBrowser(qunitFixture(), 'HTML').querySelector('div')!);
+    this.element = castToBrowser(qunitFixture(), 'HTML').querySelector('div')!;
     this.runIterations('RehydratingComponent', args, '<p>hello <div>world!</div></p>', 100);
   }
 }

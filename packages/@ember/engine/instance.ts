@@ -15,7 +15,7 @@ import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '@glimmer/interfaces';
 
 export interface BootOptions {
   isBrowser?: boolean;

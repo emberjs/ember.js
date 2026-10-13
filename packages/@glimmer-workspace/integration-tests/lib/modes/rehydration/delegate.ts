@@ -13,7 +13,6 @@ import type {
 } from '@glimmer/interfaces';
 import type Component from '@ember/component';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
@@ -77,7 +76,7 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     let debugRenderTree = options?.debugRenderTree ?? false;
 
-    this.clientDoc = castToSimple(document);
+    this.clientDoc = document;
     this.clientRenderer = createRenderer(
       this.clientOwner,
       this.clientDoc,
@@ -242,5 +241,5 @@ export class RehydrationDelegate implements RenderDelegate {
 }
 
 export function qunitFixture(): SimpleElement {
-  return castToSimple(document.getElementById('qunit-fixture')!);
+  return document.getElementById('qunit-fixture')!;
 }
