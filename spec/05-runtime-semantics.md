@@ -2326,6 +2326,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
     (its commit message is the full explainer, for team discussion): every duplicate attribute,
     component argument or named argument is a compile-time syntax error.
+
+    > This is now an open PR at https://github.com/emberjs/ember.js/pull/21718
+
 14. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
     component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update

@@ -1540,9 +1540,15 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 1. **Inverse sections with `{{else}}`.** `{{^foo}}a{{else}}b{{/foo}}` is accepted as
    `{{#foo}}b{{else}}a{{/foo}}` (§02-3.3), has no test, and could reasonably be an error like the
    form without `{{else}}`.
+
+  > While we don't need to go breaking this in the existing implementation, we should consider it outside-the-spec behavior and new implementations *should not* implement it.
+
 2. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
+
+  > Let's plan a work stream to fix this in the existing implementation.
+
 3. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
    `this` regex is `^this(\..+)?$` while §02-4.1 has already dropped the `this` segment. Loose
    mode would then resolve `foo` differently from `this.foo`. Untested.
@@ -1592,6 +1598,9 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     paths, `{{{{raw}}}}` blocks, `\{{` escapes and standalone-line stripping are all inherited
     from Handlebars and only partially tested in Glimmer. They are specified here as current
     behavior and should be marked **[Legacy]**.
+
+    > Plan a work stream to (1) prove which of these feature cannot actually be used in current ember, (2) for each of the ones that cannot be used, remove it from the parser entirely. (3) for each of the ones that *can* be used, add test coverage for it, carefully designated as "inherited from handlebars, legacy behavior".
+
 17. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
     runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 13.
 18. **Blocks that straddle markup** (§02-6.11). A block's `{{else}}` or closer inside a tag, an
