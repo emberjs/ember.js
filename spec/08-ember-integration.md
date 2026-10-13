@@ -244,7 +244,8 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
     a non-literal first param becomes, in DEBUG builds only,
     `(-disallow-dynamic-resolution <p> type="helper" loc="<loc>" original="<printed p>")`
     (`transform-resolutions.ts:66-206`). **[Dev]** zero params is a compile error
-    `The ${type} keyword requires at least one positional arguments <loc>`.
+    `The ${type} keyword requires at least one positional arguments <loc>`; in production the
+    keyword's own validation reports it instead (§03-7.11).
 
 Strict mode runs `auto-import-builtins` first, then steps 1, 2, 5, 7, 8, 9, 10
 (`plugins/index.ts:41-50`) — i.e. no `attrs` assertion, no `input` assertion, no

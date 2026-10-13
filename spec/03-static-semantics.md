@@ -1186,7 +1186,11 @@ emberjs/ember.js#21635 this threw a `TypeError`.
 element modifiers) whose path's `original` is exactly `helper` or `modifier`:
 
 - **[Dev]** No first positional: assertion `The <type> keyword requires at least one positional arguments <loc>`
-  (note the grammar).
+  (note the grammar). In production the node is left unchanged, and the keyword's own
+  validation (§03-4.4) reports the error; for a bare `{{modifier}}`, the "was used
+  incorrectly … as an append statement" error of §03-4.3
+  (`transform-resolutions.ts:164-177`; test
+  `packages/@glimmer-workspace/integration-tests/test/syntax/keyword-errors-test.ts:162-180`).
 - A string-literal first argument `"name"` is replaced by `(-resolve "<type>:name")`, a
   build-time-described lookup of the named helper/modifier (§08). For example
   `{{helper "foo" 1}}` → `{{helper (-resolve "helper:foo") 1}}`.
