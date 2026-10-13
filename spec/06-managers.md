@@ -59,7 +59,7 @@ expression, for example `export default setComponentManager(f, class {})`.
 A single value MAY have managers of more than one kind, at most one of each.
 `packages/@glimmer/manager/test/managers-test.ts:365` ("Can set different types of
 managers") and
-`packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:407`
+`packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:292`
 ("helper manager and modifier manager can be associated with the same value") both
 exercise this.
 
@@ -103,7 +103,7 @@ Consequences:
   `Component` finds the Glimmer component manager. Tests:
   `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:152-206`
   and
-  `packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:103`.
+  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:145-181`.
 - An object instance inherits the manager associated with its prototype object. Template-only
   component definitions work this way: the manager is set on
   `TemplateOnlyComponentDefinition.prototype`
@@ -154,7 +154,7 @@ Sources: `packages/@glimmer/manager/lib/public/component.ts:127-135`,
 `helper.ts:89-97`, `modifier.ts:90-98`. Tests:
 `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:535-583`,
 `custom-modifier-manager-test.js:20-41,323-361`,
-`packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:427-451`.
+`packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:313-348`.
 
 In production builds this check is skipped, and any object with the right boolean fields
 is accepted.
@@ -417,7 +417,7 @@ Laziness: in the current implementation an argument is not evaluated until somet
 so a manager or instance that never reads an argument never evaluates its expression. When
 arguments are evaluated is not part of the contract (§00-0.1). Test: "does not eagerly access
 arguments during destruction",
-`packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:251-295`.
+`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:402-437`.
 
 ### 3.3 `args.positional`
 
@@ -537,8 +537,8 @@ this order:
      never causes the instance to be recreated.
    - Reading and then writing the same tracked storage inside the hook hits the
      "backtracking" assertion [Dev] (`07-reactivity.md`). Tests:
-     `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:453`
-     (helpers), `modifier-manager-test.ts:219` (modifiers).
+     `packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:350-377`
+     (helpers), `custom-modifier-manager-test.js:363` (modifiers).
 5. **Destructor registration.** If `destructor` is true, a destructor that calls
    `destroyComponent(instance)` is registered on an internal bucket. That bucket is
    associated as a destroyable child of the enclosing block (§10.3)
@@ -697,7 +697,7 @@ semantics:
 - The result is `{ hasValue, hasDestroyable, hasScheduledEffect }`, each coerced with
   `Boolean()`.
 
-Tests: `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:370-405`.
+Tests: `packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:241-290`.
 
 In production none of the checks run (§6.2 covers the resulting behavior).
 
@@ -754,7 +754,7 @@ attribute, or argument position, or `(h ...)` as a sub-expression:
 
    Tests: "tracks changes to named arguments", "tracks changes to positional arguments",
    "tracks changes to tracked properties", and "it works" (a rerender without changes does
-   not re-call `getValue`) (`helper-manager-test.ts:21-37,245-337`).
+   not re-call `getValue`) (`helpers/helper-manager-test.js:58-75,77-174`).
 4. If `hasValue` is false (reachable only in production, §6.1), the helper's value is
    always `undefined`. `getDestroyable` is still honored if `hasDestroyable`
    (`helper.ts:139-150`).
@@ -784,7 +784,7 @@ uses the default manager (RFC 0756; `packages/@glimmer/manager/lib/internal/defa
   argument is consumed only if `f` reads it.
 - `this` is `undefined` inside `f`, since it is called as a plain function. Class methods
   work only if they don't use `this`, unless they are bound (for example with `@action`).
-  Tests: `packages/@ember/-internals/glimmer/tests/integration/helpers/default-helper-manager-test.js:135-172`.
+  Tests: `packages/@ember/-internals/glimmer/tests/integration/helpers/default-helper-manager-test.gjs:118-147`.
 - The debug name is `(helper function <name>)` or `(anonymous helper function)`
   (`defaults.ts:52-58`).
 
@@ -968,17 +968,17 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
    hooks are autotracked by default": `install` reads `trackedOne`, `update` reads
    `trackedTwo`. The first `trackedTwo` change does nothing. A `trackedOne` change triggers
    update, after which only `trackedTwo` changes trigger update
-   (`packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:165-217`).
+   (`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:224-281`).
 
    Arguments count only if consumed through the arguments object: "modifers only track
    positional arguments they consume" and "... named arguments they consume"
-   (`modifier-manager-test.ts:329-424`). A modifier that consumes nothing is never updated.
+   (`custom-modifier-manager-test.js:483-588`). A modifier that consumes nothing is never updated.
    Test: "didUpdate is not called when params are constants",
    `modifiers-test.ts:56`.
 5. **Destroy.** When the enclosing block is torn down, `destroyModifier(instance, args)` is
    called as a **deferred** destructor (§10.2). The element has already been removed from
    the DOM by then. It is the same element object that was passed to `installModifier`
-   (`modifier-manager-test.ts:128-163`). Arguments are **not** read eagerly during
+   (`custom-modifier-manager-test.js:183-222`). Arguments are **not** read eagerly during
    destruction (§3.2).
 
    Destruction order matches installation order: "same element destruction order"
@@ -1053,7 +1053,7 @@ Semantics:
 
      If nothing differs, the procedure does nothing. Test: "unrelated updates to `this`
      context does not result in removing + re-adding"
-     (`packages/@glimmer-workspace/integration-tests/test/modifiers/on-test.ts:301-320`).
+     (`packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:293-311`).
 - Listener order is the DOM's: listeners run in the order they were added, on the target
   element before its ancestors. When a component forwards modifiers with `...attributes`, the
   caller's `{{on}}` listeners run before the listeners that the component puts on that element,
@@ -1065,12 +1065,12 @@ Semantics:
   rebound. [Dev] The callback is bound to a sentinel `this`. Property access on it throws
   ``You accessed `this.<k>` from a function passed to the `on` modifier, but the function
   itself was not bound to a valid `this` context. Consider updating to use a bound
-  function`` (`on.ts:25,186-187`; test `on-test.ts:370-385`). With `passive`, [Dev] wraps
+  function`` (`on.ts:25,186-187`; test `on-test.js:381-400`). With `passive`, [Dev] wraps
   `event.preventDefault` so that calling it throws.
 - `once`: the browser removes the listener after the first dispatch. If the arguments
   later change, the procedure runs again: it removes the listener (a no-op) and re-adds it.
   Test: "changing from `once=false` to `once=true`" (adds 2, removes 1),
-  `on-test.ts:179-210`.
+  `on-test.js:128-155`.
 - Destruction (deferred) removes the current listener (`on.ts:47-53`).
 - *Implementation note:* `getInternalModifierManager(on).counters` returns cumulative
   `{adds, removes}` counts, which tests use. It is not user-facing API.

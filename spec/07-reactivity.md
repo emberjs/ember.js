@@ -410,7 +410,7 @@ DOM updates, `renderSettled()`, and the run loop.
    resolves at the end of the first run loop after which all renderers are valid. Repeated calls
    before resolution return the *same* promise. If no run loop is open when it is called, it
    schedules a no-op into `actions` to start one.
-   *Tests:* `packages/@ember/-internals/glimmer/tests/integration/render-settled-test.js:11-46`.
+   *Tests:* `packages/@ember/-internals/glimmer/tests/integration/render-settled-test.gjs:15-52`.
 9. **Revalidation re-reads, it does not re-run everything.** Within a revalidation, only the
    computations that are invalid are re-evaluated. Valid computations return their cached value
    (§07-4). Revalidation visits dynamic positions in document (tree) order, as specified in §05.

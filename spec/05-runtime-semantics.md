@@ -695,7 +695,7 @@ that the rehydration test mode observes `selected=true`
 #### 4.5.3 `style`
 
 `style` is always applied in attribute mode (`props.ts:26-31`). [Dev] Unless the attribute uses
-the trusting form (`style={{{x}}}` gives no warning — `test/style-warnings-test.ts:60-66`),
+the trusting form (`style={{{x}}}` gives no warning — `packages/@ember/-internals/glimmer/tests/integration/content-test.js:1760-1766`),
 every initial application and every update first calls the embedder hook
 `warnIfStyleNotTrusted(value)` (`dynamic.ts:249-266`). In Ember that issues the warning with id
 `ember-htmlbars.style-xss-warning` unless the value is `null`, `undefined`, or an `htmlSafe`
@@ -1286,9 +1286,9 @@ Inside the component, the block named `n` is in slot `&n`; `inverse` is always a
 `<:inverse>` each satisfy both `has-block "else"`/`"inverse"` and both `yield to=` spellings
 (`packages/@ember/-internals/glimmer/tests/integration/helpers/yield-test.js:60-84`); both may
 declare block params and receive yielded values
-(`lib/suites/emberish-components.ts:263-295`, `kind: 'curly'`); a `<:default>` block and an
-arbitrary `<:baz>` block (`emberish-components.ts:207-260`); an implicit default
-(`emberish-components.ts:225-243`). Passing both `<:else>` and `<:inverse>` is a compile-time
+(`lib/suites/component-invocation.ts:142-160`); a `<:default>` block and an
+arbitrary `<:baz>` block (`component-invocation.ts:131-139`, `packages/@ember/-internals/glimmer/tests/integration/helpers/yield-test.js:35-58`); an implicit default
+(`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:237-253`). Passing both `<:else>` and `<:inverse>` is a compile-time
 error (`packages/@glimmer-workspace/integration-tests/test/syntax/named-blocks-test.ts:73-105`).
 A block is a closure
 (§05-1.1) that also records its declared block-parameter count.
@@ -1843,8 +1843,8 @@ when the element is closed (after its children have rendered):
 At commit, `install` runs with auto-tracking: storage consumed during `install` (including
 argument reads) determines when `update` is needed (`packages/@glimmer/runtime/lib/environment.ts:63-78`;
 `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:224-281`,
-`packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:165-217`,
-`329-430`: only arguments consumed by a hook cause `update`).
+`483-588`: only arguments consumed by a hook cause `update`; the Glimmer-harness
+copies of these tests were deleted by W2).
 
 Tests: several modifiers on one element install in source order, `<div {{foo}} {{bar}}>` gives
 `foo, bar` (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:84-104`); a nested
@@ -2231,7 +2231,7 @@ clearMismatch(c): remove c and every following sibling up to (not including) the
    then disable rehydration in this container until that close marker is reached
 ```
 
-Consequences (tests: `initial-render-test.ts:164-1598`,
+Consequences (tests: `initial-render-test.ts:199-1634`,
 `packages/@glimmer-workspace/integration-tests/test/chaos-rehydration-test.ts:80-336`):
 
 - Server text differing from the client value is repaired in place (0 nodes removed); an
