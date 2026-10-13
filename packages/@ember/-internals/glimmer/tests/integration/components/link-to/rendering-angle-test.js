@@ -223,3 +223,45 @@ moduleFor(
     }
   }
 );
+
+// Glimmer sanitizes every dynamic URL attribute of an <a> (`href`, `src`,
+// `background`, `action`, ...), also one <LinkTo> receives through
+// `...attributes`. LinkTo's own `href` comes after `...attributes` and wins,
+// so this forwards `background`.
+moduleFor(
+  '<LinkTo /> component (URL sanitization of forwarded attributes)',
+  class extends ApplicationTestCase {
+    async ['@test a bound URL attribute forwarded to the link is sanitized, also on update'](
+      assert
+    ) {
+      let controller;
+
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo @route='index' background={{this.url}}>Index</LinkTo>`)
+      );
+      this.add(
+        'controller:application',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          url = 'javascript:alert(1)';
+        }
+      );
+
+      await this.visit('/');
+
+      let background = () => this.element.querySelector('a').getAttribute('background');
+      assert.strictEqual(background(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => set(controller, 'url', 'https://emberjs.com/'));
+      assert.strictEqual(background(), 'https://emberjs.com/');
+
+      runTask(() => set(controller, 'url', 'vbscript:alert(1)'));
+      assert.strictEqual(background(), 'unsafe:vbscript:alert(1)');
+    }
+  }
+);

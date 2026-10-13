@@ -10,7 +10,12 @@ import {
   type ClassicComponentShape,
 } from 'internal-test-helpers';
 
-import { Input, Textarea } from '@ember/component';
+import {
+  Input,
+  Textarea,
+  capabilities as componentCapabilities,
+  setComponentManager,
+} from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
@@ -28,6 +33,7 @@ import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
 import { ENV } from '@ember/-internals/environment';
+import { DEBUG } from '@glimmer/env';
 import { captureRenderTree } from '@ember/debug';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 
@@ -255,6 +261,160 @@ moduleFor(
 
       assertHTML('');
       await this.assertStableRerender();
+    }
+
+    async '@test a plain-object definition with a custom component manager renders its context'(
+      assert: QUnit['assert']
+    ) {
+      let calls: string[] = [];
+      let definition = {};
+
+      setComponentManager(
+        () => ({
+          capabilities: componentCapabilities('3.13', {
+            asyncLifecycleCallbacks: true,
+            destructor: true,
+          }),
+          createComponent(received: object, args: { named: Record<string, unknown> }) {
+            calls.push('createComponent');
+            assert.strictEqual(received, definition, 'createComponent receives the definition');
+            return { greeting: 'Hello', name: args.named['name'] };
+          },
+          getContext(instance: object) {
+            calls.push('getContext');
+            return instance;
+          },
+          didCreateComponent() {
+            calls.push('didCreateComponent');
+          },
+          destroyComponent() {
+            calls.push('destroyComponent');
+          },
+        }),
+        definition
+      );
+      setComponentTemplate(precompileTemplate('{{this.greeting}}, {{this.name}}!'), definition);
+
+      let owner = buildOwner({});
+
+      let result = renderComponent(definition, {
+        owner,
+        into: this.element,
+        args: { name: 'world' },
+      });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('Hello, world!');
+      await this.assertStableRerender();
+      assert.deepEqual(
+        calls.filter((call) => call === 'createComponent' || call === 'didCreateComponent'),
+        ['createComponent', 'didCreateComponent'],
+        'the manager creates the component once'
+      );
+      assert.notOk(calls.includes('destroyComponent'), 'the component is not destroyed yet');
+
+      result.destroy();
+      await renderSettled();
+
+      assertHTML('');
+      assert.ok(calls.includes('destroyComponent'), 'destroying the render destroys the component');
+
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test the context of a plain-object definition with a custom component manager is reactive'() {
+      class State {
+        @tracked count = 1;
+      }
+      let state = new State();
+      let definition = {};
+
+      setComponentManager(
+        () => ({
+          capabilities: componentCapabilities('3.13'),
+          createComponent: () => state,
+          getContext: (instance: State) => instance,
+        }),
+        definition
+      );
+      setComponentTemplate(precompileTemplate('<p>{{this.count}}</p>'), definition);
+
+      let owner = buildOwner({});
+
+      let result = renderComponent(definition, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('<p>1</p>');
+
+      state.count++;
+      await renderSettled();
+
+      assertHTML('<p>2</p>');
+      await this.assertStableRerender();
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test an error thrown by a render is not thrown again by the next render'(
+      assert: QUnit['assert']
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let NotAComponent = defineSimpleHelper(() => 'not a component');
+      let Broken = setComponentTemplate(
+        precompileTemplate('<this.NotAComponent/>', { strictMode: true }),
+        class extends GlimmerComponent {
+          NotAComponent = NotAComponent;
+        }
+      );
+      // Writes tracked state while it renders.
+      class Hello extends GlimmerComponent {
+        @tracked name = 'nobody';
+
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          this.name = 'world';
+        }
+      }
+      setComponentTemplate(precompileTemplate('Hello, {{this.name}}!'), Hello);
+
+      // Which error the first render throws is not what this test checks.
+      let failedOwner = buildOwner({});
+      assert.throws(() => {
+        renderComponent(Broken, { owner: failedOwner, into: document.createElement('div') });
+      }, 'the first render throws');
+      destroy(failedOwner);
+
+      let owner = buildOwner({});
+      let result = renderComponent(Hello, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('Hello, world!');
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
     }
   }
 );

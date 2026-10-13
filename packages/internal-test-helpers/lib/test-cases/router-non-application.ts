@@ -50,6 +50,11 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
         });
       },
     };
+    if (__GXT_MODE__) {
+      // GXT renders the router's top-level outlet view into the instance's
+      // root element (gxt-backend/outlet.ts), not through `renderRootComponent`.
+      Object.defineProperty(appInstance, 'rootElement', { get: () => this.element });
+    }
     owner.register('-application-instance:main', appInstance, { instantiate: false });
 
     this.renderer = this.owner.lookup('renderer:-dom') as Renderer;

@@ -6,6 +6,7 @@ import { tracked } from '@ember/-internals/metal/lib/tracked';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type Owner from '@ember/owner';
+import { getGxtRenderer, getRouteOutletHooks } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
@@ -21,6 +22,7 @@ import {
   getActiveTargetName,
   queryParamType,
   resemblesURL,
+  stashParamNames,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import type {
@@ -81,6 +83,55 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo[]) {
 
   notifyPropertyChange(this, 'url');
   this.currentState = this.targetState;
+
+  // GXT: LinkTo.href consumes `tagFor(routing, 'currentState')`, where
+  // `routing` is the `-routing` service that aliases `router.currentState`
+  // via `readOnly('router.currentState')`. In GXT mode the alias chain tag
+  // doesn't always propagate dirty to the routing service's tag on
+  // `set(router, 'currentState', ...)`, so LinkTo.href getters don't re-
+  // evaluate after a QP-only transition (triggered by `set(controller,
+  // 'q', 'lol')` → _activeQPChanged → fireQueryParamTransition). We
+  // explicitly notify the routing service so its `currentState` tag
+  // dirties, forcing LinkTo.href getters to re-evaluate with the latest
+  // sticky QP values. This matches the semantics upstream Glimmer VM
+  // already achieves via its chain-tag machinery.
+  if (__GXT_MODE__) {
+    try {
+      const owner = getOwner(this);
+      if (owner) {
+        const routing = owner.lookup('service:-routing') as any;
+        if (routing) {
+          // Dirty the routing service's `currentState` tag directly (see
+          // above). Without the bridge, fall back to `notifyPropertyChange`.
+          const dirtyTagFor = getGxtRenderer()?.compilePipeline.classicDirtyTagFor;
+          if (typeof dirtyTagFor === 'function') {
+            dirtyTagFor(routing, 'currentState');
+          } else if (typeof routing.notifyPropertyChange === 'function') {
+            routing.notifyPropertyChange('currentState');
+          }
+          // Trigger a sync so enqueued effects (e.g. LinkTo.applyHref via
+          // registerClassicReactor) flush synchronously before the test's
+          // next assertion runs. Marking it as property-driven makes the sync
+          // re-evaluate the routing-service formulas.
+          const _cpRouter = getGxtRenderer()?.compilePipeline;
+          const syncDomNow = _cpRouter?.syncDomNow;
+          if (typeof syncDomNow === 'function') {
+            _cpRouter?.setPendingSync?.(true);
+            _cpRouter?.setPendingSyncFromPropertyChange?.(true);
+            syncDomNow();
+          }
+        }
+      }
+    } catch (e) {
+      // Best-effort: a throw here must never block the transition, but it
+      // would leave LinkTo href/isActive stale, so surface it in DEBUG (a
+      // console.warn does not trip QUnit's warn/deprecation assertions).
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] post-transition tag-dirty/sync failed', e);
+      }
+    }
+  }
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -625,6 +676,15 @@ class EmberRouter extends EmberObject {
       #pendingOutletFlush: ReturnType<typeof later> | null = null;
 
       protected override scheduleOutletUpdate(immediate = false): void {
+        // GXT renders each route from the render state its `setup` recorded
+        // (gxt-backend/outlet.ts), so an incremental pass mid-transition has
+        // nothing new to render (the resolved routes are not set up yet); its
+        // outlet machinery renders the settled transition and the
+        // loading/error substates, the immediate passes.
+        if (__GXT_MODE__ && !immediate) {
+          return;
+        }
+
         if (immediate) {
           if (this.#pendingOutletFlush !== null) {
             cancel(this.#pendingOutletFlush);
@@ -798,6 +858,16 @@ class EmberRouter extends EmberObject {
 
     let routeInfos = this._routerMicrolib.currentRouteInfos;
     if (!routeInfos) {
+      return;
+    }
+
+    if (__GXT_MODE__) {
+      // GXT renders routes through its own outlet machinery
+      // (gxt-backend/outlet.ts), from the render states that `Route#setup`
+      // recorded, instead of through the `RootOutlet` component below.
+      let hooks = getRouteOutletHooks();
+      assert('[gxt] the GXT route-outlet hooks are not installed', hooks !== null);
+      hooks.setOutlets(this, routeInfos);
       return;
     }
 
@@ -1279,6 +1349,26 @@ class EmberRouter extends EmberObject {
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
+    // GXT: Ensure qp.parts is populated for model-scoped query params so that
+    // the cacheKey in _hydrateUnsuppliedQueryParams matches the one used when
+    // _qpChanged stashed the sticky value. stashParamNames dispatches to each
+    // routeInfo's route manager — but reading `routeInfo.manager` fetches
+    // (async-loads) the route if it's not yet resolved, which would break
+    // "only fetch handlers for the current route" invariants for links that
+    // point to lazy routes. Probe `hasResolvedManagement` without triggering
+    // a fetch.
+    if (__GXT_MODE__) {
+      let allRoutesLoaded = true;
+      for (let info of state.routeInfos) {
+        if (!info.hasResolvedManagement) {
+          allRoutesLoaded = false;
+          break;
+        }
+      }
+      if (allRoutesLoaded) {
+        stashParamNames(this, state.routeInfos);
+      }
+    }
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
 

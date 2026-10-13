@@ -45,7 +45,7 @@ interface ExpectedRenderNode {
   children: Expected<CapturedRenderNode['children']> | ExpectedRenderNode[];
 }
 
-if (ENV._DEBUG_RENDER_TREE) {
+if (ENV._DEBUG_RENDER_TREE && !__GXT_MODE__) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {
@@ -1828,6 +1828,91 @@ if (ENV._DEBUG_RENDER_TREE) {
         await assert.rejects(this.visit('/'), /oops!/);
 
         assert.deepEqual(captureRenderTree(this.owner), [], 'there was no output');
+      }
+    }
+  );
+}
+
+// GXT-mode counterpart. The classic module above is guarded off in GXT mode
+// (its outlet/engine/route-template node structure is produced by the Glimmer
+// VM's DebugRenderTree, which is purged from the GXT build). Under GXT,
+// `renderer.debugRenderTree` is instead backed by `@lifeart/gxt`'s
+// `captureRenderTree` — see the `debugRenderTree` getter in renderer.ts. This
+// exercises that wiring end-to-end.
+//
+// gxt returns `CapturedRenderNode[]` nodes `{ id, type:'component', name,
+// args:{positional, named}, instance, bounds:{parentElement,firstNode,lastNode}|null,
+// children }` (plus an extra `template:null`), matching @glimmer/interfaces.
+// This test asserts (1) the getter is wired (no throw) and (2) `.capture()`
+// returns a non-trivial tree whose every node conforms to the
+// `CapturedRenderNode` shape. gxt reports each node's `name` as its runtime
+// class name and leaves `bounds` null, so names and bounds are not asserted.
+if (ENV._DEBUG_RENDER_TREE && __GXT_MODE__) {
+  moduleFor(
+    'Application test: GXT debug render tree (captureRenderTree)',
+    class extends ApplicationTestCase {
+      async '@test debugRenderTree is wired to gxt captureRenderTree'(assert: Assert) {
+        this.add(
+          'template:application',
+          precompileTemplate('<div id="app-root">Hello world!</div>', {
+            moduleName: 'my-app/templates/application.hbs',
+          })
+        );
+
+        await this.visit('/');
+
+        // 1. The getter is wired (previously it threw unconditionally in GXT
+        //    mode). It now returns a real DebugRenderTree backed by gxt.
+        let renderer = this.applicationInstance!.lookup('renderer:-dom') as {
+          debugRenderTree: { capture: () => CapturedRenderNode[] };
+        };
+        assert.ok(renderer, 'the -dom renderer is present');
+        assert.ok(
+          renderer.debugRenderTree,
+          'renderer.debugRenderTree resolves (no longer throws in GXT mode)'
+        );
+        assert.strictEqual(
+          typeof renderer.debugRenderTree.capture,
+          'function',
+          'debugRenderTree exposes a capture() method'
+        );
+
+        // 2. capture() returns a real, well-formed tree.
+        //    `@ember/debug`'s captureRenderTree(owner) delegates to this path.
+        const tree = captureRenderTree(this.applicationInstance!);
+        assert.ok(Array.isArray(tree), 'captureRenderTree returns an array (no overflow)');
+        assert.ok(tree.length >= 1, 'the captured tree has at least one root node');
+
+        // Recursively validate the CapturedRenderNode shape + confirm the walk
+        // actually descended (a nested child proves the cycle guard let the
+        // traversal run to completion instead of overflowing/truncating).
+        let nodeCount = 0;
+        let maxDepth = 0;
+        const validate = (nodes: CapturedRenderNode[], depth: number): void => {
+          assert.ok(Array.isArray(nodes), `children at depth ${depth} is an array`);
+          if (depth > maxDepth) maxDepth = depth;
+          for (let node of nodes) {
+            nodeCount++;
+            assert.strictEqual(typeof node.type, 'string', 'node.type is a string');
+            assert.ok('name' in node, 'node has a name');
+            assert.ok('id' in node, 'node has an id');
+            assert.ok('instance' in node, 'node has an instance slot');
+            assert.ok(node.args && typeof node.args === 'object', 'node.args is present');
+            assert.ok(Array.isArray(node.args.positional), 'node.args.positional is an array');
+            assert.ok(
+              node.args.named && typeof node.args.named === 'object',
+              'node.args.named is an object'
+            );
+            assert.ok(
+              node.bounds === null || typeof node.bounds === 'object',
+              'node.bounds is null or an object'
+            );
+            validate(node.children, depth + 1);
+          }
+        };
+        validate(tree, 0);
+        assert.ok(nodeCount >= 2, `the tree has multiple nodes (got ${nodeCount})`);
+        assert.ok(maxDepth >= 1, `the walk descended past the root (maxDepth ${maxDepth})`);
       }
     }
   );

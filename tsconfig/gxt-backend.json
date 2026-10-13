@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // Opt-in type-check of the compat GXT backend (gxt-backend/ minus native/).
+  // Not part of `pnpm type-check` yet: run `node scripts/gxt-check.mjs`, which
+  // reports the diagnostic counts without failing.
+  "extends": "./compiler-options.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noUnusedLocals": true
+  },
+  "include": ["../packages/@ember/-internals/gxt-backend/**/*.ts", "../types/gxt-ambient.d.ts"],
+  "exclude": [
+    "../**/node_modules",
+    "../packages/@ember/-internals/gxt-backend/native/**",
+    "../packages/@ember/-internals/gxt-backend/**/__tests__/**"
+  ]
+}

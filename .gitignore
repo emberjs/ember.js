@@ -18,6 +18,10 @@ assets/bpm_styles.css
 coverage
 dist
 dist-prod
+# Assembled consumable GXT package (scripts/build-gxt-package.mjs output)
+dist-gxt-package
+# Assembled gxt-native package (scripts/build-gxt-native-package.mjs output)
+dist-gxt-native-package
 /docs
 lib/*/tests/all.js
 lib/*/tests/qunit*
@@ -56,3 +60,8 @@ npm-debug.log
 # couple of the files. Once it is, we can switch this over to just ignoring
 # `types/stable` entirely.
 types/stable
+
+# Ephemeral GXT test outputs (keep baseline + triage)
+/test-results/gxt-last-run.json
+/test-results/gxt-summary.json
+/test-results/rehydration/

@@ -32,6 +32,7 @@ import {
   getComponentCapturedArgs,
 } from './component-managers/curly';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -1033,6 +1034,11 @@ class Component<S = unknown>
   // Changed to `rerender` on init
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);
+    // In GXT mode, mark this instance for a forced rerender so the update
+    // lifecycle hooks fire for it and its ancestors.
+    if (__GXT_MODE__) {
+      getGxtRenderer()?.compilePipeline.forceRerender?.(this);
+    }
     this._superRerender();
   }
 
