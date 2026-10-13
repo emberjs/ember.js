@@ -7,7 +7,6 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import type createHTMLDocument from '@simple-dom/document';
 
 import { expectTypeOf } from 'expect-type';
 
@@ -36,23 +35,6 @@ expectTypeOf<Attr>().toMatchTypeOf<SimpleAttr>();
  */
 expectTypeOf<SimpleElement>().toMatchTypeOf<SimpleNode>();
 expectTypeOf<SimpleDocument>().toMatchTypeOf<SimpleNode>();
-
-/**
- * The nodes of a document from `@simple-dom/document` are subtypes of the
- * Simple types too.
- */
-type NodeDocument = ReturnType<typeof createHTMLDocument>;
-type NodeElement = ReturnType<NodeDocument['createElement']>;
-
-expectTypeOf<NodeDocument>().toMatchTypeOf<SimpleDocument>();
-expectTypeOf<NodeElement>().toMatchTypeOf<SimpleElement>();
-expectTypeOf<NodeElement['attributes'][number]>().toMatchTypeOf<SimpleAttr>();
-expectTypeOf<NonNullable<NodeElement['parentNode']>>().toMatchTypeOf<SimpleNode>();
-expectTypeOf<ReturnType<NodeDocument['createTextNode']>>().toMatchTypeOf<SimpleText>();
-expectTypeOf<ReturnType<NodeDocument['createComment']>>().toMatchTypeOf<SimpleComment>();
-expectTypeOf<
-  ReturnType<NodeDocument['createDocumentFragment']>
->().toMatchTypeOf<SimpleDocumentFragment>();
 
 /**
  * The other direction does not hold. A Simple type has only the members

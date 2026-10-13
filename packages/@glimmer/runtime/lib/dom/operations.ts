@@ -32,16 +32,10 @@ const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 export const BLACKLIST_TABLE = Object.create(null) as Dict<1>;
 
 export class DOMOperations {
-  declare protected uselessElement: SimpleElement; // Set by this.setupUselessElement() in constructor
+  protected uselessElement: SimpleElement;
 
   constructor(protected document: SimpleDocument) {
-    this.setupUselessElement();
-  }
-
-  // split into separate method so that NodeDOMTreeConstruction
-  // can override it.
-  protected setupUselessElement() {
-    this.uselessElement = this.document.createElement('div');
+    this.uselessElement = document.createElement('div');
   }
 
   createElement(tag: string, context?: SimpleElement): SimpleElement {

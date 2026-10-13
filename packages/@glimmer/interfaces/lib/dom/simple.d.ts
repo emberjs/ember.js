@@ -19,9 +19,9 @@ export type Namespace = ElementNamespace | AttrNamespace;
 /**
  * The part of the DOM that the VM needs.
  *
- * Each interface here is a supertype of the browser type with the same role,
- * and of the node type from `@simple-dom/document`. A browser node and a
- * Simple DOM node are both assignable with no cast.
+ * Each interface here is a supertype of the browser type with the same role.
+ * A browser node is assignable with no cast, and so is a node from another
+ * DOM implementation that has these members.
  */
 export interface SimpleNode {
   readonly ownerDocument: SimpleDocument | null;
@@ -101,9 +101,6 @@ export interface SimpleDocument extends SimpleNode {
   createComment(data: string): SimpleComment;
 
   createDocumentFragment(): SimpleDocumentFragment;
-
-  /** Only Simple DOM has this. */
-  createRawHTMLSection?(html: string): SimpleNode;
 }
 
 /**
