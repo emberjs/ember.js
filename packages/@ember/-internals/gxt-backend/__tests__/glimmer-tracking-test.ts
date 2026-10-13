@@ -18,9 +18,9 @@
  * tests with `tracked` / `cached` imported from `@glimmer/tracking` (the
  * classic files import metal's). Left out: the standalone `tracked(value)`
  * tests and the custom `MutableArray` test, red under GXT with metal's
- * `tracked` too (the compat baseline), and the helper test `array properties
- * rerender when updated`, which needs the array consumption of metal's
- * `tracked`.
+ * `tracked` too (the compat baseline). The helper test `array properties
+ * rerender when updated` is in the last module: it needs the array
+ * consumption of metal's `tracked`.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -39,6 +39,8 @@ import { A } from '@ember/array';
 import Service, { service } from '@ember/service';
 import { next } from '@ember/runloop';
 import { setOwner } from '@ember/-internals/owner';
+import { peekMeta } from '@ember/-internals/meta';
+import { TrackedDescriptor } from '@ember/-internals/metal';
 import { renderSettled } from '@ember/renderer';
 import { precompileTemplate } from '@ember/template-compilation';
 import { helperCapabilities, setComponentTemplate, setHelperManager } from '@glimmer/manager';
@@ -1534,6 +1536,140 @@ moduleFor(
 
       assert.strictEqual(jen.fullName, 'Jen Weber', 'other instance is unaffected');
       assert.verifySteps([], 'getter was not called again after repeated property access');
+    }
+  }
+);
+
+// What `@glimmer/tracking` gives as metal's `tracked` / `cached` (upstream's
+// `@glimmer/tracking` re-exports them) and gxt-backend's former copy did not:
+// the meta descriptor that `get` / `set` / the component manager see, a field
+// initializer that reads `this`, the `equals` option, the classic-class field
+// form, and the array consumption of a tracked array value. (The standalone
+// `tracked(value)` does not re-render under GXT yet, with either copy: the
+// compat baseline's `Component Tracked Properties` standalone tests.)
+moduleFor(
+  'GXT @glimmer/tracking: the forms of metal tracked',
+  class extends RenderingTestCase {
+    '@test @glimmer/tracking is metal tracked'(assert: QUnit['assert']) {
+      class Person {
+        @tracked name = 'Rob';
+      }
+      const person = new Person();
+      const desc = (peekMeta(Person.prototype) as any)?.peekDescriptors?.('name');
+      assert.ok(desc instanceof TrackedDescriptor, 'the decorator records a TrackedDescriptor');
+      assert.strictEqual(person.name, 'Rob');
+    }
+
+    '@test a field initializer can read this'() {
+      class Counter extends GlimmerComponent<any> {
+        @tracked count = this.args.start * 10;
+
+        increment = () => {
+          this.count++;
+        };
+      }
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count}}</button>'),
+          Counter
+        )
+      );
+
+      this.render('<Counter @start={{2}} />');
+      this.assertText('20');
+
+      runTask(() => this.$('button').click());
+      this.assertText('21');
+    }
+
+    '@test the equals option skips a write of an equal value'(assert: QUnit['assert']) {
+      let computeCount = 0;
+      class State {
+        @tracked({ equals: (a: any, b: any) => a.id === b.id }) item = { id: 1, label: 'a' };
+      }
+      const state = new State();
+      this.registerHelper('label', ([item]: any[]) => {
+        computeCount++;
+        return item.label;
+      });
+
+      this.render('{{label this.state.item}}', { state });
+      this.assertText('a');
+      assert.strictEqual(computeCount, 1);
+
+      runTask(() => (state.item = { id: 1, label: 'b' }));
+      this.assertText('a');
+      assert.strictEqual(computeCount, 1, 'an equal value does not notify');
+
+      runTask(() => (state.item = { id: 2, label: 'c' }));
+      this.assertText('c');
+      assert.strictEqual(computeCount, 2);
+    }
+
+    '@test tracked() on a classic class'() {
+      const Person = EmberObject.extend({
+        name: tracked({ value: 'Zoey' }),
+        songs: tracked({ initializer: () => ['a'] }),
+      });
+      const person: any = Person.create();
+
+      this.render('{{this.person.name}}:{{#each this.person.songs as |s|}}{{s}}{{/each}}', {
+        person,
+      });
+      this.assertText('Zoey:a');
+
+      runTask(() => (person.name = 'Tomster'));
+      this.assertText('Tomster:a');
+
+      runTask(() => set(person, 'songs', ['a', 'b']));
+      this.assertText('Tomster:ab');
+    }
+
+    '@test array properties rerender when updated (Helper Tracked Properties)'() {
+      class NumListComponent extends GlimmerComponent {
+        @tracked numbers = A([1, 2, 3]);
+
+        addNumber = () => {
+          this.numbers.pushObject(4);
+        };
+      }
+
+      this.owner.register(
+        'component:num-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.addNumber}}>{{join this.numbers}}</button>'
+          ),
+          NumListComponent
+        )
+      );
+
+      this.registerHelper('join', ([value]: any[]) => {
+        return value.join(', ');
+      });
+
+      this.render('<NumList />');
+
+      this.assertText('1, 2, 3');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1, 2, 3, 4');
+    }
+
+    '@test a tracked array property consumes the array'() {
+      class List {
+        @tracked items = A(['a']);
+      }
+      const list = new List();
+      this.registerHelper('join', ([items]: any[]) => items.join(','));
+
+      this.render('{{join this.list.items}}', { list });
+      this.assertText('a');
+
+      runTask(() => list.items.pushObject('b'));
+      this.assertText('a,b');
     }
   }
 );

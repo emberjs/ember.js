@@ -2953,8 +2953,8 @@ let _emberFormValueUndefinedPatched = false;
 // (`_gxtFlags.trackedSetSinceRerender`, via the
 // `compilePipeline.markTrackedSetSinceRerender()` /
 // `consumeTrackedSetSinceRerender()` bridge pair); it is set by a hook on the
-// trigger-re-render path (called by the tracked setter in
-// glimmer-tracking.ts) and consumed on the next `UpdatingVM.execute`. The
+// trigger-re-render path (reached from metal's `@tracked` setter through
+// `notifyPropertyChange`) and consumed on the next `UpdatingVM.execute`. The
 // `{{#each}}` list iterator and other stable-rerender paths are unaffected on
 // rerenders where no tracked set occurred, preserving DOM node identity.
 Promise.resolve().then(async () => {

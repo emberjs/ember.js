@@ -13934,7 +13934,7 @@ installCompilePipelinePart({
   withSyncing: _gxtWithSyncing,
   // Save-restore wrapper + read predicate for the "currently rendering" flag
   // (distinct from the render-pass depth counter). The writer is manager.ts's
-  // `wrapHandler`; readers are `metal/tracked.ts` and `glimmer-tracking.ts`.
+  // `wrapHandler`; the reader is validator.ts's `_scheduleNativeCollectionFlush`.
   withCurrentlyRendering: _gxtWithCurrentlyRendering,
   isCurrentlyRendering: _gxtIsCurrentlyRendering,
   // Mark+consume surface for the "tracked set since rerender" flag: set by

@@ -1629,8 +1629,7 @@ export function _scheduleCollectionFlush(): void {
 // A change of a collection whose native GXT cell the formulas that read it
 // subscribe to directly (trackedArray's `collection` tag,
 // `createUpdatableTagNative`). Besides the coalesced flush above, the change
-// is recorded as a pending state change, as a `@tracked` write records it
-// (glimmer-tracking.ts `trackedSet`), and a revalidation is scheduled, so the
+// is recorded as a pending state change and a revalidation is scheduled, so the
 // runloop's DOM sync renders it (Glimmer: dirtying a tag schedules a
 // revalidation, rendered when the current runloop ends). `_gxtSyncDomNow`
 // runs gxt's `syncDom()` only for a sync recorded as a property change; any
@@ -1640,8 +1639,8 @@ export function _scheduleCollectionFlush(): void {
 // asked for) dropped the collection cell's invalidation, and every formula
 // that read the collection — a helper over a `trackedArray` argument,
 // `{{this.list.length}}` — kept its old value. While a render is in progress
-// only the pending sync is recorded, as `trackedSet` does: the formulas that
-// render after the change read the changed collection.
+// only the pending sync is recorded: the formulas that render after the change
+// read the changed collection.
 export function _scheduleNativeCollectionFlush(): void {
   const pipeline = getGxtRenderer()?.compilePipeline;
   pipeline?.setPendingSync?.(true);

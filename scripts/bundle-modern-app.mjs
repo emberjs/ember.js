@@ -472,8 +472,8 @@ const RULES = [
     V,
   ],
   [
-    /gxt-backend\/(validator|reference|destroyable|glimmer-tracking)[^/]*\.ts$/,
-    'gxt-backend: validator/reference/destroyable/tracking shims',
+    /gxt-backend\/(validator|reference|destroyable)[^/]*\.ts$/,
+    'gxt-backend: validator/reference/destroyable shims',
     V,
   ],
   [

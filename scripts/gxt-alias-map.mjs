@@ -47,8 +47,11 @@ export const GXT_SHIM_DIR = 'packages/@ember/-internals/gxt-backend';
  * route to the `-vm-compat` module via GXT_SUBPATH_REDIRECTS below.
  *
  * ORDER IS SIGNIFICANT for the vite alias array (first match wins, and Vite
- * string aliases match on a `find + '/'` prefix): keep
- * `@glimmer/tracking/primitives/cache` ahead of `@glimmer/tracking`.
+ * string aliases match on a `find + '/'` prefix).
+ *
+ * `@glimmer/tracking` is not shimmed: its in-repo package re-exports metal's
+ * `tracked` / `cached` (which have their own GXT path) and the validator's
+ * cache primitives, and those resolve to the validator shim above.
  */
 export const GXT_SHIM_ALIASES = [
   { find: 'ember-template-compiler', shim: 'ember-template-compiler' },
@@ -56,8 +59,6 @@ export const GXT_SHIM_ALIASES = [
   { find: '@glimmer/application', shim: 'glimmer-application' },
   { find: '@glimmer/utils', shim: 'glimmer-util' },
   { find: '@glimmer/manager', shim: 'manager', subpathTolerant: true },
-  { find: '@glimmer/tracking/primitives/cache', shim: 'glimmer-tracking' },
-  { find: '@glimmer/tracking', shim: 'glimmer-tracking' },
   {
     find: '@glimmer/validator',
     shim: 'validator',

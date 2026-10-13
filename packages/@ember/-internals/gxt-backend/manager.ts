@@ -3831,31 +3831,13 @@ function _findCpWithSetterFor(inst: any, k: string): any {
   return null;
 }
 
-// Whether `key` on `inst` is a `@tracked` property: a TrackedDescriptor in
-// meta (metal's `@tracked`), or a getter/setter marked by glimmer-tracking.ts
-// on the first prototype that has an own descriptor for it.
+// Whether `key` on `inst` is a `@tracked` property: metal's `@tracked` (what
+// `@glimmer/tracking` re-exports) records a TrackedDescriptor in the meta of
+// the object it decorates (the class prototype, or the instance for a stage-3
+// field decorator).
 function _isTrackedKey(inst: any, k: string): boolean {
-  if (!inst) return false;
-  try {
-    if (_findMetaDescriptor(inst, k) instanceof TrackedDescriptor) return true;
-  } catch {
-    /* ignore */
-  }
-  try {
-    let p = Object.getPrototypeOf(inst);
-    while (p && p !== Object.prototype) {
-      const desc = Object.getOwnPropertyDescriptor(p, k);
-      if (desc) {
-        if ((desc.get as any)?.__isTrackedGetter || (desc.set as any)?.__isTrackedSetter)
-          return true;
-        return false;
-      }
-      p = Object.getPrototypeOf(p);
-    }
-  } catch {
-    /* ignore */
-  }
-  return false;
+  if (inst === null || (typeof inst !== 'object' && typeof inst !== 'function')) return false;
+  return _findMetaDescriptor(inst, k) instanceof TrackedDescriptor;
 }
 
 // Whether reading `key` on `obj` runs a `@tracked` accessor. gxt's
@@ -3890,8 +3872,8 @@ export function isTrackedAccessor(obj: object, key: string): boolean {
 }
 
 // Whether the first own descriptor for `key` on the prototype chain from
-// `start` is a plain native get-only getter: no setter, not a `@tracked`
-// accessor, and not a classic computed property (no meta descriptor from
+// `start` is a plain native get-only getter: no setter (so not a `@tracked`
+// accessor), and not a classic computed property (no meta descriptor from
 // `start`). Writing an arg value through such a key is impossible, and reading
 // it runs the user's getter.
 function _isPlainNativeGetterCollision(start: any, key: string): boolean {
@@ -3899,7 +3881,8 @@ function _isPlainNativeGetterCollision(start: any, key: string): boolean {
   while (proto && proto !== Object.prototype) {
     const pdesc = Object.getOwnPropertyDescriptor(proto, key);
     if (pdesc) {
-      if (!pdesc.get || pdesc.set || (pdesc.get as any).__isTrackedGetter) return false;
+      // A `@tracked` accessor has a setter.
+      if (!pdesc.get || pdesc.set) return false;
       let isClassicCp = false;
       try {
         isClassicCp = !!_findMetaDescriptor(start, key);
@@ -6116,10 +6099,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
     // reads and writes. The arg is still accessible via `this.args.key`.
     // See "Component Tracked Properties w/ Args Proxy" test.
     //
-    // Detection sources (in order):
-    //  1) Ember `@tracked` stores a TrackedDescriptor in meta.peekDescriptors
-    //     (see metal/lib/tracked.ts writeDescriptors()).
-    //  2) Our local glimmer-tracking marks the getter with __isTrackedGetter.
+    // `@tracked` stores a TrackedDescriptor in meta (`_isTrackedKey`).
     if (instance && getter) {
       const hasTrackedDescriptor = _isTrackedKey(instance, key);
       if (hasTrackedDescriptor) {
@@ -6284,13 +6264,11 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             if (desc?.get) {
               hasComputedGetter = true;
               protoGetterFn = desc.get;
-              // Plain native get-only: has get, no set, not a tracked getter,
-              // and not a classic @computed CP (those carry a _setter /
-              // dependent-key descriptor in meta — `cell.value` is correct
-              // for them).
-              const _isTrackedG = !!(desc.get as any)?.__isTrackedGetter;
-              const _isTrackedS = !!(desc.set as any)?.__isTrackedSetter;
-              if (!desc.set && !_isTrackedG && !_isTrackedS) {
+              // Plain native get-only: has get, no set (so not a `@tracked`
+              // accessor), and not a classic @computed CP (those carry a
+              // _setter / dependent-key descriptor in meta — `cell.value` is
+              // correct for them).
+              if (!desc.set) {
                 let _isClassicCp = false;
                 try {
                   _isClassicCp = !!_findMetaDescriptor(Object.getPrototypeOf(instance), key);
@@ -6841,9 +6819,8 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // on any dep revision bump, so invalidation is unaffected.
         const getterFn = foundDesc?.get as any;
         const setterFn = foundDesc?.set as any;
-        const isTrackedGetter = !!getterFn?.__isTrackedGetter;
-        const isTrackedSetter = !!setterFn?.__isTrackedSetter;
-        if (getterFn && !setterFn && !isTrackedGetter && !isTrackedSetter) {
+        // A `@tracked` accessor has a setter, so it never takes this path.
+        if (getterFn && !setterFn) {
           let wrapper = gxtGetterCache.get(prop);
           if (!wrapper) {
             wrapper = _gxtCached(() => getterFn.call(target), 'ember-getter:' + prop);
