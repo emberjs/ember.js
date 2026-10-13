@@ -99,13 +99,13 @@ Facts an adapter has to work with (details and citations in `.work/T16-harness.m
    through `babel-plugin-ember-template-compilation` with the `compilerPath` set in
    `babel.config.mjs:41`, which emits the wire format. The two harnesses compile test-time
    strings with `precompileJSON` plus `templateFactory`
-   (`packages/@glimmer-workspace/integration-tests/lib/compile.ts:20-41`,
+   (`packages/@glimmer-workspace/integration-tests/lib/compile.ts:22-38`,
    `packages/internal-test-helpers/lib/compile.ts:20-39`).
 4. **Two harnesses.**
    - The **Glimmer harness** (`packages/@glimmer-workspace/integration-tests/lib/`): test
      classes extend `RenderTest` and are registered with `jitSuite` and friends
-     (`lib/test-helpers/module.ts:19-111`). Each test gets a fresh `RenderDelegate`
-     (`lib/render-delegate.ts:30-61`), which compiles, registers and renders. The `RenderDelegate`
+     (`lib/test-helpers/module.ts:17-121`). Each test gets a fresh `RenderDelegate`
+     (`lib/render-delegate.ts:39-75`), which compiles, registers and renders. The `RenderDelegate`
      interface is already the seam. Five delegates exist: client (JIT), node, serialization,
      rehydration, partial rehydration.
    - The **Ember harness** (`packages/internal-test-helpers/lib/`): `moduleFor` and
@@ -188,7 +188,7 @@ implementation.
   deep VM paths, so it is part of what gets replaced, not a fixed point.
 - **Seam B: a `RenderDelegate` for the Glimmer harness.** A new delegate class next to
   `JitRenderDelegate`, picked by `jitSuite`/`jitComponentSuite`
-  (`lib/test-helpers/module.ts:19-43`), plus node, serialization and rehydration variants for
+  (`lib/test-helpers/module.ts:17-41`), plus node, serialization and rehydration variants for
   the SSR profile. About 85 of the 86 Glimmer test files import only from the harness barrel,
   so one swap covers them, after the refactors of §9.5 C1.
   After W2 (branch `test/w2-glimmer-harness`, not yet upstream), the seam is
@@ -354,7 +354,7 @@ Counts are files in the four template-relevant groups unless noted.
 
 | ID | Pattern | Where (count) | Why not spec | Refactor |
 |---|---|---|---|---|
-| C1 | **Glimmer harness bypasses its delegate.** `RenderTest.set` writes the context and calls `dirtyTagFor`; `rerender` calls `result.env.begin()`/`commit()`; `destroy` uses `inTransaction`; all wrap `run()` from `@ember/runloop` | `integration-tests/lib/render-test.ts:19,419-446,629-632`; used by every Glimmer test | Tags, environment transactions and `RenderResult` are VM types (§07-2.6) | Add `delegate.set`, `delegate.rerender`, `delegate.destroy` with the current code as the default; make the test context a tracked object instead of tag-dirtied; reduce `RenderResult` to `RenderHandle`. **W2 (done on branch `test/w2-glimmer-harness`):** the context is a `trackedObject` from `@ember/reactive/collections`, so `set` needs no delegate hook; `RenderHandle { rerender, destroy }` replaces `RenderResult`; render, rerender and destroy go through Ember's renderer inside `run()`. Remains: 18 tests mutate untracked nested objects and rely on the context dirtying on every write (`equals: () => false`); W4 rewrites them over tracked data |
+| C1 | **Glimmer harness bypasses its delegate.** `RenderTest.set` writes the context and calls `dirtyTagFor`; `rerender` calls `result.env.begin()`/`commit()`; `destroy` uses `inTransaction`; all wrap `run()` from `@ember/runloop` | `integration-tests/lib/render-test.ts:15,429-451,634-636`; used by every Glimmer test | Tags, environment transactions and `RenderResult` are VM types (§07-2.6) | Add `delegate.set`, `delegate.rerender`, `delegate.destroy` with the current code as the default; make the test context a tracked object instead of tag-dirtied; reduce `RenderResult` to `RenderHandle`. **W2 (done on branch `test/w2-glimmer-harness`):** the context is a `trackedObject` from `@ember/reactive/collections`, so `set` needs no delegate hook; `RenderHandle { rerender, destroy }` replaces `RenderResult`; render, rerender and destroy go through Ember's renderer inside `run()`. Remains: 18 tests mutate untracked nested objects and rely on the context dirtying on every write (`equals: () => false`); W4 rewrites them over tracked data |
 | C2 | **Compiling to wire format in the harness.** `precompileJSON` + `templateFactory`; registered layouts built with `templateFactory(CIRCULAR_OBJECT)`; build-time `compilerPath` | two harness `compile` helpers; `modes/jit/registry.ts`; `babel.config.mjs:41` | Wire format is informative (§00-0.2, §04) | Seam C; seam A swaps `compilerPath`. **W2:** one `compile` in `internal-test-helpers/lib/compile.ts` serves both harnesses, and the Glimmer harness compiles with Ember's compile options; `CIRCULAR_OBJECT` and the fake registry are gone (the owner instantiates layouts). Remains: that function still calls `precompileJSON` (seam C replaces it), and `compilerPath` (seam A) |
 | C3 | **Assertions on wire format or template-factory internals** (`__id`, `__meta`, `referrer`, sexp opcodes) | `@glimmer/compiler/test/compiler-test.ts` (88 tests), `integration-tests/test/precompile-test.ts`, `compiler/compile-options-test.ts` (partly), `glimmer/tests/unit/template-factory-test.js`, `runtime-resolver-cache-test.js` (5) | §04 is informative | Exclude. Move the compile-time *error* cases of `compiler-test.ts` to compile-error tests through the adapter |
 | C4 | **Opcodes, program, heap, capability bitmaps** | `@glimmer/program/test`, `@glimmer/vm`-level tests, `manager/test/capabilities-test.ts` (bitmaps) (7) | Not normative (CONVENTIONS) | Exclude. No opcode-snapshot tests exist |

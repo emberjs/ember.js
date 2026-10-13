@@ -125,7 +125,7 @@ first time the runtime needs the manager for a particular owner. The result is c
 
 - Component and modifier managers are cached in a `WeakMap` keyed by owner
   (`packages/@glimmer/manager/lib/public/component.ts:114-141`,
-  `packages/@glimmer/manager/lib/public/modifier.ts:78-105`).
+  `packages/@glimmer/manager/lib/public/modifier.ts:77-104`).
 - Helper managers are cached the same way. In addition, `owner === undefined` has its own
   single cached delegate, created by calling `factory(undefined)`
   (`packages/@glimmer/manager/lib/public/helper.ts:78-118`).
@@ -151,9 +151,9 @@ fails, the runtime throws one of these, where the prefix is asserted by tests:
 - ``Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities('3.22')` (imported via `import { capabilities } from '@ember/modifier';`). Received: ...``
 
 Sources: `packages/@glimmer/manager/lib/public/component.ts:127-135`,
-`helper.ts:89-97`, `modifier.ts:91-99`. Tests:
+`helper.ts:89-97`, `modifier.ts:90-98`. Tests:
 `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:535-583`,
-`custom-modifier-manager-test.js:20-41,317-355`,
+`custom-modifier-manager-test.js:20-41,323-361`,
 `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:427-451`.
 
 In production builds this check is skipped, and any object with the right boolean fields
@@ -236,7 +236,7 @@ The error messages (all [Dev]; production behavior is unspecified and typically 
 - Dynamic modifier: if the value is not a non-null object or function, no modifier is
   installed (`dom.ts:218-221`). A modifier installed later, when the value becomes a
   definition, is installed at that time. Test:
-  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:110-137`.
+  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:116-143`.
 - Dynamic component: a falsy definition renders nothing
   (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts`,
   `InvokeDynamicComponent`, `JumpUnless 'ELSE'`).
@@ -383,7 +383,7 @@ produced by `argsProxyFor(capturedArgs, kind)`
 One arguments object is created per component / helper / modifier instance, when the
 instance is created. The **same object** is passed to every later hook for that instance:
 `updateComponent`, `getValue`, `installModifier`, `updateModifier`, and `destroyModifier`
-(`component.ts:149-153,161-168`, `helper.ts:124-125`, `modifier.ts:110-124`). Hooks MAY keep
+(`component.ts:149-153,161-168`, `helper.ts:124-125`, `modifier.ts:109-123`). Hooks MAY keep
 it and read it at any later time. Each read returns the argument's current value.
 
 ### 3.1 Captured arguments
@@ -808,7 +808,7 @@ Tracking tests:
   is simply not passed, so JS default parameters apply. An explicitly passed `undefined`
   also triggers the default.
 
-These are in `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:39-243`.
+These are in `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:8-212`.
 
 A function that *has* a helper association (via `setHelperManager` on it or on its
 prototype chain) uses that association instead. Examples are classic helper classes (§6.5)
@@ -897,7 +897,7 @@ Semantics:
 
 ### 7.1 `capabilities('3.22', options)`
 
-`packages/@glimmer/manager/lib/public/modifier.ts:26-39`:
+`packages/@glimmer/manager/lib/public/modifier.ts:25-38`:
 
 - The version must be `'3.22'`. [Dev] Otherwise it throws ``Invalid modifier manager
   compatibility specified; you specified <v>, but only '3.22' is supported.`` In
@@ -929,8 +929,8 @@ element through `...attributes` (`05-runtime-semantics.md`).
 **Non-interactive environments.** If the environment is non-interactive (SSR, or
 `isInteractive: false`), the modifier is **not created at all**. No hook is called and no
 argument is evaluated (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:166-170,214-216`).
-Tests: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:586-643`,
-and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:411`.
+Tests: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:681-738`,
+and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:554`.
 
 **Interactive environments:**
 
@@ -942,7 +942,7 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
      dependency source for the modifier, and in the static case consumption in it never
      causes recreation. It MUST NOT be relied on to see the element.
    - A destructor that calls `destroyModifier(instance, args)` is registered on the
-     modifier's internal state object (`modifier.ts:124`).
+     modifier's internal state object (`modifier.ts:123`).
    - Several modifiers on the same element are created in source order.
 2. **Schedule install.** When the element is *closed* (its children have been rendered),
    each of its modifiers is scheduled for installation, in source order. Its state object
@@ -952,12 +952,12 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
 3. **Install (commit phase).** For each scheduled modifier in schedule order,
    `installModifier(instance, element, args)` runs as a reactive computation. The set of
    tracked storage it consumes becomes the modifier's **dependency set**
-   (`packages/@glimmer/runtime/lib/environment.ts:63-77`, `modifier.ts:145-153`). The
+   (`packages/@glimmer/runtime/lib/environment.ts:63-77`, `modifier.ts:144-154`). The
    element is in the DOM at this point.
 
    Order tests: "same element insertion order" (`foo`, `bar`), "parent -> child insertion
    order" (`bar` inner, then `foo` outer), "sibling insertion order" (`bar`, `baz`, `foo`)
-   (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-424`).
+   (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:84-204`).
 4. **Update.** During an update pass, when the region containing the modifier is
    re-validated and the modifier's dependency set has been invalidated, the modifier is
    scheduled for update (`dom.ts:321-341`). In the commit phase, after all installs,
@@ -983,12 +983,12 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
 
    Destruction order matches installation order: "same element destruction order"
    (`foo`, `bar`), "parent -> child destruction order" (`bar`, `foo`), "sibling destruction
-   order" (`bar`, `baz`, `foo`) (`modifiers-test.ts:326-460`). The block's destroyable
+   order" (`bar`, `baz`, `foo`) (`modifiers-test.ts:106-240`). The block's destroyable
    children are destroyed in association order (§10.2), and modifier state is associated
    at element close.
 
 `disableAutoTracking: true`: `installModifier` and `updateModifier` run **untracked**
-(`modifier.ts:148-150,158-160`). Their consumption, including argument reads, is recorded
+(`modifier.ts:149-151,159-161`). Their consumption, including argument reads, is recorded
 nowhere, so the dependency set is empty and `updateModifier` is never called. No test
 covers this (Q2).
 
@@ -1008,7 +1008,7 @@ covers this (Q2).
 
 Sources: `dom.ts:207-319,343-397`. Tests:
 `packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-251`,
-`custom-modifier-manager-test.js:110-137`.
+`custom-modifier-manager-test.js:116-143`.
 
 For a curried modifier, the curried positional arguments come first, followed by the
 invocation's positional arguments. Curried named arguments are overridden by
@@ -1059,7 +1059,7 @@ Semantics:
   caller's `{{on}}` listeners run before the listeners that the component puts on that element,
   wherever the splat is (§05-7.5). Because a changed argument removes and re-adds the
   listener (step 5), a listener whose arguments change moves after the other listeners on the
-  element (`on.ts:316-357`, documentation of the modifier; tests `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:300-374`).
+  element (`on.ts:316-357`, documentation of the modifier; tests `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:443-517`).
 - The callback is invoked by the DOM with the event, with the DOM's arguments. In
   production, `this` is the element, as the DOM passes it, because the callback is not
   rebound. [Dev] The callback is bound to a sentinel `this`. Property access on it throws
@@ -1393,7 +1393,7 @@ were observed by experiment (verified by experiment, T9b: deferred destructor in
 after DOM removal, `isDestroyed` false there and true after the `destroy` queue); the
 `@glimmer/destroyable` tests use their own two-queue flush, and no upstream test pins the Ember
 mapping. Eager-before-DOM-removal is pinned for classic
-components (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1429-1587`).
+components (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1429-1586`).
 
 ### 10.3 How template-created objects join the tree
 
@@ -1426,7 +1426,7 @@ When a block is torn down:
 
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
-attached (tested, `classic/life-cycle-test.js:1429-1587`), and deferred ones run after it is detached
+attached (tested, `classic/life-cycle-test.js:1429-1586`), and deferred ones run after it is detached
 (verified by experiment, T9b; §05-11.2).
 
 ---
@@ -1445,7 +1445,7 @@ walk the runtime records:
 - **scheduled installs**: modifiers, recorded when their element is *closed*, that is after
   the element's children have rendered. The order is post-order by element: an element's
   modifiers come after those of all its descendants, and several modifiers on one element
-  keep their creation order (`dom.ts:137-163`; test `modifiers-test.ts:304-458`);
+  keep their creation order (`dom.ts:137-163`; test `modifiers-test.ts:84-238`);
 - **scheduled updates**: modifiers whose dependencies were invalidated, recorded when the
   update walk reaches the modifier's position. That position is at the element's *opening*,
   before its children (the update check is registered when the modifier is created,
@@ -1469,7 +1469,7 @@ commit-phase order. §05-1.4 and §07-1.10 refer to it.
 Test status: the child-first order of creation and update hooks is pinned for classic
 components (`classic/life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
 bottom → top), and the child-first order of modifier installs by
-`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. The hook
+`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:84-238`. The hook
 order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is
 verified by experiment, T9b). Steps 1 and 3 relative to each other were observed by experiment
 (verified by experiment, T9b): with `p` containing `<div {{m "p"}}>` and two children `c1`, `c2`

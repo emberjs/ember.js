@@ -929,7 +929,7 @@ A conforming implementation MUST support both modes, and templates of different 
 interoperate: strict templates can invoke components authored in loose mode and vice versa
 (`rfcs/text/0779-first-class-component-templates.md` §"Interop"; test "works with a curried
 string component defined in a resolution mode component",
-`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:246`).
+`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:222`).
 
 ### 1.7.2 Strict mode rules (RFC 0496)
 
@@ -939,7 +939,7 @@ the observable errors (§03 has the full resolution algorithm):
 1. **No implicit globals.** A free variable (not a block param, not lexical, not a keyword)
    is a compile-time syntax error. Messages (`packages/@glimmer/compiler/lib/passes/1-normalization/visitors/strict-mode.ts:385-395`,
    `packages/@glimmer/syntax/lib/v2/normalize.ts:802-817`; tests
-   `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:74-97`, `:413-561`):
+   `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:72-95`, `:358-506`):
    - `Attempted to resolve a value in a strict mode template, but that value was not in scope: foo`
    - `Attempted to resolve a component or helper in a strict mode template, but that value was not in scope: foo`
      (and `… a helper …`, `… a modifier …`, `… a component …` by position)

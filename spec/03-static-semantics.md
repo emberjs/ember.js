@@ -197,7 +197,7 @@ Shadowing rules that a conforming implementation MUST follow:
   For example, `{{#let this.foo as |if|}}{{if}}{{/let}}` renders the local `if`, and
   `{{#let this.foo as |yield|}}{{yield}}{{/let}}` renders the local `yield`. In strict mode,
   a template local named `if` used as `{{#if}}{{/if}}` is invoked as a component
-  (`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:314-322`).
+  (`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:270-278`).
 - A block param or template local shadows HTML-element interpretation of a lowercase tag
   (§03-5.4). For example, `{{#let this.foo as |div|}}<div></div>{{/let}}` invokes the local
   `div` as a component.
@@ -398,7 +398,7 @@ Notes:
   example `mut` in Append, `unbound` in Call, `modifier` in Modifier, `outlet` in Append when
   no Ember plugin ran) falls through to ordinary classification as a free variable.
 - The misuse check runs in both modes, and is covered by tests for every keyword and every
-  invalid position (`packages/@glimmer-workspace/integration-tests/test/syntax/keyword-errors-test.ts:144-210`).
+  invalid position (`packages/@glimmer-workspace/integration-tests/test/syntax/keyword-errors-test.ts:145-215`).
   Those tests also establish that every keyword **can be used as a plain value in argument
   position** without error (`{{some-helper <kw>}}`, lines 18-30), and can be a block param name.
 - In strict mode, a name that has become a `Keyword` expression (§03-4.6) is never `Free`,
@@ -724,7 +724,7 @@ from the validator (`strict-mode.ts:117-397`):
 Strict mode, angle brackets: see §03-5.4. The error for an uppercase tag that is not in scope
 is raised during normalization (§03-5.4) and so happens before the strict validation pass.
 
-Tests: `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:75-96, 414-562`.
+Tests: `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:73-94,359-507`.
 
 ### 03-5.3 Loose-mode classification
 
