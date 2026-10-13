@@ -467,7 +467,7 @@ The forms below are distinguished statically (chapters 03, 04); their runtime be
      `{{{log …}}}`, `{{{-get-dynamic-var …}}}`. Keyword translation drops the trusting flag
      (§03-4.4). `{{{h}}}` and `{{{this.h}}}` with a helper value do insert HTML.
 
-   See §05-14 item 13.
+   See §05-14 item 12.
 
 ---
 
@@ -838,7 +838,7 @@ with the contents of `...attributes` recorded at the position of `...attributes`
   `class="a b"`. Duplicate `type` attributes on an element without `...attributes` are a
   special case: the compile-time `type` reordering (§4.1) keeps only the *last* `type`
   occurrence and drops the others (`classified.ts:108-121`; verified: `<input type="a" type="b">`
-  compiles to a single `type="b"`). See §05-14 item 14.
+  compiles to a single `type="b"`). See §05-14 item 13.
 
 ---
 
@@ -1316,8 +1316,7 @@ yield(slot, args):
   Ember: `helpers/yield-test.js:215-239`).
 - A yield inside `{{#if}}`/`{{#each}}` in the layout renders inline into that region and is
   removed with it (`yield.ts:190-209`; `helpers/yield-test.js:116-162`).
-- A parameter with no corresponding yielded value is `undefined` (`42 - `), tested for curly
-  and dynamic invocation only (`yield.ts:80-93`, `skip: 'glimmer'`; §14 item 12).
+- A parameter with no corresponding yielded value is `undefined` (`42 - `) (`yield.ts:82-93`).
 - `yield` is not itself a replaceable region: the yielded content is rendered inline into the
   current region. Yielding the same block several times renders it several times, each with its
   own instances.
@@ -1340,8 +1339,9 @@ argument must be a string literal (compile-time error otherwise:
 `else`. `(has-block-params "name")`: `true` iff that block was passed *and* declares at least
 one block parameter (`expressions.ts:260-271`); so `(has-block-params "inverse")` is false even
 when an `{{else}}` block is passed, because an `{{else}}` block cannot declare params
-(`lib/suites/has-block-params.ts:9-19`, `79-100`; all of these are `kind: 'curly'`, which runs
-for curly and dynamic invocation). A `<:else as |x|>` named block *can* declare params and is
+(`lib/suites/has-block-params.ts:9-19`, `79-100`; these run for angle-bracket, curly and
+dynamic invocation, and the angle-bracket form passes the `{{else}}` block as `<:else>`,
+`lib/render-test.ts:207-210`). A `<:else as |x|>` named block *can* declare params and is
 yielded to with them (§05-6.1); what `has-block-params` reports for it is untested. The
 `has-block` and `has-block-params` results for `default`, `else`, present and absent blocks
 are covered in `lib/suites/has-block.ts:7-140` and `has-block-params.ts:34-133` (subexpression,
@@ -1432,7 +1432,7 @@ the two readers disagree. A component layout's `@a` is bound to the **first** oc
 `packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:337-350` binds in
 reverse so the first wins). The captured arguments that managers, helpers, and modifiers see
 (`args.named.a`, §06-3) hold the **last** occurrence (`arguments.ts:331-344` overwrites the
-map), and list the name once. See §05-14 item 14.
+map), and list the name once. See §05-14 item 13.
 
 If the definition is curried (§05-8), its curried arguments are merged **before** the manager
 sees the arguments (`component.ts:304-360`,
@@ -2303,13 +2303,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
 11. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
     so `createModifier` sees an element with *no* attributes and not yet in the document; any
     code relying on attributes must wait for `install`.
-12. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
-    invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:23-58`, `80-93`) skips the test only
-    for the Glimmer (angle-bracket) invocation kind; the module builder still runs it for curly
-    and dynamic invocation (`lib/test-helpers/module.ts:156-168`). The implementation maps
-    `inverse` to `else` regardless of invocation kind, and `helpers/yield-test.js:60-84` covers the
-    Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
-13. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
+12. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
     `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the
     literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
     `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
@@ -2317,7 +2311,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     Both look like bugs. No test pins either behavior. *Fix proposed* on branch
     `fix/triple-curly-literals-and-keywords`: string literals and append keywords honour triple
     curlies.
-14. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
+13. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
     accepts both (§02-11 item 17). For attributes, the result depends on whether the element
     has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
     with `class` merging). For named arguments, a component's layout sees the first
@@ -2328,7 +2322,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
     (its commit message is the full explainer, for team discussion): every duplicate attribute,
     component argument or named argument is a compile-time syntax error.
-15. **Claims with no test (T4).** These are derived from source only. The lifecycle and
+14. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
     component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update
     pre-order, deferred destructors in `actions` after DOM removal, `destroyComponent` order,

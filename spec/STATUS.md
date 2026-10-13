@@ -110,10 +110,10 @@ for review are based on `9bec1cb2a8`.
 | §05-11.3 | ember.js | `fix/modifier-destruction-order` | **Landed on main** (emberjs/ember.js#21639) | With the debug render tree on, modifiers are now destroyed child-first, as in production (author ruling, 2026-09-30). |
 | §08-14 Q2 | ember.js | `test/outlet-inside-component` | **PR open**: emberjs/ember.js#21640 (test only) | Tests showing that `{{outlet}}` inside a component stopped rendering with the route manager merge (`4b5d79a6d7d1b`). No fix yet. |
 | §08-2.20 | ember.js | `cleanup/remove-action-keyword` | **Landed on main** (emberjs/ember.js#21641) | `action` is no longer a syntax keyword, a strict-mode keyword, or rewritten by `transform-action-syntax`. |
-| §05-14 item 13 | ember.js | `fix/triple-curly-literals-and-keywords` | Open for review | String literals and append keywords (`if`, `unless`, `helper`, …) honour `{{{…}}}`. |
+| §05-14 item 12 | ember.js | `fix/triple-curly-literals-and-keywords` | Open for review | String literals and append keywords (`if`, `unless`, `helper`, …) honour `{{{…}}}`. |
 | §05-14 item 1 | ember.js | `fix/namespaced-attribute-updates` | Open for review | Updates of a namespaced attribute keep its namespace after removal. |
 | §05-14 item 6 | ember.js | `fix/svg-inside-foreign-object` | Open for review | `<svg>`/`<math>` inside `<foreignObject>` get their own namespace. |
-| §05-14 item 14 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | For team discussion (author opens the PR) | Duplicate attributes and named arguments become compile errors; the commit message is the full explainer. |
+| §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | For team discussion (author opens the PR) | Duplicate attributes and named arguments become compile errors; the commit message is the full explainer. |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
 that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
@@ -131,7 +131,7 @@ repo).
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1, 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
-| 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 15. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. T9b ran throwaway browser tests for the public-manager component ordering across a tree, component-hook vs modifier-install order, update ordering, deferred destructors and modifier destruction: all confirmed except modifier destruction order, which is creation order (not child-first) when the debug render tree is on (Ember DEBUG default) (§05-11.3; since fixed, #21639). None of these have upstream tests. |
+| 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 14. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. T9b ran throwaway browser tests for the public-manager component ordering across a tree, component-hook vs modifier-install order, update ordering, deferred destructors and modifier destruction: all confirmed except modifier destruction order, which is creation order (not child-first) when the debug render tree is on (Ember DEBUG default) (§05-11.3; since fixed, #21639). None of these have upstream tests. |
 | 06 managers | ~1470 | Drafted | From source. Citations verified by T3. |
 | 07 reactivity | ~1490 | Drafted | From source. Citations verified by T3. |
 | 08 Ember integration | ~1890 | Drafted | Compile-output claims were checked against `dist/dev`. |
@@ -153,20 +153,20 @@ Run these in order, one at a time.
 | T1 | Recast 04 as informative and remove wire-compat requirements from other chapters | Sonnet | `.work/T1-wire-informative.md` | done |
 | T2 | Cross-chapter consistency pass | Opus | `.work/T2-consistency.md` | done |
 | T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | done; unsupported claims are listed under "Unsupported claims" in `.work/T3-citations.md` (2 items) |
-| T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | done; untested claims are §05-14 item 15 |
+| T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | done; untested claims are §05-14 item 14 |
 | T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | done |
 | T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | done; markers and normative-language fixes, §0.4/§0.6 wording, 41 cross-references spot-checked (1 fixed) |
 | T6 | Author feedback `8b343781b3`: `hbs` re-printing and AST transforms are non-goals | Opus | `.work/T6-feedback-8b34378.md` | done; §00-0.1 "Non-goals", §02 uses ASTv1 as notation, §02-7/§02-10/§01-1.5.6/§01-1.5.7 informative, §03-7 states meaning through rewrites |
 | T7 | Rewrite the owning items for the landed parser and content-tag fixes | Opus | `.work/T6-feedback-8b34378.md` | done |
 | T8 | Citation refresh after merging `main` (`7364f4b36d`) | Sonnet | `.work/T8-citations.md` | done; ≈70 citations renumbered; one behavior change (lazy plain-array iteration, #21598) written into §05-5.4.1 |
 | T9a | Run the babel plugin and runtime `template()` against §01/§03 claims | Sonnet | `.work/T9a-compile-paths.md` | done; 8 items, all confirmed |
-| T9b | Throwaway browser tests for the orderings in §05-14 item 15 | Sonnet | `.work/T9b-orderings.md` | done; 5 confirmed, 1 corrected (modifier destruction order depends on the debug render tree) |
+| T9b | Throwaway browser tests for the orderings in §05-14 item 14 | Sonnet | `.work/T9b-orderings.md` | done; 5 confirmed, 1 corrected (modifier destruction order depends on the debug render tree) |
 | T10 | Hand-check every §-cross-reference | Sonnet | `.work/T10-xrefs.md` | done; 1,054 checked, 0 wrong; every "item N"/"QN" reference resolves to an existing item |
 | T11 | Author feedback `fa282f6d78` (Q1 ruling, outlet regression test, `action` cleanup) | Opus | `.work/T11-feedback-fa282f6.md` | done |
 | T12 | The ten notes swept into `8e838d47cd`; four bugfix/proposal branches; open-question cleanup | Opus | `.work/T12-cleanup.md` | done; resolved items removed from every list, lists renumbered and references rewritten (`tools/prune-open-questions.py`) |
 | T13 | Merge `origin/main` (`98fa794473`: #21636, #21639, #21641) and follow up | Opus | — | done; 68 citations shifted with `tools/remap-citations.py`, the "after this checkout's base" notes rewritten against the new code |
 | T14 | Author feedback `391b17239c` on the reactive API: `cached()` as the derived primitive, a core `effect`, async exploration | Opus | `.work/T14-reactive-api.md` | done; §07-2 rewritten, prototype + 31 tests, review points §07-5 items 14–19 |
-| T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
+| T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14, 17 updated, 3 strategy tests |
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
 | W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18), including the follow-ups to the rulings of `eb4f794d62` (W2-9) | Sonnet per step; Opus for the API, ledger review and exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done and **landed upstream** as ten PRs, emberjs/ember.js#21676–#21679, #21684, #21692, #21695, #21702, #21703, #21709 (last merge `11cd0007d2`, 2026-10-12). No fake stubs left (C18 table empty); every removed test has a twin in the ledger. The PR branches, the `test/w2-glimmer-harness` branch and the `../ember.js-w2` worktree are deleted locally |
@@ -261,7 +261,7 @@ Suggestions for the plan's author, based on what is still open:
 4. **Upstream the ordering experiments?** T9b's throwaway tests pinned orderings that Ember's
    suite does not test; `.work/T9b-orderings.md` "Upstream candidates" lists the ones worth
    turning into real tests.
-5. **Remaining verification gaps.** §05-14 item 15 still lists the `each`, `in-element` and
+5. **Remaining verification gaps.** §05-14 item 14 still lists the `each`, `in-element` and
    `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
    against source and `dist/dev`.
 6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
@@ -273,8 +273,7 @@ Suggestions for the plan's author, based on what is still open:
    reference; `.work/W2-glimmer-harness.md` has the history (step 10 onward) and
    `.work/W2-coverage-ledger.md` the twin of every removed test. Follow-up is T18:
    - remap citations (item 7) and re-derive the citations into `integration-tests/lib/suites/*`,
-     `test/ember-component-test.ts` and other moved or deleted test files (e.g. §05-6.3, §05-14
-     item 12), as T17 did;
+     `test/ember-component-test.ts` and other moved or deleted test files (e.g. §05-6.3), as T17 did;
    - give the W2 citations added in 8.4 (§05-7.6, §06-2.2, §08-6.1, §08-6.6) line numbers, and
      rewrite the "on branch `test/w2-glimmer-harness`, not yet upstream" wording in §05-7.6,
      §06-2.2, §08 and §09 (C1, C18, W2 row, seam B) to cite `main`;
