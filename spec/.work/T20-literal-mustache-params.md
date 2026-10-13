@@ -41,8 +41,45 @@ committed except this file and the spec.
       Done: 3 tests (8 error cases incl. triple curly and both attribute forms; argument-free
       literals still parse; modifier position keeps E19). Lint and `tsc` clean; `[glimmer-syntax]`
       370/370 in the browser.
-- [ ] 5. Run the `@glimmer/syntax` tests and the integration tests that render literals.
-- [ ] 6. PR description: the current behavior, why it is a bug (arguments vanish without a
+- [x] 5. Run the `@glimmer/syntax` tests and the integration tests that render literals.
+      Done: full suite in the worktree, 9232 tests, 9212 pass, 20 skip, 0 fail.
+- [x] 6. PR description: the current behavior, why it is a bug (arguments vanish without a
       warning; the block and sub-expression forms already error), the usage check result.
+      Done: draft below ("PR description"). Not pushed: waiting for the author's go-ahead.
 - [ ] 7. When it lands: rewrite §02-3.7 and the E-catalogue (§02-9.2, new row), remove §02-11
       item 1 and the matching §00-0.7.2 sentence, update STATUS "Upstream fix branches".
+
+## PR description (draft)
+
+Title: Report a syntax error for a literal mustache with arguments
+
+`{{"foo" bar baz=1}}` currently parses as `{{"foo"}}`: the parser keeps the literal and silently
+drops every positional and named argument. The block and sub-expression forms are already syntax
+errors (`{{#"foo"}}…{{/"foo"}}`, `("foo" bar)` → `StringLiteral "foo" cannot be called as a
+sub-expression, …`), so only the plain mustache loses its arguments without a word.
+
+This PR makes a literal mustache with arguments a syntax error, worded like the sub-expression
+one:
+
+```
+StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}
+```
+
+- `{{"foo"}}`, `{{1}}`, `{{true}}`, `{{null}}`, `{{undefined}}` (no arguments) are unchanged, in
+  content and in attribute values.
+- In tag and modifier positions the existing, more specific errors still win (`Cannot use
+  mustaches in an elements tagname`, `In <div ... {{"foo"}} ..., {{"foo"}} is not a valid
+  modifier`). Inside an HTML comment the mustache is still comment text.
+
+**Why this is a bugfix, not a breaking change.** The arguments never did anything: no template
+can depend on them, because they were discarded before compilation. A template that has them
+almost certainly meant something else (a typo'd helper name in quotes, for instance), and today
+it renders the bare literal silently. After this change it fails at build time with a message
+that names the fix. The new error is easy to detect (it is a compile error, reported with the
+module name and position) and easy to fix (delete the arguments, or call the intended helper).
+
+No template in this repository uses the form. Tests: `packages/@glimmer/syntax/test/parser-node-test.ts`
+(8 error cases, including triple curlies and both attribute-value forms; the argument-free
+literals; the modifier position).
+
+Found while writing the template language spec (§02-3.7).
