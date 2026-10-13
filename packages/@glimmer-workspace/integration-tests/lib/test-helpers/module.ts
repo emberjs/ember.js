@@ -15,7 +15,7 @@ export interface RenderTestConstructor<D extends RenderDelegate, T extends IRend
 }
 
 export function jitSuite<T extends IRenderTest>(
-  klass: RenderTestConstructor<RenderDelegate, T>,
+  klass: RenderTestConstructor<JitRenderDelegate, T>,
   options?: { componentModule?: boolean; debugRenderTree?: boolean }
 ): void {
   return suite(klass, JitRenderDelegate, options);
@@ -35,7 +35,7 @@ export function nodeComponentSuite<T extends IRenderTest>(
 }
 
 export function jitComponentSuite<T extends IRenderTest>(
-  klass: RenderTestConstructor<RenderDelegate, T>
+  klass: RenderTestConstructor<JitRenderDelegate, T>
 ): void {
   return suite(klass, JitRenderDelegate, { componentModule: true });
 }

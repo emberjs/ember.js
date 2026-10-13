@@ -1,9 +1,14 @@
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 
 import { template } from '@ember/template-compiler';
 
-class KeywordOn extends RenderTest {
+class KeywordOn extends RenderTest<BrowserElement> {
   static suiteName = 'keyword modifier: on';
 
   /**
@@ -28,7 +33,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -49,7 +54,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -69,7 +74,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['success']);
   }
 
@@ -94,7 +99,7 @@ class KeywordOn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['shadowed:success']);
   }
 }

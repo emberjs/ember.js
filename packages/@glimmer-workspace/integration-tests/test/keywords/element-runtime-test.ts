@@ -1,9 +1,14 @@
 import GlimmerComponent from '@glimmer/component';
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
-class KeywordElementRuntime extends RenderTest {
+class KeywordElementRuntime extends RenderTest<BrowserElement> {
   static suiteName = 'keyword helper: element (runtime)';
 
   @test
@@ -15,7 +20,7 @@ class KeywordElementRuntime extends RenderTest {
 
     this.renderComponent(compiled);
 
-    let h1 = (this.element as unknown as HTMLDivElement).querySelector('h1');
+    let h1 = this.element.querySelector('h1');
     assert.ok(h1, 'h1 element exists');
     assert.strictEqual(h1!.textContent, 'Hello');
   }
@@ -42,7 +47,7 @@ class KeywordElementRuntime extends RenderTest {
 
     this.renderComponent(compiled);
 
-    let h1 = (this.element as unknown as HTMLDivElement).querySelector('h1');
+    let h1 = this.element.querySelector('h1');
     assert.ok(h1, 'h1 element exists');
     assert.strictEqual(h1!.textContent, 'Hello');
   }
@@ -60,7 +65,7 @@ class KeywordElementRuntime extends RenderTest {
 
     this.renderComponent(Foo);
 
-    let h1 = (this.element as unknown as HTMLDivElement).querySelector('h1');
+    let h1 = this.element.querySelector('h1');
     assert.ok(h1, 'h1 element exists');
     assert.strictEqual(h1!.textContent, 'Hello');
   }

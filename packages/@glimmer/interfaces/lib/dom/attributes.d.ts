@@ -114,8 +114,8 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   didAppendBounds(bounds: Bounds): void;
 }
 
-export interface AttributeCursor {
-  element: SimpleElement;
+export interface AttributeCursor<E extends SimpleElement = SimpleElement> {
+  element: E;
   name: string;
   namespace: Nullable<AttrNamespace>;
 }

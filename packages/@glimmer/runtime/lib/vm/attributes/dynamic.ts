@@ -65,19 +65,21 @@ function buildDynamicProperty(
     return new SafeDynamicProperty(name, attribute);
   }
 
-  if (isUserInputValue(tagName, name)) {
+  if (isUserInputValue(attribute, name)) {
     return new InputValueDynamicAttribute(name, attribute);
   }
 
-  if (isOptionSelected(tagName, name)) {
+  if (isOptionSelected(attribute, name)) {
     return new OptionSelectedDynamicAttribute(name, attribute);
   }
 
   return new DefaultDynamicProperty(name, attribute);
 }
 
-export abstract class DynamicAttribute implements AttributeOperation {
-  constructor(public attribute: AttributeCursor) {}
+export abstract class DynamicAttribute<
+  E extends SimpleElement = SimpleElement,
+> implements AttributeOperation {
+  constructor(public attribute: AttributeCursor<E>) {}
 
   abstract set(dom: TreeBuilder, value: unknown, env: Environment): void;
   abstract update(value: unknown, env: Environment): void;
@@ -105,10 +107,12 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
   }
 }
 
-export class DefaultDynamicProperty extends DynamicAttribute {
+export class DefaultDynamicProperty<
+  E extends SimpleElement = SimpleElement,
+> extends DynamicAttribute<E> {
   constructor(
     private normalizedName: string,
-    attribute: AttributeCursor
+    attribute: AttributeCursor<E>
   ) {
     super(attribute);
   }
@@ -175,7 +179,10 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
   }
 }
 
-export class InputValueDynamicAttribute extends DefaultDynamicProperty {
+type UserInput = SimpleElement & { value: string };
+type SelectableOption = SimpleElement & { selected: boolean };
+
+export class InputValueDynamicAttribute extends DefaultDynamicProperty<UserInput> {
   override set(dom: TreeBuilder, value: unknown) {
     const normalized = normalizeStringValue(value);
     dom.__setProperty('value', normalized);
@@ -189,7 +196,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   }
 
   override update(value: unknown) {
-    const input = this.attribute.element as unknown as HTMLInputElement | HTMLTextAreaElement;
+    const input = this.attribute.element;
     const currentValue = input.value;
     const normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
@@ -198,7 +205,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   }
 }
 
-export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
+export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty<SelectableOption> {
   override set(dom: TreeBuilder, value: unknown): void {
     if (value !== null && value !== undefined && value !== false) {
       dom.__setProperty('selected', true);
@@ -206,7 +213,7 @@ export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
   }
 
   override update(value: unknown): void {
-    const option = this.attribute.element as unknown as HTMLOptionElement;
+    const option = this.attribute.element;
 
     if (value) {
       option.selected = true;
@@ -216,12 +223,19 @@ export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
   }
 }
 
-function isOptionSelected(tagName: string, attribute: string) {
-  return tagName === 'OPTION' && attribute === 'selected';
+function isOptionSelected(
+  attribute: AttributeCursor,
+  name: string
+): attribute is AttributeCursor<SelectableOption> {
+  return attribute.element.tagName === 'OPTION' && name === 'selected';
 }
 
-function isUserInputValue(tagName: string, attribute: string) {
-  return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
+function isUserInputValue(
+  attribute: AttributeCursor,
+  name: string
+): attribute is AttributeCursor<UserInput> {
+  const { tagName } = attribute.element;
+  return (tagName === 'INPUT' || tagName === 'TEXTAREA') && name === 'value';
 }
 
 function normalizeValue(value: unknown): Nullable<string> {

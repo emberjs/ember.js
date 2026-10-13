@@ -1,10 +1,15 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
-import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
-import { castToSimple, expect } from '@glimmer/debug-util';
+import type {
+  BrowserElement,
+  ComponentBlueprint,
+  Content,
+} from '@glimmer-workspace/integration-tests';
+import { expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
 import { run } from '@ember/runloop';
 import {
   blockStack,
+  browserElement,
   CLOSE,
   content,
   equalTokens,
@@ -20,7 +25,7 @@ import {
   withRoot,
 } from '@glimmer-workspace/integration-tests';
 
-abstract class AbstractChaosMonkeyTest extends RenderTest {
+abstract class AbstractChaosMonkeyTest extends RenderTest<BrowserElement> {
   abstract renderClientSide(template: string | ComponentBlueprint, context: Dict): void;
 
   getRandomForIteration(iteration: number) {
@@ -57,7 +62,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
   }
 
   wreakHavoc(iteration = 0, shouldLog = false) {
-    const element = this.element as unknown as HTMLElement;
+    const element = this.element;
 
     const original = element.innerHTML;
 
@@ -89,16 +94,13 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     parent.removeChild(nodeToRemove);
 
     let removedNodeDisplay: Nullable<string>;
-    switch (nodeToRemove.nodeType) {
-      case 8 satisfies typeof Node.COMMENT_NODE:
-        removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
-        break;
 
-      case 1 satisfies typeof Node.ELEMENT_NODE:
-        removedNodeDisplay = (nodeToRemove as HTMLElement | SVGElement).outerHTML;
-        break;
-      default:
-        removedNodeDisplay = nodeToRemove.nodeValue;
+    if (nodeToRemove instanceof Comment) {
+      removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
+    } else if (nodeToRemove instanceof Element) {
+      removedNodeDisplay = nodeToRemove.outerHTML;
+    } else {
+      removedNodeDisplay = nodeToRemove.nodeValue;
     }
 
     if (shouldLog) {
@@ -115,7 +117,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
   }
 
   runIterations(template: string, context: Dict, expectedHTML: string, count: number) {
-    const element = this.element as unknown as HTMLElement;
+    const element = this.element;
     const elementResetValue = element.innerHTML;
 
     const urlParams = (QUnit as any).urlParams as Dict<string>;
@@ -126,7 +128,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
       this.renderClientSide(template, context);
 
-      const element = this.element as unknown as HTMLElement;
+      const element = this.element;
       this.assert.strictEqual(element.innerHTML, expectedHTML);
     } else {
       for (let i = 0; i < count; i++) {
@@ -138,7 +140,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
           this.renderClientSide(template, context);
 
-          const element = this.element as unknown as HTMLElement;
+          const element = this.element;
           this.assert.strictEqual(
             element.innerHTML,
             expectedHTML,
@@ -293,7 +295,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
       'server html is correct'
     );
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple((qunitFixture() as unknown as HTMLElement).querySelector('div')!);
+    this.element = browserElement(qunitFixture().querySelector('div'));
     this.runIterations('RehydratingComponent', args, 'a bcd', 100);
   }
 
@@ -331,7 +333,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
     );
 
     replaceHTML(qunitFixture(), html);
-    this.element = castToSimple((qunitFixture() as unknown as HTMLElement).querySelector('div')!);
+    this.element = browserElement(qunitFixture().querySelector('div'));
     this.runIterations('RehydratingComponent', args, '<p>hello <div>world!</div></p>', 100);
   }
 }

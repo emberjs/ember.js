@@ -1,9 +1,14 @@
 import GlimmerComponent from '@glimmer/component';
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
-class KeywordArrayRuntime extends RenderTest {
+class KeywordArrayRuntime extends RenderTest<BrowserElement> {
   static suiteName = 'keyword helper: array (runtime)';
 
   @test
@@ -82,7 +87,7 @@ class KeywordArrayRuntime extends RenderTest {
 
     this.renderComponent(Foo);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.deepEqual(receivedData, ['hello', 'goodbye']);
   }

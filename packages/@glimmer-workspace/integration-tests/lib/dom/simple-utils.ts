@@ -45,6 +45,25 @@ export type CastableSimpleDOM<Type extends CastableNodeType = CastableNodeType> 
 
 export type CastableNodeType = Exclude<keyof CastToBrowserDom, 'Node'>;
 
+/** A browser element that the Simple DOM types also accept. */
+export type BrowserElement<E extends Element = HTMLElement> = E & SimpleElement;
+
+export function browserElement<E extends Element>(element: E | null): BrowserElement<E> {
+  if (isBrowserElement(element)) {
+    return element;
+  }
+
+  throw new Error(`Expected a browser element, got ${String(element)}`);
+}
+
+function isBrowserElement<E extends Element>(element: E | null): element is BrowserElement<E> {
+  return element !== null && element.nodeType === ELEMENT_NODE;
+}
+
+export function qunitFixture(): BrowserElement {
+  return browserElement(document.getElementById('qunit-fixture'));
+}
+
 export function castToSimple<Type extends CastableNodeType>(
   node: null,
   nodeType: Type,

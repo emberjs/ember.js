@@ -27,7 +27,13 @@ import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../ren
 import type { DebugRehydrateTree } from './builder';
 
 import { preprocess } from '../../compile';
-import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
+import {
+  type BrowserElement,
+  browserElement,
+  qunitFixture,
+  replaceHTML,
+  toInnerHTML,
+} from '../../dom/simple-utils';
 import {
   registerClassicComponent,
   registerComponent,
@@ -44,7 +50,7 @@ export interface RehydrationStats {
   clearedNodes: SimpleNode[];
 }
 
-export class RehydrationDelegate implements RenderDelegate {
+export class RehydrationDelegate implements RenderDelegate<BrowserElement> {
   static readonly isEager = false;
   static readonly style = 'rehydration';
 
@@ -106,8 +112,8 @@ export class RehydrationDelegate implements RenderDelegate {
     teardownOwners(this.clientOwner, this.serverOwner);
   }
 
-  getInitialElement(): SimpleElement {
-    return this.clientDoc.createElement('div');
+  getInitialElement(): BrowserElement {
+    return browserElement(document.createElement('div'));
   }
 
   createElement(tagName: string): SimpleElement {
@@ -239,8 +245,4 @@ export class RehydrationDelegate implements RenderDelegate {
       },
     };
   }
-}
-
-export function qunitFixture(): SimpleElement {
-  return castToSimple(document.getElementById('qunit-fixture')!);
 }

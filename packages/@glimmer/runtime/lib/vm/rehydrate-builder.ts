@@ -13,7 +13,6 @@ import type {
 } from '@glimmer/interfaces';
 import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
-import { castToSimple } from '@glimmer/debug-util/lib/simple-cast';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
@@ -457,11 +456,16 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super.willCloseElement();
   }
 
-  getMarker(element: HTMLElement, guid: string): Nullable<SimpleNode> {
-    const marker = element.querySelector(`script[glmr="${guid}"]`);
-    if (marker) {
-      return castToSimple(marker);
+  getMarker(element: SimpleElement, guid: string): Nullable<SimpleNode> {
+    let node = element.firstChild;
+
+    while (node !== null) {
+      if (isElement(node) && isRemoteMarker(node, guid)) {
+        return node;
+      }
+      node = node.nextSibling;
     }
+
     return null;
   }
 
@@ -470,12 +474,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
-    const marker = this.getMarker(element as unknown as HTMLElement, cursorId);
-
-    assert(
-      !marker || marker.parentNode === element,
-      `expected remote element marker's parent node to match remote element`
-    );
+    const marker = this.getMarker(element, cursorId);
 
     // when insertBefore is not present, we clear the element
     if (insertBefore === undefined) {
@@ -534,6 +533,10 @@ function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
 
 function isElement(node: SimpleNode): node is SimpleElement {
   return node.nodeType === ELEMENT_NODE;
+}
+
+function isRemoteMarker(element: SimpleElement, guid: string): boolean {
+  return element.tagName.toUpperCase() === 'SCRIPT' && element.getAttribute('glmr') === guid;
 }
 
 function isMarker(node: SimpleNode): boolean {

@@ -4,6 +4,7 @@ import type {
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   SimpleDocument,
+  SimpleElement,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
@@ -14,7 +15,7 @@ import type { RenderDelegateOptions } from '../../render-delegate';
 
 import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
 import { RenderTest } from '../../render-test';
-import { JitRenderDelegate } from '../jit/delegate';
+import { BaseJitRenderDelegate } from '../jit/delegate';
 
 export interface NodeEnvironmentOptions {
   document: SimpleDocument;
@@ -22,12 +23,16 @@ export interface NodeEnvironmentOptions {
   updateOperations?: GlimmerTreeChanges;
 }
 
-export class NodeJitRenderDelegate extends JitRenderDelegate {
+export class NodeJitRenderDelegate extends BaseJitRenderDelegate<SimpleElement> {
   static override style = 'node jit';
 
   constructor(options: RenderDelegateOptions = {}) {
     options.doc = options.doc || createHTMLDocument();
     super(options);
+  }
+
+  getInitialElement(): SimpleElement {
+    return this.createElement('div');
   }
 
   protected override get isInteractive(): boolean {

@@ -1,9 +1,14 @@
 import GlimmerComponent from '@glimmer/component';
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
-class KeywordFn extends RenderTest {
+class KeywordFn extends RenderTest<BrowserElement> {
   static suiteName = 'keyword helper: fn (runtime)';
 
   @test
@@ -21,7 +26,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -42,7 +47,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -67,7 +72,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -86,7 +91,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(Foo);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 }

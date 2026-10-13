@@ -30,6 +30,9 @@ import type RenderDelegate from '../../render-delegate';
 import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 
 import { preprocess } from '../../compile';
+import type { BrowserElement } from '../../dom/simple-utils';
+
+import { qunitFixture } from '../../dom/simple-utils';
 import {
   registerComponent,
   registerHelper,
@@ -40,7 +43,7 @@ import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
 import { renderLooseTemplate } from '../loose-template';
 
-export class JitRenderDelegate implements RenderDelegate {
+export abstract class BaseJitRenderDelegate<E extends SimpleElement> implements RenderDelegate<E> {
   static readonly isEager = false;
   static style = 'jit';
 
@@ -103,13 +106,7 @@ export class JitRenderDelegate implements RenderDelegate {
     return this.context.env.isArgumentCaptureError?.(value) ?? false;
   }
 
-  getInitialElement(): SimpleElement {
-    if (isBrowserTestDocument(this.doc)) {
-      return castToSimple((this.doc as Document).getElementById('qunit-fixture')!);
-    } else {
-      return this.createElement('div');
-    }
-  }
+  abstract getInitialElement(): E;
 
   createElement(tagName: string): SimpleElement {
     return this.doc.createElement(tagName);
@@ -223,6 +220,8 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 }
 
-function isBrowserTestDocument(doc: SimpleDocument | Document): doc is Document {
-  return 'getElementById' in doc && doc.getElementById('qunit-fixture') !== null;
+export class JitRenderDelegate extends BaseJitRenderDelegate<BrowserElement> {
+  getInitialElement(): BrowserElement {
+    return qunitFixture();
+  }
 }

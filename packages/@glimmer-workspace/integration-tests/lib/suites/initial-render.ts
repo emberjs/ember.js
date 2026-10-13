@@ -1,15 +1,15 @@
 import type { SimpleElement } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
 import { NS_SVG } from '@glimmer/constants';
-import { checkNode, unwrap } from '@glimmer/debug-util';
+import { checkNode } from '@glimmer/debug-util';
 import { strip } from '@glimmer/util';
 
 import { assertNodeTagName } from '../dom/assertions';
-import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
+import { assertingElement, firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 
-export class InitialRenderSuite extends RenderTest {
+export class InitialRenderSuite<E extends SimpleElement = SimpleElement> extends RenderTest<E> {
   static suiteName = 'initial render';
 
   name = 'BASE';
@@ -418,10 +418,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    let selectNode = checkNode(
-      (this.element as unknown as HTMLElement).firstElementChild,
-      'select'
-    );
+    let selectNode = checkNode(firstElementChild(this.element), 'select');
     this.assert.strictEqual(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
@@ -434,7 +431,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = checkNode((this.element as unknown as HTMLElement).firstElementChild, 'select');
+    selectNode = checkNode(firstElementChild(this.element), 'select');
 
     this.assert.strictEqual(selectNode.selectedIndex, 0);
 
@@ -450,7 +447,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = checkNode((this.element as unknown as HTMLElement).firstElementChild, 'select');
+    selectNode = checkNode(firstElementChild(this.element), 'select');
 
     this.assert.strictEqual(selectNode.selectedIndex, 0);
 
@@ -465,7 +462,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = checkNode((this.element as unknown as HTMLElement).firstElementChild, 'select');
+    selectNode = checkNode(firstElementChild(this.element), 'select');
     this.assert.strictEqual(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
@@ -519,16 +516,8 @@ export class InitialRenderSuite extends RenderTest {
       </select>`);
 
     this.assert.strictEqual(selected.length, 2, 'two options are selected');
-    this.assert.strictEqual(
-      (first as unknown as HTMLOptionElement).value,
-      '1',
-      'first selected item is "1"'
-    );
-    this.assert.strictEqual(
-      (second as unknown as HTMLOptionElement).value,
-      '2',
-      'second selected item is "2"'
-    );
+    this.assert.strictEqual(checkNode(first, 'option').value, '1', 'first selected item is "1"');
+    this.assert.strictEqual(checkNode(second, 'option').value, '2', 'second selected item is "2"');
   }
 
   @test
@@ -712,19 +701,19 @@ export class InitialRenderSuite extends RenderTest {
     );
 
     this.assert.strictEqual(
-      (unwrap(firstChild) as unknown as SVGElement).namespaceURI,
+      assertingElement(firstChild).namespaceURI,
       NS_SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.strictEqual(
-      (secondChild as unknown as SVGElement).namespaceURI,
+      assertingElement(secondChild).namespaceURI,
       NS_SVG,
       'creates the second svg element with a namespace'
     );
 
     this.assert.strictEqual(
-      (thirdChild as unknown as HTMLElement).namespaceURI,
+      assertingElement(thirdChild).namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );

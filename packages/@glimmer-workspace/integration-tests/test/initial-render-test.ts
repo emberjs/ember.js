@@ -1,6 +1,10 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
-import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
+import type {
+  BrowserElement,
+  ComponentBlueprint,
+  Content,
+} from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import {
   assertElementShape,
@@ -33,7 +37,7 @@ class RenderTests extends InitialRenderSuite {
   override name = 'client';
 }
 
-class AbstractRehydrationTests extends InitialRenderSuite {
+class AbstractRehydrationTests extends InitialRenderSuite<BrowserElement> {
   override name = 'rehydration';
   declare protected delegate: RehydrationDelegate;
   declare protected serverOutput: Nullable<string>;
@@ -237,7 +241,7 @@ class Rehydration extends AbstractRehydrationTests {
     );
 
     // remove the first `<!--%-b:1%-->`
-    let element = this.element as unknown as HTMLElement;
+    let element = this.element;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     let commentToRemove = this.guardArray({ children: div.childNodes }, { min: 4 })[3];
     div.removeChild(commentToRemove);
@@ -353,7 +357,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // remove the attribute
-    let element = this.element as unknown as HTMLElement;
+    let element = this.element;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.removeAttribute('data-foo');
 
@@ -370,7 +374,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // add an extra attribute
-    let element = this.element as unknown as HTMLElement;
+    let element = this.element;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('data-bar', 'oops');
 
@@ -387,7 +391,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div class="always-present show-me"></div>');
 
     // mutate the attribute
-    let element = this.element as unknown as HTMLElement;
+    let element = this.element;
     let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('class', 'zomg');
 
@@ -401,11 +405,9 @@ class Rehydration extends AbstractRehydrationTests {
   'does not mutate attributes that already match'() {
     let observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
-        let target = mutation.target as HTMLElement;
-        this.assert.ok(
-          false,
-          `should not have updated ${mutation.attributeName} on ${target.outerHTML}`
-        );
+        let { target } = mutation;
+        let html = target instanceof Element ? target.outerHTML : target.nodeName;
+        this.assert.ok(false, `should not have updated ${mutation.attributeName} on ${html}`);
       });
     });
 
@@ -413,7 +415,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.renderServerSide(template, {});
     this.assertServerOutput('<div data-foo="whatever"></div>');
 
-    observer.observe(this.element as unknown as HTMLElement, { attributes: true, subtree: true });
+    observer.observe(this.element, { attributes: true, subtree: true });
 
     this.renderClientSide(template, {});
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -479,7 +481,6 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 2 });
@@ -518,7 +519,6 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -547,7 +547,6 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 1 });
@@ -575,7 +574,6 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -630,7 +628,6 @@ class Rehydration extends AbstractRehydrationTests {
 
     replaceHTML(clientRemoteParent, serializedParentRemote);
     replaceHTML(clientRemoteChild, serializedRemoteChild);
-    this.element = assertingElement(host.firstChild);
     this.renderClientSide(template, {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,

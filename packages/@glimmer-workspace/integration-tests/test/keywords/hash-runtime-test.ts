@@ -1,9 +1,14 @@
 import GlimmerComponent from '@glimmer/component';
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
-class KeywordHashRuntime extends RenderTest {
+class KeywordHashRuntime extends RenderTest<BrowserElement> {
   static suiteName = 'keyword helper: hash (runtime)';
 
   @test
@@ -125,7 +130,7 @@ class KeywordHashRuntime extends RenderTest {
 
     this.renderComponent(Foo);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
   }

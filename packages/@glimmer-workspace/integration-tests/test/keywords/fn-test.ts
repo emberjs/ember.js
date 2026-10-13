@@ -1,10 +1,15 @@
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  type BrowserElement,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
 
-class KeywordFn extends RenderTest {
+class KeywordFn extends RenderTest<BrowserElement> {
   static suiteName = 'keyword helper: fn';
 
   /**
@@ -31,7 +36,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -52,7 +57,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 
@@ -78,7 +83,7 @@ class KeywordFn extends RenderTest {
 
     this.renderComponent(compiled);
 
-    (this.element as unknown as HTMLDivElement).querySelector('button')!.click();
+    this.element.querySelector('button')!.click();
     assert.verifySteps(['hello']);
   }
 

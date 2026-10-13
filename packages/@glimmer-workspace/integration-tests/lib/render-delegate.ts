@@ -36,8 +36,8 @@ export interface RenderDelegateOptions {
   debugRenderTree?: boolean | undefined;
 }
 
-export default interface RenderDelegate {
-  getInitialElement(): SimpleElement;
+export default interface RenderDelegate<E extends SimpleElement = SimpleElement> {
+  getInitialElement(): E;
   createElement(tagName: string): SimpleElement;
   createTextNode(content: string): SimpleText;
   createElementNS(namespace: ElementNamespace, tagName: string): SimpleElement;

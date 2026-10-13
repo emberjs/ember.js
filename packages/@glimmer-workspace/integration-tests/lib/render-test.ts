@@ -53,10 +53,10 @@ export class Count {
   }
 }
 
-export class RenderTest implements IRenderTest {
+export class RenderTest<E extends SimpleElement = SimpleElement> implements IRenderTest {
   testType: ComponentKind = 'unknown';
 
-  protected element: SimpleElement;
+  protected element: E;
   assert = QUnit.assert;
   protected context: Dict = trackedObject<Dict>({}, { equals: () => false });
   protected handle: Nullable<RenderHandle> = null;
@@ -65,7 +65,7 @@ export class RenderTest implements IRenderTest {
   protected snapshot: NodesSnapshot = [];
   readonly count = new Count();
 
-  constructor(protected delegate: RenderDelegate) {
+  constructor(protected delegate: RenderDelegate<E>) {
     this.element = delegate.getInitialElement();
   }
 
