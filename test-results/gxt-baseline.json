@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T17:02:43.789Z",
+    "capturedAt": "2026-10-13T18:07:09.455Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "18037c8e71",
-    "totalTests": 9993,
-    "totalModules": 966,
+    "emberCommit": "f93c20f33e",
+    "totalTests": 9996,
+    "totalModules": 967,
     "quarantinedTests": 0,
-    "totalAssertions": 59734,
-    "totalAssertionsPassing": 58054,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a render started throwing only its own render errors, written by runner.mjs. The render-error queue is global: a render now takes a mark when it starts, throws only the errors queued after the mark, and drops them when its own error reaches the caller, so an error a test has already caught is no longer thrown by the next test's render, and a renderComponent call that throws stops re-rendering. 9142/9993 green (was 9139/9992), no timeouts, no harness errors, no green->red. Two [integration] strict-mode rows turned green ('Can pass helper as argument and invoke dynamically' and 'works with a curried string component defined in a resolution mode component'), and the new renderComponent test passes. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59764,
+    "totalAssertionsPassing": 58130,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after URL attributes are sanitized with Glimmer's own rules (requiresSanitization / sanitizeAttributeValue from @glimmer/runtime instead of an outdated copy), written by runner.mjs. 9167/9996 green (was 9142/9993), no timeouts, no harness errors, no green->red. 22 [integration] rows turned green: area[href], button[formaction] and input[formaction] (javascript:/vbscript: on render and update), data: URLs on iframe[src] and object[data], and the same Attributes tests where QUnit also reports them under the input-range modules. The new tests pass: an attributeBindings test (button[formaction], object[data]) and two GXT tests (SVG href/xlink:href and a camelCased formAction, on render and update). The Attributes tests 'svg a[xlink:href]' and the camelCased formAction test now pass their sanitization assertions but still fail after rerender(): they read an element captured before it, and a write to the harness context re-renders the root's whole DOM, as 'svg a[href]' already does. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (rendering tests)": {
@@ -1044,10 +1044,10 @@
       "failingTests": []
     },
     "Attribute bindings integration": {
-      "total": 28,
-      "passing": 28,
-      "assertionsTotal": 495,
-      "assertionsPassing": 495,
+      "total": 29,
+      "passing": 29,
+      "assertionsTotal": 519,
+      "assertionsPassing": 519,
       "failingTests": []
     },
     "Basic Custom Modifier Manager: 3.22": {
@@ -2575,6 +2575,13 @@
       "passing": 2,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT correctness: URL sanitization": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "GXT correctness: compile pipeline throwOnCompileError": {
@@ -5649,9 +5656,9 @@
     },
     "[integration] jit :: Attributes": {
       "total": 33,
-      "passing": 12,
+      "passing": 14,
       "assertionsTotal": 361,
-      "assertionsPassing": 311,
+      "assertionsPassing": 316,
       "failingTests": [
         {
           "name": "triple curlies in attribute position",
@@ -5723,14 +5730,6 @@
         },
         {
           "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks data: urls as unsafe on iframe[src] and object[data]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "object[data] marks data: and javascript: urls as unsafe but allows http",
           "category": "gxt:triage"
         },
         {
@@ -6943,9 +6942,9 @@
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
-      "passing": 15,
+      "passing": 17,
       "assertionsTotal": 376,
-      "assertionsPassing": 324,
+      "assertionsPassing": 329,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7025,14 +7024,6 @@
         },
         {
           "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks data: urls as unsafe on iframe[src] and object[data]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "object[data] marks data: and javascript: urls as unsafe but allows http",
           "category": "gxt:triage"
         },
         {
@@ -7381,27 +7372,10 @@
     },
     "[integration] jit :: area[href] attribute": {
       "total": 6,
-      "passing": 2,
+      "passing": 6,
       "assertionsTotal": 66,
-      "assertionsPassing": 59,
-      "failingTests": [
-        {
-          "name": "marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe, http as safe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on updates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 66,
+      "failingTests": []
     },
     "[integration] jit :: argument-less helper paren-less invoke": {
       "total": 5,
@@ -7417,27 +7391,10 @@
     },
     "[integration] jit :: button[formaction] attribute": {
       "total": 6,
-      "passing": 2,
+      "passing": 6,
       "assertionsTotal": 66,
-      "assertionsPassing": 59,
-      "failingTests": [
-        {
-          "name": "marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe, http as safe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on updates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 66,
+      "failingTests": []
     },
     "[integration] jit :: compile errors": {
       "total": 11,
@@ -7739,33 +7696,16 @@
     },
     "[integration] jit :: input[formaction] attribute": {
       "total": 6,
-      "passing": 2,
+      "passing": 6,
       "assertionsTotal": 66,
-      "assertionsPassing": 59,
-      "failingTests": [
-        {
-          "name": "marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe, http as safe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on updates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 66,
+      "failingTests": []
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 15,
+      "passing": 17,
       "assertionsTotal": 376,
-      "assertionsPassing": 324,
+      "assertionsPassing": 329,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7845,14 +7785,6 @@
         },
         {
           "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks data: urls as unsafe on iframe[src] and object[data]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "object[data] marks data: and javascript: urls as unsafe but allows http",
           "category": "gxt:triage"
         },
         {
@@ -7863,9 +7795,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 17,
+      "passing": 19,
       "assertionsTotal": 376,
-      "assertionsPassing": 326,
+      "assertionsPassing": 331,
       "failingTests": [
         {
           "name": "triple curlies in attribute position",
@@ -7940,14 +7872,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "marks data: urls as unsafe on iframe[src] and object[data]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "object[data] marks data: and javascript: urls as unsafe but allows http",
-          "category": "gxt:triage"
-        },
-        {
           "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
@@ -7955,9 +7879,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 15,
+      "passing": 17,
       "assertionsTotal": 376,
-      "assertionsPassing": 324,
+      "assertionsPassing": 329,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -8037,14 +7961,6 @@
         },
         {
           "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks data: urls as unsafe on iframe[src] and object[data]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "object[data] marks data: and javascript: urls as unsafe but allows http",
           "category": "gxt:triage"
         },
         {
@@ -10472,6 +10388,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 851
+    "gxt:triage": 829
   }
 }
