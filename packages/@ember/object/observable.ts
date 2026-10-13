@@ -14,6 +14,9 @@ export type { ObserverMethod } from '@ember/object/observable-internal';
 
   This mixin provides properties and property observing functionality, core
   features of the Ember object model.
+    
+  NOTE: Using this mixin directly is deprecated. The methods provided by it
+  are not deprecated when they are included in framework objects.
 
   Properties and observers allow one object to observe changes to a
   property on another object. This is one of the fundamental ways that
