@@ -2604,13 +2604,12 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
   const getter = function cachedReference(): unknown {
     const outer = _gxtGetTracker() as Set<any> | null;
     if (initialized) {
+      // forEach, NOT for…of: gxt's reactive Map.prototype iterator patch would
+      // register this bookkeeping Map with the reading formula.
       let current = true;
-      for (const [cell, revision] of deps) {
-        if (cell._revision !== revision) {
-          current = false;
-          break;
-        }
-      }
+      deps.forEach((revision, cell) => {
+        if (cell._revision !== revision) current = false;
+      });
       if (current) {
         if (outer !== null) deps.forEach((_revision, cell) => outer.add(cell));
         return value;
