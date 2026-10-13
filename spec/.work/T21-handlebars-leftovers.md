@@ -44,3 +44,16 @@ out of scope.
       the §09 conformance suite can run unchanged.
 - [ ] 5. Spec follow-up: mark each kept feature **[Legacy]** in its §02 section and cite the new
       tests; describe the removed ones as errors (new E-catalogue rows); remove §02-11 item 15.
+
+## Step 1 results
+
+Method: throwaway QUnit modules in `packages/@ember/-internals/glimmer/tests/integration/` of the t21 worktree (copies in the session
+scratchpad `t21/t21-test.js`, `t21b-test.js`, raw output `run2.txt`, `raw3.txt`), one fresh render per case. Loose = classic
+`compile(..., {strictMode:false})` plus component/helper registered in the owner. Strict = `compileWithScope(..., {strictMode:true})` with
+a scope object (harness-only, see F4), `template()` from `@ember/template-compiler`, and a node script driving
+`babel-plugin-ember-template-compilation@4.0.0` over `<template>` (content-tag) and `precompileTemplate` (`babel-probe-run.mjs`).
+"Usable" = compiles and has a meaningful rendered effect.
+
+| # | Feature | Strict usable? | Loose usable? | Evidence | Notes |
+|---|---|---|---|---|---|
+| F1 | `{{&foo}}` | yes | yes | `[{{&this.x}}]` with x=`<b>x</b>` renders `[<b>x</b>]` in both modes (control `{{this.x}}` renders `[&lt;b&gt;x&lt;/b&gt;]`). Babel: block `[[[2,[30,0,["x"]]]],[],[]]` for both `<template>` and `precompileTemplate(strictMode:false)` (opcode 2 = trusting append, same as `{{{x}}}`). | In an attribute (`title={{&this.x}}`) it is escaped, like `{{{x}}}`; no effect there. |
