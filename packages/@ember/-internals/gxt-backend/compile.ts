@@ -2545,26 +2545,103 @@ function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
 // consumer then subscribes to `cellFor(model,'firstName')` and re-pulls the live
 // value when `set` dirties it. Non-hash objects keep gxt's `cellFor(obj,key)`
 // path unchanged (that one IS the right reactive cell for a real object).
-// Mark every `$__cached` getter so the helper-arg unwrappers can fully resolve
-// it. A `(hash)`/`(array)` value passed as a component arg compiles to
-// `data: $__cached(() => $__hash({...}))`; reading `this.args.data` /
-// `@data` yields the cached GETTER, so a functional-helper arg
-// `[() => $a.data]` unwraps ONE level to the cached getter (gxt's `F`/Ember's
-// `unwrapArgs` only unwrap once) and the helper receives the un-invoked getter
-// instead of the hash/array value. Tagging the getter lets `unwrapArgs` /
-// `unwrapHash` (ember-gxt-wrappers.ts) unwrap the extra cached level.
+// `$__cached`: the reference behind a `(hash)` / `(array)` value.
+//
+// The compat compiler emits every `(hash)` / `(array)` helper value as
+// `$__cached(() => $__hash({...}))` / `$__cached(() => $__array(...))`. In
+// Glimmer these helpers are compute references: the value is re-computed only
+// when a tag the computation consumed has changed, and is the same object
+// otherwise. gxt's `cachedHelper` differs for a computation that read no
+// cell: it re-runs it after ANY revision change anywhere. A `(hash)` factory
+// never reads a cell (its members are lazy getters), and when a member is
+// itself built afresh on each read — a `(component …)`, a nested `(hash)` /
+// `(array)` — gxt's shallow-equal identity check fails too, so such a
+// `(hash)` / `(array)` got a new identity on every read after any change.
+// As a component argument, that identity churn reads as an argument change on
+// every sync: the change is written back to the component, which dirties
+// classic tags, which schedules the next sync (and, in a `renderComponent`
+// root, fires its re-render reactor), which reads a new identity again — the
+// renderer never settles (`<X @stuff={{hash Foo=(component "foo")}} />`).
+//
+// So the getter follows the reference semantics instead: it re-runs the
+// factory only when a cell the factory read has changed (a factory that read
+// none is constant), and after a re-run it keeps the previous object when the
+// new one is shallow-equal (gxt's rule: same keys / length, members compared
+// with `Object.is`). A hash's members stay live getters, so readers still see
+// the current member values. The cells the factory read are forwarded to the
+// reading frame, as `cachedHelper` does.
+//
+// The getter is also tagged `__isCachedHelper` so the helper-arg unwrappers can
+// fully resolve it: reading `this.args.data` / `@data` for a `(hash)` / `(array)`
+// arg yields this GETTER, so a functional-helper arg `[() => $a.data]` unwraps
+// ONE level to it (gxt's `F` / Ember's `unwrapArgs` only unwrap once) and the
+// tag lets `unwrapArgs` / `unwrapHash` (ember-gxt-wrappers.ts) unwrap the extra
+// cached level.
+function _gxtShallowEqualCachedValue(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!Object.is(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const keys = Object.keys(a);
+    if (keys.length !== Object.keys(b).length) return false;
+    for (const key of keys) {
+      if (!Object.is((a as any)[key], (b as any)[key])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+function _gxtCachedReference(factory: () => unknown): () => unknown {
+  let initialized = false;
+  let value: unknown;
+  // The cells the last run of `factory` read, with their revisions then.
+  let deps = new Map<any, unknown>();
+  const getter = function cachedReference(): unknown {
+    const outer = _gxtGetTracker() as Set<any> | null;
+    if (initialized) {
+      let current = true;
+      for (const [cell, revision] of deps) {
+        if (cell._revision !== revision) {
+          current = false;
+          break;
+        }
+      }
+      if (current) {
+        if (outer !== null) deps.forEach((_revision, cell) => outer.add(cell));
+        return value;
+      }
+    }
+    const frame = new Set<any>();
+    _gxtSetTracker(frame);
+    let next: unknown;
+    try {
+      next = factory();
+    } finally {
+      _gxtSetTracker(outer);
+    }
+    const nextDeps = new Map<any, unknown>();
+    frame.forEach((cell) => {
+      nextDeps.set(cell, cell._revision);
+      if (outer !== null) outer.add(cell);
+    });
+    deps = nextDeps;
+    if (!initialized || !_gxtShallowEqualCachedValue(next, value)) value = next;
+    initialized = true;
+    return value;
+  };
+  (getter as any).__isCachedHelper = true;
+  return getter;
+}
 {
   const g = globalThis as any;
   if (g.$__cached && !g.$__cached.__emberCachedWrapped) {
-    const origCached = g.$__cached;
-    g.$__cached = function $__cached_ember(factory: any) {
-      const getter = origCached.call(this, factory);
-      try {
-        (getter as any).__isCachedHelper = true;
-      } catch {
-        /* non-extensible — unwrappers fall back to one-level unwrap */
-      }
-      return getter;
+    g.$__cached = function $__cached_ember(factory: () => unknown) {
+      return _gxtCachedReference(factory);
     };
     g.$__cached.__emberCachedWrapped = true;
   }

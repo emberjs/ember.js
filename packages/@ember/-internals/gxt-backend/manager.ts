@@ -68,6 +68,7 @@ import {
   consumeTag as _classicConsumeTagHook,
   tagFor as _classicTagForHook,
   dirtyTagFor as _validatorDirtyTagFor,
+  withArgPropagation,
 } from './validator';
 import {
   createConstRef as _createConstRef,
@@ -3636,7 +3637,9 @@ function _installArgDescriptor(
 // for `key` whenever `read()` returns something other than on its previous run
 // (the first run only records the value). Classic consumers (createCache,
 // invokeHelper) consume that tag when they read an arg-derived property, and
-// would otherwise not see a parent's change unless something re-read it.
+// would otherwise not see a parent's change unless something re-read it. The
+// dirty is an arg propagation (`withArgPropagation`): it fires no classic
+// reactor.
 function _installArgDirtyEffect(
   owner: object,
   target: object,
@@ -3649,7 +3652,7 @@ function _installArgDirtyEffect(
     const v = read();
     if (primed && v !== lastValue) {
       try {
-        classicDirtyTagForGuarded(target, key);
+        withArgPropagation(() => classicDirtyTagForGuarded(target, key));
       } catch {
         /* noop */
       }
@@ -3678,13 +3681,14 @@ function _readArgCell(cell: any, getter: (() => unknown) | undefined): unknown {
 }
 
 // Write an arg value onto a component instance as manager.ts's own write-back:
-// under `withSuppressDirtyInRcSet` (validator.ts dirties the tag without
-// scheduling another sync) and with `__gxtDispatchingArgs` set (setters treat
-// the write as a parent arg update). The instance's cell is updated first, so
-// a synchronous reader (a child template formula) already sees the value; the
-// assignment stays the canonical setter path. `skipDefine` keeps the cell from
-// replacing a tracked descriptor. `warning` is the DEBUG warning when the cell
-// update throws.
+// an arg propagation (`withArgPropagation`: the dirty fires no classic
+// reactor), under `withSuppressDirtyInRcSet` (validator.ts dirties the tag
+// without scheduling another sync) and with `__gxtDispatchingArgs` set
+// (setters treat the write as a parent arg update). The instance's cell is
+// updated first, so a synchronous reader (a child template formula) already
+// sees the value; the assignment stays the canonical setter path. `skipDefine`
+// keeps the cell from replacing a tracked descriptor. `warning` is the DEBUG
+// warning when the cell update throws.
 // `afterWrite` runs after the assignment, inside the dispatching frame.
 function _dispatchArgWrite(
   instance: any,
@@ -3693,24 +3697,26 @@ function _dispatchArgWrite(
   warning: string,
   afterWrite?: () => void
 ): void {
-  getGxtRenderer()!.compilePipeline.withSuppressDirtyInRcSet!(() => {
-    try {
-      instance.__gxtDispatchingArgs = true;
+  withArgPropagation(() =>
+    getGxtRenderer()!.compilePipeline.withSuppressDirtyInRcSet!(() => {
       try {
-        const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
-        _cell?.update?.(value);
-      } catch (cellErr) {
-        if (DEBUG) {
-          // eslint-disable-next-line no-console
-          console.warn(`[gxt] ${warning}`, { key, cellErr });
+        instance.__gxtDispatchingArgs = true;
+        try {
+          const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
+          _cell?.update?.(value);
+        } catch (cellErr) {
+          if (DEBUG) {
+            // eslint-disable-next-line no-console
+            console.warn(`[gxt] ${warning}`, { key, cellErr });
+          }
         }
+        instance[key] = value;
+        afterWrite?.();
+      } finally {
+        instance.__gxtDispatchingArgs = false;
       }
-      instance[key] = value;
-      afterWrite?.();
-    } finally {
-      instance.__gxtDispatchingArgs = false;
-    }
-  });
+    })
+  );
 }
 
 // CP-with-setter side-effect bridge: when the arg is backed by a classic

@@ -787,6 +787,30 @@ function _fireClassicReactors() {
   }
 }
 
+// Component-arg propagation scope. manager.ts runs its arg propagation in it:
+// the sync's write-back of a parent's new arg value onto a child
+// (`_dispatchArgWrite`) and the effect that dirties a child's classic arg tag
+// when the arg changes (`_installArgDirtyEffect`). A `dirtyTagFor` inside the
+// scope does not fire the classic reactors.
+//
+// Those reactors re-render a whole `renderComponent` root (base-renderer.ts),
+// a fallback for classic mutations GXT does not see. Fired from the sync's
+// pass over the component args (manager.ts `_gxtSyncAllWrappersBody`), the
+// re-render replaces the components whose args are being propagated, in the
+// middle of the pass: the pass then visits the new components, whose first
+// comparison sees a change (a lazy arg cell has no previous value; an arg
+// value built afresh on each read is a new identity), propagates it, fires the
+// reactor, re-renders the root again, and so on without end.
+let _argPropagationDepth = 0;
+export function withArgPropagation<T>(fn: () => T): T {
+  _argPropagationDepth++;
+  try {
+    return fn();
+  } finally {
+    _argPropagationDepth--;
+  }
+}
+
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;
 
@@ -853,15 +877,21 @@ export function dirtyTagFor(obj: any, key: any) {
   // call consumeTag() from classic @glimmer/validator — a code path that
   // GXT's tracker doesn't observe reliably. Firing them here ensures
   // effects re-read their reactive classic values on every tag mutation.
-  _fireClassicReactors();
-  // Helper autotracking fallback: for every cached helper bucket produced
-  // by ember-gxt-wrappers.ts, invalidate its cached arg-serialization so
-  // that the next time the enclosing GXT formula re-enters $_maybeHelper
-  // it takes the cache-miss branch and calls delegate.getValue with fresh
-  // state. This covers helpers that close over non-argument @tracked
-  // state (e.g. functional helpers reading `service.name`, class-based
-  // helpers reading a module-level tracked instance) — those reads don't
-  // participate in the argsSer cache key.
+  //
+  // Not while GXT propagates a component arg (`withArgPropagation`): such a
+  // dirty is GXT handing a parent's arg value on to a child, a change GXT is
+  // already propagating, not a classic mutation it missed.
+  if (_argPropagationDepth === 0) {
+    _fireClassicReactors();
+  }
+  // Helper autotracking fallback: stamp every `__managerBucket` entry of
+  // ember-gxt-wrappers.ts's helper cache. The custom-manager buckets there no
+  // longer keep an arg-serialization dedup (their `getValue` is a cache over
+  // the args and the tags compute() consumed, helper-manager.ts), so for them
+  // the stamp is inert; the entry that reacts is the tag-dirty sentinel,
+  // whose `lastArgsSer` setter clears compile.ts's tag-helper dedup keys.
+  // That covers tag helpers that close over non-argument @tracked state
+  // (e.g. a class-based helper reading a module-level tracked instance).
   //
   // Note: delegate.getValue is NOT re-run here, because
   //   (a) it would double-count user-visible compute() invocations, and
@@ -929,6 +959,12 @@ export function consumeTag(tag: any) {
     }
   }
 
+  // A helper-argument tag lives only in the shim's own frames (registered
+  // above); it is not a GXT cell, so it is never handed to GXT's tracker.
+  if (tag._isHelperArgsTag === true) {
+    return;
+  }
+
   // Our custom updatable tags (from createUpdatableTag) are objects with a
   // cell-backed `value` getter. Reading `.value` establishes GXT tracking so
   // that formulas depending on this tag re-evaluate when `dirty()` is called.
@@ -993,6 +1029,29 @@ function markTagDirty(tag: any): void {
   // globalRevisionCounter was already bumped by dirtyTagFor before calling us
   const rev = globalRevisionCounter;
   tagDirtyRevision.set(tag, rev);
+}
+
+// Helper-argument tags. A helper's arguments are references (Glimmer's
+// `argsProxyFor`): reading an argument consumes it, and a helper's cached
+// value goes stale only when an argument it read has changed. The compat
+// helper wrapper (helper-manager.ts) keeps a helper's current argument values
+// in plain storage and signals a change through one of these tags.
+//
+// They are seen only by the shim's own frames (`createCache`, `track()`,
+// begin/endTrackFrame): `consumeTag` registers them there and never forwards
+// them to GXT's tracker. `bumpHelperArgsTag` moves the tag past every earlier
+// revision, so a cache or a combined tag that consumed it is invalidated; it
+// touches no GXT cell (CURRENT_TAG's included), so it does not dirty the
+// formula that is reading the helper, does not bump the classic bridge, does
+// not fire the classic reactors and does not schedule a sync. A formula that
+// renders a helper already depends on the argument sources it evaluated.
+export function createHelperArgsTag(): object {
+  return { _isHelperArgsTag: true };
+}
+
+export function bumpHelperArgsTag(tag: object): void {
+  globalRevisionCounter++;
+  tagDirtyRevision.set(tag, globalRevisionCounter);
 }
 
 // Compute the current "revision" for a tag by taking the max of its own

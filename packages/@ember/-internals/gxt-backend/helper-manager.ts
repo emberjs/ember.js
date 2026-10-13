@@ -7,7 +7,7 @@
 // HelperManager delegate for a given owner.
 
 import { DEBUG } from '@glimmer/env';
-import { createCache, consumeTag, tagFor } from './validator';
+import { bumpHelperArgsTag, consumeTag, createCache, createHelperArgsTag } from './validator';
 import {
   createComputeRef,
   createConstRef,
@@ -109,6 +109,36 @@ function argsProxyForCustom(capturedArgs: any): { positional: any; named: any } 
   });
 
   return { positional: positionalProxy, named: namedProxy };
+}
+
+/**
+ * Per-slot identity comparison of two positional argument lists, as Glimmer
+ * compares a reference's value: `Object.is` on each slot, so a function value
+ * (an action, a curried helper) is the same argument only when it is the same
+ * function.
+ */
+function samePositionalArgs(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!Object.is(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+/** Per-key identity comparison of two named argument objects (see above). */
+function sameNamedArgs(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+    if (!Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -231,18 +261,32 @@ export class CustomHelperManager {
     const self = this;
     wrapped = Object.create(delegate);
 
-    // Intercept createHelper to record bucket→definition mapping and
-    // make args reactive for createCache tracking (template path only).
+    // Intercept createHelper to record bucket→definition mapping and give the
+    // args the semantics of Glimmer's args proxy (template path only).
     //
-    // Skip reactive wrapping for invokeHelper's SimpleArgsProxy: its
+    // Glimmer hands a helper an args proxy over the call site's references:
+    // reading `args.positional` / `args.named` consumes the arguments, so the
+    // helper's cached value (the createCache in `getValue` below, or any cache
+    // the helper keeps itself) goes stale exactly when an argument it read
+    // changed. Here the GXT caller (`$_maybeHelper_ember`) assigns the current
+    // argument values on every evaluation of the formula that renders the
+    // helper, so the args become accessors over plain storage:
+    // - an assignment compares slot by slot (`Object.is`, function values by
+    //   identity) and records a change only when a value differs;
+    // - a change bumps a helper-args tag (validator.ts), which invalidates the
+    //   caches that read the args and nothing else: no GXT cell is written, so
+    //   assigning the args while a formula reads the helper does not dirty
+    //   that formula (it already depends on the argument sources it evaluated).
+    //
+    // Skip the wrapping for invokeHelper's SimpleArgsProxy: its
     // positional/named are lazy prototype accessors over an internal args
     // cache (the lazy read is the API contract — class-field initializers
     // call invokeHelper before the owner's constructor body runs). The
     // snapshot-and-redefine below would eagerly evaluate computeArgs and
     // freeze the stale result in place. `Object.isFrozen` only catches the
     // DEBUG shape (upstream freezes the proxy in debug builds only), so also
-    // require positional/named to be own data properties, which is the VM
-    // captured-args shape this wrap is meant for.
+    // require positional/named to be own, configurable data properties, which
+    // is the captured-args shape this wrap is meant for.
     if (typeof origCreateHelper === 'function') {
       wrapped.createHelper = function (definition: any, args: any) {
         const _posDesc =
@@ -260,64 +304,42 @@ export class CustomHelperManager {
           !Object.isFrozen(args) &&
           _posDesc !== undefined &&
           'value' in _posDesc &&
+          _posDesc.configurable === true &&
           _namedDesc !== undefined &&
-          'value' in _namedDesc
+          'value' in _namedDesc &&
+          _namedDesc.configurable === true
         ) {
-          // The rebuild-guarded dirty variant comes from the typed bridge (see
-          // classicDirtyTagFor in gxt-bridge.ts).
-          const _consumeTag = consumeTag;
-          const _tagFor = tagFor;
-          const _dirtyTagFor = getGxtRenderer()?.compilePipeline.classicDirtyTagFor;
-          if (_consumeTag && _tagFor && _dirtyTagFor) {
-            const argsTag = {};
-            let _positional = args.positional;
-            let _named = args.named;
-            try {
-              Object.defineProperty(args, 'positional', {
-                get() {
-                  try {
-                    _consumeTag(_tagFor(argsTag, 'positional'));
-                  } catch {
-                    /* noop */
-                  }
-                  return _positional;
-                },
-                set(v) {
-                  _positional = v;
-                  try {
-                    _dirtyTagFor(argsTag, 'positional');
-                  } catch {
-                    /* noop */
-                  }
-                },
-                configurable: true,
-                enumerable: true,
-              });
-              Object.defineProperty(args, 'named', {
-                get() {
-                  try {
-                    _consumeTag(_tagFor(argsTag, 'named'));
-                  } catch {
-                    /* noop */
-                  }
-                  return _named;
-                },
-                set(v) {
-                  _named = v;
-                  try {
-                    _dirtyTagFor(argsTag, 'named');
-                  } catch {
-                    /* noop */
-                  }
-                },
-                configurable: true,
-                enumerable: true,
-              });
-              args.__reactiveHelper = true;
-            } catch {
-              // If defineProperty fails, skip making reactive
-            }
-          }
+          let positional = args.positional;
+          let named = args.named;
+          const positionalTag = createHelperArgsTag();
+          const namedTag = createHelperArgsTag();
+          Object.defineProperty(args, 'positional', {
+            get() {
+              consumeTag(positionalTag);
+              return positional;
+            },
+            set(next) {
+              if (samePositionalArgs(positional, next)) return;
+              positional = next;
+              bumpHelperArgsTag(positionalTag);
+            },
+            configurable: true,
+            enumerable: true,
+          });
+          Object.defineProperty(args, 'named', {
+            get() {
+              consumeTag(namedTag);
+              return named;
+            },
+            set(next) {
+              if (sameNamedArgs(named, next)) return;
+              named = next;
+              bumpHelperArgsTag(namedTag);
+            },
+            configurable: true,
+            enumerable: true,
+          });
+          args.__reactiveHelper = true;
         }
 
         const bucket = origCreateHelper.call(delegate, definition, args);

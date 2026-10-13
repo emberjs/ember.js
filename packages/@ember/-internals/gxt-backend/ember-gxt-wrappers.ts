@@ -202,8 +202,8 @@ installCompilePipelinePart({
   clearHelperCache: _gxtClearHelperCache,
   // Get-only accessor for the `classHelperInstanceCache` Map above. Read by
   // validator.ts's `dirtyTagFor` loop (which stamps `lastArgsSer` on every
-  // bucket to force a cache miss on the next `$_maybeHelper` invocation) and
-  // by compile.ts's `$_if` branch-swap helper-destroy hooks.
+  // `__managerBucket` entry; only the tag-dirty sentinel below reacts to it)
+  // and by compile.ts's `$_if` branch-swap helper-destroy hooks.
   getClassHelperInstanceCache: () => classHelperInstanceCache,
 });
 
@@ -217,12 +217,11 @@ installCompilePipelinePart({
 // render — but it has no listener for tracked-property dirties on external
 // objects (a closure-captured @tracked instance, for example).
 //
-// validator.ts's `dirtyTagFor` already walks classHelperInstanceCache and
-// bumps each entry's `lastArgsSer` to force the next render to bypass the
-// dedup. This synthetic entry piggy-backs on that loop: its `lastArgsSer`
-// setter forwards the dirty signal to every cached tag-helper instance,
-// clearing its `__gxtLastArgsSerialized` so compile.ts re-invokes compute()
-// with fresh state.
+// validator.ts's `dirtyTagFor` walks classHelperInstanceCache and stamps each
+// `__managerBucket` entry's `lastArgsSer`. This synthetic entry piggy-backs on
+// that loop: its `lastArgsSer` setter forwards the dirty signal to every
+// cached tag-helper instance, clearing its `__gxtLastArgsSerialized` so
+// compile.ts re-invokes compute() with fresh state.
 {
   const _tagDirtySentinel = {
     __managerBucket: true as const,
@@ -325,9 +324,11 @@ setCreateCurriedComponentWrapper((inner) => {
   };
 });
 
-// When a property changes on a component, invalidate managed helper caches
-// so the next render pass picks up the changes. We don't re-compute values
-// here to avoid double-counting (GXT's native reactivity may also trigger).
+// When a property changes on a component, stamp the `__managerBucket` entries
+// of the helper cache (as validator.ts's `dirtyTagFor` does): the tag-dirty
+// sentinel forwards it to compile.ts's tag helpers; the custom-manager buckets
+// need nothing, their `getValue` is a cache over args and consumed tags. We
+// don't re-compute values here to avoid double-counting.
 //
 // Exposed as the `compilePipeline.notifyHelperPropertyChange` bridge method,
 // called from manager.ts's helper-recompute path.
@@ -337,8 +338,6 @@ function _gxtNotifyHelperPropertyChange(_obj: unknown, _key: string): void {
   // dirtyTagFor cache loop in validator.ts).
   (classHelperInstanceCache as Map<string, any>).forEach((cached) => {
     if (cached && cached.__managerBucket) {
-      // Invalidate the args serialization so the next $_maybeHelper call
-      // doesn't short-circuit with the cached result.
       cached.lastArgsSer = null;
     }
   });
@@ -861,10 +860,8 @@ function createEmberMaybeHelper(original: Function) {
                 // bridge (manager.ts `_installHelperRecomputeBridge`) dirties a
                 // cell on the instance's RECOMPUTE_TAG object when `recompute()`
                 // is called. To make the effect re-fire, read that RECOMPUTE_TAG
-                // cell here so the effect subscribes to it, and fold its value
-                // into the args-dedup key (below) so a recompute bump forces a
-                // fresh getValue() instead of returning the cached (stale)
-                // result.
+                // cell here so the effect subscribes to it; `getValue` (a cache
+                // that consumed the RECOMPUTE_TAG) then re-runs compute().
                 let _gxtRecomputeTag: any = null;
                 if (bucket) {
                   try {
@@ -879,9 +876,8 @@ function createEmberMaybeHelper(original: Function) {
                 }
                 // Read the RECOMPUTE_TAG cell now so the enclosing effect
                 // subscribes to it. When recompute() bumps it via manager.ts's
-                // bridge, the effect re-fires; the cached branch's dedup key
-                // (which folds in the recompute value) then forces a fresh
-                // getValue() + helperCell.update.
+                // bridge, the effect re-fires and the cached branch below reads
+                // the re-computed value.
                 if (
                   _gxtRecomputeTag &&
                   typeof _gxtRecomputeTag === 'object' &&
@@ -891,25 +887,11 @@ function createEmberMaybeHelper(original: Function) {
                   _gxtRecomputeTag.value;
                 }
 
-                let argsSer: string | null = null;
-                try {
-                  const _rv =
-                    _gxtRecomputeTag &&
-                    typeof _gxtRecomputeTag === 'object' &&
-                    'value' in _gxtRecomputeTag
-                      ? _gxtRecomputeTag.value
-                      : 0;
-                  argsSer = JSON.stringify({ p: positional, n: named, r: _rv });
-                } catch {
-                  /* skip */
-                }
-
                 cached = {
                   __managerBucket: true,
                   bucket,
                   delegate,
                   reactiveArgs,
-                  lastArgsSer: argsSer,
                   lastResult: result,
                   helperCell,
                   recomputeTag: _gxtRecomputeTag,
@@ -951,39 +933,25 @@ function createEmberMaybeHelper(original: Function) {
                 if (helperCell) return helperCell.value;
                 return result;
               } else {
-                // Arg-based dedup: check if args actually changed — if not, return
-                // cached result. This prevents duplicate compute calls within the
-                // same render pass (GXT formula system may evaluate the getter
-                // multiple times). Skip cache check if any positional arg is a
-                // function (e.g., fn helper result) because functions serialize as
-                // null, making stale results appear unchanged.
-                const hasFnArg = positional.some((a: any) => typeof a === 'function');
-                // Subscribe to (and fold in) the RECOMPUTE_TAG cell so recompute()
-                // invalidates this dedup and forces a fresh getValue.
+                // A re-evaluation of the formula that renders the helper.
+                // Glimmer semantics: the bucket's args are references
+                // (helper-manager.ts): assigning the current values records a
+                // change only for a slot whose value differs (`Object.is`,
+                // functions by identity), and `getValue` is the helper's cached
+                // reference, which re-runs compute only when an argument or a
+                // tag it consumed changed. Reading it on every evaluation keeps
+                // this formula subscribed to the helper's tracked reads.
+                //
+                // Nothing here writes reactive state: the formula that is
+                // reading the helper must not be dirtied by the read. (Writing
+                // the args unconditionally, or with no comparison when an
+                // argument was a function, dirtied a tag this formula consumed,
+                // so every evaluation scheduled the next one.)
                 const _cachedRT = (cached as any).recomputeTag;
                 if (_cachedRT && typeof _cachedRT === 'object' && 'value' in _cachedRT) {
                   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                   _cachedRT.value;
                 }
-                let argsSer: string | null = null;
-                if (!hasFnArg) {
-                  try {
-                    const _rv =
-                      _cachedRT && typeof _cachedRT === 'object' && 'value' in _cachedRT
-                        ? _cachedRT.value
-                        : 0;
-                    argsSer = JSON.stringify({ p: positional, n: named, r: _rv });
-                  } catch {
-                    /* skip */
-                  }
-                }
-                if (argsSer !== null && argsSer === cached.lastArgsSer) {
-                  // Read cell to maintain tracking
-                  if (cached.helperCell) return cached.helperCell.value;
-                  return cached.lastResult;
-                }
-
-                // Update args in place for the existing bucket
                 cached.reactiveArgs.positional = positional;
                 cached.reactiveArgs.named = named;
                 const _bt3 = getGxtRenderer()?.backtracking;
@@ -999,15 +967,14 @@ function createEmberMaybeHelper(original: Function) {
                 } finally {
                   if (_bt3) _bt3.endFrame();
                 }
-                cached.lastArgsSer = argsSer;
                 cached.lastResult = result;
-
-                // Update the GXT cell to trigger formula re-evaluation
-                if (cached.helperCell && cached.helperCell.update) {
-                  cached.helperCell.update(result);
+                // Subscribe to the cell that the out-of-formula paths update
+                // (the PROPERTY_DID_CHANGE hook above); this read path never
+                // writes it.
+                if (cached.helperCell) {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  cached.helperCell.value;
                 }
-
-                if (cached.helperCell) return cached.helperCell.value;
                 return result;
               }
             }
