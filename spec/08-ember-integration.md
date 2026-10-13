@@ -950,9 +950,8 @@ component = factory.create(props)        // untracked; init() runs, then `didRec
 
 The properties are assigned by `create`, after the constructor and before `init()`: a classic
 component's constructor sees neither named nor positional arguments (both are `undefined` there),
-unlike a `@glimmer/component`, which has `this.args` in its constructor. Test: on branch
-`test/w2-glimmer-harness`,
-`packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js`
+unlike a `@glimmer/component`, which has `this.args` in its constructor. Test:
+`packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js:763-795`
 › "renders with dot path and rest parameter does not leak" reads its positional param in
 `init()` for this reason (W2 finding 8).
 
@@ -1104,10 +1103,10 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
   `:123-145`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
   `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:739-1247`).
 - Named blocks (§05-6.4) work the same way on a classic component invoked with angle brackets:
-  `<:baz>`, `<:default>`, and `<:else as |v|>`/`<:inverse as |v|>` with block params. Tests on
-  branch `test/w2-glimmer-harness`:
-  `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js` › "it can yield to a named block", "it can yield to an explicit default
-  named block", "it can yield a value to the else and inverse named blocks". (The comment at
+  `<:baz>`, `<:default>`, and `<:else as |v|>`/`<:inverse as |v|>` with block params. Tests:
+  `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:479-496`
+  › "it can yield to a named block", `:498-515` › "it can yield to an explicit default named
+  block", `:517-541` › "it can yield a value to the else and inverse named blocks". (The comment at
   `helpers/yield-test.js:35` about named blocks failing with the default backing class concerns
   an unregistered default class, not classic subclasses.)
 - `@component` or other `@`-names that are not passed are `undefined`.

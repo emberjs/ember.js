@@ -348,12 +348,12 @@ so Ember's behavior is the specification. Concretely:
   host's owner, while its layout, and helpers and modifiers created in it, use the engine
   instance (§08-8.6).
 
-Tests: on branch `test/w2-glimmer-harness`,
-`packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
-inside an engine are created with the engine as their owner" pins the non-curried case,
-"a component curried in the application is created with the engine as owner when invoked in an
-engine" pins the first bullet, and "a component curried in an engine is created with the host
-owner when invoked in the host" pins the second (all under `{{mount}} owner tests`). The
+Tests (under `{{mount}} owner tests`):
+`packages/@ember/-internals/glimmer/tests/integration/mount-test.js:506-520` › "components
+rendered inside an engine are created with the engine as their owner" pins the non-curried case,
+`:524-537` › "a component curried in the application is created with the engine as owner when
+invoked in an engine" pins the first bullet, and `:539-559` › "a component curried in an engine
+is created with the host owner when invoked in the host" pins the second. The
 Glimmer suite's `owner-test.ts` tests that expected the defining owner on an internal
 `MountManager` contradicted this rule and were dropped (`.work/W2-coverage-ledger.md`, 9.2). The
 layout half of each bullet is pinned only for the second (the layout's probe component gets the

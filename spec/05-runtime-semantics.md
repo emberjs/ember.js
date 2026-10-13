@@ -1612,11 +1612,12 @@ Attributes recorded by `didCreateElement` (e.g. `id`, `class` from `classNames`,
 `attributeBindings`) are recorded *before* the invocation's attributes, so the invocation's
 attributes override them, except `class`, which is merged (manager classes first). If the
 layout also has an element with `...attributes`, the attrs block is evaluated there as well
-(§05-7.5), so the invocation's attributes appear on both the wrapper and that element. Tests (on
-branch `test/w2-glimmer-harness`, not yet upstream; they replace tests that ran on a fake
-classic component): `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js` › "invocation attributes win over
-attributeBindings", "invocation attributes are merged with the classes of the component",
-"explicit ...attributes in the layout receive the invocation attributes".
+(§05-7.5), so the invocation's attributes appear on both the wrapper and that element. Tests (they
+replaced tests that ran on a fake classic component, emberjs/ember.js#21679):
+`packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:436-457`
+› "invocation attributes win over attributeBindings", `:414-434` › "invocation attributes are
+merged with the classes of the component", `:459-477` › "explicit ...attributes in the layout
+receive the invocation attributes".
 
 ### 7.7 Arguments on update
 
