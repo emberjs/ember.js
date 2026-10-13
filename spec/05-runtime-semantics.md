@@ -1082,8 +1082,8 @@ Observable consequences:
   behavior).
 - When the list shrinks to empty, all items are destroyed and `else` is rendered.
 
-Tests: `updating-test.ts:1489-1528` (bounds after swap/delete/empty), `1548-1985` (keyed updates,
-`else`), `1985-2058` (a component's `willDestroy` has run by the time `rerender` returns, both
+Tests: `updating-test.ts:1489-1528` (bounds after swap/delete/empty), `1545-1982` (keyed updates,
+`else`), `1982-2055` (a component's `willDestroy` has run by the time `rerender` returns, both
 for a removed item and for the whole list emptied; see §05-11.3); `updating-test.ts:552-562`
 (a helper passed to `each` is not torn down when the list toggles between empty and non-empty); `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:350-718`
 pins the exact retain/move/insert/delete steps (in `LOCAL_DEBUG` builds only), e.g. swapping
@@ -1848,8 +1848,8 @@ copies of these tests were deleted by W2).
 
 Tests: several modifiers on one element install in source order, `<div {{foo}} {{bar}}>` gives
 `foo, bar` (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:84-104`); a nested
-element's modifiers install before its parent's (`350-370`), and siblings install in document
-order before the parent (`396-423`). When the environment is not interactive no modifier hook
+element's modifiers install before its parent's (`130-150`), and siblings install in document
+order before the parent (`176-203`). When the environment is not interactive no modifier hook
 runs (`custom-modifier-manager-test.js:684-738`). That `create` sees an element with no
 attributes and outside the document is untested (§14 item 11).
 
@@ -1916,7 +1916,7 @@ nested in a removed element is still attached to its detached parent).
 Tests: the destructor runs when the element's block is removed and again for a re-created
 element (`updating-modifiers-test.ts:73-105`). Several modifiers on one element are destroyed in
 source order (`modifiers-test.ts:106-128`); nested elements' modifiers are destroyed child-first
-(`372-394`) and siblings in document order before their parent (`425-458`).
+(`152-174`) and siblings in document order before their parent (`205-238`).
 
 ---
 

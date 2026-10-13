@@ -12,10 +12,10 @@ removed test are in `.work/W2-glimmer-harness.md` and `.work/W2-coverage-ledger.
 
 ## A. Citation refresh (Sonnet; chapters 00–09)
 
-- [ ] A1. `python3 spec/tools/remap-citations.py 9bec1cb2a8 a9501d5d40 --apply`; record the
+- [x] A1. `python3 spec/tools/remap-citations.py 9bec1cb2a8 a9501d5d40 --apply`; record the
       counts (moved, FLAG) in the notes.
-- [ ] A2. Resolve every FLAG line by hand against the new code (26 in the dry run).
-- [ ] A3. Re-derive every citation to a test file that moved, split, merged or was deleted
+- [x] A2. Resolve every FLAG line by hand against the new code (26 in the dry run).
+- [x] A3. Re-derive every citation to a test file that moved, split, merged or was deleted
       (`git diff -M --name-status 9bec1cb2a8 a9501d5d40 -- packages`), as T17 A2 did: match unique
       source lines of the old file (`git show 9bec1cb2a8:<path>`) against the new files, then check
       each result by its first line. The remap tool does not follow moves and may have shifted
@@ -23,7 +23,7 @@ removed test are in `.work/W2-glimmer-harness.md` and `.work/W2-coverage-ledger.
       FLAGs. For a cited test that W2 deleted, cite its twin from the coverage ledger and adjust
       the prose if the twin is in the other harness (Ember vs Glimmer). If a claim loses its only
       test, mark it "(untested)" as CONVENTIONS requires and record it in the notes.
-- [ ] A4. `python3 spec/tools/check-citations.py` reports nothing; `python3 spec/tools/xref.py`
+- [x] A4. `python3 spec/tools/check-citations.py` reports nothing; `python3 spec/tools/xref.py`
       prints nothing.
 
 ## B. Prose (Opus)
@@ -48,3 +48,39 @@ removed test are in `.work/W2-glimmer-harness.md` and `.work/W2-coverage-ledger.
 - Before A1, `check-citations.py` reports 44 problems (20 missing files, 24 out of range), all
   from the merge. (STATUS at `61911c201d` said they predated the merge; that check was wrong,
   because the tool resolves paths in `/Users/edward/hacking/ember.js` regardless of cwd.)
+- A1: remap-citations moved 142 citations, 26 FLAGs left (committed). A1 left 40 problems in
+  `check-citations.py`.
+- A2/A3 (done together). The remap tool does not touch bare continuation spans (`` `573-595` ``
+  with no `:`), and `check-citations.py` does not check them either. I re-derived every citation
+  (including 59 bare ones that follow a citation, plus ~15 found by eye: §05 in-element list,
+  modifiers-test, updating-test 1545-2055, §03 normalize) with a script (unique-line matching of
+  the old file at `9bec1cb2a8` against the new tree, then first/last-line check). Bare ranges
+  after a citation should be handled by hand after the next merge. ~45 spans changed by hand.
+  Note: the §03 edit for 'Non-native keyword' removed one line, so §03 lines after 623 shifted by -1.
+- Claims that lost their only test, now marked untested: `keywords` compile option (§01 table, §03
+  7.x; test 'Non-native keyword' dropped by W2); `insertBefore=<node>` VM semantics (§05 in-element
+  list; test 'With insertBefore' deleted, Ember rejects non-null insertBefore).
+- Deleted tests re-pointed to Ember twins (prose unchanged): modifiers-test forwarding (§05:1570),
+  modifier-manager-test (§05:1846, §06), helper-manager-test (§06), modifiers/on-test (§06),
+  default-helper-manager, array/fn/unique-id/refinements/render-settled (.js -> .gjs, §07/§08),
+  in-element 'Components are destroyed' and 'Inside the current constructing element' (§05, §05:2043),
+  style-warnings (§05:698), emberish-components (§05:1289-1291, now `component-invocation.ts` and Ember tests).
+- Notes for B (prose now stale, not fixed):
+  - `skip: 'glimmer'` is gone: yield.ts tests now run for all kinds, module.ts componentModule
+    rewritten (blueprint test without `kind` runs glimmer+curly+dynamic; `kinds` option; `kind: 'curly'`
+    on has-block suites became plain `@test`). §05:1320 and §05 item 12 (~l.2306-2308, "§14 item 12") are
+    resolved/false; §05:1347 "all of these are `kind: 'curly'`" too. Citations only were re-numbered.
+  - in-element 'Changing to falsey' / 'With pre-existing content' are now `skip: DEBUG` (production only).
+  - Glimmer harness `lib/compile.ts` now goes through `internal-test-helpers/lib/compile.ts` (Ember's
+    compileOptions); §09 item 3 text ("precompileJSON plus templateFactory" in both) and the
+    `RenderDelegate` (RenderHandle, registerHelperDefinition, teardown, no registerInternalHelper)
+    need B2. `rehydration` componentSuite now `kinds: ['glimmer','templateOnly']`.
+  - #21685 (append.ts ~790): resetTracking now in `finally` after popBlock; §05:2061, §07:126 cite it
+    (new range 741-797) but prose does not mention the try/finally.
+  - modifier.ts: `castToBrowser` removed from `CustomModifierManager.install` (element cast to Element);
+    no prose change needed unless §06 mentions the cast.
+  - Dropped IT duplicates: each.ts 'it renders all items with duplicate key values' and 'else template is
+    displayed with context' (twins in syntax/each-test.js, §05:992/1093 now cite each-test.js:655-674).
+  - Several W2-moved tests are Ember-harness now (async, ember-qunit .gjs); §09 counts need re-run.
+- A4: `check-citations.py` reports every citation ok (no problems); `xref.py` prints nothing.
+
