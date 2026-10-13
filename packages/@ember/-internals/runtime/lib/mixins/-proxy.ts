@@ -12,7 +12,7 @@ export { contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy-internal
   `ProxyMixin` forwards all properties not defined by the proxy itself
   to a proxied `content` object.  See ObjectProxy for more details.
 
-  @deprecated
+  @deprecated https://deprecations.emberjs.com/id/deprecate-proxy-mixin
   @class ProxyMixin
   @namespace Ember
   @private
@@ -25,6 +25,7 @@ interface ProxyMixin<T = unknown> {
     @type {unknown}
     @default null
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-proxy-mixin
   */
   content: T | null;
 
@@ -47,6 +48,7 @@ const ProxyMixin = /*@__PURE__*/ DeprecatedMixin.create(InternalProxyMixin, {
     @type {unknown}
     @default null
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-proxy-mixin
   */
 
   init() {

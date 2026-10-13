@@ -68,13 +68,6 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
   @internal
 */
 const InternalProxyMixin = /*@__PURE__*/ InternalMixin.create({
-  /**
-    The object whose properties will be forwarded.
-
-    @property content
-    @type {unknown}
-    @default null
-  */
   content: null,
 
   init() {
