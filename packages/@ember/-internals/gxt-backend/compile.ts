@@ -19,6 +19,7 @@ import {
   isPlainHtmlTagFastPath,
   createFnHelperValue,
   MUT_CELL_SOURCE,
+  sanitizedAttrValue,
 } from './utils';
 import {
   initChildViews as _emberInitChildViews,
@@ -495,12 +496,6 @@ import { isProxy } from '@ember/-internals/utils';
 import { RECOMPUTE_TAG } from '@ember/-internals/glimmer/lib/helper';
 // The class of `templateOnly()` component definitions.
 import { TemplateOnlyComponentDefinition } from '@glimmer/runtime/lib/component/template-only';
-// Glimmer's URL sanitization (which tag/attribute pairs need it, and how).
-import type { SimpleElement } from '@glimmer/interfaces';
-import {
-  requiresSanitization,
-  sanitizeAttributeValue,
-} from '@glimmer/runtime/lib/dom/sanitized-values';
 // Import the GXT runtime compiler
 // @ts-ignore - direct path to avoid GXT Babel plugin
 import {
@@ -1793,40 +1788,14 @@ if (DEBUG) {
   }, 0);
 }
 
-// URL sanitization is Glimmer's own (`@glimmer/runtime/lib/dom/sanitized-values`,
-// imported above): `requiresSanitization` picks the tag/attribute pairs and
-// `sanitizeAttributeValue` prefixes a dangerous URL with `unsafe:`. The
-// `normalizeAttrValue` host hook below applies it to every gxt attribute and
-// property write, and the SVG/MathML element path (`applyNsAttr`) to its bound
-// values.
-//
-// DEBUG-only fallback: the compat layer also writes some forwarded attributes
-// with a plain `setAttribute` (`...attributes` on component elements, curly
-// component wrappers), outside the host hook. In development this patch runs
-// those writes through the same sanitizer. Every write the hook made reaches
-// this patch too; a value that already has the `unsafe:` protocol is left as
-// it is, so `<embed src>` (which Glimmer always prefixes) is not prefixed twice.
-if (
-  DEBUG &&
-  typeof Element !== 'undefined' &&
-  Element.prototype &&
-  (Element.prototype as any).setAttribute &&
-  !(Element.prototype as any).__gxtSanitizePatched
-) {
-  const _origSetAttribute = Element.prototype.setAttribute;
-  Element.prototype.setAttribute = function (name: string, value: any): void {
-    if (
-      typeof value === 'string' &&
-      !value.startsWith('unsafe:') &&
-      requiresSanitization(this.tagName, name)
-    ) {
-      const sanitized = sanitizeAttributeValue(this as unknown as SimpleElement, name, value);
-      return _origSetAttribute.call(this, name, sanitized as string);
-    }
-    return _origSetAttribute.call(this, name, value);
-  };
-  (Element.prototype as any).__gxtSanitizePatched = true;
-}
+// URL sanitization is Glimmer's own (`sanitizedAttrValue` in ./utils calls
+// `requiresSanitization` / `sanitizeAttributeValue` from
+// `@glimmer/runtime/lib/dom/sanitized-values`). The `normalizeAttrValue` host
+// hook below applies it to every gxt attribute and property write; the compat
+// paths that write a bound attribute themselves (`...attributes` forwarding,
+// curly component elements, LinkTo / Input, the SVG/MathML element path) call
+// it too. There is no DEBUG-only fallback: development and production builds
+// sanitize the same writes.
 // HTML boolean attributes — when the template writes `<option selected>` the
 // GXT compiler emits `["selected", true]` (literal boolean). Browser DOM
 // accepts `setAttribute("selected", "true")` which serializes as
@@ -1871,8 +1840,8 @@ const _HTML_BOOLEAN_ATTRS = new Set([
 // SafeDynamicProperty do; props need no other Ember normalization.
 _gxtRegisterHostHooks({
   normalizeAttrValue: (name: string, value: any, element: any, isProp: boolean) => {
-    if (typeof element?.tagName === 'string' && requiresSanitization(element.tagName, name)) {
-      value = sanitizeAttributeValue(element, name, value);
+    if (typeof element?.tagName === 'string') {
+      value = sanitizedAttrValue(element, name, value);
     }
     if (isProp) return value;
     if (value === undefined || value === false) {
@@ -10753,10 +10722,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // A bound value of a URL attribute (`<a href={{…}}>`, `xlink:href`) is
         // sanitized before it is applied, as Glimmer sanitizes a dynamic
         // attribute; a static value is written as authored.
-        const boundNsValue = (key: string, v: any): any =>
-          requiresSanitization(el.tagName, key)
-            ? sanitizeAttributeValue(el as unknown as SimpleElement, key, v)
-            : v;
+        const boundNsValue = (key: string, v: any): any => sanitizedAttrValue(el, key, v);
 
         // Apply attributes/props from tagProps
         if (tagProps && tagProps !== g.$_edp) {
@@ -10961,8 +10927,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // If a getter throws here (e.g., accessing `this.x` before context is
           // ready), re-throw — GXT's normal pipeline would surface the same
           // error, and silent-swallowing would mask real bugs.
+          // A URL attribute is pre-applied sanitized: gxt writes it later
+          // through the `normalizeAttrValue` hook, which sanitizes it, and the
+          // modifier must not see the unsanitized URL in between.
           for (const [key, val] of localAttrs) {
-            const resolved = typeof val === 'function' ? val() : val;
+            const resolved = sanitizedAttrValue(el, key, typeof val === 'function' ? val() : val);
             if (resolved == null || resolved === false) {
               // Leave unset — GXT will handle it reactively if needed
               continue;
@@ -11224,7 +11193,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Skip entries GXT may have already applied — specifically
           // class/id/style are set via element properties by upstream code.
           if (result.hasAttribute(key)) continue;
-          const resolved = typeof value === 'function' ? value() : value;
+          // A bound URL attribute is sanitized, as Glimmer sanitizes a dynamic
+          // attribute; a static value is written as authored.
+          const resolved =
+            typeof value === 'function' ? sanitizedAttrValue(result, key, value()) : value;
           if (resolved == null || resolved === false) {
             // Null/undefined/false: ensure no stray attribute; leave as-is.
             continue;
@@ -11253,7 +11225,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (typeof value === 'function') {
             try {
               gxtEffect(() => {
-                const v = value();
+                const v = sanitizedAttrValue(result, key, value());
                 if (v == null || v === false) {
                   result.removeAttribute(key);
                 } else {

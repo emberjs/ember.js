@@ -1,6 +1,31 @@
 /**
  * Shared utility functions for the GXT compat layer.
  */
+import type { SimpleElement } from '@glimmer/interfaces';
+import {
+  requiresSanitization,
+  sanitizeAttributeValue,
+} from '@glimmer/runtime/lib/dom/sanitized-values';
+
+/**
+ * The value a dynamic attribute or property writes to `element`, with
+ * Glimmer's URL sanitization (SafeDynamicAttribute / SafeDynamicProperty):
+ * when the tag/attribute pair carries a URL (`requiresSanitization`), the value
+ * goes through `sanitizeAttributeValue` — a `javascript:` / `vbscript:` URL (and
+ * a `data:` URL where Glimmer checks one) gets the `unsafe:` prefix, a
+ * SafeString's HTML is trusted, and any other value is stringified (`false`
+ * becomes `"false"`; `null` / `undefined` are returned as they are). Any other
+ * attribute returns `value` unchanged.
+ *
+ * Every compat path that writes a bound attribute itself, outside gxt's
+ * `normalizeAttrValue` hook (which applies the same rules), calls this before
+ * its own normalization, in development and production builds alike.
+ */
+export function sanitizedAttrValue(element: Element, name: string, value: unknown): unknown {
+  return requiresSanitization(element.tagName, name)
+    ? sanitizeAttributeValue(element as unknown as SimpleElement, name, value)
+    : value;
+}
 
 /** Convert PascalCase/camelCase to kebab-case without regex */
 export function pascalToKebab(str: string): string {

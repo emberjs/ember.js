@@ -10,4 +10,12 @@ export default class ApplicationController extends Controller {
   increment = () => {
     set(this, 'count', this.count + 1);
   };
+
+  // A bound URL that `<ForwardedLink>` forwards to its <a> through
+  // `...attributes`: rendered sanitized (`unsafe:` prefix), as Glimmer does.
+  linkUrl = 'javascript:alert(1)';
+
+  swapLink = () => {
+    set(this, 'linkUrl', 'vbscript:alert(1)');
+  };
 }

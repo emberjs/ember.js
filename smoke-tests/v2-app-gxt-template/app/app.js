@@ -8,5 +8,7 @@ export default class App extends Application {
     // Build-time-compiled .gjs components (the @lifeart/gxt/compiler vite
     // plugin turns <template> into GXT render trees at build time).
     ...import.meta.glob('./components/*.gjs', { eager: true }),
+    // Components whose templates compile at RUNTIME, like the route templates.
+    ...import.meta.glob('./components/*.js', { eager: true }),
   };
 }

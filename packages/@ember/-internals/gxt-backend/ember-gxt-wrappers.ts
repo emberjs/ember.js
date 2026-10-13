@@ -27,7 +27,7 @@ import {
   GXT_ARGS_SYMBOL,
 } from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { capabilitiesErrorPrefix, isPlainHtmlTagFastPath } from './utils';
+import { capabilitiesErrorPrefix, isPlainHtmlTagFastPath, sanitizedAttrValue } from './utils';
 import { GXT_HELPER_SITE_KEY } from './ast-transforms';
 import {
   destroy as destroyDestroyable,
@@ -1776,10 +1776,13 @@ function createEmberTag(original: Function) {
               ? tagProps[2]
               : [];
           const localEvents = [...sourceEvents];
+          // A URL attribute is sanitized first, as Glimmer sanitizes a
+          // dynamic attribute (these never reach the `normalizeAttrValue`
+          // hook that sanitizes gxt's own attribute writes).
           const onCreated = (el: Element) => {
             for (const [aKey, aGetter] of capturedAttrs) {
               gxtModule.effect(() => {
-                const v = aGetter();
+                const v = sanitizedAttrValue(el, aKey, aGetter());
                 if (v === undefined || v === null || v === false) {
                   el.removeAttribute(aKey);
                 } else if (v === true) {

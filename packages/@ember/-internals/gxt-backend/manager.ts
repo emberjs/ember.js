@@ -23,6 +23,7 @@ import {
   protectGlobal,
   capabilitiesErrorPrefix,
   keepFnHelperValue,
+  sanitizedAttrValue,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -51,11 +52,6 @@ import {
   getViewId,
 } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
-import type { SimpleElement } from '@glimmer/interfaces';
-import {
-  requiresSanitization,
-  sanitizeAttributeValue,
-} from '@glimmer/runtime/lib/dom/sanitized-values';
 
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
@@ -3333,14 +3329,6 @@ function _warnUnsafeStyleBinding(wrapper: HTMLElement, attrName: string, value: 
   }
 }
 
-// The value an attribute binding writes: a URL attribute of the element is
-// sanitized first, as Glimmer's SafeDynamicAttribute does.
-function _sanitizedBindingValue(wrapper: Element, attrName: string, value: any): any {
-  return requiresSanitization(wrapper.tagName, attrName)
-    ? sanitizeAttributeValue(wrapper as unknown as SimpleElement, attrName, value)
-    : value;
-}
-
 // `value` on an <input>, <textarea> or <select> is bound as the DOM property:
 // the HTML attribute only sets the default value, and Glimmer sets the
 // property, so the attribute does not appear in `outerHTML`.
@@ -3408,7 +3396,7 @@ function syncWrapperElement(
 
       const rawValue = _attributeBindingValue(instance, propName);
       _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
-      const value = _sanitizedBindingValue(wrapper, attrName, rawValue);
+      const value = sanitizedAttrValue(wrapper, attrName, rawValue);
       if (_isValuePropertyAttr(wrapper, attrName)) {
         (wrapper as any)[attrName] = value != null && value !== false ? String(value) : '';
         // Remove the HTML attribute if it was previously set
@@ -5489,7 +5477,7 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
 
       const rawValue = _attributeBindingValue(instance, propName);
       _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
-      const value = _sanitizedBindingValue(wrapper, attrName, rawValue);
+      const value = sanitizedAttrValue(wrapper, attrName, rawValue);
       if (_isValuePropertyAttr(wrapper, attrName)) {
         if (value !== undefined && value !== null && value !== false) {
           (wrapper as any)[attrName] = String(value);
@@ -7276,7 +7264,8 @@ function resolveComponent(
 // Forwarded props (`...attributes`, `fw[0]`) on an internal component's
 // element (LinkTo, Input/Textarea), each kept current by an effect: `class`
 // (key `''`) is appended to the component's own `class`; any other prop is
-// set as an attribute, or removed when it is nullish or `false`.
+// set as an attribute (a bound URL attribute sanitized, as Glimmer does), or
+// removed when it is nullish or `false`.
 function _forwardPropsToElement(el: HTMLElement, props: any[], instance: any): void {
   for (const [key, value] of props) {
     const attrKey = key === '' ? 'class' : key;
@@ -7288,7 +7277,7 @@ function _forwardPropsToElement(el: HTMLElement, props: any[], instance: any): v
       });
     } else {
       _gxtEffect(() => {
-        const resolved = typeof value === 'function' ? value() : value;
+        const resolved = _forwardedAttrValue(el, attrKey, value);
         if (resolved !== undefined && resolved !== null && resolved !== false) {
           el.setAttribute(attrKey, String(resolved));
         } else {
@@ -7297,6 +7286,14 @@ function _forwardPropsToElement(el: HTMLElement, props: any[], instance: any): v
       });
     }
   }
+}
+
+// The current value of a forwarded attribute entry (`fw[0]` / `fw[1]`): a
+// bound (function) value is read and, for a URL attribute, sanitized as
+// Glimmer sanitizes a dynamic attribute; a static value is written as
+// authored, as Glimmer writes a static one.
+function _forwardedAttrValue(el: Element, key: string, value: unknown): unknown {
+  return typeof value === 'function' ? sanitizedAttrValue(el, key, value()) : value;
 }
 
 // Forwarded events (`fw[2]`): an ON_CREATED entry (event name `'0'`) is a
@@ -10680,7 +10677,9 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
     try {
       const href = instance.href;
       if (href !== undefined && href !== null && href !== _lastHref) {
-        el.setAttribute('href', String(href));
+        // LinkTo's template binds `href={{this.href}}`: sanitized like any
+        // dynamic URL attribute.
+        el.setAttribute('href', String(sanitizedAttrValue(el, 'href', href)));
         _lastHref = href;
       }
     } catch (e) {
@@ -10748,7 +10747,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       for (const [key, value] of fw[1]) {
         if (key.startsWith('@')) continue;
         gxtEffect(() => {
-          const resolved = typeof value === 'function' ? value() : value;
+          const resolved = _forwardedAttrValue(el, key, value);
           if (resolved !== undefined && resolved !== null && resolved !== false) {
             el.setAttribute(key, String(resolved));
           } else {
@@ -11444,7 +11443,7 @@ function handleManagedComponent(
         for (const [key, value] of fwDomAttrs) {
           if (key.startsWith('@')) continue; // Skip named args
           gxtEffect(() => {
-            const resolved = typeof value === 'function' ? value() : value;
+            const resolved = _forwardedAttrValue(el, key, value);
             if (key === 'disabled') {
               // disabled is a boolean attribute
               if (resolved || resolved === '') {
@@ -11858,6 +11857,8 @@ function renderClassicComponent(
       // wrapper element updates in place when the source changes (AngleBracket
       // `custom id` + `splattributes`). Without this, the eager one-time
       // evaluation below would capture a stale snapshot and never re-apply.
+      // A bound URL attribute is sanitized, as Glimmer sanitizes a dynamic
+      // attribute; a static value is written as authored.
       // Apply props (fw[0]) — class, id, etc.
       if (Array.isArray(fw[0])) {
         for (const [key, value] of fw[0]) {
@@ -11876,7 +11877,7 @@ function renderClassicComponent(
               });
             } else {
               _gxtEffect(() => {
-                const resolved = value();
+                const resolved = sanitizedAttrValue(wrapperEl, attrKey, value());
                 if (resolved != null && resolved !== false && resolved !== undefined) {
                   wrapperEl.setAttribute(attrKey, resolved === true ? '' : String(resolved));
                 } else {
@@ -11905,7 +11906,7 @@ function renderClassicComponent(
         for (const [key, value] of fw[1]) {
           if (typeof value === 'function') {
             _gxtEffect(() => {
-              const resolved = value();
+              const resolved = sanitizedAttrValue(wrapperEl, key, value());
               if (resolved != null && resolved !== false && resolved !== undefined) {
                 wrapperEl.setAttribute(key, resolved === true ? '' : String(resolved));
               } else {

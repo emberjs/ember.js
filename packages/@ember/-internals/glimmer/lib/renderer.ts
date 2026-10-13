@@ -51,6 +51,10 @@ import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
+import {
+  requiresSanitization,
+  sanitizeAttributeValue,
+} from '@glimmer/runtime/lib/dom/sanitized-values';
 import { unwrapTemplate, isGxtTemplate } from './component-managers/unwrap-template';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
@@ -441,7 +445,15 @@ class ClassicRootState implements RendererRoot {
                       const [propName, attrName] = binding.includes(':')
                         ? binding.split(':')
                         : [binding, binding];
-                      const value = component[propName];
+                      // A URL attribute is sanitized first, as Glimmer's
+                      // SafeDynamicAttribute does for an attribute binding.
+                      const value = requiresSanitization(wrapper.tagName, attrName)
+                        ? sanitizeAttributeValue(
+                            wrapper as unknown as SimpleElement,
+                            attrName,
+                            component[propName]
+                          )
+                        : component[propName];
                       if (
                         value !== undefined &&
                         value !== null &&

@@ -9,5 +9,7 @@ export default precompileTemplate(
   `<h1 data-test-title>Hello from Ember on GXT</h1>
   <p data-test-count>Count: {{this.count}}</p>
   <button type="button" data-test-increment {{on "click" this.increment}}>+1</button>
-  <Counter @count={{this.count}} @increment={{this.increment}} />`
+  <Counter @count={{this.count}} @increment={{this.increment}} />
+  <ForwardedLink href={{this.linkUrl}} />
+  <button type="button" data-test-swap-link {{on "click" this.swapLink}}>swap link</button>`
 );

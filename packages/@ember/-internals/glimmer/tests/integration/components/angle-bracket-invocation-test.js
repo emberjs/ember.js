@@ -1119,6 +1119,100 @@ moduleFor(
   }
 );
 
+// Glimmer sanitizes every dynamic URL attribute (SafeDynamicAttribute), also
+// the ones a component's element receives from the invocation through
+// `...attributes`: a `javascript:` / `vbscript:` URL gets the `unsafe:` prefix.
+class UrlState {
+  @tracked url;
+
+  constructor(url) {
+    this.url = url;
+  }
+}
+
+moduleFor(
+  'AngleBracket Invocation (URL sanitization of forwarded attributes)',
+  class extends RenderingTestCase {
+    '@test a bound URL attribute forwarded by ...attributes is sanitized, also on update'() {
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(precompileTemplate('<a ...attributes>link</a>'), templateOnly())
+      );
+      let state = new UrlState('javascript:alert(1)');
+
+      this.render('<FooLink href={{this.state.url}} />', { state });
+      let href = () => this.element.querySelector('a').getAttribute('href');
+      this.assert.strictEqual(href(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => (state.url = 'https://emberjs.com/'));
+      this.assert.strictEqual(href(), 'https://emberjs.com/');
+
+      runTask(() => (state.url = 'vbscript:alert(1)'));
+      this.assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
+    }
+
+    '@test a bound URL attribute on a classic component element is sanitized, also on update'() {
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(
+          precompileTemplate('link'),
+          class extends ClassicComponent {
+            tagName = 'a';
+          }
+        )
+      );
+      let state = new UrlState('javascript:alert(1)');
+
+      this.render('<FooLink href={{this.state.url}} />', { state });
+      let href = () => this.element.querySelector('a').getAttribute('href');
+      this.assert.strictEqual(href(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => (state.url = 'https://emberjs.com/'));
+      this.assert.strictEqual(href(), 'https://emberjs.com/');
+
+      runTask(() => (state.url = 'vbscript:alert(1)'));
+      this.assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
+    }
+
+    '@test a modifier forwarded by ...attributes sees the sanitized URL'(assert) {
+      let seen = [];
+      class CaptureHref {}
+      setModifierManager(
+        () => ({
+          capabilities: modifierCapabilities('3.22'),
+          createModifier() {
+            return {};
+          },
+          installModifier(_state, element) {
+            seen.push(element.getAttribute('href'));
+          },
+          updateModifier() {},
+          destroyModifier() {},
+        }),
+        CaptureHref
+      );
+      this.owner.register('modifier:capture-href', CaptureHref);
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(
+          precompileTemplate('<a href={{@url}} ...attributes>link</a>'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooLink @url={{this.url}} {{capture-href}} />', {
+        url: 'javascript:alert(1)',
+      });
+
+      assert.deepEqual(seen, ['unsafe:javascript:alert(1)']);
+      assert.strictEqual(
+        this.element.querySelector('a').getAttribute('href'),
+        'unsafe:javascript:alert(1)'
+      );
+    }
+  }
+);
+
 moduleFor(
   'AngleBracket Invocation Nested Lookup',
   class extends RenderingTestCase {

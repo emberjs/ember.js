@@ -140,6 +140,28 @@ gxtBootAppScenarios
             'BT Count: 4',
             'the build-time component\'s {{on "click" @increment}} round trip works'
           );
+
+          // A production build has no DEBUG-only safety net: a bound URL that a
+          // component forwards to its <a> through `...attributes` is sanitized
+          // by the runtime itself, on render and on update, as Glimmer does.
+          assert.equal(
+            await page.getAttribute('[data-test-forwarded-link]', 'href'),
+            'unsafe:javascript:alert(1)',
+            'a bound javascript: URL forwarded by ...attributes is sanitized'
+          );
+          await page.click('[data-test-swap-link]');
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-test-forwarded-link]')?.getAttribute('href') !==
+              'unsafe:javascript:alert(1)',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.getAttribute('[data-test-forwarded-link]', 'href'),
+            'unsafe:vbscript:alert(1)',
+            'the forwarded URL is sanitized on update too'
+          );
           assert.deepEqual(pageErrors, [], 'no uncaught page errors during boot + interaction');
         } finally {
           await browser.close();
