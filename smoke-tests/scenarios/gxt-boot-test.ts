@@ -193,6 +193,42 @@ gxtBootAppScenarios
             'unsafe:vbscript:alert(1)',
             'the forwarded URL is sanitized on update too'
           );
+
+          // `<ClassCounter>` is a .gjs component CLASS (@glimmer/component)
+          // whose template is a class-body `<template>`, resolved by name from
+          // the runtime-compiled route template: its component manager creates
+          // it with `this.args`, and the template renders with it as `this`.
+          assert.equal(
+            await page.textContent('[data-test-class-counter]'),
+            'Class count: 4',
+            'a class-body <template> component renders its own field and its argument'
+          );
+          await page.evaluate(() => {
+            (window as any).__classCounterElement = document.querySelector(
+              '[data-test-class-counter]'
+            );
+          });
+          await page.click('[data-test-class-increment]');
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-test-class-counter]')?.textContent ===
+              'Class count: 5',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.textContent('[data-test-count]'),
+            'Count: 5',
+            "its {{on \"click\"}} calls the route's action through this.args"
+          );
+          assert.true(
+            await page.evaluate(
+              () =>
+                (window as any).__classCounterElement ===
+                document.querySelector('[data-test-class-counter]')
+            ),
+            'the component updates in place'
+          );
           assert.deepEqual(pageErrors, [], 'no uncaught page errors during boot + interaction');
         } finally {
           await browser.close();

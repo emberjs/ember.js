@@ -44,7 +44,10 @@ runtime↔build-time boundary in both directions. `<ForwardedLink>`, another
 build-time `.gjs` component, proves the invocation's attributes and
 `{{on}}` modifier reach its element through `...attributes`, with a bound
 `javascript:` URL sanitized as Glimmer does, and that its block renders
-with the yielded block param.
+with the yielded block param. `<ClassCounter>` is a `.gjs` component class
+(`@glimmer/component`) whose template is a class-body `<template>`: its
+component manager creates it with `this.args`, and its template renders its
+own field and `@count`, kept current in place.
 
 CI coverage: `smoke-tests/scenarios/gxt-boot-test.ts` (build + headless boot
 + click reactivity over both pipelines), matrix name

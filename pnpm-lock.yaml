@@ -3081,6 +3081,9 @@ importers:
 
   smoke-tests/v2-app-gxt-template:
     devDependencies:
+      '@glimmer/component':
+        specifier: workspace:^
+        version: link:../../packages/@glimmer/component
       '@lifeart/gxt':
         specifier: 0.0.82
         version: 0.0.82(typescript@5.9.3)
