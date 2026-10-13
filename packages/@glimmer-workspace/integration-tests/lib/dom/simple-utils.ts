@@ -17,6 +17,7 @@ import type {
   SimpleText,
 } from '@glimmer/interfaces';
 import { ELEMENT_NODE, INSERT_AFTER_BEGIN } from '@glimmer/constants';
+import { isSimpleElement as isElement } from '@glimmer/debug-util';
 import { clearElement } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
@@ -49,15 +50,11 @@ export type CastableNodeType = Exclude<keyof CastToBrowserDom, 'Node'>;
 export type BrowserElement<E extends Element = HTMLElement> = E & SimpleElement;
 
 export function browserElement<E extends Element>(element: E | null): BrowserElement<E> {
-  if (isBrowserElement(element)) {
+  if (isElement(element)) {
     return element;
   }
 
   throw new Error(`Expected a browser element, got ${String(element)}`);
-}
-
-function isBrowserElement<E extends Element>(element: E | null): element is BrowserElement<E> {
-  return element !== null && element.nodeType === ELEMENT_NODE;
 }
 
 export function qunitFixture(): BrowserElement {
