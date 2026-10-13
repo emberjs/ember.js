@@ -26,7 +26,7 @@ out of scope.
 
 ## Steps
 
-- [ ] 1. For each feature, prove usability by compiling and rendering through the real pipelines:
+- [x] 1. For each feature, prove usability by compiling and rendering through the real pipelines:
       the babel plugin (strict `<template>`, and loose `hbs`/colocated `.hbs`) and the runtime
       `template()`. Use throwaway rendering tests in `packages/@ember/-internals/glimmer/tests/`
       (as T9b did) and `spec/tools/probe-precompile.mjs`. Record per feature: strict usable?
@@ -64,3 +64,22 @@ a scope object (harness-only, see F4), `template()` from `@ember/template-compil
 | F6 | `\{{` and `\\{{` escapes | yes | yes | Same output in both modes. `a\{{foo}} b` renders `a{{foo}} b`; `a\\{{this.foo}} b` (foo=FOO) renders `a\FOO b` (literal backslash, mustache evaluated); `a\\\{{this.foo}} b` renders `a\\FOO b`; `a\{{{foo}}} b` renders `a{{{foo}}} b`; `\{{#if x}}y\{{/if}}` renders `{{#if x}}y{{/if}}`; in an attribute `title="\{{foo}}"` renders `title="{{foo}}"`. Babel: `a\{{foo}} b` becomes two text statements `"a"`, `"{{foo}} b"` in both `<template>` and `precompileTemplate`. | Three backslashes before `{{` give two literal backslashes plus an evaluated mustache (i.e. only the last two backslashes are examined, as §02-2.2 says). |
 | F7 | standalone-line stripping | yes | yes | Both modes: `a\n  {{#if this.x}}\n  b\n  {{/if}}\nc` (x=true) renders `a\n  b\nc`; `a\n  {{! c }}\nb` renders `a\nb`; `a\n{{#if this.x}}\nX\n{{else}}\nY\n{{/if}}\nz` (x=false) renders `a\nY\nz`; inline control `a {{#if this.x}} b {{/if}} c` renders `a  b  c` (not stripped); raw block lines are stripped too (`[\n{{{{myComp}}}}\n x\n{{{{/myComp}}}}\n]` renders `[\n( x\n)]`). | Applies to every template compiled by the precompile path, so it is not removable without changing rendered whitespace. |
 | F8 | `{{else}}` chains with any helper | yes | yes | Both modes: `{{#if a}}A{{else if b}}B{{else}}C{{/if}}` (a=false,b=true) renders `B`; `{{else each this.b as |i|}}` renders `[1][2]` for [1,2] and falls through to `C` for []; `{{else let 5 as |v|}}` renders `v=5`; `{{else unless this.b}}` renders `U`; with a user component `{{#myComp}}A{{else myOther}}B{{/myComp}}` (myComp yields `to="inverse"`) renders `(B)` (myOther wraps). Babel: `{{else each ...}}` compiles to `if` whose inverse block contains the `each` block. **`{{else-thing}}` is not a helper call named `else-thing`**: it lexes as `{{else -thing}}`, i.e. the else-chain with component `-thing`. Loose with `component:-thing` registered: `{{#if this.a}}A{{else-thing}}B{{/if}}` (a=false) renders `(TB)`, identical to `{{else -thing}}`; with a helper `else-thing` registered the error is "Attempted to resolve `-thing`, which was expected to be a component, but nothing was found" (compile still succeeds; error only when the else branch is reached; a=true renders `A`). Strict: compile error "not in scope: -thing" (no JS binding can be `-thing`). | Which chained helpers are meaningful is §03; the chain syntax itself works with any in-scope block-capable callee. |
+
+### Findings (step 1)
+
+- Only F4 is unusable in strict mode, and only in strict mode: no public strict pipeline (`<template>`/babel, `precompileTemplate`
+  scope, runtime `template()` scope) can bind a name containing `/`. F4 is therefore usable in loose mode (components, helpers, blocks,
+  subexpressions) and so it cannot be removed outright without breaking loose templates; a strict-only rejection (e.g. a strict-mode
+  error for slash paths) is a separate question for the author.
+- No feature is unusable in both modes, so by the author's rule no feature qualifies for removal on usability grounds; F3 stays a
+  policy candidate (already **[Out of spec]**).
+- `{{else-thing}}` is `{{else -thing}}` (else-chain into component `-thing`), not a mustache named `else-thing`. Check that §02-3.3 and the
+  lexer notes say so.
+- `{{^if x}}A{{else}}B{{/if}}` swaps the two blocks (A is the inverse), i.e. it is `unless`-with-else for any callee (F3).
+- In loose mode, unresolved `{{foo/bar}}` with no args and `{{this/foo}}` render empty without error (fallback property lookup of a
+  literal-slash name); not in §02 as far as checked.
+- Strict-mode `{{@foo/bar}}` and loose `{{@foo/bar}}` render empty (not investigated further; relevant to §02-4.2 only).
+- `internal-test-helpers/lib/compile` accepts scope keys such as `foo/bar` that no real pipeline can produce, so conformance tests built
+  on it could wrongly suggest strict-mode slash paths work.
+- Parse-only coverage not re-run via the `hbs` babel target for every feature: the loose babel path is `precompileTemplate(..., {strictMode:false})`,
+  which shares the parser and compiler with the rest (probed for F1-F6, F8).
