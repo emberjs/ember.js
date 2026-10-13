@@ -3,6 +3,11 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
+  getGxtRenderer,
+  getAmbientOwner,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
   associateDestroyableChild,
   destroy,
   isDestroyed,
@@ -11,6 +16,7 @@ import {
 } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
+  CapturedRenderNode,
   Cursor,
   DebugRenderTree,
   Environment,
@@ -25,13 +31,135 @@ import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+// The @glimmer/validator BARREL specifier below is load-bearing for the GXT
+// dual backend: the rollup GXT alias map (scripts/gxt-alias-map.mjs) redirects
+// the exact barrel key to the gxt-backend shim, while deep lib/* paths would
+// resolve to the real vendored VM source and fork the reactive runtime in GXT
+// builds. Do not convert it to a deep import.
+// Namespace import MUST stay on the barrel: touchClassicBridge /
+// registerClassicReactor exist only in the GXT-aliased validator shim.
+// eslint-disable-next-line ember-local/no-barrel-imports
+import * as _glimmerValidator from '@glimmer/validator';
+// eslint-disable-next-line ember-local/no-barrel-imports
+import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import { renderers } from './renderers';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
+
+// touchClassicBridge / registerClassicReactor exist only in the GXT-aliased
+// validator; fall back to no-ops in classic builds so these imports never
+// break the classic bundle.
+const touchClassicBridge: () => void =
+  typeof (_glimmerValidator as any).touchClassicBridge === 'function'
+    ? (_glimmerValidator as any).touchClassicBridge
+    : () => {};
+const registerClassicReactor: (cb: () => void, source?: string) => () => void =
+  typeof (_glimmerValidator as any).registerClassicReactor === 'function'
+    ? (_glimmerValidator as any).registerClassicReactor
+    : (_: () => void, _src?: string) => () => {};
+
+// Lazy accessor for @lifeart/gxt symbols through the bridge. Every call site
+// below is reached only from GXT-mode code paths. Avoiding a static
+// `import * as _gxt from '@lifeart/gxt'` keeps the GXT runtime (and its
+// module-load side effects) out of the classic bundle.
+export function _gxtLib(): any {
+  // GXT-only. Body gated on the literal `__GXT_MODE__` so the `getGxtRenderer`
+  // reference (and thus the whole gxt-bridge module) tree-shakes out of the
+  // unminified classic dist — rollup folds `if (false)` to nothing but does NOT
+  // drop the unreferenced declaration of this cyclic helper cluster.
+  if (__GXT_MODE__) {
+    return getGxtRenderer()?.gxtLib;
+  }
+}
+
+// GXT-only: the render-pass hooks of gxt-backend/manager.ts. manager.ts installs
+// the renderer bridge when it loads, which is before any GXT render.
+export function gxtRenderPass() {
+  return getGxtRenderer()!.renderPass;
+}
+
+// Cached GXT DOM API for destroyElementSync
+let gxtDomApi: any = null;
+
+function getGxtDomApi() {
+  if (__GXT_MODE__) {
+    if (!gxtDomApi) {
+      gxtDomApi = new (_gxtLib().HTMLBrowserDOMApi)(document);
+    }
+    return gxtDomApi;
+  }
+}
+
+// Wrapper that provides the GXT DOM API
+export function destroyElementSync(component: any, skipDom = false) {
+  if (__GXT_MODE__) {
+    _gxtLib().destroyElementSync(component, skipDom, getGxtDomApi());
+  }
+}
+
+// Cached GXT root context for the document
+let gxtRootContext: any = null;
+
+// Ensure GXT context is initialized before any GXT rendering
+export function ensureGxtContext() {
+  if (__GXT_MODE__) {
+    const lib = _gxtLib();
+    if (!gxtRootContext) {
+      gxtRootContext = lib.createRoot(document);
+      // CRITICAL: Provide the rendering context with DOM API
+      // This sets fastRenderingContext which is checked first by initDOM
+      const domApi = getGxtDomApi();
+      lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, domApi);
+      // Share this root context with gxt-backend so it reuses it instead of
+      // creating new roots that pollute the shared context chain.
+      getGxtRenderer()?.compilePipeline.setRootContext?.(gxtRootContext);
+    }
+    // Always ensure context is set before rendering
+    const currentContext = lib.getParentContext();
+    if (!currentContext) {
+      lib.setParentContext(gxtRootContext);
+    }
+    return gxtRootContext;
+  }
+}
+
+// GXT-only: a minimal DebugRenderTree backed by gxt's `captureRenderTree`.
+// Only `.capture()` is reachable in GXT mode — the `begin`/`create`/`update`/
+// `didRender`/`willDestroy`/`commit` bookkeeping lives on the classic Glimmer
+// VM environment, which the GXT build does not include (see the
+// `debugRenderTree` getter).
+//
+// gxt's `captureRenderTree()` already returns Ember-compatible
+// `CapturedRenderNode[]` (gxt adds a harmless extra `template: null` field and
+// always reports `type: 'component'`), so `capture()` is a straight
+// pass-through. Called with no arguments, gxt discovers the render roots from
+// its own component-parent registry. gxt errors propagate.
+let gxtDebugRenderTree: DebugRenderTree | null = null;
+
+function getGxtDebugRenderTree(): DebugRenderTree {
+  // GXT-only. Body gated on the literal `__GXT_MODE__` so the `_gxtLib`
+  // reference tree-shakes out of the classic dist.
+  if (__GXT_MODE__) {
+    if (!gxtDebugRenderTree) {
+      const noop = (): void => {};
+      gxtDebugRenderTree = {
+        begin: noop,
+        create: noop,
+        update: noop,
+        didRender: noop,
+        willDestroy: noop,
+        commit: noop,
+        // No args → gxt discovers the render roots itself (see above).
+        capture: (): CapturedRenderNode[] => _gxtLib().captureRenderTree() as CapturedRenderNode[],
+      } as DebugRenderTree;
+    }
+    return gxtDebugRenderTree;
+  }
+  throw new Error('[gxt] getGxtDebugRenderTree() called outside GXT mode');
+}
 
 /**
  * The parts of this module, in the order that they appear:
@@ -129,6 +257,18 @@ export class ComponentRootState implements RendererRoot {
      * An error in either one stops all later renders of this root.
      */
     this.#render = errorLoopTransaction(() => {
+      // In GXT mode `renderComponent` escape-hatches to `_renderComponentGxt`
+      // BEFORE constructing a ComponentRootState, so this class is
+      // classic-only. The gate makes the VM bindings (`glimmerRenderComponent`,
+      // `state.context`, `state.builder` / `state.env`) statically dead in the
+      // GXT dist so the VM render loop tree-shakes out.
+      if (__GXT_MODE__) {
+        throw new Error(
+          '[gxt] ComponentRootState reached in GXT mode; the GXT backend renders ' +
+            'via _renderComponentGxt and ships no Glimmer VM render loop — no fallback.'
+        );
+      }
+
       let result = this.#result;
 
       if (result === undefined) {
@@ -317,11 +457,23 @@ export class RendererState {
     let roots = this.#roots;
     let removedRoots = this.#removedRoots;
     let initialRootsLength: number;
+    let _renderIterations = 0;
 
     do {
+      if (__GXT_MODE__) {
+        // GXT safety limit against infinite render loops.
+        if (++_renderIterations > 20) {
+          break;
+        }
+        // GXT test-harness loop guard (DEBUG only, so it tree-shakes out of
+        // the production dist).
+        if (DEBUG && typeof (globalThis as any).__gxtOpCheck === 'function') {
+          (globalThis as any).__gxtOpCheck();
+        }
+      }
       initialRootsLength = roots.length;
 
-      inTransaction(this.context.env, () => {
+      const renderRootsPass = () => {
         /**
          * `roots.length` is read on each iteration, because a render can
          *
@@ -340,10 +492,28 @@ export class RendererState {
           if (i >= initialRootsLength) continue;
 
           root.render();
+
+          // In GXT mode, lifecycle errors during re-render (destroy, didInsertElement)
+          // are deferred to avoid disabling errorLoopTransaction. Re-throw them here
+          // so they propagate to assert.throws() in tests.
+          if (__GXT_MODE__ && (root as any).__gxtDeferredError) {
+            const err = (root as any).__gxtDeferredError;
+            (root as any).__gxtDeferredError = null;
+            throw err;
+          }
         }
 
         this.#lastRevision = valueForTag(CURRENT_TAG);
-      });
+      };
+
+      if (__GXT_MODE__) {
+        // GXT roots never enqueue VM-transaction work (no opcodes run), and
+        // the GXT renderer has no VM environment to open a transaction on
+        // (see the BaseRenderer constructor). Run the pass directly.
+        renderRootsPass();
+      } else {
+        inTransaction(this.context.env, renderRootsPass);
+      }
     } while (roots.length > initialRootsLength);
 
     while (removedRoots.length) {
@@ -391,10 +561,25 @@ export class RendererState {
    * Each root then finds out for itself if the change applies to it.
    */
   isValid(): boolean {
+    // In GXT mode, rendering is handled by GXT's reactivity system,
+    // not by the Ember renderer's revalidation loop. Always report valid
+    // to prevent infinite revalidation loops in loopEnd().
+    if (__GXT_MODE__) {
+      return true;
+    }
+
     return this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision);
   }
 
   revalidate(): void {
+    // In GXT mode, isValid() returns true to prevent infinite revalidation.
+    // But explicit .rerender() calls (which mark the component through
+    // `compilePipeline.forceRerender`) still need a sync pass to flush the
+    // hooks.
+    if (__GXT_MODE__) {
+      getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
+      return;
+    }
     if (this.isValid()) {
       return;
     }
@@ -420,6 +605,19 @@ export class RendererState {
  * ----------------------------------------------------------------------------
  */
 
+// Default element builder for the classic VM render loop. Under __GXT_MODE__
+// the Glimmer VM element-builder is never invoked (renderMain /
+// glimmerRenderComponent are gated off and the GXT render path never touches a
+// VM builder), so resolving the literal `clientBuilder` here would needlessly
+// retain the VM element-builder module. Gate it behind `!__GXT_MODE__` so the
+// `clientBuilder` reference is statically dead in the GXT dist; the GXT branch
+// is a thrower (fail loud, no VM fallback) that is never reached at runtime.
+export const defaultClientBuilder: IBuilder = __GXT_MODE__
+  ? (((): never => {
+      throw new Error('[gxt] Glimmer VM element builder requested in GXT mode; no VM fallback.');
+    }) as unknown as IBuilder)
+  : clientBuilder;
+
 export class BaseRenderer {
   /**
    * Creates a renderer that has no router.
@@ -437,7 +635,7 @@ export class BaseRenderer {
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
-      clientBuilder
+      defaultClientBuilder
     );
   }
 
@@ -450,6 +648,22 @@ export class BaseRenderer {
     resolver: ClassicResolver,
     builder: IBuilder
   ) {
+    if (__GXT_MODE__) {
+      // The GXT backend never executes Glimmer VM opcodes, so it builds no VM
+      // evaluation context: the program heap behind one is a 4MB ArrayBuffer
+      // per renderer (one renderer per test exhausted the V8 ArrayBuffer cage
+      // across the cumulative GXT test run), and leaving the constructors
+      // below unreferenced lets the opcode-eval core tree-shake out of the
+      // GXT dist. `RendererState` only reads `context.env.isInteractive`.
+      let context = { env: { isInteractive: envOptions.isInteractive } };
+      this.state = new RendererState(this, {
+        owner,
+        context: context as unknown as EvaluationContext,
+        builder,
+      });
+      return;
+    }
+
     let sharedArtifacts = artifacts();
 
     /**
@@ -471,6 +685,14 @@ export class BaseRenderer {
   }
 
   get debugRenderTree(): DebugRenderTree {
+    if (__GXT_MODE__) {
+      // The classic debugRenderTree lives on the Glimmer VM environment, which
+      // the GXT backend does not build. Return a minimal DebugRenderTree whose
+      // `.capture()` delegates to gxt's `captureRenderTree` instead (consumed by
+      // `@ember/debug`'s `captureRenderTree(owner)`, e.g. for Ember Inspector).
+      return getGxtDebugRenderTree();
+    }
+
     let { debugRenderTree } = this.state.env;
 
     assert(
@@ -571,8 +793,35 @@ function loopEnd() {
   resolveRenderPromise();
 }
 
-_backburner.on('begin', loopBegin);
-_backburner.on('end', loopEnd);
+// In GXT mode, don't hook into backburner's begin/end events for render
+// revalidation. GXT handles rendering via its own reactivity system; pending
+// DOM syncs are flushed at the end of the outermost run loop (and explicitly
+// by the test helpers).
+if (!__GXT_MODE__) {
+  _backburner.on('begin', loopBegin);
+  _backburner.on('end', loopEnd);
+} else {
+  // Backburner fires 'end' event listeners BEFORE the onEnd option. Thus
+  // we must flush GXT's pending DOM sync here (not rely on runloop.onEnd)
+  // so that renderSettled()'s promise resolves AFTER the DOM is up-to-date.
+  // Only flush on the outermost runloop end (nextInstance == null) and when
+  // not inside runTask (which performs its own explicit sync).
+  _backburner.on('end', (_curr: unknown, nextInstance: unknown) => {
+    loops = 0;
+    const _cpBB = getGxtRenderer()?.compilePipeline;
+    if (nextInstance == null && _cpBB?.getPendingSync?.() && !_cpBB?.getRunTaskActive?.()) {
+      const syncNow = _cpBB?.syncDomNow;
+      if (typeof syncNow === 'function') {
+        try {
+          syncNow();
+        } catch {
+          /* errors handled inside sync */
+        }
+      }
+    }
+    resolveRenderPromise();
+  });
+}
 
 interface RenderSettledDeferred {
   promise: Promise<void>;
@@ -715,6 +964,748 @@ function toCursor(into: IntoTarget): Cursor {
 }
 
 /**
+ * GXT-mode multi-render bookkeeping. Each `renderComponent` call into a
+ * given target produces an independent render entry that tracks its own
+ * (firstNode, lastNode) DOM range. Multiple entries can coexist within
+ * the same target as siblings; each entry's destroy/re-render operates
+ * only on the nodes inside its own range, leaving other entries
+ * untouched.
+ */
+interface GxtRenderEntry {
+  /**
+   * First and last DOM node belonging to this render. The range is
+   * inclusive: every node from firstNode to lastNode (walking nextSibling)
+   * is owned by this entry. References update on re-render so the entry's
+   * range tracks the live DOM range it occupies.
+   */
+  firstNode: Node | null;
+  lastNode: Node | null;
+  destroy: () => void;
+  result: RenderResult;
+  /**
+   * The component definition this entry rendered. Used to dedupe
+   * "spurious double-fire" cases where GXT's compiled template invokes
+   * the same helper twice for a single source-level mustache (the
+   * loose-mode helper-lookup path can do this). When a second
+   * renderComponent call into the same target arrives in the SAME
+   * runloop with the SAME (component, owner) pair as a prior entry,
+   * we treat it as a duplicate of the prior call and reuse the prior
+   * result instead of creating a sibling. Genuine sibling renders
+   * (e.g. `{{render A 'a' owner}}\n{{render A 'a'}}`) differ in their
+   * `owner` arg, so they keep distinct identities.
+   */
+  component: object;
+  ownerObj: object;
+  /**
+   * The runloop instance that was active when this entry was created.
+   * Used to distinguish "sibling renders within the same render pass"
+   * (same runloop -> coexist) from "re-render of the same target across
+   * runloop boundaries" (different runloop -> destroy prior): synchronous
+   * back-to-back renders in one run() are siblings; an outer template
+   * re-render that calls renderComponent again replaces.
+   */
+  runloop: object | null;
+  /**
+   * Tears down the gxt component tree of a raw gxt template function rendered
+   * by this entry (see `rawGxtTemplate`), so its components' destructors run.
+   */
+  teardownRendered?: () => void;
+}
+interface GxtRenderTargetState {
+  entries: GxtRenderEntry[];
+  /**
+   * True once we've performed the initial innerHTML='' clear of the target.
+   * Subsequent renders into the same target must NOT clear, so they appear
+   * as siblings of prior render entries.
+   */
+  cleared: boolean;
+}
+const GXT_RENDER_STATE = new WeakMap<Element, GxtRenderTargetState>();
+
+/**
+ * A raw gxt template function: a strict-mode `<template>` compiled at build
+ * time (e.g. `render(<template>…</template>)` in a `.gjs` test, which
+ * `@ember/test-helpers` registers as the template of its render-context
+ * definition). It must not be called with the owner. The compat compiler emits
+ * it as a plain `function () { $_GET_ARGS(this, arguments); … }` (gxt's
+ * `$_tpl` brand is native-layer only). A template factory is
+ * either branded by the GXT compile pipeline (`__gxtCompiled` / `__gxtFactory`)
+ * or a hand-written factory such as the integration tests' `() => template`,
+ * which is an arrow (no `prototype`) or takes the owner (`length` 1).
+ */
+function isRawGxtTemplateFn(value: unknown): value is (...args: unknown[]) => unknown {
+  if (typeof value !== 'function') return false;
+  const candidate = value as unknown as Record<string, unknown>;
+  return (
+    !('asLayout' in value) &&
+    !candidate['__gxtCompiled'] &&
+    !candidate['__gxtFactory'] &&
+    value.length === 0 &&
+    Object.prototype.hasOwnProperty.call(value, 'prototype')
+  );
+}
+
+/**
+ * A template object (`render(ctx, parentElement)`) for a raw gxt template
+ * function: rendered as a gxt component by gxt's own `renderComponent`, with
+ * the render context's args. A re-render or the entry's destruction tears the
+ * previous gxt component tree down first.
+ */
+function rawGxtTemplate(fn: (...args: unknown[]) => unknown, entry: GxtRenderEntry) {
+  let rendered: unknown = null;
+  const teardown = () => {
+    if (rendered !== null) {
+      const previous = rendered;
+      rendered = null;
+      destroyElementSync(previous);
+    }
+  };
+  entry.teardownRendered = teardown;
+  return {
+    render(ctx: any, parentElement: Element) {
+      teardown();
+      rendered = _gxtLib().renderComponent(fn, {
+        owner: ensureGxtContext(),
+        args: ctx?.args ?? {},
+        element: parentElement,
+        nextSibling: null,
+      });
+    },
+  };
+}
+
+/**
+ * GXT-specific renderComponent implementation.
+ * Bypasses Glimmer VM bytecode compilation entirely.
+ */
+function _renderComponentGxt(
+  component: object,
+  into: IntoTarget,
+  owner: object,
+  args?: Record<string, unknown>
+): RenderResult {
+  const globalTemplates = getGxtRenderer()?.registries.componentTemplates;
+
+  // Get the target element
+  const targetElement =
+    into instanceof Element ? into : 'element' in into ? (into as any).element : into;
+
+  // Multi-render scoping: each renderComponent call into a target gets its
+  // own (firstNode, lastNode) DOM range. Multiple renders coexist as
+  // siblings (per the renderComponent RFC's "subsequent renders to the
+  // same element are prepended" semantics); each entry's destroy /
+  // re-render only affects its own range, not the other entries' content.
+  // Capture the current runloop instance so the new entry can decide
+  // whether prior entries in the same target are "siblings" (same runloop,
+  // i.e. same render pass) or "stale" (different runloop, i.e. an outer
+  // re-render replacing the prior content).
+  const currentRunloop = _getCurrentRunLoop();
+
+  // The render entry is created up-front so the destroy/region helpers can
+  // close over a single mutable reference. firstNode/lastNode are filled in
+  // after the initial render captures the actual rendered DOM range.
+  const entry: GxtRenderEntry = {
+    firstNode: null,
+    lastNode: null,
+    destroy: () => {
+      /* set below */
+    },
+    result: undefined as unknown as RenderResult,
+    component,
+    ownerObj: owner,
+    runloop: currentRunloop,
+  };
+
+  let targetState: GxtRenderTargetState | undefined;
+  if (targetElement instanceof Element) {
+    targetState = GXT_RENDER_STATE.get(targetElement);
+    if (!targetState) {
+      targetState = { entries: [], cleared: false };
+      GXT_RENDER_STATE.set(targetElement, targetState);
+    }
+    // Spurious-duplicate guard: GXT's compiled template can invoke the
+    // same helper-mustache twice in a single render pass when the helper
+    // resolves through a loose-mode owner.lookup chain (the `{{a-helper}}`
+    // path in `<Loose />` style components). Without this guard, each
+    // mustache produces TWO render entries on the target — the first
+    // from the helper's first invocation, the second from its spurious
+    // second invocation. Dedupe by checking whether a prior entry with
+    // the SAME (component, owner) tuple already exists in the same
+    // runloop: if so, return the prior entry's result instead of
+    // creating a sibling. Distinct siblings (different component or
+    // different owner — e.g. the documented `{{render A 'a' owner}}\n
+    // {{render A 'a'}}` pattern where the second omits owner) get
+    // distinct identities and proceed normally.
+    if (currentRunloop !== null && targetState.entries.length > 0) {
+      for (const e of targetState.entries) {
+        if (e.component === component && e.ownerObj === owner && e.runloop === currentRunloop) {
+          // Skip the rest of the render path; we haven't mutated any
+          // global state yet at this point in the function.
+          return e.result;
+        }
+      }
+    }
+    // Replacement vs. sibling decision for prior entries already in this
+    // target. A prior entry must be torn down (REPLACED) only when it
+    // was created in a DIFFERENT runloop instance — the canonical
+    // "renderComponent is eager, tracks with parent" case where an
+    // outer @cached getter re-runs after a tag dirty and calls
+    // renderComponent again. Plain back-to-back renderComponent calls
+    // in the same runloop are kept as concurrent renders (the
+    // documented "siblings" pattern of two `{{render A 'a'}}`
+    // invocations in one template). Spurious-duplicate calls from the
+    // same runloop with the same identity are caught earlier by the
+    // dedupe check above.
+    if (currentRunloop !== null && targetState.entries.length > 0) {
+      const stale: GxtRenderEntry[] = [];
+      for (const e of targetState.entries) {
+        if (e.runloop !== currentRunloop) stale.push(e);
+      }
+      for (const e of stale) {
+        try {
+          e.destroy();
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    // Initial render into a target that has not yet been claimed by
+    // renderComponent: clear any pre-existing contents of the target element.
+    if (!targetState.cleared) {
+      targetElement.innerHTML = '';
+      targetState.cleared = true;
+    }
+  }
+
+  // Set the ambient owner so the manager system can resolve services
+  const prevOwner = getAmbientOwner();
+  setAmbientOwner(owner);
+
+  // Ensure GXT context is initialized
+  ensureGxtContext();
+
+  let destroyed = false;
+  let domCleanupDone = false;
+  let classicReactorUnsub: (() => void) | null = null;
+
+  // Remove all DOM nodes belonging to this entry's range (firstNode through
+  // lastNode, inclusive). Used for both destroy and the re-render
+  // "clear my region" step. After clearing, firstNode/lastNode are reset
+  // so the next render can populate them.
+  const clearRegion = () => {
+    let first = entry.firstNode;
+    const last = entry.lastNode;
+    if (!first || !last) return;
+    while (first) {
+      const next: Node | null = first.nextSibling;
+      try {
+        first.parentNode?.removeChild(first);
+      } catch {
+        /* ignore */
+      }
+      if (first === last) break;
+      first = next;
+    }
+    entry.firstNode = null;
+    entry.lastNode = null;
+  };
+
+  // DOM teardown: removes this render's content range from the target.
+  const doDomCleanup = () => {
+    if (domCleanupDone) return;
+    domCleanupDone = true;
+    if (entry.firstNode || entry.lastNode) {
+      clearRegion();
+    }
+    if (targetState) {
+      const idx = targetState.entries.indexOf(entry);
+      if (idx >= 0) targetState.entries.splice(idx, 1);
+      // Once all entries are destroyed, drop the target's bookkeeping so a
+      // future renderComponent call on the same element behaves like a
+      // fresh first-render (clears any new pre-existing contents).
+      if (targetState.entries.length === 0 && targetElement instanceof Element) {
+        GXT_RENDER_STATE.delete(targetElement);
+      }
+    }
+  };
+
+  // Synchronous teardown: stop the classic-tag reactor immediately and
+  // remove this render's DOM range. Cross-runloop replacement (the eager
+  // case) needs sync DOM cleanup so the new render appears alone; the
+  // sibling case never reaches doDestroy until the user explicitly calls
+  // result.destroy() (e.g. via owner destruction), at which point sync
+  // cleanup is also correct.
+  const doDestroy = () => {
+    if (destroyed) return;
+    destroyed = true;
+    if (classicReactorUnsub) {
+      try {
+        classicReactorUnsub();
+      } catch {
+        /* ignore */
+      }
+      classicReactorUnsub = null;
+    }
+    entry.teardownRendered?.();
+    doDomCleanup();
+  };
+  entry.destroy = doDestroy;
+
+  // Render the template into the target. The "direct" path renders into
+  // the target (zero DOM movement, letting GXT's processNodes wire
+  // effects against the actual ancestor chain) and is used whenever the
+  // parent has no foreign live content from OTHER entries. The
+  // "sibling/prepend" path renders into a temporary host of the same
+  // tag-name, then moves the resulting children to the FRONT of the
+  // actual parent — this gives the documented "subsequent renders are
+  // prepended" behavior while preserving live sibling content from prior
+  // render entries on the same target.
+  const renderIntoRegion = (template: any, ctx: any) => {
+    if (!(targetElement instanceof Element)) {
+      template.render(ctx, targetElement);
+      return;
+    }
+    const parent: Element = targetElement;
+    let hasForeignLiveContent = false;
+    if (targetState) {
+      for (const e of targetState.entries) {
+        if (e === entry) continue;
+        if (e.firstNode && e.firstNode.parentNode === parent) {
+          hasForeignLiveContent = true;
+          break;
+        }
+      }
+    }
+    if (!hasForeignLiveContent) {
+      template.render(ctx, parent);
+      entry.firstNode = parent.firstChild;
+      entry.lastNode = parent.lastChild;
+      return;
+    }
+    // Sibling render: render into a temporary host of the same tag-name
+    // (so any tag-sensitive child construction inside <table>, <select>,
+    // etc. keeps the same parent context), then move the children to the
+    // FRONT of the actual parent.
+    const host = document.createElement(parent.tagName);
+    template.render(ctx, host);
+    if (host.firstChild === null) return; // nothing rendered
+    const firstCollected: Node | null = host.firstChild;
+    const lastCollected: Node | null = host.lastChild;
+    const frag = document.createDocumentFragment();
+    while (host.firstChild) {
+      frag.appendChild(host.firstChild);
+    }
+    parent.insertBefore(frag, parent.firstChild);
+    entry.firstNode = firstCollected;
+    entry.lastNode = lastCollected;
+  };
+
+  try {
+    // Resolve template from COMPONENT_TEMPLATES
+    let template = globalTemplates?.get(component);
+
+    // Walk prototype chain if not found directly (for class-based components)
+    if (!template && component) {
+      let proto = Object.getPrototypeOf(component);
+      while (proto && proto !== Function.prototype && proto !== Object.prototype) {
+        template = globalTemplates?.get(proto);
+        if (template) break;
+        proto = Object.getPrototypeOf(proto);
+      }
+    }
+
+    // If template is a factory function, call it with owner to get actual
+    // template. A raw gxt template function renders as a gxt component.
+    if (typeof template === 'function' && !template.render) {
+      template = isRawGxtTemplateFn(template) ? rawGxtTemplate(template, entry) : template(owner);
+    }
+
+    if (!template || !template.render) {
+      // No template found — try using the manager system directly
+      const managers = (globalThis as any).$_MANAGERS;
+      if (managers?.component?.canHandle?.(component)) {
+        // Build args with reactive getters so GXT tracks dependencies.
+        const gxtArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            const innerGet = desc?.get;
+            if (innerGet) {
+              Object.defineProperty(gxtArgs, key, {
+                get: function () {
+                  touchClassicBridge();
+                  return innerGet.call(this);
+                },
+                enumerable: true,
+                configurable: true,
+              });
+            } else {
+              Object.defineProperty(gxtArgs, key, {
+                get: () => {
+                  touchClassicBridge();
+                  return (args as any)[key];
+                },
+                enumerable: true,
+                configurable: true,
+              });
+            }
+          }
+        }
+        const handleResult = managers.component.handle(component, gxtArgs, null, { owner });
+        let nodes: Node | null = null;
+        if (typeof handleResult === 'function') {
+          nodes = handleResult();
+        } else {
+          nodes = handleResult;
+        }
+        if (nodes instanceof Node) {
+          if (targetElement instanceof Element) {
+            // Prepend (matches the documented "subsequent renders are
+            // prepended" semantic) and capture the inserted node as both
+            // firstNode and lastNode of this entry so destroy can scope.
+            targetElement.insertBefore(nodes, targetElement.firstChild);
+            entry.firstNode = nodes;
+            entry.lastNode = nodes;
+          } else {
+            (targetElement as Element).appendChild(nodes);
+          }
+        }
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn('[renderComponent GXT] No GXT template found for component:', component);
+      }
+
+      const result: RenderResult = { destroy: doDestroy };
+      entry.result = result;
+      if (targetState) {
+        targetState.entries.unshift(entry);
+      }
+      // Register destructor on owner so owner.destroy() cleans up DOM
+      try {
+        registerDestructor(owner, doDestroy);
+      } catch {
+        // owner may not be destroyable
+      }
+      return result;
+    }
+
+    // Determine if the component is a class (needs instantiation) or template-only
+    const isClass = typeof component === 'function' && component.prototype;
+    const isTemplateOnly =
+      !isClass ||
+      (component as any).__templateOnly === true ||
+      getGxtRenderer()?.compilePipeline.isTemplateOnlyDefinition?.(component) === true ||
+      getGxtRenderer()?.registries.internalManagers.has(component) === true;
+
+    let instance: any = null;
+
+    if (!isTemplateOnly && isClass) {
+      // Instantiate the component class
+      const ComponentClass = component as any;
+
+      // Check for custom component manager (from setComponentManager)
+      let customManager: any = null;
+      const _componentManagers = getGxtRenderer()?.registries.componentManagers;
+      let managerFactory: any = _componentManagers?.get(ComponentClass);
+      if (!managerFactory) {
+        let proto = Object.getPrototypeOf(ComponentClass);
+        while (proto && proto !== Object.prototype && proto !== Function.prototype) {
+          managerFactory = _componentManagers?.get(proto);
+          if (managerFactory) break;
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
+
+      if (typeof managerFactory === 'function') {
+        // Use the custom manager to create the instance
+        customManager = managerFactory(owner);
+        if (customManager && typeof customManager.createComponent === 'function') {
+          // Build named args for the custom manager
+          const namedArgs: Record<string, any> = {};
+          if (args) {
+            for (const [key, value] of Object.entries(args)) {
+              namedArgs[key] = value;
+            }
+          }
+          const capturedArgs = { named: namedArgs, positional: [] };
+          instance = customManager.createComponent(ComponentClass, capturedArgs);
+          // Get the rendering context from the manager
+          if (typeof customManager.getContext === 'function') {
+            const ctx = customManager.getContext(instance);
+            if (ctx && ctx !== instance) {
+              // Use the manager's context as the render context
+              instance = ctx;
+            }
+          }
+        }
+      }
+
+      if (!instance) {
+        if (typeof ComponentClass.create === 'function') {
+          instance = ComponentClass.create(Object.assign({}, args || {}, { owner }));
+        } else {
+          try {
+            instance = new ComponentClass(owner, args || {});
+          } catch {
+            instance = new ComponentClass();
+          }
+        }
+      }
+
+      // Set args on Glimmer-style components
+      if (instance && args) {
+        if (!instance.args) {
+          instance.args = {};
+        }
+        // Use Object.keys + defineProperty instead of Object.entries to avoid
+        // eagerly evaluating arg getters. Arg getters may have side effects
+        // (e.g., tracking steps in tests) and should only be called lazily.
+        for (const key of Object.keys(args)) {
+          const desc = Object.getOwnPropertyDescriptor(args, key);
+          const innerGet = desc?.get;
+          if (innerGet) {
+            Object.defineProperty(instance.args, key, {
+              get: function () {
+                touchClassicBridge();
+                return innerGet.call(this);
+              },
+              enumerable: true,
+              configurable: true,
+            });
+          } else {
+            Object.defineProperty(instance.args, key, {
+              get: () => {
+                touchClassicBridge();
+                return (args as any)[key];
+              },
+              enumerable: true,
+              configurable: true,
+            });
+          }
+        }
+      }
+    }
+
+    // Build render context with reactive arg getters
+    const renderContext: any = instance || {};
+    if (args) {
+      // For template-only components, args go directly on the context as getters
+      if (!instance) {
+        for (const key of Object.keys(args)) {
+          Object.defineProperty(renderContext, key, {
+            get: () => {
+              touchClassicBridge();
+              return (args as any)[key];
+            },
+            enumerable: true,
+            configurable: true,
+          });
+        }
+      }
+      // Set up args object with reactive getters. Reads touch the
+      // classic-validator bridge so any enclosing GXT effect (e.g. the
+      // text-node formula for `{{@foo}}`) that reads through this proxy
+      // subscribes to the classic-tag bridge cell and re-fires on any
+      // classic @glimmer/validator tag mutation. This is the same pattern
+      // used by renderLinkToElement in gxt-backend/manager.ts.
+      const argsObj: any = {};
+      for (const key of Object.keys(args)) {
+        Object.defineProperty(argsObj, key, {
+          get: () => {
+            touchClassicBridge();
+            return (args as any)[key];
+          },
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      renderContext.args = argsObj;
+    }
+    renderContext.owner = owner;
+
+    // Render inside `withRendering` so GXT formulas created during
+    // template.render() properly track cell dependencies (e.g., trackedObject
+    // cells). It is a depth counter, so nested renders are handled correctly.
+    const _pipeline = getGxtRenderer()?.compilePipeline;
+    const _isRendering = _pipeline?.isRendering;
+    const _withRendering = _pipeline?.withRendering;
+    const wasRendering = typeof _isRendering === 'function' ? _isRendering() : false;
+    // When renderComponent is called during an existing render pass (e.g.,
+    // from a @cached getter during template evaluation), suppress gxtEffect
+    // creation for text nodes. These nested renders are "static snapshots" —
+    // reactivity is handled by the parent destroying and recreating the render
+    // when tracked deps change. Independent text effects would fire out-of-order
+    // (before the parent re-renders) and cause double getter evaluations.
+    // Top-level renderComponent calls (wasRendering=false) DO need text effects
+    // for trackedObject reactivity.
+    const _compilePipeline = getGxtRenderer()?.compilePipeline;
+    const prevSkipTextEffects = _compilePipeline?.getSkipTextEffects?.() ?? false;
+    if (wasRendering) {
+      _compilePipeline?.setSkipTextEffects?.(true);
+    }
+    // Wrap the template render so we can re-invoke it from a classic-tag
+    // reactor. This is the same pattern used by renderLinkToElement in
+    // gxt-backend/manager.ts: classic @glimmer/validator tag mutations do
+    // not reliably re-fire the GXT effects created inside template.render,
+    // so we register a side-channel reactor that forces a fresh render
+    // whenever any classic tag is dirtied. The reactor is unsubscribed on
+    // destroy to avoid leaks across test runs.
+    let _rendering = false;
+    const _doRender = () => {
+      if (destroyed || _rendering) return;
+      _rendering = true;
+      const prevOwnerLocal = getAmbientOwner();
+      setAmbientOwner(owner);
+      const _pipelineLocal = getGxtRenderer()?.compilePipeline;
+      const prevSkip = _pipelineLocal?.getSkipTextEffects?.() ?? false;
+      const wasRenderingLocal = typeof _isRendering === 'function' ? _isRendering() : false;
+      if (wasRenderingLocal) _pipelineLocal?.setSkipTextEffects?.(true);
+      try {
+        // Scoped re-render: clear only the nodes within this entry's
+        // range, then render fresh content back into the same range. This
+        // preserves sibling renders into the same target.
+        if (typeof _withRendering === 'function') {
+          _withRendering(() => {
+            clearRegion();
+            renderIntoRegion(template, renderContext);
+          });
+        } else {
+          clearRegion();
+          renderIntoRegion(template, renderContext);
+        }
+      } finally {
+        _pipelineLocal?.setSkipTextEffects?.(prevSkip);
+        setAmbientOwner(prevOwnerLocal);
+        _rendering = false;
+      }
+    };
+
+    // Register the classic-tag reactor BEFORE running template.render,
+    // but with an `initialized` guard so the callback is a no-op until
+    // initial render completes. The purpose of the early registration
+    // is to reserve this reactor's slot at the tail of _classicReactors
+    // BEFORE any nested renderComponent calls (made during initial
+    // template.render) register their own reactors. Set iteration in
+    // _fireClassicReactors preserves insertion order, so the parent's
+    // reactor fires first on classic-tag dirty — and when the parent's
+    // re-render calls renderComponent again on the same target, it
+    // destroys the nested render before the nested reactor would have
+    // had a chance to emit spurious arg-reads (see the "renderComponent
+    // is eager, so it tracks with its parent" strict-mode test).
+    //
+    // The reactor is per-call: each renderComponent registers its own
+    // callback that closes over its own (renderContext, targetElement,
+    // destroyed flag). Cleanup is via doDestroy, chained through the owner
+    // destructor so owner.destroy() unhooks all reactors.
+    //
+    // The reactor also self-unsubscribes once the target element has been
+    // attached to the document and then stayed detached for a few ticks.
+    // Without this, when the caller passes a synthetic owner ({} — the
+    // documented default for renderComponent), registerDestructor below
+    // silently fails on the plain object, leaving the reactor live across
+    // tests; on the next test's classic-tag dirty (e.g. typing in a
+    // textarea) the leaked reactor would fire _doRender on the prior
+    // test's detached target and clobber shared GXT sync state via
+    // syncDomNow. A target that has never been attached (rendering into a
+    // detached element that is attached later) keeps _hasBeenConnected
+    // false, so we keep firing until it connects. This mirrors the LinkTo
+    // path in gxt-backend/manager.ts.
+    let reactorInitialized = false;
+    let _hasBeenConnected = false;
+    let _disconnectedTicks = 0;
+    {
+      const fireReactor = () => {
+        if (destroyed) return;
+        try {
+          _doRender();
+        } catch {
+          /* ignore individual reactor errors */
+        }
+        // After re-render, flush GXT DOM so the new text content is visible.
+        try {
+          getGxtRenderer()?.compilePipeline.syncDomNow?.();
+        } catch {
+          /* ignore */
+        }
+      };
+      classicReactorUnsub = registerClassicReactor(() => {
+        if (destroyed || !reactorInitialized) return;
+        if (targetElement instanceof Element) {
+          if (targetElement.isConnected) {
+            _hasBeenConnected = true;
+            _disconnectedTicks = 0;
+          } else if (_hasBeenConnected) {
+            // Was connected, now detached: count grace ticks then bail.
+            _disconnectedTicks++;
+            if (_disconnectedTicks > 4) {
+              try {
+                classicReactorUnsub?.();
+              } catch {
+                /* ignore */
+              }
+              classicReactorUnsub = null;
+              destroyed = true;
+            }
+            // Skip rendering into a detached target either way.
+            return;
+          }
+          // else: never connected — fall through (legitimate
+          // detached-element use case).
+        }
+        fireReactor();
+      }, '_renderComponentGxt');
+    }
+
+    try {
+      // Render the template into the target (initial render)
+      if (wasRendering) {
+        _compilePipeline?.setSkipTextEffects?.(true);
+      }
+      if (typeof _withRendering === 'function') {
+        _withRendering(() => {
+          renderIntoRegion(template, renderContext);
+        });
+      } else {
+        renderIntoRegion(template, renderContext);
+      }
+    } finally {
+      _compilePipeline?.setSkipTextEffects?.(prevSkipTextEffects);
+      // Arm the reactor: from now on, classic-tag dirties will trigger
+      // _doRender. This is done in `finally` so that any tag dirties
+      // that happened DURING initial render (e.g. from component init
+      // writing @tracked fields) do not retroactively trigger a
+      // spurious re-render after the render completes.
+      reactorInitialized = true;
+    }
+
+    // Flush queued didInsertElement / didRender hooks
+    try {
+      gxtRenderPass().flushAfterInsertQueue();
+    } catch {
+      // Ignore flush errors in renderComponent context
+    }
+    gxtRenderPass().flushRenderErrors();
+  } finally {
+    setAmbientOwner(prevOwner);
+  }
+
+  const result: RenderResult = { destroy: doDestroy };
+  entry.result = result;
+  if (targetState) {
+    targetState.entries.unshift(entry);
+  }
+
+  // Register destructor on owner so that destroying the owner cleans up the DOM
+  try {
+    registerDestructor(owner, doDestroy);
+  } catch {
+    // owner may not be destroyable
+  }
+
+  return result;
+}
+
+/**
  * Makes room for a render into `element`, and returns where to render.
  *
  * A second `renderComponent` call for one element replaces the first
@@ -802,6 +1793,12 @@ export function renderComponent(
     args?: Record<string, unknown>;
   }
 ): RenderResult {
+  // GXT escape hatch: bypass Glimmer VM entirely for GXT mode.
+  // This avoids bytecode compilation which crashes with GXT templates.
+  if (__GXT_MODE__) {
+    return _renderComponentGxt(component, into, owner, args);
+  }
+
   let renderer = rendererFor(owner, env);
   let element = isCursor(into) ? into.element : into;
 

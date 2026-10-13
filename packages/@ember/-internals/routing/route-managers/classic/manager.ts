@@ -439,7 +439,24 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
         );
       }
 
-      const template = (templateFactoryOrComponent as TemplateFactory)(owner);
+      // GXT mode: a route template compiled at build time from a bare
+      // top-level `<template>` in a `.gjs`/`.gts` file resolves to a raw GXT
+      // template function. It is not an Ember `TemplateFactory` (no
+      // `asLayout`) and carries none of the gxt wrapper brands (`__gxtCompiled`
+      // / `__gxtFactory`); calling it as `factory(owner)` would crash because
+      // no GXT root context or args exist yet. GXT renders route templates
+      // through its own outlet machinery (gxt-backend/outlet.ts), which sets
+      // those up, so keep it uninvoked here.
+      const candidate = templateFactoryOrComponent as unknown as Record<string, unknown>;
+      const isRawGxtFn =
+        __GXT_MODE__ &&
+        typeof templateFactoryOrComponent === 'function' &&
+        !('asLayout' in templateFactoryOrComponent) &&
+        !candidate['__gxtCompiled'] &&
+        !candidate['__gxtFactory'];
+      const template = isRawGxtFn
+        ? templateFactoryOrComponent
+        : (templateFactoryOrComponent as TemplateFactory)(owner);
       invokable = makeRouteTemplate(name, template as Template, self);
     }
   } else {

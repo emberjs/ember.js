@@ -1,8 +1,10 @@
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import type { Dict } from '@glimmer/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
@@ -41,6 +43,23 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
 */
 export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM.
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch (e) {
+      // A failed rebuild leaves the registry read below with a stale
+      // parent/child graph; surface it in DEBUG and read the registry anyway.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale',
+          e
+        );
+      }
+    }
+  }
 
   let rootViews: View[] = [];
 
@@ -117,10 +136,32 @@ export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM
+  // ancestry before reading the registry. The force-rerender path can leave
+  // parentView=null or CHILD_VIEW_IDS stale when a component is created while
+  // the render-time parent-view stack was empty. Passing the registry tells
+  // the rebuild which registry the caller will read.
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch (e) {
+      // A failed rebuild leaves the registry read below with a stale
+      // parent/child graph; surface it in DEBUG and read the registry anyway.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale',
+          e
+        );
+      }
+    }
+  }
+
   return collectChildViews(view, registry);
 }
 
-function initChildViews(view: View): Set<string> {
+export function initChildViews(view: View): Set<string> {
   let childViews: Set<string> = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;

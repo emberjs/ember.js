@@ -3,6 +3,9 @@ import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
+// `gxt-bridge` is a leaf module, so this import does not create a cycle with
+// gxt-backend's own imports of `@ember/runloop`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 export type { Timer };
 
@@ -42,15 +45,56 @@ function onBegin(current: DeferredActionQueues) {
   currentRunLoop = current;
 }
 
+// In GXT mode, async observer flushing can cause infinite loops because
+// GXT rendering triggers notifyPropertyChange -> dirtyTagFor which bumps
+// CURRENT_TAG. Use a per-runloop budget to limit total flush calls while
+// still allowing QP observers to fire.
+let _gxtFlushBudget = 0;
+const GXT_MAX_FLUSH_BUDGET = 20;
+
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers(schedule);
+  if (__GXT_MODE__) {
+    if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+      _gxtFlushBudget++;
+      flushAsyncObservers(schedule);
+    }
+    // Reset budget when all runloops complete
+    if (!next) {
+      _gxtFlushBudget = 0;
+      // Flush GXT DOM updates when the outermost run loop ends, but ONLY if
+      // we're not inside a runTask call (which has its own explicit sync).
+      // This ensures tracked property changes from bare run() calls (e.g.,
+      // renderComponent tests) are reflected in the DOM before assertions run,
+      // without double-syncing during runTask calls.
+      const _cpRL = getGxtRenderer()?.compilePipeline;
+      if (_cpRL?.getPendingSync?.() && !_cpRL?.getRunTaskActive?.()) {
+        const syncNow = _cpRL?.syncDomNow;
+        if (typeof syncNow === 'function') {
+          try {
+            syncNow();
+          } catch {
+            /* errors handled by sync */
+          }
+        }
+      }
+    }
+  } else {
+    flushAsyncObservers(schedule);
+  }
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers(schedule);
+    if (__GXT_MODE__) {
+      if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+        _gxtFlushBudget++;
+        flushAsyncObservers(schedule);
+      }
+    } else {
+      flushAsyncObservers(schedule);
+    }
   }
 
   next();
@@ -436,6 +480,30 @@ export function schedule<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function schedule(...args: any[]): Timer {
+  // In GXT mode, wrap 'afterRender' callbacks so we can detect when a
+  // property change originated from a lifecycle-scheduled callback. Tests
+  // like `afterRender set` rely on `schedule('afterRender', () => this.set(...))`
+  // to re-render the DOM inside runAppend. The set() marks a sync as pending
+  // from a property change, and that mark must survive runAppend's post-run
+  // cleanup so its explicit sync re-renders. Marking the change as "from
+  // afterRender" lets runAppend distinguish it from init-phase property
+  // changes (e.g. Textarea's internal bindings), which must not survive.
+  if (__GXT_MODE__ && args[0] === 'afterRender') {
+    const idx = args.length >= 3 && typeof args[2] === 'function' ? 2 : 1;
+    const origFn = args[idx];
+    if (typeof origFn === 'function') {
+      args[idx] = function gxtAfterRenderWrapper(this: any, ...a: any[]) {
+        const _cpIAR = getGxtRenderer()?.compilePipeline;
+        const prev = _cpIAR?.getInAfterRender?.() ?? false;
+        _cpIAR?.setInAfterRender?.(true);
+        try {
+          return origFn.apply(this, a);
+        } finally {
+          _cpIAR?.setInAfterRender?.(prev);
+        }
+      };
+    }
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.schedule(...args);
 }

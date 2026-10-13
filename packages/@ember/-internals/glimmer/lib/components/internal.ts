@@ -13,12 +13,38 @@ import type {
   VMArguments,
   WithCreateInstance,
 } from '@glimmer/interfaces';
-import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+// The @glimmer/manager|reference|validator BARREL specifiers are load-bearing
+// for the GXT dual backend: the rollup GXT alias map (scripts/gxt-alias-map.mjs)
+// redirects the exact barrel key to the gxt-backend shim, while deep lib/*
+// paths would resolve to the real vendored VM source and fork the runtime in
+// GXT builds. Do not convert the runtime imports below to deep imports.
+// eslint-disable-next-line ember-local/no-barrel-imports
+import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { untrack } from '@glimmer/validator/lib/tracking';
+// GXT dual-backend note: in classic mode `@glimmer/reference` resolves to the
+// vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
+// packages/@ember/-internals/gxt-backend/reference.ts. A namespace import
+// yields a `reference` object with `createConstRef` in both modes.
+// eslint-disable-next-line ember-local/no-barrel-imports
+import * as reference from '@glimmer/reference';
+// eslint-disable-next-line ember-local/no-barrel-imports
+import { untrack } from '@glimmer/validator';
 
+const { createConstRef } = reference;
+// In GXT mode arg refs are cell-like (`.value` getter does the tracked read)
+// and the caller ref is not always branded const, so the permissive forms are
+// required. In classic mode they MUST be the real VM implementations: classic
+// ReferenceImpl has no `.value` property, so `ref.value` made every named-arg
+// read on InternalComponent (Input, Textarea, LinkTo) return undefined —
+// Input lost its @type/@value, LinkTo never resolved its route (stuck
+// "loading", href="#"). The bare __GXT_MODE__ flag is inlined per dist, so
+// each build carries only its own branch.
+const isConstRef: (ref: Reference) => boolean = __GXT_MODE__
+  ? (_ref: Reference) => true
+  : reference.isConstRef;
+const valueForRef: (ref: any) => unknown = __GXT_MODE__
+  ? (ref: any) => ref.value
+  : (reference.valueForRef as (ref: any) => unknown);
 function NOOP(): void {}
 
 export type EventListener = (event: Event) => void;

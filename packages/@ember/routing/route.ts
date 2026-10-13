@@ -11,6 +11,7 @@ import {
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
+import { getGxtRenderer, getRouteOutletHooks } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { default as BucketCache } from './lib/cache';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -31,7 +32,8 @@ import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { once, scheduleOnce } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
@@ -948,6 +950,52 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     @public
    */
   refresh(): Transition {
+    // GXT fix (Issue #13263): When a route template is rendered, GXT creates
+    // a `renderContext = Object.create(controller)` and binds `{{on "click"
+    // this.action}}` handlers to that renderContext. If the action mutates a
+    // QP via `set(this, 'foo', v)` or `incrementProperty('foo')`, the write
+    // hits the renderContext's *own* property and shadows the controller —
+    // leaving `controller.foo` stale, so the QP observer never fires and the
+    // URL never updates on subsequent refreshes. Before refreshing, walk any
+    // live renderContexts for this route's controller and mirror their own QP
+    // values back to the controller so subsequent QP observers see the new
+    // value (so `_qpChanged` → `_activeQPChanged` → URL update fires).
+    if (__GXT_MODE__) {
+      try {
+        let controller = this.controller;
+        // controller -> live render contexts, populated by the outlet root
+        // template (`templates/root.ts`) at render time.
+        let ctxsMap = getGxtRenderer()?.compilePipeline.getComponentContextsMap?.();
+        if (controller && ctxsMap && ctxsMap.has(controller)) {
+          // SAFETY: Since `_qp` is protected we can't infer the type
+          let queryParams = get(this, '_qp') as Route<Model>['_qp'];
+          let qpNames = queryParams.propertyNames;
+          if (qpNames.length > 0) {
+            // `ctxsMap.has(controller)` is checked above, so `.get` is defined.
+            let contexts: Set<object> = ctxsMap.get(controller)!;
+            contexts.forEach((renderContext: any) => {
+              for (let prop of qpNames) {
+                if (Object.prototype.hasOwnProperty.call(renderContext, prop)) {
+                  let rcValue = renderContext[prop];
+                  let ctrlValue = (controller as any)[prop];
+                  if (rcValue !== ctrlValue) {
+                    set(controller, prop, rcValue);
+                  }
+                }
+              }
+            });
+          }
+        }
+      } catch (e) {
+        // Best-effort: a throw here must not break `refresh()`, but it would
+        // leave the controller's QP values out of sync, so surface it in DEBUG
+        // (a console.warn does not trip QUnit's warn/deprecation assertions).
+        if (DEBUG) {
+          // eslint-disable-next-line no-console
+          console.warn('[gxt] query-param controller sync failed during refresh', e);
+        }
+      }
+    }
     let managed = getRouteManagement(this);
     assert('Expected a classic route manager to refresh', managed !== undefined);
     return this._router._routerMicrolib.refresh(managed.bucket);
@@ -988,6 +1036,47 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
     let states = queryParams.states;
 
+    // GXT fix: Ensure the controller has a writable instance meta, not just an
+    // inherited prototype meta. Without this, notifyPropertyChange on QP values
+    // skips markObjectAsDirty because isPrototypeMeta(controller) returns true —
+    // causing async QP observers to never detect the dirty tag, so URL/LinkTo
+    // hrefs never update when QPs change.
+    //
+    // Additionally: in some GXT paths the instance meta is created with
+    // meta.proto === controller (instead of controller.constructor.prototype),
+    // which makes `isPrototypeMeta(controller)` return true for the *instance*.
+    // That short-circuits `ComputedProperty.get` to return `undefined`,
+    // breaking every `@computed` getter on controllers. Repair it here.
+    if (__GXT_MODE__) {
+      let m = metaFor(controller);
+      const correctProto = Object.getPrototypeOf(controller);
+      if (correctProto && correctProto !== controller) {
+        // Pin meta.proto to the real class prototype. Without this, the GXT
+        // outlet render builds `renderContext = Object.create(controller)` and the
+        // first `peekMeta(renderContext)` walks up to `controller`, sees
+        // `meta.proto !== controller`, and mutates `meta.proto = controller`.
+        // That makes `isPrototypeMeta(controller)` return true,
+        // which short-circuits `ComputedProperty.get` to return `undefined` for
+        // every `@computed` getter on the controller — breaking templates that
+        // read things like `this.allSitesAllArticles`.
+        m.proto = correctProto;
+        try {
+          Object.defineProperty(m, 'proto', {
+            get() {
+              return correctProto;
+            },
+            set(_v) {
+              /* ignore — see comment above */
+            },
+            configurable: true,
+            enumerable: false,
+          });
+        } catch {
+          /* already non-configurable — best effort */
+        }
+      }
+    }
+
     controller._qpDelegate = states.allowOverrides;
 
     if (transition) {
@@ -1016,7 +1105,19 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
     // `_setOutlets` itself is the single `shouldRender` gate (it returns
     // early when the app was booted with `shouldRender: false`).
-    once(this._router, '_setOutlets');
+    //
+    // GXT mode: record this route's render state for GXT's outlet machinery
+    // (gxt-backend/outlet.ts), as the pre-route-manager `[RENDER]()` did.
+    // Scheduling _setOutlets via once() (actions queue) from the
+    // routerTransitions queue causes it to be skipped because backburner
+    // doesn't re-visit earlier queues. Use scheduleOnce('render', ...) to
+    // ensure it runs after routerTransitions in the same runloop iteration.
+    if (__GXT_MODE__) {
+      getRouteOutletHooks()?.renderRoute(this);
+      scheduleOnce('render', this._router, '_setOutlets');
+    } else {
+      once(this._router, '_setOutlets');
+    }
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
@@ -1526,8 +1627,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     @method teardownViews
   */
   teardownViews() {
+    if (__GXT_MODE__) {
+      getRouteOutletHooks()?.teardownRoute(this);
+    }
     if (this._router) {
-      once(this._router, '_setOutlets');
+      if (__GXT_MODE__) {
+        scheduleOnce('render', this._router, '_setOutlets');
+      } else {
+        once(this._router, '_setOutlets');
+      }
     }
   }
 
