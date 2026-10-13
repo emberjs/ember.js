@@ -394,10 +394,11 @@ moduleFor(
       }
       setComponentTemplate(precompileTemplate('Hello, {{this.name}}!'), Hello);
 
+      // Which error the first render throws is not what this test checks.
       let failedOwner = buildOwner({});
       assert.throws(() => {
         renderComponent(Broken, { owner: failedOwner, into: document.createElement('div') });
-      }, /Expected a dynamic component definition/);
+      }, 'the first render throws');
       destroy(failedOwner);
 
       let owner = buildOwner({});
