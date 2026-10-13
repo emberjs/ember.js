@@ -23,6 +23,8 @@ committed except this file and the spec.
 - [x] 2. Usage check: grep this repo's templates and tests (`.hbs`, `.gjs`, `.gts`, inline `hbs`
       and `precompileTemplate` strings) for a literal callee with arguments. Note any hits; they
       must be updated in the same PR.
+      Corpus (`spec/tools/compare-parsers.mjs` over `~/hacking`): 28,770 distinct templates, 0 newly
+      rejected.
       Done: no hits in `packages/` or `smoke-tests/` (`.ts`, `.js`, `.hbs`, `.gjs`, `.gts`), so no
       template needs updating.
 - [x] 3. Implement in the `isHBSLiteral` branch: when `params.length > 0` or `hash.pairs.length > 0`,
@@ -78,7 +80,9 @@ it renders the bare literal silently. After this change it fails at build time w
 that names the fix. The new error is easy to detect (it is a compile error, reported with the
 module name and position) and easy to fix (delete the arguments, or call the intended helper).
 
-No template in this repository uses the form. Tests: `packages/@glimmer/syntax/test/parser-node-test.ts`
+No template in this repository uses the form, and none in a local corpus of Ember apps and addons
+(Ghost admin, several large private apps, and the published addons in their `node_modules`):
+57,329 templates, 28,770 distinct, none newly rejected (`spec/tools/compare-parsers.mjs`). Tests: `packages/@glimmer/syntax/test/parser-node-test.ts`
 (8 error cases, including triple curlies and both attribute-value forms; the argument-free
 literals; the modifier position).
 
