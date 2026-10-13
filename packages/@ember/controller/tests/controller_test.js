@@ -10,6 +10,7 @@ import {
   ApplicationTestCase,
   AbstractTestCase,
   runTask,
+  runLoopSettled,
   testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
@@ -52,7 +53,7 @@ moduleFor(
       this.assertText('2');
     }
 
-    async '@test model can be observed with sync observers'(assert) {
+    async '@test model can be observed'(assert) {
       let observerRunCount = 0;
 
       this.add(
@@ -62,7 +63,7 @@ moduleFor(
             super(...arguments);
             this.model = 0;
 
-            this.addObserver('model', this, () => observerRunCount++, true);
+            this.addObserver('model', this, () => observerRunCount++);
           }
 
           @action
@@ -79,6 +80,7 @@ moduleFor(
 
       await this.visit('/');
       runTask(() => this.$('button').click());
+      await runLoopSettled();
       assert.equal(observerRunCount, 1, 'observer ran exactly once');
     }
   }

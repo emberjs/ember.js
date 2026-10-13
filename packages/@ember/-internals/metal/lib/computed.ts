@@ -29,7 +29,7 @@ import {
   makeComputedDecorator,
 } from './decorator';
 import expandProperties from './expand_properties';
-import { addObserver, setObserverSuspended } from './observer';
+import { addSyncObserver, setObserverSuspended } from './observer';
 import type { PropertyDidChange } from './property_events';
 import {
   beginPropertyChanges,
@@ -474,15 +474,9 @@ export class ComputedProperty extends ComputedDescriptor {
       // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
       assert('property did change hook is invalid', hasPropertyDidChange(obj));
 
-      addObserver(
-        obj,
-        keyName,
-        () => {
-          obj[PROPERTY_DID_CHANGE](keyName);
-        },
-        undefined,
-        true
-      );
+      addSyncObserver(obj, keyName, () => {
+        obj[PROPERTY_DID_CHANGE](keyName);
+      });
     }
 
     let ret;

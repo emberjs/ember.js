@@ -1,5 +1,4 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment/lib/env';
 import type {
   ElementDescriptor,
   ExtendedMethodDecorator,
@@ -249,7 +248,6 @@ setClassicDecorator(action as ExtendedMethodDecorator);
 type ObserverDefinition<T extends AnyFn> = {
   dependentKeys: string[];
   fn: T;
-  sync: boolean;
 };
 
 /**
@@ -292,16 +290,17 @@ export function observer<T extends AnyFn>(
 
   let func: T;
   let dependentKeys: string[];
-  let sync: boolean;
 
   if (typeof funcOrDef === 'function') {
     func = funcOrDef;
     dependentKeys = args as string[];
-    sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
   } else {
+    assert(
+      'observer no longer supports the `sync` option. All observers are async.',
+      !('sync' in funcOrDef)
+    );
     func = funcOrDef.fn;
     dependentKeys = funcOrDef.dependentKeys;
-    sync = funcOrDef.sync;
   }
 
   assert('observer called without a function', typeof func === 'function');
@@ -311,7 +310,6 @@ export function observer<T extends AnyFn>(
       dependentKeys.length > 0 &&
       dependentKeys.every((p) => typeof p === 'string' && Boolean(p.length))
   );
-  assert('observer called without sync', typeof sync === 'boolean');
 
   let paths: string[] = [];
 
@@ -319,10 +317,7 @@ export function observer<T extends AnyFn>(
     expandProperties(dependentKey, (path: string) => paths.push(path));
   }
 
-  setObservers(func as Function, {
-    paths,
-    sync,
-  });
+  setObservers(func as Function, { paths });
   return func;
 }
 

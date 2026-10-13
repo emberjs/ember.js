@@ -382,7 +382,7 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
     let updateObserver = add ? addObserver : removeObserver;
 
     for (let path of observers.paths) {
-      updateObserver(obj, path, null, key, observers.sync);
+      updateObserver(obj, path, null, key);
     }
   }
 
