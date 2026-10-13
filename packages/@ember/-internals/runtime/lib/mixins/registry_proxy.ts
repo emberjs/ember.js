@@ -15,7 +15,7 @@ import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/reg
 
   @class RegistryProxyMixin
   @private
-  @deprecated Use the owner API from `@ember/owner` instead.
+  @deprecated Use the owner API from `@ember/owner` instead. See https://deprecations.emberjs.com/id/deprecate-registry-proxy-mixin.
 */
 
 /* The following documentation is duplicated to properly show deprecated on
@@ -89,7 +89,7 @@ import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/reg
  @param  factory {Factory|object} (e.g., App.Person)
  @param  options {Object} (optional) disable instantiation or singleton usage
  @public
- @deprecated Use the owner API from `@ember/owner` instead.
+ @deprecated Use the owner API from `@ember/owner` instead. See https://deprecations.emberjs.com/id/deprecate-registry-proxy-mixin.
  */
 
 interface RegistryProxyMixin extends RegistryProxy {
