@@ -39,8 +39,9 @@ function contextComponentFor(templateFactory, context) {
   return definition;
 }
 
-export default function (hooks) {
+export default function (hooks, { isInteractive = false } = {}) {
   hooks.beforeEach(function () {
+    this.isInteractive = isInteractive;
     this.compile = compile;
     this.Ember = { Component, set };
     this.Component = Component;
@@ -70,7 +71,7 @@ function setupComponentTest() {
   let module = this;
 
   module.element = new SimpleDOM.Document();
-  module.owner = buildOwner({ resolve: function () {} });
+  module.owner = buildOwner({ resolve: function () {} }, { isInteractive: module.isInteractive });
   module.owner.register('service:-document', new SimpleDOM.Document(), {
     instantiate: false,
   });
@@ -97,7 +98,7 @@ function render(_template) {
       module.component = renderComponent(definition, {
         into: module.element,
         owner: module.owner,
-        env: { document: module.element, isInteractive: false },
+        env: { document: module.element, isInteractive: module.isInteractive },
         appendIntoTarget: true,
       });
     });

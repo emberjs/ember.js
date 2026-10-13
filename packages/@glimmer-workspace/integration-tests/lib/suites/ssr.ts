@@ -1,3 +1,5 @@
+import type { Dict, SimpleElement } from '@glimmer/interfaces';
+
 import { AbstractNodeTest } from '../modes/node/env';
 import { test } from '../test-decorator';
 
@@ -204,6 +206,129 @@ export class ServerSideSuite extends AbstractNodeTest {
     this.render(template);
 
     this.assertHTML(template);
+  }
+}
+
+export class InteractiveServerSideSuite extends AbstractNodeTest {
+  static suiteName = 'Interactive Server Side Rendering';
+
+  @test
+  'modifiers run in an interactive server render'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        element?: SimpleElement;
+        didInsertElement() {
+          steps.push(`install on ${this.element?.tagName}`);
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+    this.assertHTML('<div>content</div>');
+    this.assert.deepEqual(steps, ['install on DIV'], 'the modifier ran one time');
+  }
+
+  @test
+  'modifiers receive their arguments'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement(positional: unknown[], named: Dict) {
+          steps.push(`install ${String(positional[0])} ${String(named['name'])}`);
+        }
+      }
+    );
+
+    this.render('<div {{probe this.value name=this.name}}>content</div>', {
+      value: 'one',
+      name: 'Alice',
+    });
+    this.assertHTML('<div>content</div>');
+    this.assert.deepEqual(steps, ['install one Alice']);
+  }
+
+  @test
+  'modifiers update when an argument changes'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement(positional: unknown[]) {
+          steps.push(`install ${String(positional[0])}`);
+        }
+        didUpdate(positional: unknown[]) {
+          steps.push(`update ${String(positional[0])}`);
+        }
+      }
+    );
+
+    this.render('<div {{probe this.value}}>{{this.value}}</div>', { value: 'one' });
+    this.assertHTML('<div>one</div>');
+
+    this.rerender();
+    this.assert.deepEqual(steps, ['install one'], 'a rerender with no change does not update');
+
+    this.rerender({ value: 'two' });
+    this.assertHTML('<div>two</div>');
+    this.assert.deepEqual(steps, ['install one', 'update two']);
+  }
+
+  @test
+  'modifiers are destroyed with the render'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          steps.push('install');
+        }
+        willDestroyElement() {
+          steps.push('destroy');
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+    this.assert.deepEqual(steps, ['install']);
+
+    this.destroy();
+    this.assert.deepEqual(steps, ['install', 'destroy']);
+  }
+
+  @test
+  'modifiers inside a block run when the block renders'() {
+    let steps: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          steps.push('install');
+        }
+        willDestroyElement() {
+          steps.push('destroy');
+        }
+      }
+    );
+
+    this.render('{{#if this.show}}<div {{probe}}>content</div>{{/if}}', { show: false });
+    this.assertHTML('<!---->');
+    this.assert.deepEqual(steps, []);
+
+    this.rerender({ show: true });
+    this.assertHTML('<div>content</div>');
+    this.assert.deepEqual(steps, ['install']);
+
+    this.rerender({ show: false });
+    this.assertHTML('<!---->');
+    this.assert.deepEqual(steps, ['install', 'destroy']);
   }
 }
 

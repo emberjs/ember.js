@@ -43,6 +43,22 @@ export class JitSerializationDelegate extends NodeJitRenderDelegate {
   }
 }
 
+export class InteractiveNodeJitRenderDelegate extends NodeJitRenderDelegate {
+  static override style = 'interactive node jit';
+
+  protected override get isInteractive(): boolean {
+    return true;
+  }
+}
+
+export class InteractiveJitSerializationDelegate extends JitSerializationDelegate {
+  static override style = 'interactive jit serialization';
+
+  protected override get isInteractive(): boolean {
+    return true;
+  }
+}
+
 export class AbstractNodeTest extends RenderTest {
   constructor(delegate: RenderDelegate) {
     super(delegate);
