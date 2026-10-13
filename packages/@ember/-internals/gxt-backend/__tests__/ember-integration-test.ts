@@ -108,14 +108,16 @@ gxtModuleFor(
     }
 
     '@test it can have a custom id and it is not bound'() {
-      this.registerComponent('foo-bar', { template: '{{this.id}} {{this.localId}}' });
+      this.registerComponent('foo-bar', { template: '[{{this.id}}] {{this.localId}}' });
 
       this.render('<FooBar @localId={{this.id}} id="bizz" />', { id: 'bar' });
 
+      // The id attribute sets the element's id; it is not an argument, so
+      // `this.id` stays unset (as in Glimmer).
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz bar',
+        content: '[] bar',
       });
 
       runTask(() => this.rerender());
@@ -123,7 +125,7 @@ gxtModuleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz bar',
+        content: '[] bar',
       });
 
       runTask(() => set(this.context, 'id', 'qux'));
@@ -131,7 +133,7 @@ gxtModuleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz qux',
+        content: '[] qux',
       });
     }
 

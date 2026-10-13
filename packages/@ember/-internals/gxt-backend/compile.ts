@@ -9564,9 +9564,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 } else {
                   fwProps.push([key, value]);
                 }
-                // Also add class/classNames to args so wrapper building and sync can access them
-                if (attrKey === 'class' || attrKey === 'classNames') {
-                  Object.defineProperty(args, attrKey, {
+                // The class attribute is not an argument (`@class`), but a
+                // classic component's wrapper reads it: keep it under an
+                // internal key, as the id attribute below.
+                if (attrKey === 'class') {
+                  Object.defineProperty(args, '__htmlClass', {
                     get: () => (typeof value === 'function' ? value() : value),
                     enumerable: true,
                     configurable: true,
@@ -9599,14 +9601,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     configurable: true,
                   });
                 } else {
-                  // HTML attribute (like data-test, title) - collect for forwarding as attrs (fw[1])
+                  // HTML attribute (like data-test, title): forwarded through
+                  // ...attributes (fw[1]) only. As in Glimmer, an attribute is
+                  // never an argument, so it is not defined on `args`.
                   fwAttrs.push([key, value]);
-                  // Also keep in args for direct access as lazy getter
-                  Object.defineProperty(args, key, {
-                    get: () => (typeof value === 'function' ? value() : value),
-                    enumerable: true,
-                    configurable: true,
-                  });
                 }
               }
             }

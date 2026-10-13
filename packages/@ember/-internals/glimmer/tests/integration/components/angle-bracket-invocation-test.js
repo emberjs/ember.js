@@ -1213,6 +1213,110 @@ moduleFor(
   }
 );
 
+// An invocation's attributes go to the component's element (through
+// `...attributes`, or a classic component's own element) and never become
+// arguments: only `@`-prefixed names are arguments.
+moduleFor(
+  'AngleBracket Invocation (attributes are not arguments)',
+  class extends RenderingTestCase {
+    '@test a template-only component does not see an attribute as an argument'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>[{{@title}}][{{@class}}][{{@label}}]</p>'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooBar title={{this.title}} class="c" @label="label" />', { title: 'a' });
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'a', class: 'c' },
+        content: '[][][label]',
+      });
+
+      runTask(() => set(this.context, 'title', 'b'));
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'b', class: 'c' },
+        content: '[][][label]',
+      });
+    }
+
+    '@test a component invoked from a component template does not see an attribute as an argument'() {
+      this.owner.register(
+        'component:inner-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>[{{@title}}][{{@class}}]</p>'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<InnerBar title={{@title}} class="c" />'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooBar @title={{this.title}} />', { title: 'a' });
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'a', class: 'c' },
+        content: '[][]',
+      });
+
+      runTask(() => set(this.context, 'title', 'b'));
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'b', class: 'c' },
+        content: '[][]',
+      });
+    }
+
+    '@test a component does not see attributes on this.args'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>{{this.seen}}</p>'),
+          class extends Component {
+            get seen() {
+              return ['title', 'data-test', 'role', 'class', 'id', 'label']
+                .filter((name) => this.args[name] !== undefined)
+                .join(',');
+            }
+          }
+        )
+      );
+
+      this.render('<FooBar title="t" data-test="d" role="r" class="c" id="i" @label="l" />');
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 't', 'data-test': 'd', role: 'r', class: 'c', id: 'i' },
+        content: 'label',
+      });
+    }
+
+    '@test a classic component does not see an attribute as a property'(assert) {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('[{{this.title}}][{{this.id}}][{{this.label}}]'),
+          class extends ClassicComponent {
+            tagName = 'p';
+          }
+        )
+      );
+
+      this.render('<FooBar title="t" id="i" @label="l" />');
+      let element = this.element.querySelector('p');
+      assert.strictEqual(element.getAttribute('title'), 't');
+      assert.strictEqual(element.id, 'i');
+      assert.strictEqual(element.textContent, '[][][l]');
+    }
+  }
+);
+
 moduleFor(
   'AngleBracket Invocation Nested Lookup',
   class extends RenderingTestCase {

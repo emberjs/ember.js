@@ -1532,12 +1532,9 @@ function createEmberTag(original: Function) {
                   configurable: true,
                 });
               } else {
+                // An attribute is forwarded through ...attributes only; as in
+                // Glimmer, it is never an argument.
                 domAttrs.push([key, value]);
-                Object.defineProperty(args, key, {
-                  get: () => (typeof value === 'function' ? value() : value),
-                  enumerable: true,
-                  configurable: true,
-                });
               }
             }
           }

@@ -1551,11 +1551,12 @@ function createComponentInstance(
     }
   }
 
-  // Capture 'class' getter separately — it was excluded from extractArgKeys
-  // to avoid overwriting the instance's 'class' property, but we need the getter
-  // for reactive wrapper class updates (syncWrapperElement).
-  if (args && 'class' in args) {
-    const { getter } = getArgValue(args, 'class');
+  // Capture the invocation class getter separately (`class` was excluded from
+  // extractArgKeys to avoid overwriting the instance's 'class' property), for
+  // reactive wrapper class updates (syncWrapperElement).
+  const classKey = _invocationClassKey(args);
+  if (classKey) {
+    const { getter } = getArgValue(args, classKey);
     if (getter) {
       argGetters['class'] = getter;
     }
@@ -3263,6 +3264,22 @@ function _assertTaglessComponent(instance: any, proto: any, args: any): void {
   assert('You cannot use `elementId` on a tag-less component', !argElementId && !instanceElementId);
 }
 
+// The class a classic component's element receives from its invocation: the
+// `class` argument of a curly invocation, else the angle-bracket `class`
+// attribute, which compile.ts keeps under `__htmlClass` (an attribute is not
+// an argument).
+function _invocationClassKey(args: any): 'class' | '__htmlClass' | null {
+  if (!args || typeof args !== 'object') return null;
+  if ('class' in args) return 'class';
+  return '__htmlClass' in args ? '__htmlClass' : null;
+}
+
+function _invocationClass(args: any): unknown {
+  const key = _invocationClassKey(args);
+  const value = key ? args[key] : undefined;
+  return typeof value === 'function' ? value() : value;
+}
+
 // A wrapper element's classes: the invocation's `class` and `classNames`, the
 // definition's (else the instance's) static `classNames`, the resolved
 // `classNameBindings`, and `ember-view` last. `validateBindings` asserts each
@@ -3339,6 +3356,25 @@ function _isValuePropertyAttr(wrapper: HTMLElement, attrName: string): boolean {
   );
 }
 
+// The attribute names an invocation forwards onto a classic component's own
+// element (`fw[0]` / `fw[1]`, its `...attributes`), per element. As in
+// Glimmer, an invocation attribute wins over the component's
+// `attributeBindings` for the same name.
+const _invocationAttrNames = new WeakMap<Element, Set<string>>();
+
+function _forwardedAttrNames(fw: any): Set<string> {
+  const names = new Set<string>();
+  if (Array.isArray(fw)) {
+    for (const list of [fw[0], fw[1]]) {
+      if (!Array.isArray(list)) continue;
+      for (const [key] of list) {
+        if (typeof key === 'string' && key !== '' && !key.startsWith('@')) names.add(key);
+      }
+    }
+  }
+  return names;
+}
+
 /**
  * Sync wrapper element attributes and classes after property changes.
  * Called when a pooled instance is reused and args have changed.
@@ -3354,11 +3390,7 @@ function syncWrapperElement(
   // --- Rebuild class list ---
   // Classes from invocation args (try arg getters first, then args object)
   const argGetters = instance?.__argGetters;
-  const argsClass = argGetters?.class
-    ? argGetters.class()
-    : typeof args?.class === 'function'
-      ? args.class()
-      : args?.class;
+  const argsClass = argGetters?.class ? argGetters.class() : _invocationClass(args);
   const argsClassNames = argGetters?.classNames
     ? argGetters.classNames()
     : typeof args?.classNames === 'function'
@@ -3388,11 +3420,13 @@ function syncWrapperElement(
   const attributeBindings =
     instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
   if (attributeBindings && Array.isArray(attributeBindings)) {
+    const invocationAttrs = _invocationAttrNames.get(wrapper);
     for (const binding of attributeBindings) {
       const { propName, attrName } = parseAttributeBinding(binding);
 
       // Never update id — it's frozen after first render
       if (attrName === 'id') continue;
+      if (invocationAttrs?.has(attrName)) continue;
 
       const rawValue = _attributeBindingValue(instance, propName);
       _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
@@ -5365,7 +5399,7 @@ function _gxtSyncWrapper(obj: any, keyName: string): void {
  * - id: from elementId or auto-generated
  * - class: 'ember-view' + component classNames + invocation classes
  */
-function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLElement {
+function buildWrapperElement(instance: any, args: any, componentDef: any, fw?: any): HTMLElement {
   const instanceTagName = instance?.tagName;
   const tagName = instanceTagName === '' ? null : instanceTagName || 'div';
 
@@ -5378,7 +5412,7 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
   const wrapper = document.createElement(tagName);
 
   // Add classes from invocation
-  const argsClass = typeof args?.class === 'function' ? args.class() : args?.class;
+  const argsClass = _invocationClass(args);
   const argsClassNames =
     typeof args?.classNames === 'function' ? args.classNames() : args?.classNames;
   wrapper.className = _wrapperClassList(
@@ -5457,6 +5491,8 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
   // attributeBindings maps component properties to DOM attributes
   const attributeBindings =
     instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
+  const invocationAttrs = _forwardedAttrNames(fw);
+  if (invocationAttrs.size > 0) _invocationAttrNames.set(wrapper, invocationAttrs);
   if (attributeBindings && Array.isArray(attributeBindings)) {
     for (const binding of attributeBindings) {
       const { propName, attrName } = parseAttributeBinding(binding);
@@ -5474,6 +5510,8 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
       if (!binding.includes(':') && propName.includes('.')) {
         assert(`Illegal attributeBinding: '${propName}' is not a valid attribute name.`, false);
       }
+
+      if (invocationAttrs.has(attrName)) continue;
 
       const rawValue = _attributeBindingValue(instance, propName);
       _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
@@ -9971,6 +10009,27 @@ function handleCustomManagedComponent(
       }
     }
 
+    // The invocation's bound attribute values (`...attributes`, `fw[0]` /
+    // `fw[1]`). They are not arguments, but in Glimmer a change to one re-runs
+    // the component's update hooks as an argument change does (the attributes
+    // are evaluated in the component's invocation, like its arguments).
+    const _forwardedGetters: Array<() => any> = [];
+    if (
+      !isRerender &&
+      !(asyncCaps && asyncCaps.updateHook === false) &&
+      typeof actualManager.updateComponent === 'function' &&
+      Array.isArray(fw)
+    ) {
+      for (const list of [fw[0], fw[1]]) {
+        if (!Array.isArray(list)) continue;
+        for (const [key, value] of list) {
+          if (typeof key === 'string' && !key.startsWith('@') && typeof value === 'function') {
+            _forwardedGetters.push(value);
+          }
+        }
+      }
+    }
+
     renderTemplateWithParentView(resolvedTemplate, renderContext, container, context);
 
     // Re-run the internal-prop hide pass AFTER render. The render path (and the
@@ -10032,13 +10091,14 @@ function handleCustomManagedComponent(
         /* best-effort */
       }
 
-      // Yielded-content reactivity: when the host's YIELDED
-      // `{{this.value}}` changes (no arg change), re-dispatch the manager
-      // lifecycle hooks (updateComponent / didUpdateComponent). Separate from
-      // the arg effect above (which only fires on arg changes) so it covers the
-      // no-args case (`<FooBar>{{this.value}}</FooBar>`). De-duped by value
-      // comparison so exactly one updateComponent fires per genuine change.
-      if (_yieldGetters.length > 0) {
+      // Yielded-content and forwarded-attribute reactivity: when the host's
+      // YIELDED `{{this.value}}` or a bound attribute it forwards changes (no
+      // arg change), re-dispatch the manager lifecycle hooks (updateComponent /
+      // didUpdateComponent). Separate from the arg effect above (which only
+      // fires on arg changes) so it covers the no-args case
+      // (`<FooBar>{{this.value}}</FooBar>`). De-duped by value comparison so
+      // exactly one updateComponent fires per genuine change.
+      if (_yieldGetters.length > 0 || _forwardedGetters.length > 0) {
         try {
           _installCustomManagedYieldEffect({
             instance,
@@ -10046,7 +10106,9 @@ function handleCustomManagedComponent(
             renderContext,
             actualManager,
             asyncCaps,
-            yieldGetters: _yieldGetters,
+            yieldGetters: [..._yieldGetters, ..._forwardedGetters],
+            argGetters,
+            posGetters,
           });
         } catch {
           /* best-effort */
@@ -10274,6 +10336,8 @@ function _installCustomManagedYieldEffect(o: {
   actualManager: any;
   asyncCaps: any;
   yieldGetters: Array<() => any>;
+  argGetters: Record<string, () => any>;
+  posGetters: (() => any)[];
 }): void {
   const { instance, context, renderContext, actualManager, asyncCaps } = o;
   const yieldGetters = o.yieldGetters || [];
@@ -10348,10 +10412,14 @@ function _installCustomManagedYieldEffect(o: {
     for (let i = 0; i < next.length; i++) last[i] = next[i];
 
     // Dispatch the manager lifecycle hooks once for this genuine change.
+    // updateComponent receives the component's current captured args (the
+    // args themselves did not change), as Glimmer passes the bucket's args;
+    // read untracked, so this effect does not subscribe to the args.
+    const named: Record<string, any> = {};
+    for (const k of Object.keys(o.argGetters || {})) named[k] = _untracked(o.argGetters[k]!);
+    const positional = (o.posGetters || []).map((getter) => _untracked(getter));
     try {
-      // updateComponent's args param: a yielded-content change carries no new
-      // captured args, so pass an empty captured-args shape.
-      actualManager.updateComponent(instance, { named: {}, positional: [] });
+      actualManager.updateComponent(instance, { named, positional });
     } catch {
       /* ignore */
     }
@@ -10727,9 +10795,17 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   });
   _registerReactor(applyHref);
 
+  // LinkTo's template is `<a id class role title rel tabindex target
+  // ...attributes href={{this.href}} {{on 'click' this.click}}>`. As in
+  // Glimmer, a forwarded attribute replaces an own one written before
+  // `...attributes`, and the own `href`, written after it, replaces a
+  // forwarded `href`.
+  const forwardedNames = _forwardedAttrNames(fw);
+
   // Optional attributes from the LinkTo template
   const optionalAttrs = ['role', 'title', 'rel', 'tabindex', 'target'];
   for (const attr of optionalAttrs) {
+    if (forwardedNames.has(attr)) continue;
     gxtEffect(() => {
       try {
         const val = instance[attr];
@@ -10755,14 +10831,18 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
     });
   }
 
-  // Apply forwarded attributes (...attributes) from fw
+  // Apply forwarded attributes (...attributes) from fw, except `href`.
   if (fw && Array.isArray(fw)) {
     if (Array.isArray(fw[0])) {
-      _forwardPropsToElement(el, fw[0], instance);
+      _forwardPropsToElement(
+        el,
+        fw[0].filter(([key]: [string, unknown]) => key !== 'href'),
+        instance
+      );
     }
     if (Array.isArray(fw[1])) {
       for (const [key, value] of fw[1]) {
-        if (key.startsWith('@')) continue;
+        if (key.startsWith('@') || key === 'href') continue;
         gxtEffect(() => {
           const resolved = _forwardedAttrValue(el, key, value);
           if (resolved !== undefined && resolved !== null && resolved !== false) {
@@ -11861,7 +11941,7 @@ function renderClassicComponent(
       instance.__gxtRenderedInPass = passId;
     }
 
-    const wrapper = buildWrapperElement(instance, args, componentDef);
+    const wrapper = buildWrapperElement(instance, args, componentDef, fw);
     const renderContext = createRenderContext(instance, args, fw, owner);
 
     // Apply forwarded props and attrs (splattributes) to the wrapper element

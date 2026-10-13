@@ -40,6 +40,21 @@ moduleFor(
       }
     }
 
+    async [`@test an href attribute is not an argument, and its own href wins over it`](assert) {
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<LinkTo @route="index" href="/elsewhere" title="Elsewhere">Index</LinkTo>`
+        )
+      );
+
+      await this.visit('/');
+
+      let link = this.element.querySelector('a');
+      assert.strictEqual(link.getAttribute('href'), '/');
+      assert.strictEqual(link.getAttribute('title'), 'Elsewhere');
+    }
+
     async ['@test it should be able to be inserted in DOM when the router is not present']() {
       this.add(
         'template:application',

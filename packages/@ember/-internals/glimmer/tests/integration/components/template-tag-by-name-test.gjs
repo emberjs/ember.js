@@ -9,6 +9,10 @@ const ForwardedLink = <template>
   <a data-test-link ...attributes class="own">{{@label}}</a>
 </template>;
 
+const TitledLink = <template>
+  <a data-test-link ...attributes>[{{@title}}]</a>
+</template>;
+
 const ForwardedButton = <template>
   <button type="button" data-test-button ...attributes>{{@label}}</button>
 </template>;
@@ -62,6 +66,20 @@ moduleFor(
         'unsafe:javascript:alert(1)',
         'a bound URL attribute is sanitized'
       );
+    }
+
+    '@test an attribute is not an argument'(assert) {
+      this.owner.register('component:titled-link', TitledLink);
+
+      this.render('<TitledLink title={{this.title}} />', { title: 'attribute' });
+
+      let link = this.element.querySelector('a[data-test-link]');
+      assert.strictEqual(link?.getAttribute('title'), 'attribute');
+      assert.strictEqual(link.textContent, '[]', 'the title attribute does not set @title');
+
+      runTask(() => set(this.context, 'title', 'changed'));
+      assert.strictEqual(link.getAttribute('title'), 'changed');
+      assert.strictEqual(link.textContent, '[]');
     }
 
     '@test a curly invocation, which forwards no attributes, renders it'(assert) {
