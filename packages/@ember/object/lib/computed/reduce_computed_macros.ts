@@ -3,6 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { autoComputed } from '@ember/-internals/metal/lib/computed';
 import { isDecoratorCall } from '@ember/-internals/metal/lib/decorator';
 import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
@@ -19,6 +20,13 @@ import {
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
   return Array.isArray(obj) || InternalEmberArray.detect(obj);
+}
+
+function deprecateArrayMacro(name: string) {
+  deprecateUntil(
+    `\`${name}\` from \`@ember/object/computed\` is deprecated. Use a getter with native array methods instead.`,
+    DEPRECATIONS.DEPRECATE_ARRAY_COMPUTED_MACROS
+  );
 }
 
 function reduceMacro(
@@ -65,6 +73,67 @@ function arrayMacro(
   }).readOnly() as FieldDecorator;
 }
 
+type MapCallback = (value: unknown, index: number) => unknown;
+
+function mapMacro(dependentKey: string, additionalDependentKeys: string[], callback: MapCallback) {
+  return arrayMacro(dependentKey, additionalDependentKeys, function (this: unknown, value) {
+    // This is so dumb...
+    return Array.isArray(value) ? value.map(callback, this) : value.map(callback, this);
+  });
+}
+
+type FilterCallback = (
+  value: unknown,
+  index: number,
+  array: unknown[] | EmberArray<unknown>
+) => unknown;
+
+function filterMacro(
+  dependentKey: string,
+  additionalDependentKeys: string[],
+  callback: FilterCallback
+) {
+  return arrayMacro(
+    dependentKey,
+    additionalDependentKeys,
+    function (this: unknown, value: unknown[] | EmberArray<unknown>) {
+      // This is a really silly way to keep TS happy
+      return Array.isArray(value)
+        ? value.filter(
+            callback as (value: unknown, index: number, array: unknown[]) => unknown,
+            this
+          )
+        : value.filter(
+            callback as (value: unknown, index: number, array: EmberArray<unknown>) => unknown,
+            this
+          );
+    }
+  );
+}
+
+function uniqMacro(dependentKeys: string[]) {
+  return multiArrayMacro(
+    dependentKeys,
+    function (this: unknown, dependentKeys) {
+      let uniq = emberA();
+      let seen = new Set();
+      dependentKeys.forEach((dependentKey) => {
+        let value = get(this, dependentKey);
+        if (isNativeOrEmberArray(value)) {
+          value.forEach((item: unknown) => {
+            if (!seen.has(item)) {
+              seen.add(item);
+              uniq.push(item);
+            }
+          });
+        }
+      });
+      return uniq;
+    },
+    'uniq'
+  );
+}
+
 function multiArrayMacro(
   _dependentKeys: string[],
   callback: (dependentKeys: string[]) => unknown[],
@@ -108,12 +177,15 @@ function multiArrayMacro(
   dependentKey's array
   @since 1.4.0
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function sum(dependentKey: string) {
   assert(
     'You attempted to use @sum as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('sum');
 
   return reduceMacro(dependentKey, (sum: number, item: number) => sum + item, 0, 'sum');
 }
@@ -172,12 +244,15 @@ export function sum(dependentKey: string) {
   @return {ComputedProperty} computes the largest value in the dependentKey's
   array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function max(dependentKey: string) {
   assert(
     'You attempted to use @max as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('max');
 
   return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
 }
@@ -235,12 +310,15 @@ export function max(dependentKey: string) {
   @param {String} dependentKey
   @return {ComputedProperty} computes the smallest value in the dependentKey's array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function min(dependentKey: string) {
   assert(
     'You attempted to use @min as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('min');
 
   return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
 }
@@ -319,6 +397,7 @@ export function min(dependentKey: string) {
   @param {Function} callback
   @return {ComputedProperty} an array mapped via the callback
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function map(
   dependentKey: string,
@@ -338,6 +417,8 @@ export function map(
     'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('map');
 
   assert(
     'The final parameter provided to map must be a callback function',
@@ -363,10 +444,7 @@ export function map(
   const cCallback = callback;
   assert('[BUG] Missing callback', cCallback);
 
-  return arrayMacro(dependentKey, additionalDependentKeys, function (this: unknown, value) {
-    // This is so dumb...
-    return Array.isArray(value) ? value.map(cCallback, this) : value.map(cCallback, this);
-  });
+  return mapMacro(dependentKey, additionalDependentKeys, cCallback);
 }
 
 /**
@@ -416,12 +494,15 @@ export function map(
   @param {String} propertyKey
   @return {ComputedProperty} an array mapped to the specified key
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function mapBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @mapBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('mapBy');
 
   assert(
     '`mapBy` computed macro expects a property string for its second argument, ' +
@@ -433,7 +514,7 @@ export function mapBy(dependentKey: string, propertyKey: string) {
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  return map(`${dependentKey}.@each.${propertyKey}`, (item) => get(item, propertyKey));
+  return mapMacro(`${dependentKey}.@each.${propertyKey}`, [], (item) => get(item, propertyKey));
 }
 
 /**
@@ -543,6 +624,7 @@ export function mapBy(dependentKey: string, propertyKey: string) {
   @param {Function} callback
   @return {ComputedProperty} the filtered array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function filter(
   dependentKey: string,
@@ -565,6 +647,8 @@ export function filter(
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
+  deprecateArrayMacro('filter');
+
   assert(
     'The final parameter provided to filter must be a callback function',
     typeof callback === 'function' ||
@@ -586,24 +670,9 @@ export function filter(
     additionalDependentKeys = additionalDependentKeysOrCallback;
   }
 
-  const cCallback = callback;
+  assert('[BUG] Missing callback', callback);
 
-  return arrayMacro(
-    dependentKey,
-    additionalDependentKeys,
-    function (this: unknown, value: unknown[] | EmberArray<unknown>) {
-      // This is a really silly way to keep TS happy
-      return Array.isArray(value)
-        ? value.filter(
-            cCallback as (value: unknown, index: number, array: unknown[]) => unknown,
-            this
-          )
-        : value.filter(
-            cCallback as (value: unknown, index: number, array: EmberArray<unknown>) => unknown,
-            this
-          );
-    }
-  );
+  return filterMacro(dependentKey, additionalDependentKeys, callback);
 }
 
 /**
@@ -640,12 +709,15 @@ export function filter(
   @param {*} value
   @return {ComputedProperty} the filtered array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function filterBy(dependentKey: string, propertyKey: string, value?: unknown) {
   assert(
     'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('filterBy');
 
   assert(
     `Dependent key passed to \`filterBy\` computed macro shouldn't contain brace expanding pattern.`,
@@ -659,7 +731,7 @@ export function filterBy(dependentKey: string, propertyKey: string, value?: unkn
     callback = (item: unknown) => get(item, propertyKey) === value;
   }
 
-  return filter(`${dependentKey}.@each.${propertyKey}`, callback);
+  return filterMacro(`${dependentKey}.@each.${propertyKey}`, [], callback);
 }
 
 /**
@@ -697,6 +769,7 @@ export function filterBy(dependentKey: string, propertyKey: string, value?: unkn
   @return {ComputedProperty} computes a new array with all the
   unique elements from the dependent array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function uniq(dependentKey: string, ...additionalDependentKeys: string[]): FieldDecorator {
   assert(
@@ -704,30 +777,9 @@ export function uniq(dependentKey: string, ...additionalDependentKeys: string[])
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
-  let args = [dependentKey, ...additionalDependentKeys];
+  deprecateArrayMacro('uniq');
 
-  return multiArrayMacro(
-    args,
-    function (this: unknown, dependentKeys) {
-      let uniq = emberA();
-      let seen = new Set();
-
-      dependentKeys.forEach((dependentKey) => {
-        let value = get(this, dependentKey);
-        if (isNativeOrEmberArray(value)) {
-          value.forEach((item: unknown) => {
-            if (!seen.has(item)) {
-              seen.add(item);
-              uniq.push(item);
-            }
-          });
-        }
-      });
-
-      return uniq;
-    },
-    'uniq'
-  );
+  return uniqMacro([dependentKey, ...additionalDependentKeys]);
 }
 
 /**
@@ -766,12 +818,15 @@ export function uniq(dependentKey: string, ...additionalDependentKeys: string[])
   @return {ComputedProperty} computes a new array with all the
   unique elements from the dependent array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function uniqBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @uniqBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('uniqBy');
 
   assert(
     `Dependent key passed to \`uniqBy\` computed macro shouldn't contain brace expanding pattern.`,
@@ -828,8 +883,18 @@ export function uniqBy(dependentKey: string, propertyKey: string) {
   @return {ComputedProperty} computes a new array with all the unique elements
   from one or more dependent arrays.
   @public
+  @deprecated Use a getter with native array methods instead.
 */
-export let union = uniq;
+export function union(dependentKey: string, ...additionalDependentKeys: string[]): FieldDecorator {
+  assert(
+    'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
+  );
+
+  deprecateArrayMacro('union');
+
+  return uniqMacro([dependentKey, ...additionalDependentKeys]);
+}
 
 /**
   A computed property which returns a new array with all the elements
@@ -865,12 +930,15 @@ export let union = uniq;
   @return {ComputedProperty} computes a new array with all the duplicated
   elements from the dependent arrays
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function intersect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('intersect');
 
   let args = [dependentKey, ...additionalDependentKeys];
 
@@ -954,12 +1022,15 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
   @return {ComputedProperty} computes a new array with all the items from the
   first dependent array that are not in the second dependent array
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function setDiff(setAProperty: string, setBProperty: string) {
   assert(
     'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('setDiff');
 
   assert('`setDiff` computed macro requires exactly two dependent arrays.', arguments.length === 2);
   assert(
@@ -1012,12 +1083,15 @@ export function setDiff(setAProperty: string, setBProperty: string) {
   @return {ComputedProperty} computed property which maps values of all passed
   in properties to an array.
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function collect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('collect');
 
   let dependentKeys = [dependentKey, ...additionalDependentKeys];
 
@@ -1179,6 +1253,7 @@ type SortDefinition = (itemA: any, itemB: any) => number;
   @return {ComputedProperty} computes a new sorted array based on the sort
   property array or callback function
   @public
+  @deprecated Use a getter with native array methods instead.
 */
 export function sort(itemsKey: string, sortDefinition: SortDefinition | string): FieldDecorator;
 export function sort(
@@ -1195,6 +1270,8 @@ export function sort(
     'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
+
+  deprecateArrayMacro('sort');
 
   if (DEBUG) {
     let argumentsValid = false;
