@@ -1,5 +1,5 @@
-import InternalMutableEnumerable from '@ember/enumerable/mutable-internal';
-import { DeprecatedMixin } from '@ember/object/mixin-internal';
+import Enumerable from '@ember/enumerable';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
@@ -18,8 +18,8 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
   @deprecated Use native arrays and array methods instead.
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface MutableEnumerable extends InternalMutableEnumerable {}
-const MutableEnumerable = DeprecatedMixin.create(InternalMutableEnumerable, {
+interface MutableEnumerable extends Enumerable {}
+const MutableEnumerable = InternalMixin.create(Enumerable, {
   init() {
     this._super(...arguments);
     deprecateUntil(

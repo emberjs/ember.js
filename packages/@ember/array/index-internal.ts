@@ -12,8 +12,8 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import { InternalMixin } from '@ember/object/mixin-internal';
 import { assert } from '@ember/debug';
-import InternalEnumerable from '@ember/enumerable/-internal';
-import InternalMutableEnumerable from '@ember/enumerable/mutable-internal';
+import Enumerable from '@ember/enumerable';
+import MutableEnumerable from '@ember/enumerable/mutable';
 import sortCompare from './lib/sort-compare';
 import InternalObservable from '@ember/object/observable-internal';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
@@ -159,7 +159,7 @@ function mapBy<T>(this: EmberArray<T>, key: string) {
 
   @internal
 */
-const InternalEmberArray = InternalMixin.create(InternalEnumerable, {
+const InternalEmberArray = InternalMixin.create(Enumerable, {
   init() {
     this._super(...arguments);
     setEmberArray(this);
@@ -431,7 +431,7 @@ const InternalEmberArray = InternalMixin.create(InternalEnumerable, {
   },
 });
 
-const InternalMutableArray = InternalMixin.create(InternalEmberArray, InternalMutableEnumerable, {
+const InternalMutableArray = InternalMixin.create(InternalEmberArray, MutableEnumerable, {
   clear() {
     let len = this.length;
     if (len === 0) {
