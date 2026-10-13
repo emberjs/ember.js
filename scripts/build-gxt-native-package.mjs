@@ -50,7 +50,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   GXT_NATIVE_DIST_DROPPED_ENTRIES,
@@ -188,7 +188,15 @@ if (!gxtMeta && !argv.includes('--gxt-version') && gxtPkg.version !== gxtVersion
     `node_modules has @lifeart/gxt ${gxtPkg.version}, package.json pins ${gxtVersion}; run pnpm install`
   );
 }
-const gxtIsLocal = lstatSync(gxtLink).isSymbolicLink() || gxtMeta !== null;
+// pnpm installs every package as a symlink into its virtual store
+// (node_modules/.pnpm), the npm release included. Only a symlink that resolves
+// outside that store is a linked gxt checkout (`pnpm link`, a `link:`
+// dependency, a manual symlink). A dist with build meta is a local build
+// wherever it lives (e.g. copied over the installed release).
+const pnpmStore = join(ROOT, 'node_modules', '.pnpm');
+const gxtInPnpmStore = existsSync(pnpmStore) && gxtRoot.startsWith(realpathSync(pnpmStore) + sep);
+const gxtIsLinked = lstatSync(gxtLink).isSymbolicLink() && !gxtInPnpmStore;
+const gxtIsLocal = gxtIsLinked || gxtMeta !== null;
 log(
   `gxt: @lifeart/gxt ${gxtPkg.version} at ${gxtRoot}${gxtMeta ? ` (git ${gxtMeta.gitHash})` : ''}; package pins ${gxtVersion}`
 );
