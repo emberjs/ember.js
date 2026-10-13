@@ -86,6 +86,51 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
   return snapshot;
 }
 
+// Under GXT (`__GXT_MODE__`), `equalTokens` ignores the comments GXT renders
+// for its own bookkeeping, on both sides of the comparison:
+//   ``           the empty `<!---->` placeholder at list/branch boundaries
+//   `/?htmlRaw`  the boundary comments around `{{{triple-curly}}}` output
+//   `$[N]`       the per-element id comment of GXT's SSR mode
+// and GXT's SSR `data-node-id` attribute.
+const MARKER_COMMENT_RE = /^(\$\[[^\]]*\]|\/?htmlRaw|)$/u;
+
+function stripMarkers(tokens: Token[]): Token[] {
+  const filtered = tokens
+    .filter((token) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (token.type === 'Comment') {
+        const text = (token as unknown as { chars: string }).chars ?? '';
+        if (MARKER_COMMENT_RE.test(text.trim())) return false;
+      }
+      return true;
+    })
+    .map((token) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (token.type === 'StartTag' && 'attributes' in token && token.attributes) {
+        token.attributes = token.attributes.filter((a) => a[0] !== 'data-node-id');
+      }
+      return token;
+    });
+
+  // Merge adjacent `Chars` tokens: removing a comment between two text
+  // nodes leaves two `Chars` tokens where a browser-parsed string has one.
+  const merged: Token[] = [];
+  for (const token of filtered) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    if (token.type === 'Chars' && merged.length > 0) {
+      const prev = merged[merged.length - 1] as Token & { chars?: string };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (prev && prev.type === 'Chars') {
+        (prev as { chars: string }).chars =
+          (prev.chars ?? '') + ((token as unknown as { chars: string }).chars ?? '');
+        continue;
+      }
+    }
+    merged.push(token);
+  }
+  return merged;
+}
+
 function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
   let div: SimpleElement;
   if (typeof divOrHTML === 'string') {
@@ -96,6 +141,9 @@ function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; h
   }
 
   let tokens = tokenize(toInnerHTML(div), {});
+  if (__GXT_MODE__) {
+    tokens = stripMarkers(tokens);
+  }
 
   tokens = tokens.reduce((tokens, token) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison

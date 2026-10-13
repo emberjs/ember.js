@@ -95,6 +95,10 @@ QUnit.moduleDone(
 
 QUnit.testStart(() => {
   resetTracking();
+  // The GXT render-error queue is drained within the test that fills it, so
+  // there is no per-test drain here. A stale error surfacing in the next test
+  // ("Died on test #N") means some code path queues errors without flushing
+  // them; fix that path rather than adding a drain here.
 });
 
 const uiFlags = [
