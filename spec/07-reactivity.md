@@ -119,11 +119,13 @@ evaluate(computation C):
   frame that consumed none ends with `CONSTANT_TAG`; otherwise the result is a combined tag.
   A tag that a nested frame consumed between two consumptions in the outer frame is still kept
   (tests `tracking-test.ts:257-309`).
-- After an unrecoverable render error, the implementation resets all open frames.
+- [Dev] After an unrecoverable render error, the implementation resets all open frames.
   It also empties every pooled tracker, so the tags of a frame that never ended do not appear in
   the next frame at the same depth (`tracking.ts:236-240`; tests `tracking-test.ts:310-338`).
   *Source:* `resetTracking` (`tracking.ts:225-247`), called from the render error paths
   (`packages/@glimmer/runtime/lib/vm/update.ts:60-66`, `packages/@glimmer/runtime/lib/vm/append.ts:790`).
+  The reset runs only in development builds; production builds leave the frames open
+  (suspected bug, §05-14 item 15).
 
 ### 07-1.3 Consumption and nesting
 

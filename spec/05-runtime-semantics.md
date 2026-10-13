@@ -2058,9 +2058,13 @@ destroying throws (`destroyable/index.ts:138-174`).
   (a getter, a helper, a manager hook, a modifier's `install`) propagates out of the render or
   re-render call. There are no error boundaries.
 - On an exception during initial render, the output built so far stays in the DOM in whatever
-  state it reached; the implementation closes its internal bookkeeping (open blocks) so the
-  environment is usable, and [Dev] logs the tracking stack (`packages/@glimmer/runtime/lib/vm/append.ts:741-797`,
-  `packages/@glimmer/runtime/lib/vm/update.ts:48-70`). The render transaction is committed
+  state it reached. [Dev] The implementation then closes its open blocks, resets the tracking
+  state (§07-1.2) and logs the tracking stack; the reset runs even when closing a block throws
+  (`packages/@glimmer/runtime/lib/vm/append.ts:741-797`,
+  `packages/@glimmer/runtime/lib/vm/update.ts:48-70`; test
+  `packages/@ember/-internals/glimmer/tests/integration/render-error-cleanup-test.gjs:17-49`,
+  development builds only). Production builds do none of this (`append.ts:794-795`,
+  `update.ts:68`; item 15 of §05-14). The render transaction is committed
   (`environment.ts:218-229` uses `try/finally`), so queued `didCreate`/`install` for work done
   before the error still run.
 - [Dev] In Ember, after an error during a root's render or re-render, that root never renders
@@ -2343,3 +2347,11 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `has-block-params` for a `<:else as |x|>` block.
     - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less,
       undocumented element at `create` (item 11).
+15. **No cleanup after a render error in production builds.** Closing the open blocks and
+    resetting the tracking state after a render error (§05-12, §07-1.2) are inside
+    `if (DEBUG)` (`packages/@glimmer/runtime/lib/vm/append.ts:741-797`,
+    `packages/@glimmer/runtime/lib/vm/update.ts:48-70`). In production a tracking frame opened
+    by the failed render stays open, and later renders add their tags to it. In a browser the
+    page is already broken; in a long-lived server renderer it is a memory leak. Looks like a
+    bug. Upstream PR emberjs/ember.js#21634 (open) runs the reset in every build and keeps
+    only the log behind `DEBUG`.

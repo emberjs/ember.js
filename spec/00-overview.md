@@ -301,7 +301,9 @@ to addon tooling.
 25. Production differs from development in ways code can observe.
     `Object.isExtensible(args.named)` throws, writes to the args proxy are silently lost,
     capability versions are not checked, and `on` reads different arguments.
-    (§06-12 Q7, Q1, Q9)
+    (§06-12 Q7, Q1, Q9) After a render error, production also leaves tracking frames open,
+    which leaks memory in a long-lived server renderer; upstream PR #21634 would fix it.
+    (§05-14 item 15)
 26. `(helper "name")` in loose mode bypasses classic-helper factory injection.
     (§08-14 Q6)
 
