@@ -224,3 +224,80 @@ export function isPlainHtmlTagFastPath(tag: unknown, tagProps: any, edp: unknown
   }
   return true;
 }
+
+/**
+ * `(fn …)` helper values (compile.ts `$__fn_ember`).
+ *
+ * Glimmer's `fn` is one function per call site: its reference computes the
+ * function once, and the function reads the callback and the partial arguments
+ * when it is called. The compat compiler re-evaluates a call site's expression
+ * on every read (`["@f", () => $__fn(() => this.greet, "x")]`), so each read
+ * creates a new function. A component argument compares its value by
+ * identity, so every read of such an argument was an argument change: it was
+ * written back to the component, which scheduled the next read, and the
+ * renderer never settled.
+ *
+ * A value records the callback it binds (`FN_HELPER_TARGET`) and calls through
+ * a replaceable implementation (`FN_HELPER_CALL`). A reference that holds a
+ * value keeps it when a later evaluation binds the same callback, and takes
+ * that evaluation's implementation (`keepFnHelperValue`): the function stays
+ * the same while the callback is the same, and a call still reads the current
+ * callback and arguments of the latest evaluation.
+ */
+export const FN_HELPER_TARGET: unique symbol = Symbol('gxt fn helper target');
+export const FN_HELPER_CALL: unique symbol = Symbol('gxt fn helper call');
+
+/**
+ * What a `(mut this.x)` cell writes: the context it was created in and the path.
+ * A cell is created on each evaluation of its call site; two cells with the
+ * same source are the same callback for `fn`.
+ */
+export const MUT_CELL_SOURCE: unique symbol = Symbol('gxt mut cell source');
+
+export interface FnHelperValue {
+  (...args: unknown[]): unknown;
+  __isFnHelper: true;
+  [FN_HELPER_TARGET]: unknown;
+  [FN_HELPER_CALL]: (...args: unknown[]) => unknown;
+}
+
+export function createFnHelperValue(
+  target: unknown,
+  call: (...args: unknown[]) => unknown
+): FnHelperValue {
+  const value = function fnHelperValue(...args: unknown[]): unknown {
+    return value[FN_HELPER_CALL](...args);
+  } as FnHelperValue;
+  value.__isFnHelper = true;
+  value[FN_HELPER_TARGET] = target;
+  value[FN_HELPER_CALL] = call;
+  return value;
+}
+
+export function isFnHelperValue(value: unknown): value is FnHelperValue {
+  return typeof value === 'function' && FN_HELPER_CALL in value;
+}
+
+function sameFnCallback(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  const sourceA = typeof a === 'function' ? (a as any)[MUT_CELL_SOURCE] : undefined;
+  const sourceB = typeof b === 'function' ? (b as any)[MUT_CELL_SOURCE] : undefined;
+  return (
+    sourceA !== undefined &&
+    sourceB !== undefined &&
+    sourceA.ctx === sourceB.ctx &&
+    sourceA.path === sourceB.path
+  );
+}
+
+/**
+ * The value a reference holds after reading `next` when it held `prev`: `prev`
+ * when both are `(fn …)` values binding the same callback (`prev` then calls
+ * through `next`'s implementation), otherwise `next`.
+ */
+export function keepFnHelperValue(prev: unknown, next: unknown): unknown {
+  if (prev === next || !isFnHelperValue(prev) || !isFnHelperValue(next)) return next;
+  if (!sameFnCallback(prev[FN_HELPER_TARGET], next[FN_HELPER_TARGET])) return next;
+  prev[FN_HELPER_CALL] = next[FN_HELPER_CALL];
+  return prev;
+}

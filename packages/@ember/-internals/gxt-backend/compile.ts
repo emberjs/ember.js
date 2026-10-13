@@ -17,6 +17,8 @@ import {
   isAssertionLike as _isAssertionLike,
   protectGlobal,
   isPlainHtmlTagFastPath,
+  createFnHelperValue,
+  MUT_CELL_SOURCE,
 } from './utils';
 import {
   initChildViews as _emberInitChildViews,
@@ -1953,8 +1955,12 @@ _gxtRegisterHostHooks({
 // Override GXT's $__fn to support mut cells.
 // GXT's $__fn unwraps function args by calling them with no args, which breaks
 // mut cells (calling mutCell() returns the current value instead of the setter).
-// Also marks the returned function with __isFnHelper so the compat layer can
-// distinguish fn-helper results from GXT reactive getters (both are arrow fns).
+// The value is a utils.ts `createFnHelperValue` (marked `__isFnHelper`, so the
+// compat layer can tell fn-helper results from GXT reactive getters, which are
+// arrow fns too). It records the callback it binds, so a component argument
+// holding an `(fn …)` keeps one function while the callback stays the same
+// (`keepFnHelperValue`, manager.ts arg slots): Glimmer's `fn` is one function
+// per call site, while the compiler re-evaluates the call on every read.
 //
 // The callback must run with stock fn's `this` contract: an access-asserting
 // proxy in DEBUG and literal `null` in production (strict-mode callers observe
@@ -1967,18 +1973,17 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
   const originalFn = g.$__fn;
   if (originalFn) {
     g.$__fn = function $__fn_ember(fn: any, ...partialArgs: any[]) {
-      let result: any;
+      const resolvePartials = () =>
+        partialArgs.map((a: any) => (typeof a === 'function' && !a.__isMutCell ? a() : a));
       // If the first arg is a mut cell, don't unwrap it
       if (fn && fn.__isMutCell) {
-        result = (...callArgs: any[]) => {
-          const resolvedArgs = partialArgs.map((a: any) =>
-            typeof a === 'function' && !a.__isMutCell ? a() : a
-          );
-          return fn(...resolvedArgs, ...callArgs);
-        };
-        result.__isFnHelper = true;
-        return result;
+        return createFnHelperValue(fn, (...callArgs: any[]) =>
+          fn(...resolvePartials(), ...callArgs)
+        );
       }
+      // The callback this call binds, as far as it is known now: what a
+      // 0-arg getter resolves to, else the function itself.
+      let target: unknown = fn;
       // Also check if the first arg is a function that, when called, returns a mut cell
       // GXT wraps helper results in getters. ONLY probe 0-arg functions — a
       // function with declared parameters (like `handleClick = (v) => {}`) is a
@@ -1992,23 +1997,22 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
         !fn.__isFnHelper &&
         fn.length === 0
       ) {
+        let fnResult: any;
         try {
-          const fnResult = fn();
-          if (fnResult && fnResult.__isMutCell) {
-            result = (...callArgs: any[]) => {
-              const resolvedArgs = partialArgs.map((a: any) =>
-                typeof a === 'function' && !a.__isMutCell ? a() : a
-              );
-              // Re-evaluate the getter to get the current mut cell
-              const currentMut = fn();
-              return currentMut(...resolvedArgs, ...callArgs);
-            };
-            result.__isFnHelper = true;
-            return result;
-          }
+          fnResult = fn();
         } catch {
-          /* ignore */
+          // The getter throws now; the call resolves it again (and throws there).
+          fnResult = fn;
         }
+        if (fnResult && fnResult.__isMutCell) {
+          return createFnHelperValue(fnResult, (...callArgs: any[]) => {
+            const resolvedArgs = resolvePartials();
+            // Re-evaluate the getter to get the current mut cell
+            const currentMut = fn();
+            return currentMut(...resolvedArgs, ...callArgs);
+          });
+        }
+        target = fnResult;
       }
       // Create a partially-applied function that resolves all getters at call time.
       // The fn arg may be a getter (arrow fn wrapping this.X) — we wrapped it
@@ -2044,7 +2048,7 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
         if (typeof produced === 'function') return produced;
         return v;
       };
-      result = function $__fn_partial(...callArgs: any[]) {
+      return createFnHelperValue(target, function $__fn_partial(...callArgs: any[]) {
         // Resolve fn: detect GXT-generated getters vs direct scope handlers.
         const resolvedFn = resolveFirstArg(fn);
         // Resolve partial args: if they're getters (arrow fns), call them
@@ -2053,9 +2057,7 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
           return resolvedFn;
         }
         return resolvedFn.call(_fnHelperThis, ...resolvedPartials, ...callArgs);
-      };
-      result.__isFnHelper = true;
-      return result;
+      });
     };
   }
 }
@@ -7638,6 +7640,9 @@ const _emberBuiltinHelpers: Record<string, any> = {
     };
     // Mark as a mut cell so fn helper doesn't try to unwrap it
     (mutCell as any).__isMutCell = true;
+    // What it writes: a cell is created on each evaluation of `(mut this.x)`,
+    // and `(fn (mut this.x) …)` keeps its function across them (utils.ts).
+    (mutCell as any)[MUT_CELL_SOURCE] = { ctx: capturedCtx, path };
     // Ember's mut cell API: .value returns current value, .update(newValue) sets it.
     // These are used by tests via component.attrs.propName.value and .update().
     Object.defineProperty(mutCell, 'value', {

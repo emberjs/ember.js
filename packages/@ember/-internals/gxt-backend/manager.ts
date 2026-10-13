@@ -22,6 +22,7 @@ import {
   isAssertionLike as _isAssertionLike,
   protectGlobal,
   capabilitiesErrorPrefix,
+  keepFnHelperValue,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -1466,7 +1467,11 @@ function createComponentInstance(
   const keys = extractArgKeys(args);
 
   for (const key of keys) {
-    const { raw, resolved, getter, isMutCell, isReadonly, mutCell } = getArgValue(args, key);
+    const argValue = getArgValue(args, key);
+    const { raw, isMutCell, isReadonly, mutCell } = argValue;
+    const slot = _argValueSlot(argGetters, key);
+    const resolved = _readArgValue(slot, argValue.resolved);
+    const getter = argValue.getter && _argValueGetter(slot, argValue.getter);
 
     // Skip classNames - handled separately in wrapper building
     if (key === 'classNames') {
@@ -2281,7 +2286,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   const newKeySet = new Set(newKeys);
 
   for (const key of newKeys) {
-    const { resolved: newValue } = getArgValue(args, key);
+    const newValue = _readArgValue(_argValueSlot(argGetters, key), getArgValue(args, key).resolved);
     const oldValue = lastArgValues[key];
 
     if (newValue !== oldValue) {
@@ -2325,7 +2330,10 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     }
     // Second pass: apply the changes (set properties first, then fire hooks)
     for (const key of newKeys) {
-      const { resolved: newValue, getter: newGetter } = getArgValue(args, key);
+      const argValue = getArgValue(args, key);
+      const slot = _argValueSlot(argGetters, key);
+      const newValue = _readArgValue(slot, argValue.resolved);
+      const newGetter = argValue.getter && _argValueGetter(slot, argValue.getter);
       const oldValue = lastArgValues[key];
 
       // Update the arg getter to the new one so that reactive reads
@@ -2457,6 +2465,54 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
 // =============================================================================
 // Arg Processing Utilities
 // =============================================================================
+
+// Argument value slots.
+//
+// A component argument's value, as the manager last read it: one slot per
+// component and argument name, shared by every getter the manager builds for
+// that argument (the instance's arg getter, the args proxy's, the new getter
+// of a re-render that reuses the instance). Reading through the slot keeps an
+// `(fn …)` value while each new evaluation binds the same callback (utils.ts
+// `keepFnHelperValue`): Glimmer's `fn` is one function per call site, while the
+// compat compiler re-evaluates the call on every read. Without the slot every
+// read of `@f={{fn this.greet "x"}}` was a new argument value, so each sync
+// wrote it back to the component and dirtied the argument, which scheduled the
+// next sync, and the renderer never settled.
+//
+// The slot owner is the instance's `__argGetters` record (kept across
+// re-renders), or a template-only component's args proxy.
+interface ArgValueSlot {
+  value: unknown;
+  held: boolean;
+}
+const _argValueSlots = new WeakMap<object, Map<string, ArgValueSlot>>();
+
+function _argValueSlot(owner: object, key: string): ArgValueSlot {
+  let slots = _argValueSlots.get(owner);
+  if (slots === undefined) {
+    slots = new Map();
+    _argValueSlots.set(owner, slots);
+  }
+  let slot = slots.get(key);
+  if (slot === undefined) {
+    slot = { value: undefined, held: false };
+    slots.set(key, slot);
+  }
+  return slot;
+}
+
+// The value an argument holds after reading `value` through `slot`.
+function _readArgValue(slot: ArgValueSlot, value: unknown): unknown {
+  const held = slot.held ? keepFnHelperValue(slot.value, value) : value;
+  slot.value = held;
+  slot.held = true;
+  return held;
+}
+
+// `read`, reading through `slot`.
+function _argValueGetter(slot: ArgValueSlot, read: () => any): () => any {
+  return () => _readArgValue(slot, read());
+}
 
 /**
  * Extract keys from args object, excluding internal symbols.
@@ -5630,6 +5686,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
 
   // Set up attrs proxy for this.attrs.argName.value / this.args.argName access
   const attrsProxy: Record<string, any> = {};
+  // Owner of the argument value slots this context reads through (see
+  // `_argValueSlot`): the instance's arg getters, else this args proxy.
+  const argSlotOwner: object = instance?.__argGetters ?? attrsProxy;
   // Store arg cells for reactive updates
   const argCells: Record<string, any> = {};
   // Build Ember-style attrs object separately: mut→mutCell, readonly→plain, regular→{value,update()}
@@ -5661,21 +5720,23 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           ? rawProp()
           : rawProp;
       // Unwrap mut cells for args proxy (template rendering needs plain values)
+      const argSlot = _argValueSlot(argSlotOwner, key);
       let initialVal = rawVal;
       if (rawVal && rawVal.__isMutCell) {
         initialVal = rawVal.value;
       } else if (rawVal && rawVal.__isReadonly) {
         initialVal = rawVal.__readonlyValue;
       }
+      initialVal = _readArgValue(argSlot, initialVal);
 
       // Build an unwrapping getter for the args proxy
       const unwrappingGetter = getter
-        ? () => {
+        ? _argValueGetter(argSlot, () => {
             const v = getter();
             if (v && v.__isMutCell) return v.value;
             if (v && v.__isReadonly) return v.__readonlyValue;
             return v;
-          }
+          })
         : undefined;
 
       if (getter) {
@@ -5736,9 +5797,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               !val.prototype
                 ? val()
                 : val;
-            if (resolved && resolved.__isMutCell) return resolved.value;
-            if (resolved && resolved.__isReadonly) return resolved.__readonlyValue;
-            return resolved;
+            if (resolved && resolved.__isMutCell) resolved = resolved.value;
+            else if (resolved && resolved.__isReadonly) resolved = resolved.__readonlyValue;
+            return _readArgValue(argSlot, resolved);
           },
           enumerable: true,
           configurable: true,
@@ -6012,6 +6073,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           }
         }
       }
+      // A getter taken from the args object reads through the argument's slot,
+      // as the instance's arg getters do.
+      if (getter) getter = _argValueGetter(_argValueSlot(argSlotOwner, key), getter);
     }
 
     // Skip installing the arg cell if the instance already has a @tracked

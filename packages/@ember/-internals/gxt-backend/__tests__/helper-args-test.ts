@@ -14,12 +14,16 @@
  * - a `(hash)` / `(array)` argument with a `(component)`, `(hash)` or `(array)`
  *   member got a new identity on every read after any change, so every sync saw
  *   an argument change, and the change's write-back re-rendered the
- *   `renderComponent` root in the middle of the sync.
+ *   `renderComponent` root in the middle of the sync;
+ * - an `(fn …)` passed directly as an argument (`@f={{fn this.greet "x"}}`) was
+ *   a new function on every read, so every sync saw an argument change, wrote
+ *   it back and dirtied the argument, which scheduled the next sync.
  *
  * Glimmer semantics: helper arguments are references; a helper re-computes only
  * when an argument it consumed changed; reading a helper never writes reactive
  * state; a `(hash)` / `(array)` is the same object until something it read
- * changes.
+ * changes; an `(fn …)` is one function per call site, which reads the callback
+ * and the partial arguments when it is called.
  *
  * The first module renders through the public `renderComponent` with a
  * loose-mode template, as the `[integration]` harness does (helpers and
@@ -39,6 +43,7 @@ import {
   RenderingTestCase,
   runTask,
 } from 'internal-test-helpers';
+import ClassicComponent from '@ember/component';
 import templateOnly from '@ember/component/template-only';
 import { capabilities as helperCapabilities, setHelperManager } from '@ember/helper';
 import { A } from '@ember/array';
@@ -267,6 +272,92 @@ moduleFor(
       await this.render(precompileTemplate('<TestHarness @stuff={{array (component "foo")}} />'));
       assertHTML('hello world!');
     }
+
+    async '@test a (fn) argument passed directly to a component'() {
+      this.registerHelper('call-it', ([fn]) => (fn as () => string)());
+      this.registerComponent('test-harness', precompileTemplate('[{{call-it @f}}]'), {
+        glimmer: true,
+      });
+
+      const root = await this.render(
+        precompileTemplate('<TestHarness @f={{fn this.greet "x"}} />{{this.other}}'),
+        class extends GlimmerComponent {
+          greet = (value: string) => `hi ${value}`;
+          @tracked other = 'a';
+        }
+      );
+      assertHTML('[hi x]a');
+
+      root.other = 'b';
+      await renderSettled();
+      assertHTML('[hi x]b');
+    }
+
+    async '@test a (fn) argument passed directly to a component updates when a partial argument changes'() {
+      this.registerHelper('call-it', ([fn]) => (fn as () => string)());
+      this.registerComponent('test-harness', precompileTemplate('[{{call-it @f}}]'), {
+        glimmer: true,
+      });
+
+      const root = await this.render(
+        precompileTemplate('<TestHarness @f={{fn this.greet this.name}} />'),
+        class extends GlimmerComponent {
+          greet = (value: string) => `hi ${value}`;
+          @tracked name = 'x';
+        }
+      );
+      assertHTML('[hi x]');
+
+      root.name = 'y';
+      await renderSettled();
+      assertHTML('[hi y]');
+    }
+
+    async '@test a (fn) argument passed directly to a template-only component'() {
+      this.registerHelper('call-it', ([fn]) => (fn as () => string)());
+      this.registerComponent('test-harness', precompileTemplate('[{{call-it @f}}]'));
+
+      const root = await this.render(
+        precompileTemplate('<TestHarness @f={{fn this.greet "x"}} />{{this.other}}'),
+        class extends GlimmerComponent {
+          greet = (value: string) => `hi ${value}`;
+          @tracked other = 'a';
+        }
+      );
+      assertHTML('[hi x]a');
+
+      root.other = 'b';
+      await renderSettled();
+      assertHTML('[hi x]b');
+    }
+
+    async '@test a (fn (mut …)) argument passed directly to a component'() {
+      let setValue: ((value: string) => void) | undefined;
+      this.owner.register(
+        'component:test-harness',
+        setComponentTemplate(
+          precompileTemplate('[{{@value}}]'),
+          class extends GlimmerComponent<{ f: (value: string) => void }> {
+            constructor(owner: Owner, args: { f: (value: string) => void; value: string }) {
+              super(owner, args);
+              setValue = (value) => this.args.f(value);
+            }
+          }
+        )
+      );
+
+      await this.render(
+        precompileTemplate('<TestHarness @f={{fn (mut this.value)}} @value={{this.value}} />'),
+        class extends GlimmerComponent {
+          @tracked value = 'a';
+        }
+      );
+      assertHTML('[a]');
+
+      setValue!('b');
+      await renderSettled();
+      assertHTML('[b]');
+    }
   }
 );
 
@@ -379,6 +470,94 @@ moduleFor(
 
       runTask(() => set(this.context, 'word', 'c'));
       this.assertText('[A][C]');
+    }
+
+    ['@test a (fn) argument is the same function while its inputs are unchanged'](
+      assert: QUnit['assert']
+    ) {
+      const seen: unknown[] = [];
+      this.registerUserHelper('record-fn', ([fn]) => {
+        seen.push(fn);
+        return (fn as () => string)();
+      });
+      this.registerTemplateOnly('baz', precompileTemplate('[{{record-fn @f}}][{{@other}}]'));
+
+      this.render('<Baz @f={{fn this.greet "x"}} @other={{this.other}} />', {
+        greet: (value: string) => `hi ${value}`,
+        other: 'a',
+      });
+      this.assertText('[hi x][a]');
+
+      runTask(() => set(this.context, 'other', 'b'));
+      this.assertText('[hi x][b]');
+      assert.ok(seen.length >= 1, 'record-fn was computed');
+      assert.true(
+        seen.every((fn) => fn === seen[0]),
+        `one function for the call site (${seen.length} computes)`
+      );
+    }
+
+    ['@test a (fn) argument with a changed callback calls the new callback']() {
+      this.registerUserHelper('call-it', ([fn]) => (fn as () => string)());
+      this.registerTemplateOnly('baz', precompileTemplate('[{{call-it @f}}]'));
+
+      this.render('<Baz @f={{fn this.callback "x"}} />', {
+        callback: (value: string) => `A ${value}`,
+      });
+      this.assertText('[A x]');
+
+      runTask(() => set(this.context, 'callback', (value: string) => `B ${value}`));
+      this.assertText('[B x]');
+    }
+
+    ['@test a (fn) argument of a classic component is the same function while its inputs are unchanged'](
+      assert: QUnit['assert']
+    ) {
+      const seen: unknown[] = [];
+      this.registerUserHelper('record-fn', ([fn]) => {
+        seen.push(fn);
+        return (fn as () => string)();
+      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('[{{record-fn this.f}}][{{this.other}}]'),
+          class extends ClassicComponent {}
+        )
+      );
+
+      this.render('{{foo-bar f=(fn this.greet "x") other=this.other}}', {
+        greet: (value: string) => `hi ${value}`,
+        other: 'a',
+      });
+      this.assertText('[hi x][a]');
+
+      runTask(() => set(this.context, 'other', 'b'));
+      this.assertText('[hi x][b]');
+      assert.true(
+        seen.every((fn) => fn === seen[0]),
+        `one function for the call site (${seen.length} computes)`
+      );
+    }
+
+    ['@test a (fn) argument passes its current arguments when invoked'](assert: QUnit['assert']) {
+      let stashed: ((...args: unknown[]) => unknown) | undefined;
+      class Stash extends GlimmerComponent<{ f: (...args: unknown[]) => unknown }> {
+        constructor(owner: Owner, args: { f: (...args: unknown[]) => unknown }) {
+          super(owner, args);
+          stashed = this.args.f;
+        }
+      }
+      this.owner.register('component:stash', setComponentTemplate(precompileTemplate(''), Stash));
+
+      this.render('<Stash @f={{fn this.greet this.name}} />', {
+        greet: (value: string) => `hi ${value}`,
+        name: 'a',
+      });
+      assert.strictEqual(stashed?.(), 'hi a');
+
+      runTask(() => set(this.context, 'name', 'b'));
+      assert.strictEqual(stashed?.(), 'hi b', 'the stashed function reads the current argument');
     }
   }
 );
