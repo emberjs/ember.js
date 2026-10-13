@@ -2679,8 +2679,14 @@ function isElementLiveOrInElementHosted(el: Node | null | undefined): boolean {
  * after the render completes. This allows GXT's error-swallowing
  * component() wrapper to not lose user-thrown errors from init(),
  * didInsertElement(), destroy(), etc.
+ *
+ * Each entry keeps the number of its capture (`_renderErrorCount` at that
+ * time). A render takes a mark when it starts (`renderErrorMark`) and later
+ * takes only the errors captured after it, so it never re-throws an error that
+ * an earlier, unrelated operation left in the queue.
  */
-const _renderErrors: Error[] = [];
+const _renderErrors: { error: Error; capture: number }[] = [];
+let _renderErrorCount = 0;
 
 /**
  * Backtracking re-render detection.
@@ -2944,23 +2950,50 @@ export function checkBacktracking(targetObj: any, key: string): void {
 class GxtHelperAsBlockError extends Error {}
 
 export function captureRenderError(err: unknown): void {
-  if (err instanceof Error) {
-    _renderErrors.push(err);
-  } else {
-    _renderErrors.push(new Error(String(err)));
+  _renderErrors.push({
+    error: err instanceof Error ? err : new Error(String(err)),
+    capture: ++_renderErrorCount,
+  });
+}
+
+/**
+ * The mark a render takes when it starts. The errors captured after it are
+ * that render's errors (`flushRenderErrors` / `dropRenderErrors`).
+ */
+export function renderErrorMark(): number {
+  return _renderErrorCount;
+}
+
+/** Remove the errors captured after `mark` from the queue and return them, oldest first. */
+function takeRenderErrors(mark: number): Error[] {
+  // The queue is in capture order, so these errors are its tail.
+  let start = _renderErrors.length;
+  while (start > 0 && _renderErrors[start - 1]!.capture > mark) {
+    start--;
+  }
+  return _renderErrors.splice(start).map((entry) => entry.error);
+}
+
+/**
+ * End of a render that completed: throw the first error captured since `mark`
+ * (the render's start), if any, and remove the render's errors from the queue.
+ */
+export function flushRenderErrors(mark: number): void {
+  const errors = takeRenderErrors(mark);
+  if (errors.length > 0) {
+    throw errors[0];
   }
 }
 
 /**
- * Flush any render errors captured during the render cycle.
- * Throws the first one (so assert.throws in tests can catch it).
+ * End of a render that threw to its caller: remove the errors captured since
+ * `mark` without throwing them. Several sites queue an error and also throw it,
+ * so the queue holds a copy of the error the caller already receives (or an
+ * error of the same aborted render). Left in the queue, the copy would be
+ * re-thrown by the next, unrelated render.
  */
-export function flushRenderErrors(): void {
-  if (_renderErrors.length > 0) {
-    const err = _renderErrors.shift()!;
-    _renderErrors.length = 0;
-    throw err;
-  }
+export function dropRenderErrors(mark: number): void {
+  takeRenderErrors(mark);
 }
 
 /**
@@ -13410,7 +13443,9 @@ setGxtRenderer({
     endRenderPass,
     markTemplateRendered,
     flushAfterInsertQueue,
+    renderErrorMark,
     flushRenderErrors,
+    dropRenderErrors,
   },
   // Populated entirely via `installRootComponentPart` from
   // glimmer/lib/renderer.ts. Seeded empty here so `Object.assign` has a target

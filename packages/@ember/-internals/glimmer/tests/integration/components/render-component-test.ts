@@ -33,6 +33,7 @@ import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
 import { ENV } from '@ember/-internals/environment';
+import { DEBUG } from '@glimmer/env';
 import { captureRenderTree } from '@ember/debug';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 
@@ -361,6 +362,54 @@ moduleFor(
 
       assertHTML('<p>2</p>');
       await this.assertStableRerender();
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test an error thrown by a render is not thrown again by the next render'(
+      assert: QUnit['assert']
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let NotAComponent = defineSimpleHelper(() => 'not a component');
+      let Broken = setComponentTemplate(
+        precompileTemplate('<this.NotAComponent/>', { strictMode: true }),
+        class extends GlimmerComponent {
+          NotAComponent = NotAComponent;
+        }
+      );
+      // Writes tracked state while it renders.
+      class Hello extends GlimmerComponent {
+        @tracked name = 'nobody';
+
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          this.name = 'world';
+        }
+      }
+      setComponentTemplate(precompileTemplate('Hello, {{this.name}}!'), Hello);
+
+      let failedOwner = buildOwner({});
+      assert.throws(() => {
+        renderComponent(Broken, { owner: failedOwner, into: document.createElement('div') });
+      }, /Expected a dynamic component definition/);
+      destroy(failedOwner);
+
+      let owner = buildOwner({});
+      let result = renderComponent(Hello, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('Hello, world!');
 
       result.destroy();
       destroy(owner);

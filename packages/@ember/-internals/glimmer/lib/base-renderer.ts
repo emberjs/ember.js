@@ -1106,6 +1106,11 @@ function _renderComponentGxt(
 ): RenderResult {
   const globalTemplates = getGxtRenderer()?.registries.componentTemplates;
 
+  // The render-error queue is global. The errors queued from here on are this
+  // render's: it throws the first one when it completes, and drops them when
+  // its own error propagates (see the catch at the end of the render).
+  const renderErrorMark = gxtRenderPass().renderErrorMark();
+
   // Get the target element
   const targetElement =
     into instanceof Element ? into : 'element' in into ? (into as any).element : into;
@@ -1404,6 +1409,7 @@ function _renderComponentGxt(
         // eslint-disable-next-line no-console
         console.warn('[renderComponent GXT] No GXT template found for component:', component);
       }
+      gxtRenderPass().flushRenderErrors(renderErrorMark);
 
       const result: RenderResult = { destroy: doDestroy };
       entry.result = result;
@@ -1732,7 +1738,24 @@ function _renderComponentGxt(
     ) {
       customManager.didCreateComponent(customComponent);
     }
-    gxtRenderPass().flushRenderErrors();
+    gxtRenderPass().flushRenderErrors(renderErrorMark);
+  } catch (error) {
+    // The caller receives this error and no result, so nothing can rerender
+    // or destroy this render. It must not re-render on its own either: the
+    // classic-tag reactor would render the failing template again on the next
+    // tracked write anywhere, and queue its error inside another render. (A
+    // classic root whose render failed stops rendering too, see
+    // errorLoopTransaction.)
+    destroyed = true;
+    if (classicReactorUnsub) {
+      classicReactorUnsub();
+      classicReactorUnsub = null;
+    }
+    // The queue can hold a copy of the caller's error (several sites queue an
+    // error and also throw it) or errors of this same aborted render; left
+    // there, the next unrelated render would throw them.
+    gxtRenderPass().dropRenderErrors(renderErrorMark);
+    throw error;
   } finally {
     setAmbientOwner(prevOwner);
   }

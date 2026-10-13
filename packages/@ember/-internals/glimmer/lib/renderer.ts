@@ -242,6 +242,10 @@ class ClassicRootState implements RendererRoot {
             // Mark this root as using GXT templates (for forced re-render)
             this.isGxt = true;
 
+            // The render-error queue is global. The errors queued from here on
+            // are this root's render's (see the flush after the render).
+            const renderErrorMark = gxtRenderPass().renderErrorMark();
+
             // CRITICAL: Ensure GXT context is set up before any GXT rendering
             // This provides the parent context chain that GXT's $_if, $_c, etc. need
             ensureGxtContext();
@@ -505,6 +509,10 @@ class ClassicRootState implements RendererRoot {
                 // Init-phase failure — DOM is partially populated. Clear it
                 // before propagating, matching Glimmer's behaviour.
                 (parentElement as unknown as Element).innerHTML = '';
+                // The caller receives this error; drop the queued copy of it
+                // (and this aborted render's other errors), or the next
+                // unrelated render would throw it.
+                gxtRenderPass().dropRenderErrors(renderErrorMark);
                 throw renderPhaseError;
               }
             } else if ('$nodes' in template) {
@@ -527,7 +535,7 @@ class ClassicRootState implements RendererRoot {
             // so we MUST NOT clear DOM here — `assertText('hello')` after a
             // didInsertElement throw expects the rendered output to remain.
             try {
-              gxtRenderPass().flushRenderErrors();
+              gxtRenderPass().flushRenderErrors(renderErrorMark);
             } catch (renderError) {
               // Lifecycle error — defer it to the root state so it can be
               // re-thrown OUTSIDE errorLoopTransaction (preserving re-renderability)

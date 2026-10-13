@@ -223,7 +223,10 @@ export interface GxtCompilePipelineCapabilities {
    */
   clearRenderErrors(): void;
 
-  /** Queue a render error; the next `flushRenderErrors()` re-throws it. */
+  /**
+   * Queue a render error. The render in progress re-throws it when it ends
+   * (`renderPass.flushRenderErrors`).
+   */
   captureRenderError(err: unknown): void;
 
   /** Classic `dirtyTagFor`, but a no-op while the view tree is rebuilt from the DOM. */
@@ -726,8 +729,25 @@ export interface GxtRenderPassCapabilities {
    */
   flushAfterInsertQueue(): void;
 
-  /** Re-throw the first queued render error, if any, and clear the queue. */
-  flushRenderErrors(): void;
+  /**
+   * Mark the start of a render. The render-error queue is global; the errors
+   * queued after this mark belong to the render that took it.
+   */
+  renderErrorMark(): number;
+
+  /**
+   * End of a render that completed: re-throw the first render error queued
+   * since `mark`, if any, and remove all of them from the queue. Errors queued
+   * before `mark` stay.
+   */
+  flushRenderErrors(mark: number): void;
+
+  /**
+   * End of a render that threw to its caller: remove the render errors queued
+   * since `mark` without throwing them (the queue can hold a copy of the error
+   * the caller receives).
+   */
+  dropRenderErrors(mark: number): void;
 
   /**
    * Mark `instance` as rendered in this pass, so a later write to it is
