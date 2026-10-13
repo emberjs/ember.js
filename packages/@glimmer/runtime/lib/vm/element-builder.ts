@@ -19,6 +19,7 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/env';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
@@ -96,6 +97,7 @@ export class NewTreeBuilder implements TreeBuilder {
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<AppendingBlock>();
   private shadowRootCursors: Cursor[] = [];
+  private isTemplate = false;
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -197,6 +199,7 @@ export class NewTreeBuilder implements TreeBuilder {
   openElement(tag: string): SimpleElement {
     let element = this.__openElement(tag);
     this.constructing = element;
+    this.isTemplate = tag === 'template';
 
     return element;
   }
@@ -212,10 +215,14 @@ export class NewTreeBuilder implements TreeBuilder {
       `flushElement should only be called when constructing an element`
     );
 
-    let shadowRoot = declarativeShadowRoot(parent, element);
+    let shadowRoot = this.isTemplate ? this.__shadowRootFor(parent, element) : null;
 
     if (shadowRoot === null) {
       this.__flushElement(parent, element);
+    } else if (DEBUG && modifiers !== null && modifiers.length > 0) {
+      throw new Error(
+        'A `<template shadowrootmode>` cannot have modifiers, because the element is not rendered. Put the modifier on the parent element.'
+      );
     }
 
     this.constructing = null;
@@ -224,7 +231,7 @@ export class NewTreeBuilder implements TreeBuilder {
     this.pushModifiers(modifiers);
 
     if (shadowRoot !== null) {
-      return this.__pushShadowRoot(shadowRoot, parent as SimpleElement);
+      return this.pushShadowRoot(shadowRoot, parent as SimpleElement);
     }
 
     this.pushElement(element, null);
@@ -238,23 +245,43 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   /**
+   * Returns the node that takes the content of a `<template shadowrootmode>`.
+   *
+   * Returns null when the template must render as a plain element.
+   */
+  __shadowRootFor(host: SimpleParentNode, template: SimpleElement): Nullable<SimpleParentNode> {
+    return attachShadowRoot(host, template);
+  }
+
+  __pushShadowCursor(shadowRoot: SimpleParentNode): void {
+    this.pushElement(shadowRoot, null);
+  }
+
+  /**
    * The `<template shadowrootmode>` element itself never enters the DOM. Its
    * content renders into the host's shadow root through a remote block, the same
    * way `{{#in-element}}` renders into a detached target, so the surrounding
    * block's bounds never include it.
    */
-  __pushShadowRoot(shadowRoot: SimpleDocumentFragment, host: SimpleElement): RemoteBlock {
-    this.pushElement(shadowRoot, null);
+  private pushShadowRoot(shadowRoot: SimpleParentNode, host: SimpleElement): RemoteBlock {
+    this.__pushShadowCursor(shadowRoot);
     this.shadowRootCursors.push(expect(this.cursors.current, 'expected a cursor'));
 
     let block = new RemoteBlock(shadowRoot);
-    SHADOW_BLOCKS.set(host, block);
+    let owner: ShadowOwner = { root: shadowRoot, block };
+
+    SHADOW_OWNERS.set(host, owner);
+    registerDestructor(block, () => {
+      owner.block = null;
+    });
 
     return this.pushBlock(block, true);
   }
 
   closeElement(): Nullable<ModifierInstance[]> {
-    if (this.shadowRootCursors.at(-1) === this.cursors.current) {
+    let { shadowRootCursors } = this;
+
+    if (shadowRootCursors.length !== 0 && shadowRootCursors.at(-1) === this.cursors.current) {
       this.shadowRootCursors.pop();
       this.popBlock();
     } else {
@@ -432,29 +459,42 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 }
 
-// Host element -> the block that last rendered into its shadow root. It answers
-// two questions `attachShadow` cannot: is the root still owned by a live block
-// (then a second template on the same host stays inert, as the HTML parser
-// does), and where is the root of a closed host (`host.shadowRoot` is null).
-const SHADOW_BLOCKS = new WeakMap<SimpleElement, RemoteBlock>();
+interface ShadowOwner {
+  root: SimpleParentNode;
+  /** null after the block is destroyed, so the map does not keep it alive */
+  block: Nullable<RemoteBlock>;
+}
 
-function isShadowRootMode(value: Nullable<string>): value is ShadowRootMode {
+/**
+ * Host element -> its shadow root and the block that renders into it.
+ *
+ * It answers two questions `attachShadow` cannot:
+ * - is the root still owned by a live block?
+ *   Then a second template on the same host stays inert, as the HTML parser does.
+ * - where is the root of a closed host?
+ *   `host.shadowRoot` is null there.
+ */
+const SHADOW_OWNERS = new WeakMap<SimpleElement, ShadowOwner>();
+
+export function isShadowRootMode(value: Nullable<string>): value is ShadowRootMode {
   return value === 'open' || value === 'closed';
 }
 
 /**
  * Mirrors the HTML parser: a `<template shadowrootmode>` attaches a shadow root
- * to its parent element. Returns null for any other element, for a parent that
- * cannot host a shadow root, and outside a browser (SSR keeps the template so
- * the parser on the client can attach it).
+ * to its parent element.
+ *
+ * Returns null for:
+ * - a template without a valid mode
+ * - a parent that cannot host the shadow root
+ *
+ * The template then renders as a plain element, which is what the parser does.
  */
-function declarativeShadowRoot(
+function attachShadowRoot(
   host: SimpleParentNode,
-  element: SimpleElement
-): Nullable<SimpleDocumentFragment> {
-  if (element.tagName !== 'TEMPLATE') return null;
-
-  let mode = element.getAttribute('shadowrootmode');
+  template: SimpleElement
+): Nullable<SimpleParentNode> {
+  let mode = template.getAttribute('shadowrootmode');
 
   if (!isShadowRootMode(mode) || !isElement(host)) return null;
 
@@ -465,31 +505,49 @@ function declarativeShadowRoot(
 
   if (typeof browserHost.attachShadow !== 'function') return null;
 
-  let previous = SHADOW_BLOCKS.get(host);
+  let init: ShadowRootInit = {
+    mode,
+    delegatesFocus: template.getAttribute('shadowrootdelegatesfocus') !== null,
+    clonable: template.getAttribute('shadowrootclonable') !== null,
+    serializable: template.getAttribute('shadowrootserializable') !== null,
+  };
 
-  if (previous !== undefined && !isDestroying(previous)) return null;
+  let owner = SHADOW_OWNERS.get(host);
 
-  let shadowRoot =
-    previous === undefined
-      ? browserHost.shadowRoot
-      : (previous.parentElement() as unknown as ShadowRoot);
+  if (owner !== undefined) {
+    if (owner.block !== null && !isDestroying(owner.block)) return null;
 
-  if (shadowRoot) {
-    /**
-     * The previous owner is going away, or the root came from the parser or from
-     * user code. Either way this render replaces its content, like {{#in-element}}.
-     */
+    let shadowRoot = owner.root as unknown as ShadowRoot;
+
+    /** A shadow root cannot change its options, and a host cannot drop its root. */
+    if (!hasOptions(shadowRoot, init)) return null;
+
     shadowRoot.replaceChildren();
 
-    return shadowRoot as unknown as SimpleDocumentFragment;
+    return owner.root;
   }
 
-  shadowRoot = browserHost.attachShadow({
-    mode,
-    delegatesFocus: element.getAttribute('shadowrootdelegatesfocus') !== null,
-  });
+  try {
+    /**
+     * This throws for:
+     * - a host that cannot have a shadow root
+     * - a host with a root from other code
+     *
+     * For a root from the HTML parser, it empties that root and returns it.
+     */
+    return browserHost.attachShadow(init) as unknown as SimpleDocumentFragment;
+  } catch {
+    return null;
+  }
+}
 
-  return shadowRoot as unknown as SimpleDocumentFragment;
+function hasOptions(shadowRoot: ShadowRoot, init: ShadowRootInit): boolean {
+  return (
+    shadowRoot.mode === init.mode &&
+    shadowRoot.delegatesFocus === init.delegatesFocus &&
+    Boolean(shadowRoot.clonable) === init.clonable &&
+    Boolean(shadowRoot.serializable) === init.serializable
+  );
 }
 
 export class AppendingBlockImpl implements AppendingBlock {

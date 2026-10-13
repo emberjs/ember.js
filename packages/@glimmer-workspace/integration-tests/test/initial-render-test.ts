@@ -2,6 +2,7 @@ import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, expect } from '@glimmer/debug-util';
+import { serializeBuilder } from '@glimmer/node';
 import {
   assertElementShape,
   assertEmberishElement,
@@ -26,6 +27,8 @@ import {
   toInnerHTML,
   toTextContent,
 } from '@glimmer-workspace/integration-tests';
+
+import { renderTemplate } from '../lib/modes/jit/render';
 
 class RenderTests extends InitialRenderSuite {
   static override suiteName = 'initial render (client)';
@@ -687,6 +690,136 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assert.strictEqual(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
     this.assert.strictEqual(toInnerHTML(clientRemoteChild), 'Wat Wat');
+  }
+
+  @test
+  'a shadow template serializes with block markers'() {
+    let template =
+      '<div><template shadowrootmode="open"><p>hi</p></template><span>light</span></div>';
+
+    this.renderServerSide(template, {});
+    this.assert.strictEqual(
+      this.serverOutput,
+      '<!--%+b:0%--><div><template shadowrootmode="open"><!--%+b:1%--><p>hi</p><!--%-b:1%--></template><span>light</span></div><!--%-b:0%-->'
+    );
+  }
+
+  @test
+  'a shadow template serializes on a DOM that has attachShadow'() {
+    let template = '<div><template shadowrootmode="open"><p>hi</p></template></div>';
+    let element = this.delegate.clientDoc.createElement('div');
+    let context = this.delegate.clientContext;
+
+    renderTemplate(
+      template,
+      context,
+      this.delegate.getSelf(context.env, {}),
+      serializeBuilder(context.env, { element, nextSibling: null })
+    );
+
+    let host = castToBrowser(element, 'HTML').querySelector('div');
+
+    this.assert.strictEqual(host?.shadowRoot, null, 'the serializer attaches no shadow root');
+    this.assert.strictEqual(
+      host?.innerHTML,
+      '<template shadowrootmode="open"><!--%+b:1%--><p>hi</p><!--%-b:1%--></template>'
+    );
+  }
+
+  @test
+  'a shadow template that the parser kept can rehydrate'() {
+    let template =
+      '<div><template shadowrootmode="open"><p>{{this.text}}</p></template><span>light</span></div>';
+
+    this.renderServerSide(template, { text: 'hi' });
+
+    let host = expect(castToBrowser(this.element, 'HTML').querySelector('div'), 'host');
+    let p = host.querySelector('template')?.content.querySelector('p');
+    let span = host.querySelector('span');
+
+    this.assert.ok(p, 'the server content is in the inert template');
+
+    this.renderClientSide(template, { text: 'hi' });
+
+    this.assert.strictEqual(host.shadowRoot?.innerHTML, '<p>hi</p>');
+    this.assert.strictEqual(host.shadowRoot?.querySelector('p'), p, 'the shadow node is reused');
+    this.assert.strictEqual(host.innerHTML, '<span>light</span>');
+    this.assert.strictEqual(host.querySelector('span'), span, 'the light node is reused');
+    this.assertRehydrationStats({ nodesRemoved: 1 });
+
+    this.rerender({ text: 'bye' });
+    this.assert.strictEqual(host.shadowRoot?.innerHTML, '<p>bye</p>');
+  }
+
+  @test
+  'a shadow root from the parser can rehydrate'() {
+    let template =
+      '<div><template shadowrootmode="open"><p>{{this.text}}</p></template><span>light</span></div>';
+
+    this.renderServerSide(template, { text: 'hi' });
+    castToBrowser(this.element, 'HTML').setHTMLUnsafe(expect(this.serverOutput, 'server output'));
+
+    let host = expect(castToBrowser(this.element, 'HTML').querySelector('div'), 'host');
+    let shadowRoot = host.shadowRoot;
+    let p = shadowRoot?.querySelector('p');
+    let span = host.querySelector('span');
+
+    this.assert.ok(p, 'the parser attached the shadow root');
+
+    this.renderClientSide(template, { text: 'hi' });
+
+    this.assert.strictEqual(host.shadowRoot, shadowRoot, 'the shadow root is reused');
+    this.assert.strictEqual(shadowRoot?.innerHTML, '<p>hi</p>');
+    this.assert.strictEqual(shadowRoot?.querySelector('p'), p, 'the shadow node is reused');
+    this.assert.strictEqual(host.innerHTML, '<span>light</span>');
+    this.assert.strictEqual(host.querySelector('span'), span, 'the light node is reused');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+
+    this.rerender({ text: 'bye' });
+    this.assert.strictEqual(shadowRoot?.innerHTML, '<p>bye</p>');
+  }
+
+  @test
+  'a closed shadow root from the parser keeps the light DOM'() {
+    let template =
+      '<div><template shadowrootmode="closed"><p>{{this.text}}</p></template><span>light</span></div>';
+
+    this.renderServerSide(template, { text: 'hi' });
+    castToBrowser(this.element, 'HTML').setHTMLUnsafe(expect(this.serverOutput, 'server output'));
+
+    let host = expect(castToBrowser(this.element, 'HTML').querySelector('div'), 'host');
+    let span = host.querySelector('span');
+    let shadowRoot: ShadowRoot | undefined;
+
+    /** A closed root has no other public access. */
+    host.attachShadow = (init) => {
+      shadowRoot = HTMLElement.prototype.attachShadow.call(host, init);
+
+      return shadowRoot;
+    };
+
+    this.renderClientSide(template, { text: 'hi' });
+
+    this.assert.strictEqual(shadowRoot?.mode, 'closed');
+    this.assert.strictEqual(shadowRoot?.innerHTML, '<p>hi</p>');
+    this.assert.strictEqual(host.innerHTML, '<span>light</span>');
+    this.assert.strictEqual(host.querySelector('span'), span, 'the light node is reused');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+  }
+
+  @test
+  'a plain template that the server did not render can rehydrate'() {
+    let template =
+      '<div>{{#if this.show}}<template><p>inert</p></template>{{/if}}<span>light</span></div>';
+
+    this.renderServerSide(template, { show: false });
+    this.renderClientSide(template, { show: true });
+
+    let host = expect(castToBrowser(this.element, 'HTML').querySelector('div'), 'host');
+
+    this.assert.strictEqual(host.shadowRoot, null);
+    this.assert.strictEqual(host.firstElementChild?.tagName, 'TEMPLATE');
+    this.assert.strictEqual(host.lastElementChild?.textContent, 'light');
   }
 
   @test

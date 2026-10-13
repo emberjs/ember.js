@@ -5,6 +5,8 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  SimpleDocumentFragment,
+  SimpleElement,
   SimpleNode,
   SimpleParentNode,
   SimpleText,
@@ -13,7 +15,7 @@ import type {
 import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
 import { isElement } from '@glimmer/runtime/lib/dom/operations';
-import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { isShadowRootMode, NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
 
@@ -130,6 +132,33 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     }
 
     return super.openElement(tag);
+  }
+
+  /**
+   * The server never attaches a shadow root.
+   * The HTML output must hold the template for the parser on the client.
+   *
+   * The content gets block markers, as a remote element does.
+   * The client uses them to rehydrate the shadow root.
+   */
+  override __shadowRootFor(
+    host: SimpleParentNode,
+    template: SimpleElement
+  ): Nullable<SimpleParentNode> {
+    if (!isElement(host) || !isShadowRootMode(template.getAttribute('shadowrootmode'))) {
+      return null;
+    }
+
+    this.__flushElement(host, template);
+    this.didAppendNode(template);
+
+    /**
+     * simple-dom has no content fragment.
+     * A browser DOM serializes only that fragment.
+     */
+    let { content } = template as unknown as Partial<HTMLTemplateElement>;
+
+    return (content as unknown as SimpleDocumentFragment | undefined) ?? template;
   }
 
   override pushRemoteElement(

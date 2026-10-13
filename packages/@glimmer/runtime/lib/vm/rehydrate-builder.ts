@@ -6,6 +6,7 @@ import type {
   Nullable,
   SimpleAttr,
   SimpleComment,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleParentNode,
@@ -383,7 +384,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     if (_candidate && isElement(_candidate) && isSameNodeType(_candidate, tag)) {
       this.unmatchedAttributes = [].slice.call(_candidate.attributes);
       return _candidate;
-    } else if (_candidate) {
+    } else if (_candidate && tag !== 'template') {
       if (isElement(_candidate) && _candidate.tagName === 'TBODY') {
         this.pushElement(_candidate, null);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -428,6 +429,50 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     }
 
     return super.__setProperty(name, value);
+  }
+
+  /**
+   * The parser on the client removes a `<template shadowrootmode>`
+   * from the light DOM, so a missing template is not a mismatch.
+   *
+   * `__openElement` does not have the attributes.
+   * It leaves the mismatch of a template for this method.
+   */
+  override __shadowRootFor(
+    host: SimpleParentNode,
+    template: SimpleElement
+  ): Nullable<SimpleParentNode> {
+    const { candidate } = this;
+    const isInert = template === candidate;
+
+    const shadowRoot =
+      (isInert ? null : serializedShadowRoot(host)) ?? super.__shadowRootFor(host, template);
+
+    if (shadowRoot === null) {
+      if (!isInert && candidate !== null) {
+        this.clearMismatch(candidate);
+      }
+
+      return null;
+    }
+
+    if (isInert) {
+      /** The parser kept the template, for example for HTML set with innerHTML. */
+      const { content } = template as unknown as HTMLTemplateElement;
+
+      (shadowRoot as unknown as ShadowRoot).appendChild(content);
+      this.candidate = this.remove(template);
+      this.unmatchedAttributes = null;
+    }
+
+    return shadowRoot;
+  }
+
+  override __pushShadowCursor(shadowRoot: SimpleParentNode): void {
+    const cursor = new RehydratingCursor(shadowRoot, null, this.blockDepth);
+
+    cursor.candidate = shadowRoot.firstChild;
+    this.cursors.push(cursor);
   }
 
   override __flushElement(parent: SimpleParentNode, constructing: SimpleElement): void {
@@ -534,6 +579,22 @@ function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
 
 function isElement(node: SimpleNode): node is SimpleElement {
   return node.nodeType === ELEMENT_NODE;
+}
+
+/**
+ * A root from the parser starts with the block marker of the serializer.
+ *
+ * A root from other code does not, and its content is not ours to rehydrate.
+ */
+function serializedShadowRoot(host: SimpleParentNode): Nullable<SimpleParentNode> {
+  if (!isElement(host)) return null;
+
+  const { shadowRoot } = host as unknown as Element;
+  const first = (shadowRoot?.firstChild ?? null) as Nullable<SimpleNode>;
+
+  return first !== null && isOpenBlock(first)
+    ? (shadowRoot as unknown as SimpleDocumentFragment)
+    : null;
 }
 
 function isMarker(node: SimpleNode): boolean {

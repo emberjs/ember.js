@@ -504,6 +504,110 @@ moduleFor(
       equalTokens(shadowRoot, '<p>A two</p>');
     }
 
+    ['@test a parent that cannot have a shadow root keeps the template'](assert) {
+      let Root = strict(
+        '<button id="host"><template shadowrootmode="open"><p>inert</p></template></button>',
+        {}
+      );
+
+      this.renderComponent(Root, {
+        expect: '<button id="host"><template shadowrootmode="open"></template></button>',
+      });
+
+      let host = this.element.querySelector('#host');
+
+      assert.strictEqual(host.shadowRoot, null, 'no shadow root is attached');
+      assert.strictEqual(host.firstChild.tagName, 'TEMPLATE');
+    }
+
+    ['@test a shadow root from other code is not replaced'](assert) {
+      if (!window.customElements.get('shadow-dom-test-owner')) {
+        window.customElements.define(
+          'shadow-dom-test-owner',
+          class extends window.HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({ mode: 'open' }).innerHTML = '<b>internal</b>';
+            }
+          }
+        );
+      }
+
+      let Root = strict(
+        '<shadow-dom-test-owner id="host"><template shadowrootmode="open"><p>ours</p></template></shadow-dom-test-owner>',
+        {}
+      );
+
+      this.renderComponent(Root, {
+        expect:
+          '<shadow-dom-test-owner id="host"><template shadowrootmode="open"></template></shadow-dom-test-owner>',
+      });
+
+      let host = this.element.querySelector('#host');
+
+      assert.strictEqual(
+        host.shadowRoot.innerHTML,
+        '<b>internal</b>',
+        'the root keeps its content'
+      );
+    }
+
+    ['@test shadowrootdelegatesfocus, shadowrootclonable and shadowrootserializable'](assert) {
+      let Root = strict(
+        '<div id="host"><template shadowrootmode="open" shadowrootdelegatesfocus shadowrootclonable shadowrootserializable><p>x</p></template></div>',
+        {}
+      );
+
+      this.renderComponent(Root, { expect: '<div id="host"></div>' });
+
+      let { shadowRoot } = this.element.querySelector('#host');
+
+      assert.true(shadowRoot.delegatesFocus, 'delegatesFocus');
+      assert.true(shadowRoot.clonable, 'clonable');
+      assert.true(shadowRoot.serializable, 'serializable');
+    }
+
+    ['@test a swap to a template with other options keeps that template'](assert) {
+      let state = new State();
+      state.show = true;
+
+      let Root = strict(
+        '<div id="host">' +
+          '{{#if state.show}}<template shadowrootmode="open"><p>A</p></template>' +
+          '{{else}}<template shadowrootmode="closed" shadowrootdelegatesfocus><p>B</p></template>{{/if}}' +
+          '</div>',
+        { state }
+      );
+
+      this.renderComponent(Root, { expect: '<div id="host"><!----></div>' });
+
+      let host = this.element.querySelector('#host');
+      let shadowRoot = host.shadowRoot;
+
+      equalTokens(shadowRoot, '<p>A</p>');
+
+      runTask(() => (state.show = false));
+      assert.strictEqual(host.shadowRoot, shadowRoot, 'the open root stays');
+      equalTokens(shadowRoot, '', 'the root is empty');
+      assert.strictEqual(host.firstChild.tagName, 'TEMPLATE', 'the closed template is inert');
+      assert.strictEqual(host.firstChild.getAttribute('shadowrootmode'), 'closed');
+
+      runTask(() => (state.show = true));
+      equalTokens(shadowRoot, '<p>A</p>');
+      equalTokens(host, '<!---->', 'the inert template is gone');
+    }
+
+    ['@test a modifier on the shadow template is an error'](assert) {
+      let noop = defineSimpleModifier(() => {});
+
+      let Root = strict(
+        '<div id="host"><template shadowrootmode="open" {{noop}}><p>x</p></template></div>',
+        { noop }
+      );
+
+      assert.throws(() => this.renderComponent(Root), /cannot have modifiers/);
+    }
+
     ['@test a plain <template> is still rendered as an element']() {
       let Root = strict('<div id="host"><template><p>inert</p></template></div>', {});
 
