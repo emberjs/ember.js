@@ -1630,12 +1630,14 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       nodeBounds(node: Node | null): CapturedBounds {
-        if (!node?.parentElement) {
+        let parent = node?.parentNode;
+
+        if (!node || !(parent instanceof Element)) {
           throw new Error('BUG: detached node');
         }
 
         return {
-          parentElement: node.parentElement,
+          parentElement: parent,
           firstNode: node,
           lastNode: node,
         };
