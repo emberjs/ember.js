@@ -832,7 +832,7 @@ Observable options:
 | `moduleName` | §1.3.5. |
 | `isProduction` | When true, `{{#in-element}}` does not wrap its destination in the [Dev] null check (`packages/@ember/template-compiler/lib/plugins/transform-in-element.ts:35-43`). No other built-in effect. |
 | `locals`, `lexicalScope` | §1.4.6. |
-| `keywords` | Additional names treated as keywords in strict mode (resolved by the runtime environment rather than erroring; `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:663-676`; test "Non-native keyword", `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:98-118`). Normally set only by step 5. |
+| `keywords` | Additional names treated as keywords in strict mode (resolved by the runtime environment rather than erroring; `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:663-676`; untested since W2 dropped the Glimmer test "Non-native keyword"). Normally set only by step 5. |
 | `plugins.ast` | Extra AST transforms. Implementation-defined; not part of the spec (§00-0.1 "Non-goals"). |
 | `parseOptions` | Passed to the Handlebars parser (`srcName` etc., §02). |
 | `mode: 'codemod'` | Parse-only mode used by tooling (§02). |
@@ -929,7 +929,7 @@ A conforming implementation MUST support both modes, and templates of different 
 interoperate: strict templates can invoke components authored in loose mode and vice versa
 (`rfcs/text/0779-first-class-component-templates.md` §"Interop"; test "works with a curried
 string component defined in a resolution mode component",
-`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:222`).
+`packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:223`).
 
 ### 1.7.2 Strict mode rules (RFC 0496)
 

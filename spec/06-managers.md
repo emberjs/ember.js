@@ -1315,10 +1315,10 @@ RFCs 0416 and 0748.
   - `willDestroy()` sees `isDestroying === true` and `isDestroyed === false`.
   - After the `destroy`-queue finalizer, both are `true`.
 
-  Test: `packages/@ember/-internals/glimmer/tests/integration/components/glimmer-component-test.gjs:17-54`.
+  Test: `packages/@ember/-internals/glimmer/tests/integration/components/glimmer-component-test.gjs:19-56`.
 - `willDestroy()` is a no-op for subclasses to override.
 - The instance is constructed once per invocation. Argument changes update it in place;
-  re-mounting constructs a new instance. Tests `glimmer-component-test.gjs:56-135`.
+  re-mounting constructs a new instance. Tests `glimmer-component-test.gjs:58-139`.
 
 ---
 

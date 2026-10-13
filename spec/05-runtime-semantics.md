@@ -134,7 +134,7 @@ contains the regions of its content; an `{{#each}}` region contains one region p
 empty comment node (`<!---->`) so that it has a position in the DOM
 (`packages/@glimmer/runtime/lib/vm/element-builder.ts:470-474`). This is observable in
 `innerHTML`. Examples (from `packages/@glimmer-workspace/integration-tests/test/updating-test.ts:629-645`,
-`827-844`):
+`820-837`):
 
 ```hbs
 <div>{{#if this.condition}}<p>x</p>{{/if}}</div>
@@ -408,7 +408,7 @@ Consequences (pinned by tests):
 - A text node is reused across string updates, including through intermediate values that
   normalize to the same text, and through `null`/`undefined` ↔ string transitions
   (`packages/@glimmer-workspace/integration-tests/test/updating-test.ts:29-75`,
-  `1140-1162` "clean content doesn't get blown away").
+  `1133-1155` "clean content doesn't get blown away").
 - Switching between a string and a SafeString, node or fragment replaces the region
   (`updating-test.ts:294-355`).
 - A SafeString whose identity is unchanged is not re-parsed, even if its `toHTML()` would now
@@ -758,7 +758,7 @@ concat(parts):
 
 The result then goes through §4.4–4.5 (tests: `class='hello {{v}}'` with `v = null` renders
 `class="hello "` — the attribute is kept with the trailing space;
-`updating-test.ts:1205-1221`, `1265-1280`, `1327-1369`). Consequences: a concatenation always yields a string if
+`updating-test.ts:1205-1221`, `1258-1273`, `1320-1362`). Consequences: a concatenation always yields a string if
 it contains any static text or any non-null part; `disabled="{{false}}"` yields the string
 `"false"` (which, in property mode, sets `disabled = "false"`, a truthy value — pinned by
 `attributes-test.ts:97-114` and `lib/suites/initial-render.ts:223-264`, where only `null`/`undefined`
@@ -903,7 +903,7 @@ on update: if the computation of t is invalid, re-evaluate it; if t changed,
 
 Only a change of the *boolean* causes replacement: changing `cond` from `1` to `"yes"` does not
 re-render the block. The blocks A and B receive no block parameters. Tests:
-`updating-test.ts:606-683`, `827-844`.
+`updating-test.ts:606-683`, `820-837`.
 
 ### 5.3 Inline `if` / `unless`
 
@@ -989,7 +989,7 @@ synthetic identity for the pair `(k, n)` that is the same object in every later 
 (`iterable.ts:78-139`). Thus the list `["a", "b", "a", "a"]` has keys `a, b, (a,1), (a,2)`,
 and removing the first `"a"` makes the old `(a,1)` item become key `a` — i.e. DOM is matched by
 occurrence number, not by position. Tests confirm only that every duplicate renders and
-survives updates (`syntax/each-test.js:505-525`, `573-595`, `653-669`; `lib/suites/each.ts:231-302`); the
+survives updates (`syntax/each-test.js:505-525`, `573-595`, `655-674`; `lib/suites/each.ts:228-267`); the
 occurrence-numbering rule itself is untested.
 
 Key comparison is by `===` (SameValueZero is **not** used: `NaN` keys never match; see Open
@@ -1014,7 +1014,7 @@ Block params: the first is the item value, the second is the memo (the index num
 arrays/iterables; the key for `each-in`). Both are reactive: when the item is retained with a
 new value or a new index, positions that read them are updated in place
 (`lib/suites/each.ts:188-226`, `syntax/each-test.js:395-411`, `updating-test.ts:1663-1697`,
-`1825-1860`). Extra block params beyond two are `undefined` (untested).
+`1822-1857`). Extra block params beyond two are `undefined` (untested).
 
 #### 5.4.4 Update algorithm
 
@@ -1025,7 +1025,7 @@ On an update pass, if the list computation is invalid, a new iterator is compute
    `else` block) is rendered from scratch (`lists.ts:26`). *No* item DOM is reused across an
    empty/non-empty transition. Tests confirm the rendered output and that removed components
    are destroyed on emptying (`updating-test.ts:1982-2019`; `lib/suites/each.ts:134-158`,
-   `345-372`); node non-reuse across the transition is untested.
+   `310-337`); node non-reuse across the transition is untested.
 2. Otherwise, if the iterator is a new one (the list computation was re-evaluated), the list is
    **synchronized** (below). If the list computation was valid, synchronization is skipped
    and only the existing items' inner content is revalidated.
@@ -1090,7 +1090,7 @@ pins the exact retain/move/insert/delete steps (in `LOCAL_DEBUG` builds only), e
 items 1 and 7 of `1..8` is `retain 1, move 8, retain 3..7, move 2`; rotating `[8,1..7]` →
 `move 8, move-retain 1, retain 2..7`; random shuffles perform no inserts or deletes and at most
 `length` moves+retains. Duplicate primitives, duplicate objects, and duplicate key values all
-render every occurrence (`each.ts:232-301`). Sync steps run only when `LOCAL_DEBUG` is set;
+render every occurrence (`each.ts:229-267`, `syntax/each-test.js:655-674`). Sync steps run only when `LOCAL_DEBUG` is set;
 in normal test runs those tests return early, so the step sequences are pinned only for
 developers who enable that flag. Insert and delete steps are asserted only as upper bounds
 (`each.ts:622-696`); that inserted items render before later retained items are revalidated,
@@ -1160,24 +1160,24 @@ on destroy: RR's DOM is removed, unless RR's first node is no longer a child of 
 
 - Tests (all in `packages/@glimmer-workspace/integration-tests/lib/suites/in-element.ts` unless
   noted):
-  - Default mode clears the target's existing content (`73-93`;
+  - Default mode clears the target's existing content (`51-71`;
     `public-in-element-test.js:43-73`).
   - `insertBefore=null` appends after existing children, and when the destination becomes
-    falsy only the rendered content is removed, leaving the pre-existing children (`139-171`;
+    falsy only the rendered content is removed, leaving the pre-existing children (`119-151`;
     `public-in-element-test.js:75-105`).
   - `insertBefore=<node>` inserts before it. Changing `insertBefore` from a node to `null`
     moves the content to the end. A falsy destination removes the content, and setting the
-    destination back re-renders it at the node's original position (`173-206`).
-  - Changing the destination moves the content (`208-258`).
+    destination back re-renders it at the node's original position (untested since W2 deleted the VM-only test 'With insertBefore'; Ember rejects a non-null `insertBefore`, §03-7.9).
+  - Changing the destination moves the content (`153-203`).
   - A falsy destination renders nothing (Glimmer) and the host position holds `<!---->`
-    (`95-137`).
+    (`75-117`).
   - Content inside the host position of a nested `in-element` is followed by a `<!---->`
-    of the inner one (`Nesting`, `465-515`), and several sibling `in-element`s are independent
-    (`Multiple`, `347-391`; and in a loop, `393-463`).
+    of the inner one (`Nesting`, `387-437`), and several sibling `in-element`s are independent
+    (`Multiple`, `270-314`; and in a loop, `316-385`).
   - Components in the remote region are destroyed when the enclosing region is torn down
-    (`517-560`; `public-in-element-test.js:161-225`). Appending into the element that is
+    (`public-in-element-test.js:161-225`). Appending into the element that is
     itself being rendered into (`insertBefore=null`) does not double-clear on teardown
-    (`325-345`; `public-in-element-test.js:227-251`).
+    (`public-in-element-test.js:227-251`).
   - The [Dev] assertions below: `public-in-element-test.js:107-159`.
   - Untested: `insertBefore` explicitly `undefined`; changing `insertBefore` from one node to
     another node; re-clearing pre-existing content in default mode when the destination
@@ -1312,12 +1312,12 @@ yield(slot, args):
 
 - Yielded primitives render per §05-3 (`true`, `false`, `123.45`, empty for `null`/`undefined`);
   yielding to an absent block renders nothing at all (`Before--After`)
-  (`packages/@glimmer-workspace/integration-tests/lib/suites/yield.ts:60-68`, `112-194`;
+  (`packages/@glimmer-workspace/integration-tests/lib/suites/yield.ts:60-68`, `106-188`;
   Ember: `helpers/yield-test.js:215-239`).
 - A yield inside `{{#if}}`/`{{#each}}` in the layout renders inline into that region and is
   removed with it (`yield.ts:190-209`; `helpers/yield-test.js:116-162`).
 - A parameter with no corresponding yielded value is `undefined` (`42 - `), tested for curly
-  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 12).
+  and dynamic invocation only (`yield.ts:80-93`, `skip: 'glimmer'`; §14 item 12).
 - `yield` is not itself a replaceable region: the yielded content is rendered inline into the
   current region. Yielding the same block several times renders it several times, each with its
   own instances.
@@ -1344,7 +1344,7 @@ when an `{{else}}` block is passed, because an `{{else}}` block cannot declare p
 for curly and dynamic invocation). A `<:else as |x|>` named block *can* declare params and is
 yielded to with them (§05-6.1); what `has-block-params` reports for it is untested. The
 `has-block` and `has-block-params` results for `default`, `else`, present and absent blocks
-are covered in `lib/suites/has-block.ts:7-140` and `has-block-params.ts:34-134` (subexpression,
+are covered in `lib/suites/has-block.ts:7-140` and `has-block-params.ts:34-133` (subexpression,
 content, property, attribute and concatenated-attribute positions). A curried component yielded and invoked as
 `<c/>` or `{{c}}` reports `has-block` false; `<c></c>` reports true
 (`lib/suites/has-block.ts:279-354`, `has-block-params.ts:20-33`). Both values are constant
@@ -1554,8 +1554,8 @@ modifiers are created for that element (`statements.ts:149-152`, `166-168`). The
 {{! Foo }}      <div class="inner" title="inner" ...attributes data-x="inner" {{m2}}></div>
 ```
 
-(Tests: `packages/@glimmer-workspace/integration-tests/lib/suites/components.ts:109-139`,
-`558-626`: an attribute before `...attributes` is clobbered by the invocation, after it wins;
+(Tests: `packages/@glimmer-workspace/integration-tests/lib/suites/components.ts:109-137`,
+`555-623`: an attribute before `...attributes` is clobbered by the invocation, after it wins;
 forwarded classes before the splat merge as `"qux bar foo top"`, after as `"top foo bar qux"`;
 `packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:973-1097`.)
 
@@ -1567,7 +1567,7 @@ forwarded classes before the splat merge as `"qux bar foo top"`, after as `"top 
 - attribute order in the DOM is the order of *first* recording of each name: `class`, `title`,
   `data-x` (except that `type` is always applied last);
 - modifiers forwarded through `...attributes` to several elements run on each, in document
-  order (`modifiers-test.ts:110-131`, `265-301`);
+  order (`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:1163-1193`, `1342-1390`);
 - modifiers are created in the order `m1` (from the splat), then `m2` (the element's own
   modifiers come after all attributes, including the splat); they are installed in that order.
   Consequence for `{{on}}`: the DOM runs listeners in the order they were added, so the
@@ -2040,7 +2040,7 @@ Destroying the render result (e.g. Ember tearing down an application or a `rende
 root) destroys everything and removes the root's DOM
 (`packages/@glimmer/runtime/lib/vm/render-result.ts:19-27`; a dynamic modifier is destroyed with
 it, `packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:229-254`;
-components inside `in-element`, `packages/@glimmer-workspace/integration-tests/lib/suites/in-element.ts:517-560`).
+components inside `in-element`, `packages/@ember/-internals/glimmer/tests/integration/syntax/public-in-element-test.js:161-225`).
 The destroy semantics themselves (children first, eager synchronous, deferred scheduled,
 `isDestroying` before `isDestroyed`) are pinned by
 `packages/@glimmer/destroyable/test/destroyables-test.ts:126-143`, `158-192`, `336-366`.
@@ -2303,9 +2303,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     so `createModifier` sees an element with *no* attributes and not yet in the document; any
     code relying on attributes must wait for `install`.
 12. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
-    invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:25-62`, `86-99`) skips the test only
+    invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:23-58`, `80-93`) skips the test only
     for the Glimmer (angle-bracket) invocation kind; the module builder still runs it for curly
-    and dynamic invocation (`lib/test-helpers/module.ts:143-160`). The implementation maps
+    and dynamic invocation (`lib/test-helpers/module.ts:156-168`). The implementation maps
     `inverse` to `else` regardless of invocation kind, and `helpers/yield-test.js:60-84` covers the
     Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
 13. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).

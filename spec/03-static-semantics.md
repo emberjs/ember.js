@@ -619,8 +619,7 @@ Ember's list is `STRICT_MODE_KEYWORDS = ['mut', 'readonly', 'unbound', '-each-in
 '-in-el-null', '-track-array', '-mount']` (`packages/@ember/template-compiler/lib/plugins/index.ts:52-65`).
 (`action` was removed from this list and from `KEYWORDS_TYPES` by emberjs/ember.js#21641; see
 §03-7.3.) The `-` names can only arise from the Ember rewrites (§03-7), because they are not valid
-JS identifiers. The Glimmer test `'Non-native keyword'` shows the generic mechanism
-(`strict-mode-test.ts:98-118`).
+JS identifiers. The generic mechanism is untested (the Glimmer test `'Non-native keyword'` was dropped by W2).
 
 In **[Loose mode]** the `keywords` option has no effect. The same names are just free
 variables.

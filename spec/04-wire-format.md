@@ -819,7 +819,7 @@ resolveStatic(position, [op, n]):
 - ``Attempted to resolve `${name}`, which was expected to be a helper, but nothing was found.`` (`resolution.ts:181-183`)
 - ``Attempted to resolve `${name}`, which was expected to be a modifier, but nothing was found.`` (`resolution.ts:244-246`; `custom-helper-test.js:495`)
 - ``Attempted to resolve `${name}`, which was expected to be a component or helper, but nothing was found.``
-  (`resolution.ts:333-335`; `packages/@glimmer-workspace/integration-tests/test/updating-test.ts:881`)
+  (`resolution.ts:333-335`; `packages/@glimmer-workspace/integration-tests/test/updating-test.ts:874`)
 
 In production builds these checks are compiled out and a missing definition leads to an
 undefined failure; the current runtime does not throw a descriptive error in production.

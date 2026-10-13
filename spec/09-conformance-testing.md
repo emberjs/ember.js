@@ -100,7 +100,7 @@ Facts an adapter has to work with (details and citations in `.work/T16-harness.m
    `babel.config.mjs:41`, which emits the wire format. The two harnesses compile test-time
    strings with `precompileJSON` plus `templateFactory`
    (`packages/@glimmer-workspace/integration-tests/lib/compile.ts:22-38`,
-   `packages/internal-test-helpers/lib/compile.ts:20-39`).
+   `packages/internal-test-helpers/lib/compile.ts:62-82`).
 4. **Two harnesses.**
    - The **Glimmer harness** (`packages/@glimmer-workspace/integration-tests/lib/`): test
      classes extend `RenderTest` and are registered with `jitSuite` and friends

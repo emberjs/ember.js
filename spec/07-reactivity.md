@@ -123,7 +123,7 @@ evaluate(computation C):
   It also empties every pooled tracker, so the tags of a frame that never ended do not appear in
   the next frame at the same depth (`tracking.ts:236-240`; tests `tracking-test.ts:310-338`).
   *Source:* `resetTracking` (`tracking.ts:225-247`), called from the render error paths
-  (`packages/@glimmer/runtime/lib/vm/update.ts:60-66`, `packages/@glimmer/runtime/lib/vm/append.ts:763`).
+  (`packages/@glimmer/runtime/lib/vm/update.ts:60-66`, `packages/@glimmer/runtime/lib/vm/append.ts:790`).
 
 ### 07-1.3 Consumption and nesting
 
