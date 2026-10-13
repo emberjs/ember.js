@@ -17,7 +17,7 @@ import InternalContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/co
   @class ContainerProxyMixin
   @extends ContainerProxy
   @private
-  @deprecated Use the owner API from `@ember/owner` instead.
+  @deprecated Use the owner API from `@ember/owner` instead. See https://deprecations.emberjs.com/id/deprecate-container-proxy-mixin.
 */
 interface ContainerProxyMixin extends ContainerProxy {
   /** @internal */
