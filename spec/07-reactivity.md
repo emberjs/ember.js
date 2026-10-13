@@ -1539,6 +1539,14 @@ of `computed()`:
   not force its evaluation.
 - Tests: `validation_test.js:168,209,260`,
   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:411,772,798`.
+- **[Dev]** The macros of `@ember/object/computed` that wrap `computed()` (`alias`, `and`, `or`,
+  `not`, `bool`, `match`, `equal`, `gt`/`gte`/`lt`/`lte`, `oneWay`, `readOnly`,
+  `deprecatingAlias`) are deprecated (`deprecate-computed-macros`, available since 7.5.0, until
+  9.0.0, not yet enabled by default): `` `<name>` from `@ember/object/computed` is
+  deprecated. Use a getter instead. `` (`packages/@ember/object/lib/computed/computed_macros.ts:18-23`,
+  `packages/@ember/-internals/deprecations/index.ts:171-177`). `empty`, `notEmpty` and `none`
+  already raised the same message under `deprecate-ember-utils`. Their reactive behavior is
+  unchanged.
 
 #### 07-3.6.6 Arrays and the `[]` cell
 
@@ -1558,8 +1566,13 @@ of `computed()`:
 (`packages/@ember/object/compat.ts:48-199`.) It wraps a native getter (legacy, stage-3, or
 classic `dependentKeyCompat({ get })`). Each read evaluates the getter as a fresh tracked
 computation (it is **not** memoized). It then **links** the (obj, key) property cell to the
-getter's dependencies and consumes them. As a result, classic computed properties and observers
-that name this key as a dependent key are invalidated when the getter's tracked inputs change.
+getter's dependencies and consumes them. As a result, classic computed properties and async
+observers that name this key as a dependent key are invalidated when the getter's tracked inputs
+change. Before linking, the read brings the property cell up to date, so a read of the getter
+between a change and the dependent's next read does not hide the change (`compat.ts:31-46`;
+tests `packages/@ember/object/tests/computed/dependent-key-compat-test.js:61-221`; fixed
+upstream in `cca9b7ab39`). Sync observers are not notified, because a tracked write never
+triggers them (`dependent-key-compat-test.js:259-290`).
 **[Dev]** assertions:
 
 - Already decorated with `@computed`/`@tracked`: `You attempted to use @dependentKeyCompat on a property that already has been decorated with either @computed or @tracked. @dependentKeyCompat is only necessary for native getters that are not decorated with @computed.`
