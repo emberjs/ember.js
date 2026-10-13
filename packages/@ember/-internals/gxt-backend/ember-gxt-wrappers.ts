@@ -346,6 +346,19 @@ installCompilePipelinePart({
   notifyHelperPropertyChange: _gxtNotifyHelperPropertyChange,
 });
 
+// Whether `value` is a render context (a template's `this`, a block's
+// context, a classic component instance) rather than a named-argument hash.
+function _isRenderContext(value: object): boolean {
+  const v = value as any;
+  return (
+    gxtModule.COMPONENT_ID_PROPERTY in v ||
+    Object.prototype.hasOwnProperty.call(v, '$_eval') ||
+    v[$PROPS_SYMBOL] !== undefined ||
+    v[GXT_ARGS_SYMBOL] !== undefined ||
+    (v.isView === true && v.isComponent === true)
+  );
+}
+
 /**
  * Wraps GXT's $_maybeHelper to support:
  * - Function arguments (e.g. values yielded as block params)
@@ -364,21 +377,27 @@ function createEmberMaybeHelper(original: Function) {
     hashOrCtx?: any,
     maybeCtx?: any
   ): any {
-    // GXT's $_maybeHelper signature: (value, args[], hashOrCtx?, maybeCtx?)
-    // Determine which param is the hash (named args) and which is the context.
-    // If maybeCtx is provided, hashOrCtx is the hash and maybeCtx is context.
-    // If only hashOrCtx and it looks like a context (has $_eval or GXT symbols), it's context.
-    const isCtx =
-      !maybeCtx &&
-      hashOrCtx &&
+    // Which argument is the call site's named-argument hash and which its
+    // render context. gxt's emission (compiler `we`): a call by NAME passes the
+    // render context last — `(name, positional, ctx)`, or with named arguments
+    // `(name, positional, named, ctx)`; a call of a BINDING (a scope value, a
+    // block param) passes `(definition, positional, named)`. The Ember-side
+    // callers pass all four. So with four arguments the third is the hash, and
+    // a name's third argument is its context. A binding's third argument is a
+    // context only when compile.ts's scope rewrite turned a name call into a
+    // binding call (it keeps the name call's arguments): a render context
+    // carries gxt's component id (`COMPONENT_ID_PROPERTY`), a hash never does.
+    // (Guessing from the shape alone took a template-only component's context
+    // — `{ $fw, args, attrs }` — and a block's context for the hash, so the
+    // helper received them as named arguments.)
+    const fourArgs = arguments.length >= 4;
+    const thirdIsCtx =
+      !fourArgs &&
+      hashOrCtx != null &&
       typeof hashOrCtx === 'object' &&
-      (hashOrCtx.hasOwnProperty?.('$_eval') ||
-        hashOrCtx[$PROPS_SYMBOL] !== undefined ||
-        hashOrCtx.hasOwnProperty?.($PROPS_SYMBOL) ||
-        hashOrCtx[GXT_ARGS_SYMBOL] !== undefined ||
-        // Detect Ember component instances used as context (not as hash)
-        (hashOrCtx.isView === true && hashOrCtx.isComponent === true));
-    const hash = maybeCtx ? hashOrCtx : isCtx ? {} : (hashOrCtx ?? {});
+      (typeof nameOrFn === 'string' || _isRenderContext(hashOrCtx));
+    const hash = thirdIsCtx ? {} : (hashOrCtx ?? {});
+    const ctx = fourArgs ? maybeCtx : thirdIsCtx ? hashOrCtx : undefined;
 
     // Detect a destroyed render context. When a prior test's component was torn
     // down but its formula closures linger (e.g. a dirtyTagFor cascade pulls the
@@ -387,11 +406,10 @@ function createEmberMaybeHelper(original: Function) {
     // helper would inflate compute() call counts, so return the last cached
     // result instead, keeping the already-detached node stable.
     {
-      const probeCtx = maybeCtx || (isCtx ? hashOrCtx : null);
       if (
-        probeCtx &&
-        typeof probeCtx === 'object' &&
-        (probeCtx.isDestroyed === true || probeCtx.isDestroying === true)
+        ctx &&
+        typeof ctx === 'object' &&
+        (ctx.isDestroyed === true || ctx.isDestroying === true)
       ) {
         return undefined;
       }
@@ -686,7 +704,6 @@ function createEmberMaybeHelper(original: Function) {
       }
       // For '__mutGet' helper, pass obj and key with context set
       if (name === '__mutGet' && Array.isArray(args) && args.length > 0) {
-        const ctx = maybeCtx || hashOrCtx;
         // Save/set/restore the mut context around the `helper(...)` invocation.
         const prevCtx = _gxtGetMutContext();
         _gxtSetMutContext(ctx);
@@ -706,11 +723,8 @@ function createEmberMaybeHelper(original: Function) {
         const rawGetter = args[0];
         const pathArg: any =
           args.length > 1 ? (typeof args[1] === 'function' ? args[1]() : args[1]) : undefined;
-        // Set the mut context so the setter can find the component instance.
-        // The context is either maybeCtx (4th arg) or hashOrCtx (3rd arg).
-        // For mut, the 3rd arg is always the component's render context (this)
-        // since GXT compiles (mut this.val) as $_maybeHelper("mut", [...], this).
-        const ctx = maybeCtx || hashOrCtx;
+        // Set the mut context so the setter can find the component instance:
+        // GXT compiles (mut this.val) as $_maybeHelper("mut", [...], this).
         // Save/set/restore the mut context around the `helper(...)` invocation.
         const prevCtx = _gxtGetMutContext();
         _gxtSetMutContext(ctx);

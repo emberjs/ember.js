@@ -12347,14 +12347,16 @@ export function precompileTemplate(
       const strictMaybeHelperInjection = __strictModeFlag
         ? `var $_maybeHelper_orig = $_maybeHelper;` +
           `var $_maybeHelper_allowed = ${_GXT_STRICT_ALLOWED_NAMES_JS_LITERAL};` +
-          `var $_maybeHelper = function (n, a, h, c) {` +
+          `var $_maybeHelper = function (n) {` +
           `if (typeof n === 'string' && !$_maybeHelper_allowed[n]) {` +
           `var bh = __gxtBuiltinHelpers;` +
           `if (!(bh && bh[n])) {` +
           `throw new Error('Attempted to resolve \`' + n + '\`, which was expected to be a component or helper, but that value was not in scope: ' + n);` +
           `}` +
           `}` +
-          `return $_maybeHelper_orig(n, a, h, c);` +
+          // Forward the call's own arguments: `$_maybeHelper_ember` reads the
+          // context's position from their number.
+          `return $_maybeHelper_orig.apply(this, arguments);` +
           `};`
         : '';
       // Rewrite emitted `globalThis.__gxtUnboundEval(__ubCache,` → local
