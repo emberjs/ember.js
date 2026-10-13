@@ -7,7 +7,6 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import type * as SimpleDOM from '@simple-dom/interface';
 import type createHTMLDocument from '@simple-dom/document';
 
 import { expectTypeOf } from 'expect-type';
@@ -39,16 +38,21 @@ expectTypeOf<SimpleElement>().toMatchTypeOf<SimpleNode>();
 expectTypeOf<SimpleDocument>().toMatchTypeOf<SimpleNode>();
 
 /**
- * `@simple-dom/interface` types are subtypes of the Simple types too.
+ * The nodes of a document from `@simple-dom/document` are subtypes of the
+ * Simple types too.
  */
-expectTypeOf<SimpleDOM.SimpleNode>().toMatchTypeOf<SimpleNode>();
-expectTypeOf<SimpleDOM.SimpleElement>().toMatchTypeOf<SimpleElement>();
-expectTypeOf<SimpleDOM.SimpleText>().toMatchTypeOf<SimpleText>();
-expectTypeOf<SimpleDOM.SimpleComment>().toMatchTypeOf<SimpleComment>();
-expectTypeOf<SimpleDOM.SimpleDocumentFragment>().toMatchTypeOf<SimpleDocumentFragment>();
-expectTypeOf<SimpleDOM.SimpleDocument>().toMatchTypeOf<SimpleDocument>();
-expectTypeOf<SimpleDOM.SimpleAttr>().toMatchTypeOf<SimpleAttr>();
-expectTypeOf<ReturnType<typeof createHTMLDocument>>().toMatchTypeOf<SimpleDocument>();
+type NodeDocument = ReturnType<typeof createHTMLDocument>;
+type NodeElement = ReturnType<NodeDocument['createElement']>;
+
+expectTypeOf<NodeDocument>().toMatchTypeOf<SimpleDocument>();
+expectTypeOf<NodeElement>().toMatchTypeOf<SimpleElement>();
+expectTypeOf<NodeElement['attributes'][number]>().toMatchTypeOf<SimpleAttr>();
+expectTypeOf<NonNullable<NodeElement['parentNode']>>().toMatchTypeOf<SimpleNode>();
+expectTypeOf<ReturnType<NodeDocument['createTextNode']>>().toMatchTypeOf<SimpleText>();
+expectTypeOf<ReturnType<NodeDocument['createComment']>>().toMatchTypeOf<SimpleComment>();
+expectTypeOf<
+  ReturnType<NodeDocument['createDocumentFragment']>
+>().toMatchTypeOf<SimpleDocumentFragment>();
 
 /**
  * The other direction does not hold. A Simple type has only the members

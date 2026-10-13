@@ -1,5 +1,3 @@
-export type { SerializableElement, SerializableNode } from '@simple-dom/interface';
-
 export type NodeType = -1 | 1 | 3 | 8 | 9 | 10 | 11;
 
 export type InsertPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
@@ -22,8 +20,8 @@ export type Namespace = ElementNamespace | AttrNamespace;
  * The part of the DOM that the VM needs.
  *
  * Each interface here is a supertype of the browser type with the same role,
- * and of the `@simple-dom/interface` type. A browser node and a Simple DOM
- * node are both assignable with no cast.
+ * and of the node type from `@simple-dom/document`. A browser node and a
+ * Simple DOM node are both assignable with no cast.
  */
 export interface SimpleNode {
   readonly ownerDocument: SimpleDocument | null;
@@ -106,4 +104,32 @@ export interface SimpleDocument extends SimpleNode {
 
   /** Only Simple DOM has this. */
   createRawHTMLSection?(html: string): SimpleNode;
+}
+
+/**
+ * The read-only part of a node that a serializer needs.
+ */
+export interface SerializableNode {
+  readonly nodeType: number;
+  readonly nodeName: string;
+  readonly nodeValue: string | null;
+
+  readonly nextSibling: SerializableNode | null;
+  readonly firstChild: SerializableNode | null;
+}
+
+export interface SerializableAttr {
+  readonly specified: boolean;
+  readonly name: string;
+  readonly value: string;
+}
+
+export interface SerializableAttrs {
+  readonly length: number;
+  readonly [index: number]: SerializableAttr;
+}
+
+export interface SerializableElement extends SerializableNode {
+  readonly namespaceURI: string | null;
+  readonly attributes: SerializableAttrs;
 }
