@@ -43,6 +43,7 @@
     "packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js",
     "packages/@ember/-internals/glimmer/tests/integration/components/template-only-components-test.js",
     "packages/@ember/-internals/glimmer/tests/integration/components/template-tag-by-name-test.gjs",
+    "packages/@ember/-internals/glimmer/tests/integration/components/class-body-template-test.gjs",
     "packages/@ember/-internals/glimmer/tests/integration/components/strict-mode-test.js",
     "packages/@ember/-internals/glimmer/tests/integration/components/render-component-test.ts",
     "packages/@ember/-internals/glimmer/tests/integration/components/fragment-components-test.js",

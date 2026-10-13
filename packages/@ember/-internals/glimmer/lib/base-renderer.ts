@@ -1355,6 +1355,20 @@ function _renderComponentGxt(
       template = isRawGxtTemplateFn(template) ? rawGxtTemplate(template, entry) : template(owner);
     }
 
+    // A component class with a component manager (its own or a base class's)
+    // and no registered template: a class with a class-body `<template>`,
+    // which gxt compiles to an instance field rather than a
+    // `setComponentTemplate` call. gxt renders the class as it renders one
+    // invoked in a template: the component manager creates the component and
+    // renders that template (gxt-backend manager.ts).
+    const classBodyComponent =
+      !template &&
+      typeof component === 'function' &&
+      gxtCustomComponentManagerFactory(component) !== undefined;
+    if (classBodyComponent) {
+      template = rawGxtTemplate(component as (...args: unknown[]) => unknown, entry);
+    }
+
     if (!template || !template.render) {
       // No template found — try using the manager system directly
       const managers = (globalThis as any).$_MANAGERS;
@@ -1431,6 +1445,7 @@ function _renderComponentGxt(
     const isClass = typeof component === 'function' && component.prototype;
     const customManagerFactory = gxtCustomComponentManagerFactory(component);
     const isTemplateOnly =
+      classBodyComponent ||
       (!isClass && !customManagerFactory) ||
       (component as any).__templateOnly === true ||
       getGxtRenderer()?.compilePipeline.isTemplateOnlyDefinition?.(component) === true ||

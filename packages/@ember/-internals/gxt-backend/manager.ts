@@ -101,6 +101,19 @@ import {
   $PROPS_SYMBOL,
   // gxt's component args object (named args, slots, forwarded attributes).
   $_args as _gxtArgs,
+  // gxt's component invocation, its template-function preamble and slot
+  // rendering, the instance-field key of a class-body `<template>`, and the
+  // destructors gxt runs when it tears a render-tree node down.
+  $_c as _gxtC,
+  $_GET_ARGS as _gxtGetArgs,
+  $_GET_SLOTS as _gxtGetSlots,
+  $_slot as _gxtSlot,
+  $_fin as _gxtFin,
+  $template as _gxtTemplateKey,
+  registerDestructor as _gxtRegisterDestructor,
+  // A render-tree node's identity in gxt's tree.
+  COMPONENT_ID_PROPERTY as _gxtComponentIdKey,
+  cId as _gxtComponentId,
 } from '@lifeart/gxt';
 // The members of `@lifeart/gxt` that glimmer-package call sites read through
 // the typed bridge as `gxtLib` (see the setGxtRenderer install at file EOF).
@@ -7672,6 +7685,11 @@ const $_MANAGERS = {
       if (komp?.create && typeof komp.create === 'function') {
         return true;
       }
+      // A class whose template is a class-body `<template>`: its component
+      // manager comes from a base class.
+      if (typeof komp === 'function' && _classBodyComponentManager(komp) !== undefined) {
+        return true;
+      }
       return false;
     },
 
@@ -8100,6 +8118,14 @@ const $_MANAGERS = {
             `Could not find component named "${komp}" (no component or template with that name was found)`
         );
         throw notFoundErr;
+      }
+
+      // A component class whose template is a class-body `<template>`.
+      if (typeof komp === 'function') {
+        const classBodyManager = _classBodyComponentManager(komp);
+        if (classBodyManager !== undefined) {
+          return _renderClassBodyComponent(komp, classBodyManager, args, fw, ctx, owner);
+        }
       }
 
       // Handle component with internal/custom manager (walk prototype chain)
@@ -9238,6 +9264,19 @@ function _gxtInvocationSlots(slots: any): Record<string, unknown> {
   return out;
 }
 
+// An invocation's arguments as gxt's component args object: its own named
+// arguments, read from the invocation when the component reads them (so they
+// stay current), its blocks, and the forwarded attributes `fw`.
+function _gxtInvocationArgs(invocation: any, fw: any): any {
+  const named: Record<string, () => unknown> = {};
+  for (const key of Object.keys(invocation || {})) {
+    if (key.startsWith('__') || key.startsWith('$') || key === 'args') continue;
+    named[key] = () => invocation[key];
+  }
+  const slots = _gxtInvocationSlots(invocation?.[$SLOTS_SYMBOL] || invocation?.$slots);
+  return _gxtArgs(named, slots, fw);
+}
+
 // The component the synthesized template invokes for `fn`: it calls `fn` as
 // gxt calls a component (`new fn(args, fw)`), with the by-name invocation's
 // named arguments, blocks and forwarded attributes. The invocation's args
@@ -9245,14 +9284,119 @@ function _gxtInvocationSlots(slots: any): Record<string, unknown> {
 // synthesized element's `...attributes`, i.e. the invocation's.
 function _gxtBuildTimeInvoker(fn: any): (gxtArgs: any, fw: any) => any {
   return function GxtBuildTimeInvocation(gxtArgs: any, fw: any) {
-    const invocation = gxtArgs.invocation;
-    const named: Record<string, () => unknown> = {};
-    for (const key of Object.keys(invocation || {})) {
-      if (key.startsWith('__') || key.startsWith('$') || key === 'args') continue;
-      named[key] = () => invocation[key];
+    return new fn(_gxtInvocationArgs(gxtArgs.invocation, fw), fw);
+  };
+}
+
+// The component manager factory of a component CLASS that has a component
+// manager of its own or from a base class (`setComponentManager` on
+// @glimmer/component's Component, or on any custom-managed base) but no
+// registered template, own or inherited. That is how gxt compiles a .gjs/.gts
+// class with a class-body `<template>`: the template becomes an instance field
+// (`[$template]`), not a `setComponentTemplate` call, so it exists only once
+// the manager has created the component. Glimmer finds a manager the same way
+// (`getInternalComponentManager` walks the prototype chain); one found first
+// in the internal table (a classic or built-in component) is not this kind.
+function _classBodyComponentManager(definition: any): Function | undefined {
+  let pointer = definition;
+  while (pointer && pointer !== Function.prototype && pointer !== Object.prototype) {
+    if (INTERNAL_MANAGERS.has(pointer)) return undefined;
+    const factory = COMPONENT_MANAGERS.get(pointer);
+    if (factory !== undefined) {
+      return typeof factory === 'function' && getComponentTemplate(definition) === undefined
+        ? factory
+        : undefined;
     }
-    const slots = _gxtInvocationSlots(invocation?.[$SLOTS_SYMBOL] || invocation?.$slots);
-    return new fn(_gxtArgs(named, slots, fw), fw);
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return undefined;
+}
+
+// Glimmer's template for a component that has none: `{{yield}}`.
+function _gxtDefaultComponentTemplate(this: any): unknown {
+  _gxtGetArgs(this, arguments as any);
+  const slots = _gxtGetSlots(this, arguments as any);
+  return _gxtFin([_gxtSlot('default', () => [], slots, this)], this);
+}
+
+// Render a component class whose template is a class-body `<template>` (see
+// `_classBodyComponentManager`) as Glimmer renders a custom-managed component:
+// its manager creates it from the invocation's arguments, the template renders
+// with the manager's context as `this`, and the manager destroys it when it is
+// torn down. That is gxt's own protocol for a constructed object carrying a
+// `[$template]`: `$_c` adds the object to the caller's render tree and runs
+// `object[$template](args)`, and tearing the tree down runs the destructors
+// registered on the object. Without a class-body template, the component
+// renders Glimmer's default `{{yield}}`.
+//
+// `args` / `fw` are the invocation's (gxt's args object for a lexical
+// invocation, compile.ts's args object for one by name); the component reads
+// its arguments from the invocation when it reads them, so a manager's
+// `updateComponent` hook is not called. Returns the thunk the component
+// manager's callers run to render it.
+function _renderClassBodyComponent(
+  definition: any,
+  managerFactory: Function,
+  args: any,
+  fw: any,
+  ctx: any,
+  owner: any
+): () => unknown {
+  const delegate = managerFactory(owner);
+  if (!delegate || typeof delegate.createComponent !== 'function') {
+    return () => [];
+  }
+  const caps = delegate.capabilities;
+  if (caps && !FROM_CAPABILITIES.has(caps)) {
+    captureRenderError(
+      new Error(capabilitiesErrorPrefix('component') + 'Received: `' + JSON.stringify(caps) + '`')
+    );
+    return () => [];
+  }
+  const propsFromArgs = args?.[$PROPS_SYMBOL];
+  const fwTuple = (Array.isArray(fw) ? fw : null) ||
+    (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
+  const gxtArgs = _gxtInvocationArgs(args, fwTuple);
+
+  return () => {
+    let component: any;
+    // gxt constructs this (`new GxtClassBodyComponent(args, fw)`) and renders
+    // the object it returns.
+    function GxtClassBodyComponent(): object {
+      component = delegate.createComponent(definition, { named: gxtArgs, positional: [] });
+      const context =
+        typeof delegate.getContext === 'function' ? delegate.getContext(component) : component;
+      const node = context !== null && typeof context === 'object' ? context : {};
+      // gxt adds the node to its render tree by this id before it runs the
+      // template (a gxt component class assigns it as a class field).
+      if (node[_gxtComponentIdKey] === undefined) {
+        node[_gxtComponentIdKey] = _gxtComponentId();
+      }
+      if (typeof node[_gxtTemplateKey] !== 'function') {
+        const classBody = component?.[_gxtTemplateKey];
+        Object.defineProperty(node, _gxtTemplateKey, {
+          value: typeof classBody === 'function' ? classBody : _gxtDefaultComponentTemplate,
+          configurable: true,
+          writable: true,
+        });
+      }
+      if (caps?.destructor && typeof delegate.destroyComponent === 'function') {
+        _gxtRegisterDestructor(node, () => delegate.destroyComponent(component));
+      }
+      return node;
+    }
+    // The render-tree node the component joins: the caller's, else (a caller
+    // that has none, such as a curried component rendered as content) the
+    // node being rendered.
+    const parent =
+      ctx && ctx[_gxtComponentIdKey] !== undefined
+        ? ctx
+        : (_gxtLibGetParentContext() ?? getGxtRenderer()?.compilePipeline.getRootContext?.());
+    const rendered = (_gxtC as any)(GxtClassBodyComponent, gxtArgs, parent);
+    if (caps?.asyncLifecycleCallbacks && typeof delegate.didCreateComponent === 'function') {
+      delegate.didCreateComponent(component);
+    }
+    return rendered;
   };
 }
 
@@ -9328,6 +9472,16 @@ function handleStringComponent(
         renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
         return container;
       };
+    }
+  }
+
+  // A component class whose template is a class-body `<template>` (no
+  // template registered for it, and none in the registry): rendered as a
+  // lexical invocation renders it, in the caller's render tree.
+  if (!template && typeof _btClass === 'function') {
+    const classBodyManager = _classBodyComponentManager(_btClass);
+    if (classBodyManager !== undefined) {
+      return _renderClassBodyComponent(_btClass, classBodyManager, args, fw, ctx, owner);
     }
   }
 
