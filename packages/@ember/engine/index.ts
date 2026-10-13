@@ -2,7 +2,7 @@ export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
 import Controller from '@ember/controller';
-import Namespace from '@ember/application/namespace';
+import EmberObject from '@ember/object';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 import DAG from 'dag-map';
@@ -10,6 +10,8 @@ import { assert } from '@ember/debug';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
+import { addNamespace, removeNamespace } from '@ember/-internals/metal/lib/namespace_search';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
@@ -50,13 +52,13 @@ export interface Initializer<T> {
   Engines can spawn `EngineInstance` instances via `buildInstance()`.
 
   @class Engine
-  @extends Ember.Namespace
+  @extends EmberObject
   @uses RegistryProxyMixin
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+class Engine extends EmberObject.extend(RegistryProxyMixin) {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -343,7 +345,29 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
   init(properties: object | undefined) {
     super.init(properties);
+
+    /**
+     * The inspector and the debug adapters find
+     * applications and engines in `Namespace.NAMESPACES`.
+     */
+    addNamespace(this);
     this.buildRegistry();
+  }
+
+  toString(): string {
+    let name = get(this, 'name') || get(this, 'modulePrefix');
+
+    if (name) {
+      assert("name wasn't a string", typeof name === 'string');
+      return name;
+    }
+
+    return guidFor(this);
+  }
+
+  destroy() {
+    removeNamespace(this);
+    return super.destroy();
   }
 
   /**

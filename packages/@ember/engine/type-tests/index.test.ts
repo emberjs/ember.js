@@ -1,6 +1,5 @@
 import type { ResolverClass } from '@ember/-internals/container';
 import type { default as Owner, RegisterOptions, Factory } from '@ember/owner';
-import type Namespace from '@ember/application/namespace';
 import type { Initializer } from '@ember/engine';
 import Engine from '@ember/engine';
 import type EngineInstance from '@ember/engine/instance';
@@ -14,7 +13,7 @@ class Bar {}
 
 let engine = new Engine(owner);
 
-expectTypeOf(engine).toMatchTypeOf<Namespace>();
+expectTypeOf(engine).toMatchTypeOf<EmberObject>();
 
 expectTypeOf(engine.buildInstance()).toEqualTypeOf<EngineInstance>();
 engine.buildInstance({ mountPoint: 'foo', routable: true });

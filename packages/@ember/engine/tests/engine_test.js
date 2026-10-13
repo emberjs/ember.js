@@ -1,9 +1,8 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
-import EmberObject from '@ember/object';
-import { processAllNamespaces } from '@ember/-internals/metal';
-import { getName } from '@ember/-internals/utils';
+import { NAMESPACES } from '@ember/-internals/metal';
+import { guidFor } from '@ember/-internals/utils';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
@@ -36,10 +35,24 @@ moduleFor(
       }
     }
 
-    ['@test acts like a namespace'](assert) {
-      engine.Foo = class extends EmberObject {};
-      processAllNamespaces();
-      assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');
+    ['@test is in the list of namespaces until it is destroyed'](assert) {
+      assert.true(NAMESPACES.includes(engine), 'the engine is in NAMESPACES');
+
+      run(engine, 'destroy');
+
+      assert.false(NAMESPACES.includes(engine), 'the engine is not in NAMESPACES');
+
+      engine = null;
+    }
+
+    ['@test toString returns the name or the modulePrefix'](assert) {
+      assert.strictEqual(engine.toString(), guidFor(engine), 'the guid is the last choice');
+
+      engine.modulePrefix = 'my-engine';
+      assert.strictEqual(engine.toString(), 'my-engine', 'modulePrefix is used');
+
+      engine.name = 'named';
+      assert.strictEqual(engine.toString(), 'named', 'name wins');
     }
 
     ['@test builds a registry'](assert) {

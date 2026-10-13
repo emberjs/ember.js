@@ -59,10 +59,6 @@ export const setOwner = actualSetOwner;
   }
   ```
 
-  Because `Application` ultimately inherits from `Ember.Namespace`, any classes
-  you create will have useful string representations when calling `toString()`.
-  See the `Ember.Namespace` documentation for more information.
-
   While you can think of your `Application` as a container that holds the
   other classes in your application, there are several other responsibilities
   going on under-the-hood that you may want to understand. It is also important
