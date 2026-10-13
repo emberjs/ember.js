@@ -295,6 +295,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
       // Attribute values
       case 'beforeAttributeValue':
+        assertNoLiteralArguments(this, rawMustache);
         this.beginAttributeValue(false);
         this.appendDynamicAttributeValuePart(mustache);
         tokenizer.transitionTo(ATTRIBUTE_VALUE_UNQUOTED);
@@ -302,11 +303,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       case 'attributeValueDoubleQuoted':
       case 'attributeValueSingleQuoted':
       case 'attributeValueUnquoted':
+        assertNoLiteralArguments(this, rawMustache);
         this.appendDynamicAttributeValuePart(mustache);
         break;
 
       case 'beforeData':
       case 'data':
+        assertNoLiteralArguments(this, rawMustache);
         appendChild(this.currentElement(), mustache);
         break;
 
@@ -695,22 +698,9 @@ function acceptCallNodes(
     case 'NullLiteral':
     case 'NumberLiteral':
     case 'BooleanLiteral': {
-      let value: string;
-      if (node.path.type === 'BooleanLiteral') {
-        value = node.path.original.toString();
-      } else if (node.path.type === 'StringLiteral') {
-        value = `"${node.path.original}"`;
-      } else if (node.path.type === 'NullLiteral') {
-        value = 'null';
-      } else if (node.path.type === 'NumberLiteral') {
-        value = node.path.value.toString();
-      } else {
-        value = 'undefined';
-      }
+      const { type, text, value } = describeLiteral(node.path);
       throw generateSyntaxError(
-        `${node.path.type} "${
-          node.path.type === 'StringLiteral' ? node.path.original : value
-        }" cannot be called as a sub-expression, replace (${value}) with ${value}`,
+        `${type} "${text}" cannot be called as a sub-expression, replace (${value}) with ${value}`,
         compiler.source.spanFor(node.path.loc)
       );
     }
@@ -730,6 +720,47 @@ function acceptCallNodes(
       });
 
   return { path, params, hash };
+}
+
+function describeLiteral(literal: HBS.Literal): { type: string; text: string; value: string } {
+  let value: string;
+  if (literal.type === 'BooleanLiteral') {
+    value = literal.original.toString();
+  } else if (literal.type === 'StringLiteral') {
+    value = `"${literal.original}"`;
+  } else if (literal.type === 'NullLiteral') {
+    value = 'null';
+  } else if (literal.type === 'NumberLiteral') {
+    value = literal.value.toString();
+  } else {
+    value = 'undefined';
+  }
+  const text = literal.type === 'StringLiteral' ? literal.original : value;
+  return { type: literal.type, text, value };
+}
+
+/**
+ * A literal can be the whole content of a mustache (`{{"foo"}}`), but it cannot be called, so
+ * arguments after it (`{{"foo" bar}}`) are an error rather than being dropped.
+ */
+function assertNoLiteralArguments(
+  compiler: HandlebarsNodeVisitors,
+  rawMustache: {
+    path: HBS.MustacheStatement['path'];
+    params: HBS.Expression[];
+    hash?: HBS.Hash;
+    loc: HBS.SourceLocation;
+  }
+): void {
+  const { path, params, hash } = rawMustache;
+  if (!isHBSLiteral(path) || (params.length === 0 && !hash)) {
+    return;
+  }
+  const { type, text, value } = describeLiteral(path);
+  throw generateSyntaxError(
+    `${type} "${text}" cannot be called with arguments, replace {{${value} ...}} with {{${value}}}`,
+    compiler.source.spanFor(rawMustache.loc)
+  );
 }
 
 function addElementModifier(

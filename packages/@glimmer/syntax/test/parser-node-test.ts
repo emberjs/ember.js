@@ -1099,6 +1099,99 @@ test('number literal as path throws error', (assert) => {
   );
 });
 
+test('a literal mustache with arguments throws error', (assert) => {
+  const cases: [template: string, message: string, code: string, column: number][] = [
+    [
+      '{{"foo" bar}}',
+      'StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}',
+      '{{"foo" bar}}',
+      0,
+    ],
+    [
+      '{{"foo" a=b}}',
+      'StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}',
+      '{{"foo" a=b}}',
+      0,
+    ],
+    [
+      '{{1 bar baz=1}}',
+      'NumberLiteral "1" cannot be called with arguments, replace {{1 ...}} with {{1}}',
+      '{{1 bar baz=1}}',
+      0,
+    ],
+    [
+      '{{{true bar}}}',
+      'BooleanLiteral "true" cannot be called with arguments, replace {{true ...}} with {{true}}',
+      '{{{true bar}}}',
+      0,
+    ],
+    [
+      '{{null bar}}',
+      'NullLiteral "null" cannot be called with arguments, replace {{null ...}} with {{null}}',
+      '{{null bar}}',
+      0,
+    ],
+    [
+      '{{undefined bar}}',
+      'UndefinedLiteral "undefined" cannot be called with arguments, replace {{undefined ...}} with {{undefined}}',
+      '{{undefined bar}}',
+      0,
+    ],
+    [
+      '<div class={{"foo" bar}}></div>',
+      'StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}',
+      '{{"foo" bar}}',
+      11,
+    ],
+    [
+      '<div class="a {{"foo" bar}}"></div>',
+      'StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}',
+      '{{"foo" bar}}',
+      14,
+    ],
+  ];
+
+  for (const [template, message, code, column] of cases) {
+    assert.throws(
+      () => {
+        parse(template, { meta: { moduleName: 'test-module' } });
+      },
+      syntaxErrorFor(message, code, 'test-module', 1, column),
+      template
+    );
+  }
+});
+
+test('a literal mustache without arguments is still valid', (assert) => {
+  for (const template of [
+    '{{"foo"}}',
+    '{{{"foo"}}}',
+    '{{1}}',
+    '{{true}}',
+    '{{null}}',
+    '{{undefined}}',
+    '<div class={{"foo"}}></div>',
+    '<div class="a {{"foo"}}"></div>',
+  ]) {
+    assert.ok(parse(template), template);
+  }
+});
+
+test('a literal modifier with arguments reports the modifier error', (assert) => {
+  assert.throws(
+    () => {
+      parse('<div {{"foo" bar}}></div>', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      'In <div ... {{"foo"}} ..., {{"foo"}} is not a valid modifier',
+      '{{"foo" bar}}',
+      'test-module',
+      1,
+      5
+    )
+  );
+});
+
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
   return strings
     .map((str: string, i: number) => {
