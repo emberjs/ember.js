@@ -1,17 +1,24 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T18:07:09.455Z",
+    "capturedAt": "2026-10-13T19:25:21.738Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "f93c20f33e",
-    "totalTests": 9996,
-    "totalModules": 967,
+    "emberCommit": "1ce514a0ab",
+    "totalTests": 10001,
+    "totalModules": 970,
     "quarantinedTests": 0,
-    "totalAssertions": 59764,
-    "totalAssertionsPassing": 58130,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after URL attributes are sanitized with Glimmer's own rules (requiresSanitization / sanitizeAttributeValue from @glimmer/runtime instead of an outdated copy), written by runner.mjs. 9167/9996 green (was 9142/9993), no timeouts, no harness errors, no green->red. 22 [integration] rows turned green: area[href], button[formaction] and input[formaction] (javascript:/vbscript: on render and update), data: URLs on iframe[src] and object[data], and the same Attributes tests where QUnit also reports them under the input-range modules. The new tests pass: an attributeBindings test (button[formaction], object[data]) and two GXT tests (SVG href/xlink:href and a camelCased formAction, on render and update). The Attributes tests 'svg a[xlink:href]' and the camelCased formAction test now pass their sanitization assertions but still fail after rerender(): they read an element captured before it, and a write to the harness context re-renders the root's whole DOM, as 'svg a[href]' already does. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59778,
+    "totalAssertionsPassing": 58144,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after every compat path that writes a bound attribute itself (...attributes forwarding, classic component elements, LinkTo / Input, the attributes applied before a forwarded modifier, the property-slot fallback, root attributeBindings) sanitizes URL attributes with Glimmer's requiresSanitization / sanitizeAttributeValue in every build, and the DEBUG-only setAttribute patch is removed, written by runner.mjs. 9172/10001 green (was 9167/9996), no timeouts, no harness errors, no green->red. The five new tests pass: a bound URL forwarded by ...attributes onto a template-only and a classic component's element, a forwarded modifier that sees the sanitized URL, a bound formaction on <Input>, and a bound URL attribute forwarded to <LinkTo>. They and the button[formaction] / input[formaction] Attributes tests also pass in a production build, where the removed patch never ran. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
+    "<LinkTo /> component (URL sanitization of forwarded attributes)": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
     "<LinkTo /> component (rendering tests)": {
       "total": 6,
       "passing": 6,
@@ -461,6 +468,13 @@
       "passing": 32,
       "assertionsTotal": 223,
       "assertionsPassing": 223,
+      "failingTests": []
+    },
+    "AngleBracket Invocation (URL sanitization of forwarded attributes)": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 8,
+      "assertionsPassing": 8,
       "failingTests": []
     },
     "AngleBracket Invocation (classic component)": {
@@ -1465,6 +1479,13 @@
       "passing": 9,
       "assertionsTotal": 69,
       "assertionsPassing": 69,
+      "failingTests": []
+    },
+    "Components test: <Input /> URL sanitization": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
       "failingTests": []
     },
     "Components test: <Input /> with dynamic type": {
