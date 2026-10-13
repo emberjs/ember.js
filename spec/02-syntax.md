@@ -1602,10 +1602,16 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     and the comment states an error like E21, and treating a closer in a comment state as
     comment text when its opener is outside the comment, which is what an HTML-aware single-pass
     parser does naturally. Templates that parse today with a sensible tree would be unaffected.
+
+    > Plan a work stream to make a PR that turns these into parse errors in the existing implementation, with good test coverage and a convincing argument for why this won't break anybody with a sane template.
+
 19. **Error priority** (§02-9.1). Handlebars lexical and grammar errors outrank earlier HTML
     errors only because the current parser runs the Handlebars pass first. It affects only
     templates with more than one error. If source order were allowed instead, a single-pass
     parser could report the first error it meets and stop.
+
+    > Maintaining existing error priority is not important. Let's not obligate a new implementation to emit exactly the same error priority. 
+
 20. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
     standalone is decided by the end of the first chain link's program, not by the text before
     the closer, and the indentation before such a closer is never deleted. This comes from
