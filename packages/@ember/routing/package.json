@@ -21,6 +21,7 @@
     "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/engine": "workspace:*",
+    "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/owner": "workspace:*",
     "@ember/runloop": "workspace:*",

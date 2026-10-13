@@ -182,6 +182,20 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-observable-mixin',
   }),
+  DEPRECATE_ENUMERABLE_MIXIN: deprecation({
+    id: 'deprecate-enumerable-mixin',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '7.9.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-enumerable-mixin',
+  }),
+  DEPRECATE_MUTABLE_ENUMERABLE_MIXIN: deprecation({
+    id: 'deprecate-mutable-enumerable-mixin',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '7.9.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-mutable-enumerable-mixin',
+  }),
   DEPRECATE_EMBER_ARRAY_MIXIN: deprecation({
     id: 'deprecate-ember-array-mixin',
     for: 'ember-source',

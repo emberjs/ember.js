@@ -273,6 +273,8 @@
       "@ember/engine/lib/engine-parent.js": "ember-source/@ember/engine/lib/engine-parent.js",
       "@ember/engine/lib/strict-resolver.js": "ember-source/@ember/engine/lib/strict-resolver.js",
       "@ember/engine/parent.js": "ember-source/@ember/engine/parent.js",
+      "@ember/enumerable/index.js": "ember-source/@ember/enumerable/index.js",
+      "@ember/enumerable/mutable.js": "ember-source/@ember/enumerable/mutable.js",
       "@ember/helper/index.js": "ember-source/@ember/helper/index.js",
       "@ember/instrumentation/index.js": "ember-source/@ember/instrumentation/index.js",
       "@ember/modifier/index.js": "ember-source/@ember/modifier/index.js",

@@ -14,6 +14,7 @@
     "@ember/-internals": "workspace:*",
     "@ember/application": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/utils": "workspace:*",
