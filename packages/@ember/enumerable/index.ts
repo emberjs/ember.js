@@ -4,6 +4,7 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 /**
 @module @ember/enumerable
 @private
+@deprecated
 */
 
 /**
