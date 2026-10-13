@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T10:24:48.907Z",
+    "capturedAt": "2026-10-13T12:46:11.831Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "996d0c9180",
-    "totalTests": 9928,
-    "totalModules": 959,
+    "emberCommit": "430658f1c2",
+    "totalTests": 9948,
+    "totalModules": 961,
     "quarantinedTests": 0,
-    "totalAssertions": 58670,
-    "totalAssertionsPassing": 55444,
-    "note": "Compat full run on the rebase of #21340 onto main a9501d5d40 (gxt 0.0.82) with the hang1 fix (helper args / (hash) args re-render loops), written by runner.mjs; emberCommit is the last code commit. 8764/9928 green, no timeouts. Main rewrote the @glimmer-workspace integration harness (Test cleanup 3-10/10): the [integration] suites now render through Ember's renderComponent, which under GXT_MODE is GXT, instead of driving the Glimmer VM, so their reds are GXT conformance gaps (1132/2144 green). The three modules that hung the renderer before hang1 are included ([integration] jit :: Components :: Glimmer, its > [integration] Glimmer sub-module, and argument-less helper paren-less invoke). The other reds are tests main added or rewrote (Glimmer components instead of classic ones, .gjs conversions, route managers, standalone tracked(), {{#each-in}} key, {{on}} listener order). 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT (gxt-delegate.ts GXT_UNSUPPORTED). The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 58693,
+    "totalAssertionsPassing": 55530,
+    "note": "Compat full run on the rebase of #21340 onto main a9501d5d40 (gxt 0.0.82) with the hang1 fix (helper args / (hash) args re-render loops) and the hang2 fixes ((fn) arguments, trackedArray in-place changes, helper named args, per-call-site helper instances), written by runner.mjs; emberCommit is the last code commit. 8804/9948 green, no timeouts. Main rewrote the @glimmer-workspace integration harness (Test cleanup 3-10/10): the [integration] suites now render through Ember's renderComponent, which under GXT_MODE is GXT, instead of driving the Glimmer VM, so their reds are GXT conformance gaps (1143/2144 green). The three modules that hung the renderer before hang1 are included ([integration] jit :: Components :: Glimmer, its > [integration] Glimmer sub-module, and argument-less helper paren-less invoke). The other reds are tests main added or rewrote (Glimmer components instead of classic ones, .gjs conversions, route managers, standalone tracked(), {{#each-in}} key, {{on}} listener order). 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT (gxt-delegate.ts GXT_UNSUPPORTED). The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (rendering tests)": {
@@ -1536,18 +1536,10 @@
     },
     "Components test: contextual components (classic component)": {
       "total": 10,
-      "passing": 7,
+      "passing": 9,
       "assertionsTotal": 35,
-      "assertionsPassing": 30,
+      "assertionsPassing": 34,
       "failingTests": [
-        {
-          "name": " GH#14508 rest positional params are received when passed as named parameter",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " GH#14508 rest positional params are received when passed as named parameter with dot notation",
-          "category": "gxt:triage"
-        },
         {
           "name": " component helper can curry arguments",
           "category": "gxt:triage"
@@ -1623,15 +1615,10 @@
     },
     "Components test: curly components (classic component)": {
       "total": 72,
-      "passing": 71,
+      "passing": 72,
       "assertionsTotal": 498,
-      "assertionsPassing": 495,
-      "failingTests": [
-        {
-          "name": " can use hash parameter instead of arbitrary positional param [GH #12444]",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 498,
+      "failingTests": []
     },
     "Components test: dynamic components": {
       "total": 20,
@@ -2584,17 +2571,31 @@
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 19,
-      "assertionsPassing": 19,
+      "total": 12,
+      "passing": 12,
+      "assertionsTotal": 37,
+      "assertionsPassing": 37,
       "failingTests": []
     },
     "GXT helper args: renderComponent roots settle": {
-      "total": 10,
-      "passing": 10,
-      "assertionsTotal": 14,
-      "assertionsPassing": 14,
+      "total": 14,
+      "passing": 14,
+      "assertionsTotal": 22,
+      "assertionsPassing": 22,
+      "failingTests": []
+    },
+    "GXT helper call sites: instances": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 26,
+      "assertionsPassing": 26,
+      "failingTests": []
+    },
+    "GXT helper call sites: named args": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
       "failingTests": []
     },
     "HashLocation": {
@@ -2613,22 +2614,10 @@
     },
     "Helper Tracked Properties": {
       "total": 10,
-      "passing": 6,
+      "passing": 9,
       "assertionsTotal": 44,
-      "assertionsPassing": 32,
+      "assertionsPassing": 43,
       "failingTests": [
-        {
-          "name": " tracked properties rerender when updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " getters update when dependent properties are invalidated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " array properties rerender when updated",
-          "category": "gxt:triage"
-        },
         {
           "name": " custom ember array properties rerender when updated",
           "category": "gxt:triage"
@@ -4941,15 +4930,10 @@
     },
     "Syntax test: {{#let as}}": {
       "total": 8,
-      "passing": 7,
+      "passing": 8,
       "assertionsTotal": 35,
-      "assertionsPassing": 34,
-      "failingTests": [
-        {
-          "name": " can access alias of an array",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 35,
+      "failingTests": []
     },
     "Syntax test: {{#unless}} with inverse": {
       "total": 105,
@@ -4981,15 +4965,10 @@
     },
     "The <LinkTo /> component - nested routes and link-to arguments": {
       "total": 30,
-      "passing": 29,
-      "assertionsTotal": 98,
-      "assertionsPassing": 89,
-      "failingTests": [
-        {
-          "name": " it works in an #each'd array of string route names",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 30,
+      "assertionsTotal": 96,
+      "assertionsPassing": 96,
+      "failingTests": []
     },
     "The example renders correctly": {
       "total": 1,
@@ -5021,15 +5000,10 @@
     },
     "The {{link-to}} component - nested routes and link-to arguments": {
       "total": 24,
-      "passing": 23,
-      "assertionsTotal": 87,
-      "assertionsPassing": 78,
-      "failingTests": [
-        {
-          "name": " it works in an #each'd array of string route names",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 24,
+      "assertionsTotal": 85,
+      "assertionsPassing": 85,
+      "failingTests": []
     },
     "Top Level DOM Structure": {
       "total": 1,
@@ -8652,9 +8626,9 @@
     },
     "[integration] jit :: initial render (client)": {
       "total": 88,
-      "passing": 39,
-      "assertionsTotal": 706,
-      "assertionsPassing": 594,
+      "passing": 48,
+      "assertionsTotal": 675,
+      "assertionsPassing": 605,
       "failingTests": [
         {
           "name": "Custom Elements with dynamic attributes",
@@ -8789,34 +8763,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "Constant negative numbers can render",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Large numeric literals (Number.MAX_SAFE_INTEGER)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Constant float numbers can render",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle simple helpers with inline string literal null parameter",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle simple helpers with inline undefined parameter",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle components with undefined named arguments",
-          "category": "gxt:triage"
-        },
-        {
           "name": "GH#13999 The compiler can handle components with undefined string literal named arguments",
           "category": "gxt:triage"
         },
@@ -8829,15 +8775,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "Sexpr helpers",
-          "category": "gxt:triage"
-        },
-        {
           "name": "The compiler can handle multiple invocations of sexprs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The compiler passes along the hash arguments",
           "category": "gxt:triage"
         },
         {
@@ -9731,9 +9669,9 @@
     },
     "[integration] jit :: trackedArray() (rendering)": {
       "total": 11,
-      "passing": 2,
-      "assertionsTotal": 786,
-      "assertionsPassing": 586,
+      "passing": 4,
+      "assertionsTotal": 787,
+      "assertionsPassing": 571,
       "failingTests": [
         {
           "name": "getting and setting an index",
@@ -9745,14 +9683,6 @@
         },
         {
           "name": "Can unshift into a newly created TrackedArray during construction",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{each}} works with new items",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{each}} works when updating old items",
           "category": "gxt:triage"
         },
         {
@@ -11689,6 +11619,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 1164
+    "gxt:triage": 1144
   }
 }
