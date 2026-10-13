@@ -119,6 +119,10 @@ export class ComponentRootState implements RendererRoot {
   }
 
   render(): void {
+    // A root can be destroyed before its first render, e.g. when it was added
+    // during a render transaction and destroyed before the transaction got to it.
+    if (isDestroying(this)) return;
+
     this.#render();
   }
 
@@ -238,6 +242,7 @@ export class RendererState {
   #destroyed = false;
   #roots: RendererRoot[] = [];
   #removedRoots: RendererRoot[] = [];
+  #registered = false;
 
   private constructor(data: RendererData, renderer: BaseRenderer) {
     this.#data = data;
@@ -285,9 +290,19 @@ export class RendererState {
     roots.push(root);
     associateDestroyableChild(this, root);
 
-    if (roots.length === 1) {
-      register(renderer);
-    }
+    // Destroying a root (e.g. via the `RenderResult` from `renderComponent`)
+    // must release it, otherwise the root -- and the renderer, which stays in
+    // the global `renderers` list while it has roots -- is retained forever.
+    registerDestructor(root, () => {
+      if (this.#inRenderTransaction) {
+        // `renderRoots` is iterating `roots`; let it remove this one.
+        if (!this.#removedRoots.includes(root)) this.#removedRoots.push(root);
+      } else {
+        this.#removeRoot(root, renderer);
+      }
+    });
+
+    this.#register(renderer);
 
     this.#renderRootsTransaction(renderer);
 
@@ -356,13 +371,33 @@ export class RendererState {
 
     // remove any roots that were destroyed during this transaction
     while (removedRoots.length) {
-      let root = removedRoots.pop();
+      this.#removeRoot(removedRoots.pop()!, renderer);
+    }
+  }
 
-      let rootIndex = roots.indexOf(root!);
+  #removeRoot(root: RendererRoot, renderer: BaseRenderer): void {
+    let roots = this.#roots;
+    let rootIndex = roots.indexOf(root);
+
+    if (rootIndex !== -1) {
       roots.splice(rootIndex, 1);
     }
 
-    if (this.#roots.length === 0) {
+    if (roots.length === 0) {
+      this.#deregister(renderer);
+    }
+  }
+
+  #register(renderer: BaseRenderer): void {
+    if (!this.#registered) {
+      this.#registered = true;
+      register(renderer);
+    }
+  }
+
+  #deregister(renderer: BaseRenderer): void {
+    if (this.#registered) {
+      this.#registered = false;
       deregister(renderer);
     }
   }
@@ -393,11 +428,7 @@ export class RendererState {
     this.#removedRoots.length = 0;
     this.#roots = [];
 
-    // if roots were present before destroying
-    // deregister this renderer instance
-    if (roots.length) {
-      deregister(renderer);
-    }
+    this.#deregister(renderer);
   }
 }
 
@@ -527,7 +558,9 @@ export function renderComponent(
    * NOTE: destruction is async
    */
   let existing = RENDER_CACHE.get(into);
-  existing?.result.destroy();
+  if (existing?.glimmerResult) {
+    existing.result.destroy();
+  }
   /**
    * We can only replace the inner HTML the first time.
    * Because destruction is async, it won't be safe to
@@ -557,17 +590,16 @@ export function renderComponent(
     renderTarget = { element: parentElement, nextSibling: firstNode };
   }
 
-  let innerResult = renderer.render(component, { into: renderTarget, args }).result;
+  let root = renderer.render(component, { into: renderTarget, args });
+  let innerResult = root.result;
 
-  if (innerResult) {
-    associateDestroyableChild(owner, innerResult);
-  }
+  // Destroying the root (rather than only its inner result) also removes it
+  // from the renderer, so nothing keeps it -- or `into` -- alive afterwards.
+  associateDestroyableChild(owner, root);
 
   let result: RenderResult = {
     destroy() {
-      if (innerResult) {
-        destroy(innerResult);
-      }
+      destroy(root);
     },
   };
 
