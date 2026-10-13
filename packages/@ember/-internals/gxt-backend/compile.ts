@@ -716,7 +716,7 @@ import {
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
 // $_tag component thunk's template-only-detection snapshots. The writer
 // (`setInstanceCapture` in `./manager`) stores into a module-local.
-import { peekInstanceCapture, getOwnerWithFallback } from './manager';
+import { peekInstanceCapture, getOwnerWithFallback, isTrackedAccessor } from './manager';
 
 // JS reserved words cannot be used as JS variable names, so scope-binding
 // injection (strict-mode templates with scopeValues) prefixes any binding
@@ -2654,9 +2654,17 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
     g.$__cellFor = function $__cellFor_ember(target: any, key: any) {
       if (target != null) {
         const t = typeof target;
-        if ((t === 'object' || t === 'function') && (target as any).__emberHashObject) {
-          // Read through the live, source-entangling member getter.
-          return target[key];
+        if (t === 'object' || t === 'function') {
+          if ((target as any).__emberHashObject) {
+            // Read through the live, source-entangling member getter.
+            return target[key];
+          }
+          // A `@tracked` key reads through its accessor, which reads (and
+          // subscribes to) the same gxt cell; gxt's `cellFor` would define its
+          // own cell accessor on `target` over it (`isTrackedAccessor`).
+          if (typeof key === 'string' && isTrackedAccessor(target, key)) {
+            return target[key];
+          }
         }
       }
       return origCellFor.call(this, target, key);
@@ -4091,7 +4099,14 @@ function _gxtTriggerReRenderSyncCore(
       // flipping all x-toggle {{#if}} branches at once whenever one was
       // toggled.
       if (isProto && cellTarget !== obj) return;
-      const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
+      // A context whose target is `obj` itself must not get a cell accessor
+      // over a `@tracked` key: it would shadow the tracked accessor
+      // (`isTrackedAccessor`), and the next write would render nothing.
+      const rc = cellFor(
+        cellTarget,
+        keyName,
+        /* skipDefine */ cellTarget === obj && isTrackedAccessor(obj, keyName)
+      );
       if (rc) {
         rc.update(newValue);
       }

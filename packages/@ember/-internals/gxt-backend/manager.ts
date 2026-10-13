@@ -3858,6 +3858,37 @@ function _isTrackedKey(inst: any, k: string): boolean {
   return false;
 }
 
+// Whether reading `key` on `obj` runs a `@tracked` accessor. gxt's
+// `cellFor(obj, key)` without `skipDefine` defines its own cell accessor on
+// `obj`; over a `@tracked` key that accessor shadows the tracked one, and later
+// writes (`obj.key = value`) update only gxt's cell: the tracked setter's
+// notification never runs, the run loop's DOM sync sees no change and the DOM
+// stays stale. Callers that would define a cell on `obj` read or update the
+// tracked key without defining instead. An inherited accessor (the usual case:
+// the decorator defines it on the class prototype) is memoized per prototype.
+const _trackedAccessorByProto = new WeakMap<object, Map<string, boolean>>();
+export function isTrackedAccessor(obj: object, key: string): boolean {
+  const own = Object.getOwnPropertyDescriptor(obj, key);
+  if (own !== undefined) {
+    // Only an accessor can be `@tracked` (a stage-3 field decorator defines it
+    // on the instance).
+    return own.set !== undefined && _isTrackedKey(obj, key);
+  }
+  const proto = Object.getPrototypeOf(obj);
+  if (proto === null || proto === Object.prototype) return false;
+  let byKey = _trackedAccessorByProto.get(proto);
+  if (byKey === undefined) {
+    byKey = new Map();
+    _trackedAccessorByProto.set(proto, byKey);
+  }
+  let tracked = byKey.get(key);
+  if (tracked === undefined) {
+    tracked = _isTrackedKey(obj, key);
+    byKey.set(key, tracked);
+  }
+  return tracked;
+}
+
 // Whether the first own descriptor for `key` on the prototype chain from
 // `start` is a plain native get-only getter: no setter, not a `@tracked`
 // accessor, and not a classic computed property (no meta descriptor from
