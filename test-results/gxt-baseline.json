@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T13:57:52.473Z",
+    "capturedAt": "2026-10-13T16:30:54.395Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "018eac1fe1",
-    "totalTests": 9990,
+    "emberCommit": "e54de0c87e",
+    "totalTests": 9992,
     "totalModules": 966,
     "quarantinedTests": 0,
-    "totalAssertions": 58902,
-    "totalAssertionsPassing": 55737,
-    "note": "Compat full run on the rebase of #21340 onto main a9501d5d40 (gxt 0.0.82) with the hang1 fix (helper args / (hash) args re-render loops) and the hang2 fixes ((fn) arguments, trackedArray in-place changes, helper named args, per-call-site helper instances) and track1 (@glimmer/tracking is metal's tracked / cached; a @tracked accessor is no longer shadowed by a gxt cell accessor), written by runner.mjs; emberCommit is the last code commit (the run was on c16139a876; 018eac1fe1 differs from it only by renaming @glimmer/component-gxt's type declarations, which the test page does not load). 8846/9990 green, no timeouts; track1 added the five GXT @glimmer/tracking modules (42 tests, all green) and changed nothing else. Main rewrote the @glimmer-workspace integration harness (Test cleanup 3-10/10): the [integration] suites now render through Ember's renderComponent, which under GXT_MODE is GXT, instead of driving the Glimmer VM, so their reds are GXT conformance gaps (1143/2144 green). The three modules that hung the renderer before hang1 are included ([integration] jit :: Components :: Glimmer, its > [integration] Glimmer sub-module, and argument-less helper paren-less invoke). The other reds are tests main added or rewrote (Glimmer components instead of classic ones, .gjs conversions, route managers, standalone tracked(), {{#each-in}} key, {{on}} listener order). 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT (gxt-delegate.ts GXT_UNSUPPORTED). The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59716,
+    "totalAssertionsPassing": 58034,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after GXT renderComponent started running the custom component manager of a plain-object definition, written by runner.mjs. The @glimmer-workspace integration harness renders every loose template that way, so root {{this.x}} reads now see the test context: 9139/9992 green (was 8846/9990), no timeouts, no harness errors; 280 [integration] rows turned green and the two new renderComponent tests pass. Six [integration] rows that passed only because the loose-template context was {} now fail on their real behaviour and are recorded red: 'Element modifier with hooks' (modifiers, Components :: Invocation and its Glimmer sub-module) and 'didUpdate is not called when params are constants' (a write to the context re-renders the whole root, so the modifier installs again instead of updating), and '`false` / `null` class name do not render' (a compat class binding is the className property, which cannot remove the attribute). The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (rendering tests)": {
@@ -4626,10 +4626,10 @@
       ]
     },
     "Strict Mode - renderComponent (direct)": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 25,
+      "assertionsPassing": 25,
       "failingTests": []
     },
     "Strict Mode - renderComponent - built ins": {
@@ -5495,18 +5495,10 @@
     },
     "[integration] jit :: #each": {
       "total": 25,
-      "passing": 0,
+      "passing": 13,
       "assertionsTotal": 1878,
-      "assertionsPassing": 1436,
+      "assertionsPassing": 1865,
       "failingTests": [
-        {
-          "name": "basic #each",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a plain array that shrinks during iteration stops the iteration",
-          "category": "gxt:triage"
-        },
         {
           "name": "a plain array that grows during iteration renders the new items",
           "category": "gxt:triage"
@@ -5516,35 +5508,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "keyed #each",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "receives the index as the second parameter",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "receives the index as the second parameter (when key=@identity)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it can render duplicate primitive items",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it can render duplicate objects",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it updates items if their key has not changed, and the items are tracked",
-          "category": "gxt:triage"
-        },
-        {
           "name": "it does not update items if their key has not changed, and the items are not tracked",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "scoped variable not available outside list",
           "category": "gxt:triage"
         },
         {
@@ -5582,30 +5546,14 @@
         {
           "name": "When re-iterated via swap #9, the original references are updated",
           "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #10, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #11, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #12, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "re-iterating nested arrays works",
-          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: #in-element": {
       "total": 9,
-      "passing": 2,
-      "assertionsTotal": 135,
-      "assertionsPassing": 113,
+      "passing": 5,
+      "assertionsTotal": 318,
+      "assertionsPassing": 303,
       "failingTests": [
         {
           "name": "It works with AST transforms",
@@ -5621,18 +5569,6 @@
         },
         {
           "name": "Inside an '{{if}}'",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Multiple",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Inside a loop",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Nesting",
           "category": "gxt:triage"
         }
       ],
@@ -5658,8 +5594,8 @@
     "[integration] jit :: Application test: debug render tree": {
       "total": 13,
       "passing": 1,
-      "assertionsTotal": 124,
-      "assertionsPassing": 36,
+      "assertionsTotal": 102,
+      "assertionsPassing": 33,
       "failingTests": [
         {
           "name": "strict-mode components",
@@ -5713,22 +5649,10 @@
     },
     "[integration] jit :: Attributes": {
       "total": 33,
-      "passing": 6,
-      "assertionsTotal": 366,
-      "assertionsPassing": 251,
+      "passing": 12,
+      "assertionsTotal": 361,
+      "assertionsPassing": 311,
       "failingTests": [
-        {
-          "name": "disable updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted disabled is always disabled if a not-null, not-undefined value is given",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "div[href] is not marked as unsafe",
-          "category": "gxt:triage"
-        },
         {
           "name": "triple curlies in attribute position",
           "category": "gxt:triage"
@@ -5770,10 +5694,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles empty string textarea values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles empty string input placeholders",
           "category": "gxt:triage"
         },
@@ -5795,14 +5715,6 @@
         },
         {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes lowercase dynamic properties correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes mix-case dynamic properties correctly",
           "category": "gxt:triage"
         },
         {
@@ -5935,7 +5847,7 @@
       "total": 4,
       "passing": 0,
       "assertionsTotal": 30,
-      "assertionsPassing": 17,
+      "assertionsPassing": 22,
       "failingTests": [
         {
           "name": "can get locals",
@@ -5959,7 +5871,7 @@
       "total": 2,
       "passing": 0,
       "assertionsTotal": 15,
-      "assertionsPassing": 9,
+      "assertionsPassing": 11,
       "failingTests": [
         {
           "name": "can get locals",
@@ -5975,7 +5887,7 @@
       "total": 2,
       "passing": 0,
       "assertionsTotal": 15,
-      "assertionsPassing": 8,
+      "assertionsPassing": 11,
       "failingTests": [
         {
           "name": "debugger in template-only component logs template-only message",
@@ -5989,22 +5901,10 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 20,
-      "assertionsTotal": 185,
-      "assertionsPassing": 149,
+      "passing": 23,
+      "assertionsTotal": 193,
+      "assertionsPassing": 165,
       "failingTests": [
-        {
-          "name": "top level in-element",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Static inline component helper",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Static block component helper",
-          "category": "gxt:triage"
-        },
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
           "category": "gxt:triage"
@@ -6085,22 +5985,10 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] Glimmer": {
       "total": 38,
-      "passing": 20,
-      "assertionsTotal": 164,
-      "assertionsPassing": 136,
+      "passing": 23,
+      "assertionsTotal": 172,
+      "assertionsPassing": 152,
       "failingTests": [
-        {
-          "name": "top level in-element",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Static inline component helper",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Static block component helper",
-          "category": "gxt:triage"
-        },
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
           "category": "gxt:triage"
@@ -6189,9 +6077,9 @@
     },
     "[integration] jit :: Components :: Invocation": {
       "total": 19,
-      "passing": 10,
-      "assertionsTotal": 135,
-      "assertionsPassing": 124,
+      "passing": 16,
+      "assertionsTotal": 169,
+      "assertionsPassing": 165,
       "failingTests": [
         {
           "name": "inverse named block",
@@ -6202,80 +6090,30 @@
           "category": "gxt:triage"
         },
         {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block with properties on attrs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-block with properties on attrs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block without properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-block without properties",
+          "name": "Element modifier with hooks",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: Invocation > [integration] Curly": {
       "total": 5,
-      "passing": 4,
+      "passing": 5,
       "assertionsTotal": 50,
-      "assertionsPassing": 48,
-      "failingTests": [
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 50,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Invocation > [integration] Dynamic": {
       "total": 5,
-      "passing": 0,
-      "assertionsTotal": 20,
-      "assertionsPassing": 15,
-      "failingTests": [
-        {
-          "name": "block with properties on attrs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-block with properties on attrs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block without properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-block without properties",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 5,
+      "assertionsTotal": 50,
+      "assertionsPassing": 50,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Invocation > [integration] Glimmer": {
       "total": 9,
       "passing": 6,
-      "assertionsTotal": 65,
-      "assertionsPassing": 61,
+      "assertionsTotal": 69,
+      "assertionsPassing": 65,
       "failingTests": [
         {
           "name": "inverse named block",
@@ -6286,26 +6124,17 @@
           "category": "gxt:triage"
         },
         {
-          "name": "yield inside a conditional on the component",
+          "name": "Element modifier with hooks",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: Scope": {
       "total": 6,
-      "passing": 4,
-      "assertionsTotal": 40,
-      "assertionsPassing": 38,
-      "failingTests": [
-        {
-          "name": "correct scope - conflicting block param and attr names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correct scope - conflicting local names",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 6,
+      "assertionsTotal": 48,
+      "assertionsPassing": 48,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Scope > [integration] Curly": {
       "total": 2,
@@ -6316,19 +6145,10 @@
     },
     "[integration] jit :: Components :: Scope > [integration] Dynamic": {
       "total": 2,
-      "passing": 0,
-      "assertionsTotal": 8,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": "correct scope - conflicting block param and attr names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correct scope - conflicting local names",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 2,
+      "assertionsTotal": 16,
+      "assertionsPassing": 16,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Scope > [integration] Glimmer": {
       "total": 2,
@@ -6339,73 +6159,47 @@
     },
     "[integration] jit :: Components :: Shadowing": {
       "total": 5,
-      "passing": 3,
+      "passing": 5,
       "assertionsTotal": 103,
-      "assertionsPassing": 89,
-      "failingTests": [
-        {
-          "name": "outer attributes with concat clobber inner attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "outer attributes with concat are reflected",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 103,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Shadowing > [integration] Glimmer": {
       "total": 5,
-      "passing": 3,
+      "passing": 5,
       "assertionsTotal": 103,
-      "assertionsPassing": 89,
-      "failingTests": [
-        {
-          "name": "outer attributes with concat clobber inner attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "outer attributes with concat are reflected",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 103,
+      "failingTests": []
     },
     "[integration] jit :: Components :: TemplateOnly": {
       "total": 2,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 24,
-      "assertionsPassing": 18,
+      "assertionsPassing": 21,
       "failingTests": [
         {
           "name": "inner ...attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "creating a new component",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: TemplateOnly > [integration] TemplateOnly": {
       "total": 2,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 24,
-      "assertionsPassing": 18,
+      "assertionsPassing": 21,
       "failingTests": [
         {
           "name": "inner ...attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "creating a new component",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: has-block": {
       "total": 69,
-      "passing": 41,
-      "assertionsTotal": 455,
-      "assertionsPassing": 423,
+      "passing": 55,
+      "assertionsTotal": 539,
+      "assertionsPassing": 521,
       "failingTests": [
         {
           "name": "has-block works within a yielded curried component invoked with angle bracket invocation (truthy)",
@@ -6436,31 +6230,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block (concatted attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (concatted attr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (concatted attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (concatted attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6468,15 +6238,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "has-block works when used directly as an argument without extra parens (prop, default)",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block supplied",
           "category": "gxt:triage"
         },
         {
@@ -6488,31 +6250,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block (content, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (content, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6539,36 +6277,12 @@
     },
     "[integration] jit :: Components :: has-block > [integration] Dynamic": {
       "total": 21,
-      "passing": 0,
-      "assertionsTotal": 84,
-      "assertionsPassing": 63,
+      "passing": 14,
+      "assertionsTotal": 168,
+      "assertionsPassing": 161,
       "failingTests": [
         {
-          "name": "parameterized has-block (concatted attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (concatted attr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (concatted attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (concatted attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6576,15 +6290,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "has-block works when used directly as an argument without extra parens (prop, default)",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block supplied",
           "category": "gxt:triage"
         },
         {
@@ -6596,31 +6302,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block (content, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (content, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, default) when block supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6659,9 +6341,9 @@
     },
     "[integration] jit :: Components :: has-block-params": {
       "total": 76,
-      "passing": 42,
-      "assertionsTotal": 504,
-      "assertionsPassing": 470,
+      "passing": 63,
+      "assertionsTotal": 604,
+      "assertionsPassing": 591,
       "failingTests": [
         {
           "name": "parameterized has-block-params (prop, default) when block not supplied",
@@ -6700,46 +6382,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block-params (concatted attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block-params (prop, default) when block not supplied",
           "category": "gxt:triage"
         },
@@ -6748,55 +6390,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block-params (prop, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block-params (prop, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
           "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, else) when else supplied without block params",
           "category": "gxt:triage"
         }
       ]
@@ -6827,50 +6425,10 @@
     },
     "[integration] jit :: Components :: has-block-params > [integration] Dynamic": {
       "total": 25,
-      "passing": 0,
-      "assertionsTotal": 100,
-      "assertionsPassing": 75,
+      "passing": 21,
+      "assertionsTotal": 200,
+      "assertionsPassing": 196,
       "failingTests": [
-        {
-          "name": "parameterized has-block-params (concatted attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (concatted attr, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (attr, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
         {
           "name": "parameterized has-block-params (prop, default) when block not supplied",
           "category": "gxt:triage"
@@ -6880,55 +6438,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block-params (prop, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block-params (prop, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
           "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (content, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, default) when block supplied with block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (subexpr, else) when else supplied without block params",
           "category": "gxt:triage"
         }
       ]
@@ -6963,15 +6477,11 @@
     },
     "[integration] jit :: Components :: yield": {
       "total": 45,
-      "passing": 14,
-      "assertionsTotal": 292,
-      "assertionsPassing": 259,
+      "passing": 33,
+      "assertionsTotal": 362,
+      "assertionsPassing": 350,
       "failingTests": [
         {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
           "name": "yielding strings",
           "category": "gxt:triage"
         },
@@ -7004,19 +6514,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        },
-        {
           "name": "yield",
           "category": "gxt:triage"
         },
         {
-          "name": "yield inside a conditional on the component",
+          "name": "yield to \"else\"",
           "category": "gxt:triage"
         },
         {
@@ -7025,176 +6527,44 @@
         },
         {
           "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding strings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding floats",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding integers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding false",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding true",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block without properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "use a non-existent block param",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding a string and rendering its length",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding to an non-existent block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: yield > [integration] Curly": {
       "total": 15,
-      "passing": 11,
+      "passing": 14,
       "assertionsTotal": 130,
-      "assertionsPassing": 125,
+      "assertionsPassing": 129,
       "failingTests": [
         {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
           "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: yield > [integration] Dynamic": {
       "total": 15,
-      "passing": 0,
-      "assertionsTotal": 60,
-      "assertionsPassing": 45,
+      "passing": 13,
+      "assertionsTotal": 130,
+      "assertionsPassing": 128,
       "failingTests": [
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding strings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding floats",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding integers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding false",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding true",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block without properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "use a non-existent block param",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding a string and rendering its length",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding to an non-existent block",
-          "category": "gxt:triage"
-        },
         {
           "name": "yield to \"else\"",
           "category": "gxt:triage"
         },
         {
           "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: yield > [integration] Glimmer": {
       "total": 15,
-      "passing": 3,
+      "passing": 6,
       "assertionsTotal": 102,
-      "assertionsPassing": 89,
+      "assertionsPassing": 93,
       "failingTests": [
-        {
-          "name": "yield inside a conditional on the component",
-          "category": "gxt:triage"
-        },
         {
           "name": "yielding strings",
           "category": "gxt:triage"
@@ -7225,14 +6595,6 @@
         },
         {
           "name": "yielding a string and rendering its length",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
           "category": "gxt:triage"
         },
         {
@@ -7255,52 +6617,12 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 2,
-      "assertionsTotal": 789,
-      "assertionsPassing": 502,
+      "passing": 41,
+      "assertionsTotal": 792,
+      "assertionsPassing": 675,
       "failingTests": [
         {
-          "name": "updating a single curly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a single curly with siblings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "null and undefined produces empty text nodes",
-          "category": "gxt:triage"
-        },
-        {
           "name": "weird paths",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a single trusting curly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a single trusting curly with siblings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a single trusting curly with previous sibling",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Cycling between two values in a trusting curly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a curly with a safe and unsafe string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a triple curly with a safe and unsafe string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "triple curlies with empty string initial value",
           "category": "gxt:triage"
         },
         {
@@ -7336,67 +6658,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "updating a curly with this",
-          "category": "gxt:triage"
-        },
-        {
           "name": "a simple implementation of a dirtying rerender",
           "category": "gxt:triage"
         },
         {
-          "name": "a simple implementation of a dirtying rerender without else",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The unless helper without else",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The unless helper with else",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "if keyword in append position",
-          "category": "gxt:triage"
-        },
-        {
           "name": "if keyword in SubExpression without falsey value returns undefined [GH emberjs/ember.js#19409]",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "if keyword in append position with falsy",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "unless keyword in append position",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "unless keyword in append position with truthy",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "if keyword in call position",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "if keyword in call position with falsy",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "unless keyword in call position",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "unless keyword in call position with truthy",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a conditional that is false on the first run",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block arguments",
           "category": "gxt:triage"
         },
         {
@@ -7408,67 +6674,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "block arguments (ensure balanced push/pop)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block arguments cannot be accessed through {{this}}",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The with helper should consider an empty array truthy",
-          "category": "gxt:triage"
-        },
-        {
           "name": "block helpers whose template has a morph at the edge",
           "category": "gxt:triage"
         },
         {
-          "name": "clean content doesn't get blown away",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "helper calls follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "class attribute follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "class attribute w/ concat follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
           "name": "class attribute is removed if the binding becomes null or undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "attribute nodes follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "attribute nodes w/ concat follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "attributes values are normalized correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "namespaced attribute nodes follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "namespaced attribute nodes w/ concat follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-standard namespaced attribute nodes follow the normal dirtying rules",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules",
           "category": "gxt:triage"
         },
         {
@@ -7496,10 +6706,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "The each helper with else",
-          "category": "gxt:triage"
-        },
-        {
           "name": "The each helper yields the index of the current item current item when using the @index key",
           "category": "gxt:triage"
         },
@@ -7521,7 +6727,7 @@
       "total": 18,
       "passing": 0,
       "assertionsTotal": 630,
-      "assertionsPassing": 420,
+      "assertionsPassing": 590,
       "failingTests": [
         {
           "name": "updating double curlies produces expected result in HTML context, as the only child",
@@ -7601,7 +6807,7 @@
       "total": 3,
       "passing": 1,
       "assertionsTotal": 27,
-      "assertionsPassing": 18,
+      "assertionsPassing": 23,
       "failingTests": [
         {
           "name": "Updating a element modifier",
@@ -7615,28 +6821,16 @@
     },
     "[integration] jit :: Updating SVG": {
       "total": 11,
-      "passing": 0,
-      "assertionsTotal": 241,
-      "assertionsPassing": 195,
+      "passing": 6,
+      "assertionsTotal": 275,
+      "assertionsPassing": 259,
       "failingTests": [
-        {
-          "name": "HTML namespace from root element is continued to child templates",
-          "category": "gxt:triage"
-        },
         {
           "name": "context.root <foreignObject> tag is SVG namespaced",
           "category": "gxt:triage"
         },
         {
           "name": "elements nested inside <foreignObject> have an XHTML namespace",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Namespaced attribute with a quoted expression",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "<svg> tag and expression as sibling",
           "category": "gxt:triage"
         },
         {
@@ -7648,19 +6842,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "expression nested inside a namespace",
-          "category": "gxt:triage"
-        },
-        {
           "name": "expression nested inside a namespaced context.root element",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "HTML namespace is created in child templates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "HTML namespace is continued to child templates",
           "category": "gxt:triage"
         }
       ]
@@ -7704,7 +6886,7 @@
       "total": 1,
       "passing": 0,
       "assertionsTotal": 7,
-      "assertionsPassing": 4,
+      "assertionsPassing": 5,
       "failingTests": [
         {
           "name": "initially missing, then present, then missing",
@@ -7714,47 +6896,30 @@
     },
     "[integration] jit :: [components] glimmer components": {
       "total": 3,
-      "passing": 2,
+      "passing": 3,
       "assertionsTotal": 14,
-      "assertionsPassing": 12,
-      "failingTests": [
-        {
-          "name": "NonBlock with attributes replaced with a web component",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 14,
+      "failingTests": []
     },
     "[integration] jit :: [components] scope": {
       "total": 8,
-      "passing": 3,
+      "passing": 6,
       "assertionsTotal": 24,
-      "assertionsPassing": 19,
+      "assertionsPassing": 22,
       "failingTests": [
         {
-          "name": "correct scope - accessing local variable in yielded block (glimmer component)",
+          "name": "`false` class name do not render",
           "category": "gxt:triage"
         },
         {
-          "name": "`0` class names do render",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correct scope - simple",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correct scope - self lookup inside #each",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correct scope - complex",
+          "name": "`null` class name do not render",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: [components] teardown": {
       "total": 5,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 42,
       "assertionsPassing": 32,
       "failingTests": [
@@ -7764,10 +6929,6 @@
         },
         {
           "name": "components inside a list are destroyed (when key is @identity)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "components that are \"destroyed twice\" are destroyed once",
           "category": "gxt:triage"
         },
         {
@@ -7782,36 +6943,16 @@
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
-      "passing": 7,
-      "assertionsTotal": 381,
-      "assertionsPassing": 262,
+      "passing": 15,
+      "assertionsTotal": 376,
+      "assertionsPassing": 324,
       "failingTests": [
-        {
-          "name": "value over default max but below set max is kept",
-          "category": "gxt:triage"
-        },
         {
           "name": "value below default min but above set min is kept",
           "category": "gxt:triage"
         },
         {
-          "name": "in the valid default range is kept",
-          "category": "gxt:triage"
-        },
-        {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "disable updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted disabled is always disabled if a not-null, not-undefined value is given",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "div[href] is not marked as unsafe",
           "category": "gxt:triage"
         },
         {
@@ -7855,10 +6996,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles empty string textarea values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles empty string input placeholders",
           "category": "gxt:triage"
         },
@@ -7880,14 +7017,6 @@
         },
         {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes lowercase dynamic properties correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes mix-case dynamic properties correctly",
           "category": "gxt:triage"
         },
         {
@@ -8245,41 +7374,16 @@
     },
     "[integration] jit :: a[href] attribute": {
       "total": 6,
-      "passing": 0,
+      "passing": 6,
       "assertionsTotal": 66,
-      "assertionsPassing": 50,
-      "failingTests": [
-        {
-          "name": "marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe, http as safe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on updates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `undefined`",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 66,
+      "failingTests": []
     },
     "[integration] jit :: area[href] attribute": {
       "total": 6,
-      "passing": 0,
+      "passing": 2,
       "assertionsTotal": 66,
-      "assertionsPassing": 50,
+      "assertionsPassing": 59,
       "failingTests": [
         {
           "name": "marks javascript: protocol as unsafe",
@@ -8295,43 +7399,27 @@
         },
         {
           "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `undefined`",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: argument-less helper paren-less invoke": {
       "total": 5,
-      "passing": 2,
+      "passing": 4,
       "assertionsTotal": 22,
-      "assertionsPassing": 19,
+      "assertionsPassing": 21,
       "failingTests": [
         {
           "name": "invoking an argument-less helper without parens in named argument position is a syntax error",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "passing a local helper in named argument position is not deprecated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking a local helper with parens in named argument position is not deprecated",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: button[formaction] attribute": {
       "total": 6,
-      "passing": 0,
+      "passing": 2,
       "assertionsTotal": 66,
-      "assertionsPassing": 50,
+      "assertionsPassing": 59,
       "failingTests": [
         {
           "name": "marks javascript: protocol as unsafe",
@@ -8347,14 +7435,6 @@
         },
         {
           "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `undefined`",
           "category": "gxt:triage"
         }
       ]
@@ -8413,21 +7493,16 @@
     },
     "[integration] jit :: dynamic helpers in resolution mode": {
       "total": 3,
-      "passing": 2,
+      "passing": 3,
       "assertionsTotal": 15,
-      "assertionsPassing": 14,
-      "failingTests": [
-        {
-          "name": "Can invoke a yielded nested helper in resolution mode",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "[integration] jit :: dynamic modifiers in resolution mode": {
       "total": 14,
-      "passing": 3,
-      "assertionsTotal": 69,
-      "assertionsPassing": 58,
+      "passing": 4,
+      "assertionsTotal": 76,
+      "assertionsPassing": 66,
       "failingTests": [
         {
           "name": "Can use a nested argument as a modifier",
@@ -8439,10 +7514,6 @@
         },
         {
           "name": "Can pass curried modifier as argument and invoke dynamically (with args, multi-layer)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Modifiers with dynamic arguments receive the correct number of arguments",
           "category": "gxt:triage"
         },
         {
@@ -8629,172 +7700,23 @@
     },
     "[integration] jit :: img[src] attribute": {
       "total": 6,
-      "passing": 0,
+      "passing": 6,
       "assertionsTotal": 66,
-      "assertionsPassing": 50,
-      "failingTests": [
-        {
-          "name": "marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe, http as safe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on updates",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks vbscript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `undefined`",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 66,
+      "failingTests": []
     },
     "[integration] jit :: initial render (client)": {
       "total": 88,
-      "passing": 48,
-      "assertionsTotal": 675,
-      "assertionsPassing": 605,
+      "passing": 82,
+      "assertionsTotal": 680,
+      "assertionsPassing": 672,
       "failingTests": [
-        {
-          "name": "Custom Elements with dynamic attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Custom Elements with dynamic content",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Dynamic content within single custom element",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted attribute null values do not disable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted attribute null values do not disable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted attribute string values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted attribute string values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `undefined`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted a href attribute is not rendered when set to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted a href attribute is not rendered when set to `undefined`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Attribute expression can be followed by another attribute",
-          "category": "gxt:triage"
-        },
         {
           "name": "Dynamic selected options",
           "category": "gxt:triage"
         },
         {
           "name": "Dynamic multi-select",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg href attribute with quotation marks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg href attribute without quotation marks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Text curlies",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Repaired text nodes are ensured in the right place Part 1",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Repaired text nodes are ensured in the right place Part 2",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Repaired text nodes are ensured in the right place Part 3",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Path expressions",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Text curlies perform escaping",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Rerender respects whitespace",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Safe HTML curlies",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Triple curlies",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Top level triple curlies",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Top level unescaped tr",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The compiler can handle top-level unescaped td inside tr contextualElement",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Extreme nesting",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Simple blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Nested blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Loops",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Simple helpers",
           "category": "gxt:triage"
         },
         {
@@ -8810,28 +7732,16 @@
           "category": "gxt:triage"
         },
         {
-          "name": "The compiler can handle multiple invocations of sexprs",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Attributes can be populated with helpers that generate a string",
-          "category": "gxt:triage"
-        },
-        {
           "name": "Attribute helpers take a hash",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Attributes containing multiple helpers are treated like a block",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: input[formaction] attribute": {
       "total": 6,
-      "passing": 0,
+      "passing": 2,
       "assertionsTotal": 66,
-      "assertionsPassing": 50,
+      "assertionsPassing": 59,
       "failingTests": [
         {
           "name": "marks javascript: protocol as unsafe",
@@ -8848,22 +7758,14 @@
         {
           "name": "marks vbscript: protocol as unsafe",
           "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can be removed by setting to `undefined`",
-          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 9,
-      "assertionsTotal": 381,
-      "assertionsPassing": 264,
+      "passing": 15,
+      "assertionsTotal": 376,
+      "assertionsPassing": 324,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -8871,18 +7773,6 @@
         },
         {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "disable updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted disabled is always disabled if a not-null, not-undefined value is given",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "div[href] is not marked as unsafe",
           "category": "gxt:triage"
         },
         {
@@ -8926,10 +7816,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles empty string textarea values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles empty string input placeholders",
           "category": "gxt:triage"
         },
@@ -8951,14 +7837,6 @@
         },
         {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes lowercase dynamic properties correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes mix-case dynamic properties correctly",
           "category": "gxt:triage"
         },
         {
@@ -8985,22 +7863,10 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 11,
-      "assertionsTotal": 381,
-      "assertionsPassing": 266,
+      "passing": 17,
+      "assertionsTotal": 376,
+      "assertionsPassing": 326,
       "failingTests": [
-        {
-          "name": "disable updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted disabled is always disabled if a not-null, not-undefined value is given",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "div[href] is not marked as unsafe",
-          "category": "gxt:triage"
-        },
         {
           "name": "triple curlies in attribute position",
           "category": "gxt:triage"
@@ -9042,10 +7908,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles empty string textarea values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles empty string input placeholders",
           "category": "gxt:triage"
         },
@@ -9067,14 +7929,6 @@
         },
         {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes lowercase dynamic properties correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes mix-case dynamic properties correctly",
           "category": "gxt:triage"
         },
         {
@@ -9101,9 +7955,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 9,
-      "assertionsTotal": 381,
-      "assertionsPassing": 264,
+      "passing": 15,
+      "assertionsTotal": 376,
+      "assertionsPassing": 324,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -9111,18 +7965,6 @@
         },
         {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "disable updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Quoted disabled is always disabled if a not-null, not-undefined value is given",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "div[href] is not marked as unsafe",
           "category": "gxt:triage"
         },
         {
@@ -9166,10 +8008,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles empty string textarea values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles empty string input placeholders",
           "category": "gxt:triage"
         },
@@ -9191,14 +8029,6 @@
         },
         {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes lowercase dynamic properties correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "normalizes mix-case dynamic properties correctly",
           "category": "gxt:triage"
         },
         {
@@ -9428,10 +8258,18 @@
     },
     "[integration] jit :: modifiers": {
       "total": 11,
-      "passing": 5,
-      "assertionsTotal": 51,
-      "assertionsPassing": 35,
+      "passing": 3,
+      "assertionsTotal": 57,
+      "assertionsPassing": 42,
       "failingTests": [
+        {
+          "name": "Element modifier with hooks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "didUpdate is not called when params are constants",
+          "category": "gxt:triage"
+        },
         {
           "name": "same element destruction order",
           "category": "gxt:triage"
@@ -10094,22 +8932,10 @@
     },
     "[integration] jit :: {{log}} keyword": {
       "total": 6,
-      "passing": 2,
+      "passing": 5,
       "assertionsTotal": 39,
-      "assertionsPassing": 32,
+      "assertionsPassing": 36,
       "failingTests": [
-        {
-          "name": "correctly logs a property",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correctly logs multiple arguments",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "correctly logs `this`",
-          "category": "gxt:triage"
-        },
         {
           "name": "correctly logs when values update",
           "category": "gxt:triage"
@@ -11654,6 +10480,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 1144
+    "gxt:triage": 853
   }
 }
