@@ -4,7 +4,8 @@ Author ruling (2026-10-13, on §02-11 item 15, "Upstream-Handlebars leftovers"):
 be used in current Ember; (2) remove each unusable one from the parser entirely; (3) add test
 coverage for each usable one, designated as "inherited from Handlebars, legacy behavior".
 
-Resume from the first unticked item. Each removal and each batch of tests is its own upstream
+Resume from the first unticked item. Experiments run in the worktree
+`/Users/edward/hacking/ember.js-t21` (branch `spike/t21-handlebars-leftovers`, never pushed). Each removal and each batch of tests is its own upstream
 PR, branched from `origin/main`.
 
 ## Features in scope

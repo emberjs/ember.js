@@ -8,15 +8,17 @@ branch builds the mustache with `params: []` and an empty hash). `{{#"foo"}}` an
 already error (E16, `handlebars-node-visitors.ts:693-716`). `{{"foo"}}`, `{{1}}`, `{{null}}` with
 no arguments stay valid.
 
-Resume from the first unticked item. Branch from `origin/main`; nothing outside the PR branch is
+Resume from the first unticked item. Worktree `/Users/edward/hacking/ember.js-t20`, branch
+`fix/literal-mustache-arguments` from `origin/main`; nothing outside the PR branch is
 committed except this file and the spec.
 
-- [ ] 1. Decide with the author whether this lands as an error now or as a [Dev] deprecation
+- [x] 1. Decide with the author whether this lands as an error now or as a [Dev] deprecation
       first. It changes a template that compiles and renders today into a compile error, so
       Ember's semver policy probably calls for a deprecation (`until: '8.0.0'`). Record the answer
       here.
-
-      > Let's make it an error right away. I'm going to argue that this is a bugfix and a new compile error is a low risk outcome for users -- it's easy to detect and easy to fix.
+      **Answer (author, 2026-10-13, `036d98ba70`):** an error right away, no deprecation. The PR
+      argues it is a bugfix, and a new compile error is low risk for users: easy to detect and
+      easy to fix.
 
 - [ ] 2. Usage check: grep this repo's templates and tests (`.hbs`, `.gjs`, `.gts`, inline `hbs`
       and `precompileTemplate` strings) for a literal callee with arguments. Note any hits; they

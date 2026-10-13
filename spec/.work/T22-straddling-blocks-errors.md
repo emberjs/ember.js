@@ -9,7 +9,8 @@ checked (E21). A block's `{{else}}` or closer inside a tag, an attribute value o
 ends the program anyway, and the half-built tag or comment lands in the next program or after the
 block: `{{#if x}}<div class="{{/if}}"></div>` is an empty block followed by `<div class="">`.
 
-Resume from the first unticked item. Branch from `origin/main`.
+Resume from the first unticked item. Worktree `/Users/edward/hacking/ember.js-t22`, branch
+`fix/blocks-straddling-markup` from `origin/main`.
 
 - [ ] 1. Implementation sketch to confirm: in `parseProgram`
       (`packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts:87-117`), after visiting
@@ -23,12 +24,13 @@ Resume from the first unticked item. Branch from `origin/main`.
       state family (tag, attribute value, HTML comment) named where it helps. Span: the
       `{{else}}` or closer if its location is recoverable from the Handlebars program locs, else
       the whole block.
-- [ ] 3. HTML comments: decide between (a) an error for a block opened outside a comment and
+- [x] 3. HTML comments: decide between (a) an error for a block opened outside a comment and
       closed inside it, and (b) treating that closer as comment text (§02-11 item 17's suggestion,
       natural for a single-pass parser but awkward in the two-pass one, because the Handlebars
       pass has already matched the closer to its opener). (a) is simpler; confirm with the author.
-
-      > I would prefer (b), so let's attempt that. I want to see how complex the ipmlementation is. If it turns out to be really complex, we can fall back to (a).
+      **Answer (author, 2026-10-13, `036d98ba70`):** attempt (b), to see how complex the
+      implementation is; fall back to (a) if it turns out really complex. Report the complexity
+      either way.
 
 - [ ] 4. Tests in `packages/@glimmer/syntax/test/parser-error-test.ts`: `{{else}}` and closer in
       each state family (tag name, before/after attribute name, attribute name, unquoted, single-
