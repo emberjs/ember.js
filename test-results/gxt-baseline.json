@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T19:25:21.738Z",
+    "capturedAt": "2026-10-13T20:21:14.584Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "1ce514a0ab",
-    "totalTests": 10001,
-    "totalModules": 970,
+    "emberCommit": "a55171ef7e",
+    "totalTests": 10006,
+    "totalModules": 971,
     "quarantinedTests": 0,
-    "totalAssertions": 59778,
-    "totalAssertionsPassing": 58144,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after every compat path that writes a bound attribute itself (...attributes forwarding, classic component elements, LinkTo / Input, the attributes applied before a forwarded modifier, the property-slot fallback, root attributeBindings) sanitizes URL attributes with Glimmer's requiresSanitization / sanitizeAttributeValue in every build, and the DEBUG-only setAttribute patch is removed, written by runner.mjs. 9172/10001 green (was 9167/9996), no timeouts, no harness errors, no green->red. The five new tests pass: a bound URL forwarded by ...attributes onto a template-only and a classic component's element, a forwarded modifier that sees the sanitized URL, a bound formaction on <Input>, and a bound URL attribute forwarded to <LinkTo>. They and the button[formaction] / input[formaction] Attributes tests also pass in a production build, where the removed patch never ran. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59793,
+    "totalAssertionsPassing": 58159,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a build-time-compiled <template> component invoked by name from a runtime-compiled template receives the invocation's attributes and modifiers through ...attributes, each such component renders its own function (one synthesized tag per function, so two components invoked with the same argument names no longer share a scope slot) and the compiled wrapper templates are cached per function rather than per name, written by runner.mjs. 9177/10006 green (was 9172/10001), no timeouts, no harness errors, no green->red. The five new tests pass (Components test: a <template> component invoked by name): static, bound, class and URL attributes on render and update, a curly invocation, a forwarded {{on}}, two components with the same argument names, and one name registered with two components. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1535,6 +1535,13 @@
           "category": "gxt:triage"
         }
       ]
+    },
+    "Components test: a <template> component invoked by name": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "Components test: attrs lookup": {
       "total": 6,

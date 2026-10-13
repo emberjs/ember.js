@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "Native full run on the rebase of #21340 onto main a9501d5d40, against the published @lifeart/gxt 0.0.82: 7061/7103, 42 known red. emberCommit is the last code commit of the series.",
+    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7077/7119, 42 known red. emberCommit is the last code commit of the series.",
     "The 8 reds of the pre-rebase baseline are unchanged. 7 of them need @lifeart/gxt with lifeart/glimmer-next#266 ({{#if}} renders Glimmer block bounds: no anchor comment while the branch has content); regenerate this baseline after pinning that release:",
     "  Application test: debug render tree :: template-only components",
     "  Application test: debug render tree :: custom components",
@@ -11,20 +11,28 @@
     "  gxt-native | {{#if}} block bounds (Glimmer DOM) :: {{#each}} rows that start and end with {{#if}}: move, swap, remove, clear",
     "The 8th is the pre-existing native red, unrelated to #266:",
     "  Component Tracked Properties w/ Args Proxy :: downstream property changes do not invalidate upstream component getters/arguments",
-    "The other 34 are tests main added (19) or rewrote (15): the .gjs rewrites of the {{array}} / {{hash}} / {{fn}} / {{element}} helper tests, {{get}} tests moved from the Glimmer integration suite, renderComponent roots in the debug render tree, {{#each-in}} key=, {{#each}} @key, {{on}} asserts and spellcheck, custom modifier destruction order, a dynamic style warning with an element modifier, Evented.detect on Component (Evented deprecation), and the argument-less helper test now on a Glimmer component."
+    "The other 34 are tests main added (19) or rewrote (15): the .gjs rewrites of the {{array}} / {{hash}} / {{fn}} / {{element}} helper tests, {{get}} tests moved from the Glimmer integration suite, renderComponent roots in the debug render tree, {{#each-in}} key=, {{#each}} @key, {{on}} asserts and spellcheck, custom modifier destruction order, a dynamic style warning with an element modifier, Evented.detect on Component (Evented deprecation), and the argument-less helper test now on a Glimmer component.",
+    "Since the previous regeneration (7061/7103) the run gained 16 tests, all green: 3 in Strict Mode - renderComponent (direct) (renderComponent runs a plain-object definition's custom manager; a render throws only its own errors), 4 in gxt-native | attributes plus the two URL sanitization of forwarded attributes modules (Glimmer's URL sanitization), and Components test: a <template> component invoked by name (5). The 42 known reds are the same tests as before."
   ],
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T07:44:52.752Z",
+    "capturedAt": "2026-10-13T20:33:33.990Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "b26159f73a",
-    "totalTests": 7103,
-    "totalModules": 672,
+    "emberCommit": "a55171ef7e",
+    "totalTests": 7119,
+    "totalModules": 675,
     "quarantinedTests": 0,
-    "totalAssertions": 35464,
-    "totalAssertionsPassing": 35387
+    "totalAssertions": 35515,
+    "totalAssertionsPassing": 35438
   },
   "modules": {
+    "<LinkTo /> component (URL sanitization of forwarded attributes)": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
     "<LinkTo /> component (rendering tests)": {
       "total": 6,
       "passing": 6,
@@ -474,6 +482,16 @@
         " an inner angle invocation can forward ...attributes through static component invocation (\"splattributes\")",
         " can include `...attributes` in multiple elements in tagless component (\"splattributes\")",
         " can yield content to contextual components invoked with angle-bracket components that receives splattributes"
+      ]
+    },
+    "AngleBracket Invocation (URL sanitization of forwarded attributes)": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
+      "failingTests": [],
+      "skippedTests": [
+        " a bound URL attribute on a classic component element is sanitized, also on update"
       ]
     },
     "AngleBracket Invocation (splattributes)": {
@@ -1167,6 +1185,13 @@
       "skippedTests": [
         " computed properties can depend on args"
       ]
+    },
+    "Components test: a <template> component invoked by name": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "Components test: contextual components": {
       "total": 42,
@@ -3594,10 +3619,10 @@
       ]
     },
     "Strict Mode - renderComponent (direct)": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 27,
+      "assertionsPassing": 27,
       "failingTests": []
     },
     "Strict Mode - renderComponent - built ins": {
@@ -4651,10 +4676,10 @@
       "failingTests": []
     },
     "gxt-native | attributes": {
-      "total": 10,
-      "passing": 10,
-      "assertionsTotal": 44,
-      "assertionsPassing": 44,
+      "total": 14,
+      "passing": 14,
+      "assertionsTotal": 55,
+      "assertionsPassing": 55,
       "failingTests": []
     },
     "gxt-native | components": {
