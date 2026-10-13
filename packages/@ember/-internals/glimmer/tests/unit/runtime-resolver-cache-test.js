@@ -85,14 +85,27 @@ moduleFor(
       });
 
       this.assertText('One');
+      // GXT parity note: componentDefinitionCount is identical on both
+      // backends (each definition is generated exactly once — the property
+      // under test). Only the templateCacheMisses/Hits deltas differ: GXT
+      // renders a resolved component's layout through its own compile
+      // pipeline, so per-component layout factories never traverse the
+      // classic template-factory cache — only the test's own `this.render`
+      // template (1 miss) and the debugRenderTree lookup (1 hit) do.
       this.expectCacheChanges(
-        {
-          componentDefinitionCount: 1,
-          // 1 from this.render, 1 from component-one
-          templateCacheMisses: 2,
-          // debugRenderTree
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
-        },
+        __GXT_MODE__
+          ? {
+              componentDefinitionCount: 1,
+              templateCacheMisses: 1,
+              templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
+            }
+          : {
+              componentDefinitionCount: 1,
+              // 1 from this.render, 1 from component-one
+              templateCacheMisses: 2,
+              // debugRenderTree
+              templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
+            },
         'test case component and component-one no change'
       );
 
@@ -100,11 +113,18 @@ moduleFor(
       runTask(() => set(this.context, 'componentName', 'component-two'));
 
       this.assertText('Two');
+      // GXT parity note: same as above — the definition count still
+      // increments exactly once for component-two; its layout just doesn't
+      // produce a classic template-cache miss under GXT.
       this.expectCacheChanges(
-        {
-          componentDefinitionCount: 1,
-          templateCacheMisses: 1,
-        },
+        __GXT_MODE__
+          ? {
+              componentDefinitionCount: 1,
+            }
+          : {
+              componentDefinitionCount: 1,
+              templateCacheMisses: 1,
+            },
         'component-two first render'
       );
 
