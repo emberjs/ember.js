@@ -2,8 +2,6 @@
 @module @ember/array
 */
 import { DeprecatedMixin } from '@ember/object/mixin-internal';
-import type Enumerable from '@ember/enumerable';
-import type MutableEnumerable from '@ember/enumerable/mutable';
 import type Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import isArray from './lib/is-array';
@@ -49,11 +47,10 @@ export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
   primitives to use it: `length()` and `objectAt()`.
 
   @class EmberArray
-  @uses Enumerable
   @since Ember 0.9.0
   @public
 */
-interface EmberArray<T> extends Enumerable {
+interface EmberArray<T> {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1035,7 +1032,7 @@ const EmberArray = DeprecatedMixin.create(InternalEmberArrayMixin, {
   @uses EmberArray
   @public
 */
-interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
+interface MutableArray<T> extends EmberArray<T> {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1206,7 +1203,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
     ```
 
     @method unshiftObjects
-    @param {Enumerable} objects the objects to add
+    @param {Iterable} objects the objects to add
     @return {EmberArray} receiver
     @public
   */
