@@ -3,9 +3,9 @@
 This chapter specifies how template source text is parsed: which text is accepted, which is
 rejected and with what error, and what structure each accepted template has. It states that
 structure as the current parse tree (**ASTv1**), which serves as the spec's notation; the
-tree itself is not part of the contract (§00-0.1 "Non-goals"). It covers the Handlebars mustache layer, the HTML tokenizer layer, how the two
-are interleaved, whitespace control, character references, source locations, and every
-parse-time error.
+tree itself is not part of the contract (§00-0.1 "Non-goals"). It covers the parsing model (one
+left-to-right scan), the Handlebars constructs, HTML tokenization and tree construction,
+whitespace control, character references, source locations, and every parse-time error.
 
 What is *not* here:
 
@@ -23,38 +23,160 @@ the ones listed in §02-1.2 changes the parse tree.
 
 ## 1. Overview
 
-### 1.1 The two-layer design
+### 1.1 Parsing model
 
-A template is parsed by two cooperating tokenizers:
+A template is parsed in one left-to-right scan by one tokenizer: the HTML tokenizer of §02-6.2,
+extended with Handlebars constructs. The scan divides the source text into:
 
-1. **Layer 1 — the Handlebars layer** (`packages/@handlebars/parser`). A Jison-generated
-   lexer/parser treats the input as a flat stream of `CONTENT` (anything that is not a
-   mustache) and mustache constructs (`{{…}}`, `{{{…}}}`, `{{#…}}…{{/…}}`, comments, raw
-   blocks). It knows nothing about HTML. Its output is a Handlebars AST (`Program`,
-   `ContentStatement`, `MustacheStatement`, `BlockStatement`, `CommentStatement`, …), which is
-   then post-processed by the whitespace-control pass (§02-5).
-2. **Layer 2 — the HTML layer** (`simple-html-tokenizer` 0.5.11, driven by
-   `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts` and
-   `packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts`). The Handlebars AST is
-   walked in source order. Each `ContentStatement`'s (post-whitespace-control) text is fed
-   *incrementally* into a single, persistent, evented HTML tokenizer; its events build
-   elements, attributes, text nodes and HTML comments. When the walk reaches a mustache,
-   comment or block, the **current state of the HTML tokenizer** determines what that
-   construct means (child content, attribute value, attribute-value part, element modifier,
-   element comment, or error).
+- **Handlebars constructs**, lexed by §02-2: mustaches (`{{…}}`, `{{{…}}}`), Handlebars
+  comments, block openers (`{{#…}}`), `{{else …}}` and `{{^}}`, block closers (`{{/…}}`), and
+  raw-block delimiters. Inside a raw block, `{{` starts no construct; only the raw block's own
+  closer does, and nested raw-block delimiters are text (§02-2.7).
+- **Text runs**: the text between constructs. An escaped mustache `\{{` (§02-2.2) also ends the
+  current text run and begins a new one, which ends at the next `{{`, `\{{` or `\\{{`.
 
-A conforming implementation MUST accept and reject the same inputs as this two-layer
-process, report the same errors, and give every accepted input the structure that the ASTv1
-described here records, including the quirks recorded in this chapter. It need not build
-ASTv1 or expose any parse tree (§00-0.1 "Non-goals"). Implementations MAY use a different
-internal architecture (e.g. a single hand-written scanner), but must then reproduce the
-interleaving semantics precisely — in particular, that Handlebars tokenization
-happens *first and independently of HTML context* (so `{{` inside an HTML attribute value or
-an HTML comment is still a mustache at layer 1), and that whitespace control operates on
-layer-1 content *before* HTML tokenization.
+Each text run, after whitespace control (§02-5), is fed to the HTML tokenizer, which builds
+elements, attributes, text nodes and HTML comments. When the scan reaches a construct, the
+current state of the HTML tokenizer decides what the construct is (§02-6.9–6.11): child content,
+an attribute value, part of an attribute value, an element modifier, an element comment, text of
+an HTML comment, or a syntax error. Put another way, every HTML tokenizer state has one added
+transition: on an unescaped `{{`, lex one construct, act on it according to that state, and
+continue in the state the placement rule names (usually the same one).
+
+Four properties of the scan are fixed by compatibility (rationale in §02-1.4). Each says that the
+Handlebars side does not look at HTML state:
+
+1. **Handlebars lexing is HTML-blind.** Constructs and escapes are recognized by the rules of
+   §02-2 in every HTML state: content, tags, attribute names and values, HTML comments, the text
+   of `<script>`, `<style>` and `<title>`, and markup declarations. A construct's extent never
+   depends on HTML state, so a `"` or `-->` inside a construct's string literal ends neither an
+   attribute value nor an HTML comment. A construct that cannot be used in the current state is
+   a syntax error, not text (§02-6.9–6.11). The one exception is the HTML comment, where the
+   construct's source text becomes comment text (§02-6.7).
+2. **Whitespace control is HTML-blind.** Whitespace control deletes whitespace at the edges of
+   text runs. What it deletes is decided from the constructs and the raw text alone, and the
+   HTML tokenizer never sees the deleted characters, even when deleting them changes how the
+   surrounding text tokenizes. For example, `<div a=b {{x}}>` has an element modifier, but in
+   `<div a=b {{~x}}>` the tilde deletes the space, so `b` and the mustache form one unquoted
+   attribute value, which is error E31.
+3. **Block structure is HTML-blind.** Blocks nest by the grammar of §02-3 alone. The parser
+   keeps one stack of open elements and open block programs (§02-6.1). An element must be
+   closed in the block program that opened it (E22, E23), but a partially tokenized tag or HTML
+   comment is not an element. A block's `{{else}}` or closer therefore ends the program in any
+   HTML state, and the partial tag or comment continues into what follows (§02-6.11).
+4. **Handlebars grammar errors come first.** If the input has a lexical or grammar error
+   anywhere (§02-9.1 kinds 2 and 3), that error is reported, even when an HTML error comes
+   earlier in the source (§02-9.1, "Error priority").
+
+The scan has observable **boundaries**: every construct, every nested raw-block delimiter, and
+the start and end of every text run that begins with an escape. At a boundary:
+
+- a text node being built in element or template content ends, and any later text starts a new
+  `TextNode` (`a\{{b}} c\{{d}}` is three `TextNode`s, `a`, `{{b}} c` and `{{d}}`). Inside a
+  tag, an attribute value or an HTML comment, the partial token continues across the boundary,
+  so a quoted attribute value's static text is one part across an escape (§02-2.2);
+- a character reference ends at the boundary: its terminating `;` must be in the same text run
+  as its `&` (§02-6.3);
+- if the HTML tokenizer was in `data`, it is now in `beforeData`, so the `<pre>`/`<textarea>`
+  newline rule applies again (§02-6.8);
+- the element block-parameter sub-machine treats the boundary as the end of its input
+  (§02-6.6).
+
+The end of the input is not a signal to the HTML tokenizer: whatever it has partially tokenized
+when the input ends is discarded (§02-6.12).
+
+A conforming implementation MUST accept and reject the same inputs as this scan, report the same
+errors, and give every accepted input the structure that the ASTv1 described here records,
+including the quirks recorded in this chapter. It need not build ASTv1 or expose any parse tree
+(§00-0.1 "Non-goals"), and it need not scan in one pass: the current implementation uses two
+(§02-1.5).
 
 Entry point: `preprocess(input, options)` —
 `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:746-803`.
+
+### 1.2 Parse options that affect the result
+
+| Option | Effect |
+|---|---|
+| `mode: 'precompile'` (default) | Whitespace control is applied (§02-5); HTML character references are decoded (§02-6.3); a single leading newline directly after `<pre>`/`<textarea>` start tags is dropped (§02-6.8). |
+| `mode: 'codemod'` | The Handlebars pass uses `parseWithoutProcessing` (§02-1.5) — **no** whitespace control at all, neither `~` stripping nor standalone stripping (strip *flags* are still recorded on nodes). Character references are **not** decoded (a `CodemodEntityParser` that never matches is used). The `<pre>`/`<textarea>` newline is kept. (`tokenizer-event-handlers.ts:735-744, 757-778`; `simple-html-tokenizer/dist/es6/index.js:70`.) |
+| `parseOptions.ignoreStandalone: true` | Standalone-line stripping (§02-5.3) is disabled; `~` stripping still applies (`whitespace-control.js:9,116`; test `packages/@glimmer/syntax/test/parser-whitespace-test.ts:23-31,91-97`). Ignored in codemod mode (where nothing is stripped). |
+| `parseOptions.srcName` | Recorded as `source` in the Handlebars pass's locations only (§02-1.5); not observable in ASTv1. |
+| `meta.moduleName` | Module name used in error messages (§02-9.1). Default `'an unknown module'` (`packages/@glimmer/syntax/lib/source/source.ts:21`). |
+| `locals` | Copied verbatim into `Template.blockParams` (`tokenizer-event-handlers.ts:787-790`). Has no effect on parsing. |
+
+*Note:* `babel-plugin-ember-template-compilation` with `targetFormat: 'hbs'` parses in codemod
+mode and re-prints (`babel-plugin-ember-template-compilation/src/plugin.ts:544-545`); the
+printed text is later parsed again in precompile mode. See §02-10.
+
+### 1.3 Input normalization
+
+- The input is a JavaScript string; positions are measured in UTF-16 code units.
+- `U+0000` is not allowed in text: the lexer's `CONTENT` is defined as `[^\x00]`, so a NUL
+  character anywhere outside a mustache produces
+  `Lexical error on line N. Unrecognized text.` (`src/handlebars.l:31,44`;
+  `lib/parser.js:1686-1697`). Implementations MUST reject NUL in content with a lexical error.
+- The HTML tokenizer replaces every `\r\n` and every lone `\r` with `\n` in each text run it
+  tokenizes (`preprocessInput`, `simple-html-tokenizer/dist/es6/index.js:38,45-47,650-651`).
+  Consequently **every `TextNode.chars`, attribute text, and HTML comment value contains only
+  `\n` line terminators**, in both modes. Mustache string literals are *not* normalized
+  (they are not HTML-tokenized).
+
+### 1.4 Rationale: why the Handlebars side is HTML-blind
+
+*Informative.* A single scan raises an obvious design option: let the HTML state steer the
+Handlebars side as well, so that a mustache in a tag, in an attribute value, in an HTML comment
+or in `<script>` text could follow different lexical rules. Compatibility rules this out for
+every input that works today, because the current parser runs Handlebars over the whole template
+before any HTML tokenization (§02-1.5), and templates depend on the result:
+
+- *Lexing.* `<style>.a { color: {{this.color}} }</style>` and `<script>` text with mustaches
+  render dynamic text. `<div class="{{t "a\"b>"}}">` is one attribute whose value is one
+  mustache. `<!-- {{"-->"}} -->x` is one comment followed by the text `x`, and
+  `<!-- {{#if x}} --> <b> {{/if}} -->` is one comment.
+- *Whitespace control.* Standalone lines and tildes delete text that the HTML tokenizer would
+  otherwise have seen, inside tags and attribute values as well as in content
+  (`<div class="a  {{~x}}">` has the static part `a`). Making the deletion depend on HTML state
+  would change rendered whitespace in existing templates.
+- *Block structure and error priority.* The two properties change only what happens to inputs
+  that are errors today, or that are accepted with a garbled tree (§02-6.11, "Blocks that
+  straddle markup"). They could be relaxed without breaking a working template; §02-11 items 18
+  and 19 ask whether to.
+
+The single-scan statement of §02-1.1 removes what is *not* fixed: the Handlebars parse tree, the
+walk over it, and the feeding of text to the HTML tokenizer in chunks are implementation
+choices. What they made observable is listed in §02-1.1 as the boundaries.
+
+Whitespace control needs lookahead in a single scan, because it can delete whitespace *before* a
+construct. To decide whether a whitespace run is deleted, a scanner lexes the next construct and
+looks at the text after it, up to the end of that line (§02-5). It never needs more: the other
+input to the decision, for a block closer after an `{{else if …}}` chain, is the end of the first
+inverse program, which the scan has already passed (§02-5.3).
+
+### 1.5 Implementation note: the current two-pass parser
+
+*Informative.* The current parser reaches the behavior of §02-1.1 in two passes:
+
+1. **The Handlebars pass** (`packages/@handlebars/parser`). A Jison-generated lexer and parser
+   read the whole input as a flat stream of `CONTENT` and Handlebars constructs, knowing nothing
+   about HTML. The result is a Handlebars AST (`Program`, `ContentStatement`,
+   `MustacheStatement`, `BlockStatement`, `CommentStatement`, …), on which the
+   whitespace-control pass (§02-5) then edits the `ContentStatement`s. Every lexical and grammar
+   error is thrown here, before any HTML is looked at, which is where property 4 of §02-1.1 comes
+   from.
+2. **The HTML pass** (`simple-html-tokenizer` 0.5.11, driven by
+   `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts` and
+   `packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts`). The Handlebars AST is
+   walked in source order. The text of each `ContentStatement` (a text run) is fed into one
+   persistent, evented HTML tokenizer with `tokenizePart`, followed by `flushData`, and the
+   tokenizer's events build elements, attributes, text nodes and HTML comments. Each mustache,
+   comment or block is dispatched on the tokenizer's state when the walk reaches it. A block's
+   programs are walked recursively, so the HTML tokenizer is never told where a block begins or
+   ends, which is where property 3 comes from.
+
+The boundaries of §02-1.1 are the `ContentStatement` boundaries: the Handlebars lexer starts a
+new `CONTENT` token at every construct and at every escape (§02-2.2), and `flushData` ends a text
+node only in `data` state (`simple-html-tokenizer/dist/es6/index.js:665-670`).
 
 ```
 source string
@@ -69,37 +191,13 @@ Handlebars Program  ──►  WhitespaceControl (precompile mode only)
 ASTv1 Template  ──►  AST plugins (options.plugins.ast; implementation-defined), see chapter 03
 ```
 
-### 1.2 Parse options that affect the result
-
-| Option | Effect |
-|---|---|
-| `mode: 'precompile'` (default) | Whitespace control is applied (§02-5); HTML character references are decoded (§02-6.3); a single leading newline directly after `<pre>`/`<textarea>` start tags is dropped (§02-6.8). |
-| `mode: 'codemod'` | Layer 1 uses `parseWithoutProcessing` — **no** whitespace control at all, neither `~` stripping nor standalone stripping (strip *flags* are still recorded on nodes). Character references are **not** decoded (a `CodemodEntityParser` that never matches is used). The `<pre>`/`<textarea>` newline is kept. (`tokenizer-event-handlers.ts:735-744, 757-778`; `simple-html-tokenizer/dist/es6/index.js:70`.) |
-| `parseOptions.ignoreStandalone: true` | Standalone-line stripping (§02-5.3) is disabled; `~` stripping still applies (`whitespace-control.js:9,116`; test `packages/@glimmer/syntax/test/parser-whitespace-test.ts:23-31,91-97`). Ignored in codemod mode (where nothing is stripped). |
-| `parseOptions.srcName` | Recorded as `source` in layer-1 locations only; not observable in ASTv1. |
-| `meta.moduleName` | Module name used in error messages (§02-9.1). Default `'an unknown module'` (`packages/@glimmer/syntax/lib/source/source.ts:21`). |
-| `locals` | Copied verbatim into `Template.blockParams` (`tokenizer-event-handlers.ts:787-790`). Has no effect on parsing. |
-
-*Note:* `babel-plugin-ember-template-compilation` with `targetFormat: 'hbs'` parses in codemod
-mode and re-prints (`babel-plugin-ember-template-compilation/src/plugin.ts:544-545`); the
-printed text is later parsed again in precompile mode. See §02-10.
-
-### 1.3 Input normalization
-
-- The input is a JavaScript string; positions are measured in UTF-16 code units.
-- Layer 1 treats `U+0000` specially: `CONTENT` is defined as `[^\x00]`, so a NUL character
-  anywhere outside a mustache produces
-  `Lexical error on line N. Unrecognized text.` (`src/handlebars.l:31,44`;
-  `lib/parser.js:1686-1697`). Implementations MUST reject NUL in content with a lexical error.
-- Layer 2 replaces every `\r\n` and every lone `\r` with `\n` in each chunk of content it
-  tokenizes (`preprocessInput`, `simple-html-tokenizer/dist/es6/index.js:38,45-47,650-651`).
-  Consequently **every `TextNode.chars`, attribute text, and HTML comment value contains only
-  `\n` line terminators**, in both modes. Mustache string literals are *not* normalized
-  (they never pass through layer 2).
+Where later sections cite a Handlebars node (`ContentStatement`, a path's `original` and
+`parts`, a program's `body`), they mean this pass's intermediate result, used as notation for
+the constructs and text runs of §02-1.1.
 
 ---
 
-## 2. Layer 1 — the Handlebars lexer
+## 2. Handlebars constructs — lexical rules
 
 Source of truth: `packages/@handlebars/parser/src/handlebars.l` (compiled to
 `lib/parser.js`, rules listed at `lib/parser.js:1957-2020`).
@@ -160,7 +258,7 @@ Consequences that implementations MUST reproduce:
 - `prefix\{{foo}} suffix` yields two `ContentStatement`s, `"prefix"` and
   `"{{foo}} suffix"`, which become **two separate `TextNode`s** in element/template content
   (`parser-escape-test.ts:19-21`) but a **single merged text part** inside an attribute value
-  (`parser-escape-test.ts:77-83`; see §02-6.1).
+  (`parser-escape-test.ts:77-83`; see the boundaries in §02-1.1).
 - `\{{foo}} text \{{bar}} done {{baz}}` → text `"{{foo}} text "`, text `"{{bar}} done "`,
   mustache `baz` (`parser-escape-test.ts:27-32`).
 - Escaping works identically inside HTML content, inside attribute values, and in codemod mode
@@ -320,7 +418,7 @@ that a block was raw. **[Legacy]**
 
 ---
 
-## 3. Layer 1 — the Handlebars grammar
+## 3. Handlebars grammar
 
 Source: `packages/@handlebars/parser/src/handlebars.yy`, AST construction helpers in
 `lib/helpers.js`. Terminals are the tokens of §02-2. `X*` = zero or more, `X+` = one or more,
@@ -426,7 +524,7 @@ fails with `if doesn't match unless`. Any helper name may follow `else` (`{{else
 The closing strip flags of the outer block are copied onto the innermost chained block's
 `closeStrip` (`lib/helpers.js:154-156`).
 
-**Inverse sections** `{{^name}}…{{/name}}` parse at layer 1 as a block whose program and
+**Inverse sections** `{{^name}}…{{/name}}` parse by the grammar as a block whose program and
 inverse are swapped: the body becomes the `inverse`, and the `{{else}}` part, if any, becomes
 the `program`. Glimmer handles the two forms differently:
 
@@ -491,7 +589,7 @@ modifiers and non-literal mustaches:
 | Partial block | `{{#> foo}}{{/foo}}` | `Handlebars partial blocks are not supported` |
 | Decorator | `{{* foo}}`, `{{*foo}}` | `Handlebars decorators are not supported` |
 | Decorator block | `{{#* foo}}{{/foo}}` | `Handlebars decorator blocks are not supported` |
-| Decorator block with inverse | `{{#* foo}}{{^}}{{/foo}}` | layer-1 `Unexpected inverse block on decorator` |
+| Decorator block with inverse | `{{#* foo}}{{^}}{{/foo}}` | Handlebars exception `Unexpected inverse block on decorator` |
 | Inverse section without `{{else}}` | `{{^foo}}x{{/foo}}` | ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead`` (§02-3.3) |
 | Hash literal, anywhere an expression can appear | `{{foo=bar}}`, `{{(foo=bar)}}`, `{{foo =bar}}`, `{{foo (a=b)}}`, `{{foo x=(a=b)}}` | ``Hash literals are not supported. Use named arguments (`{{helper foo=bar}}`) or the `hash` helper (`(hash foo=bar)`) instead`` (span: the hash literal, e.g. `(a=b)`) |
 | Sub-expression-rooted path | `{{(foo).bar}}`, `{{foo (bar).baz}}` | ``A path cannot start with a sub-expression. Use the `get` helper (`(get (foo) "bar")`) instead`` (span: the path) |
@@ -505,7 +603,7 @@ implementation MUST reject all of these with a syntax error.
 
 ## 4. Path expressions
 
-### 4.1 Layer-1 path construction
+### 4.1 Handlebars path construction
 
 `preparePath(data, sexpr, parts, loc)` (`lib/helpers.js:44-95`) builds a Handlebars path from
 the segment list. For each segment it appends `separator + part` to `original`, where
@@ -514,7 +612,7 @@ the first). Then:
 
 - A non-literal segment equal to `..`, `.` or `this`:
   - if any ordinary segment has already been collected, throw
-    `Invalid path: <original-so-far> - L:C` (layer-1 `Exception`; e.g. `{{foo.this}}`,
+    `Invalid path: <original-so-far> - L:C` (a Handlebars exception, §02-9.1 kind 2; e.g. `{{foo.this}}`,
     `{{foo/..}}`, `{{foo/./bar}}`);
   - otherwise it is dropped (`..` increments `depth`).
 - Otherwise the segment is collected; a segment introduced by `.#` is collected as `#part`.
@@ -526,7 +624,7 @@ original `this/foo`; `../foo` has parts `[foo]` and original `../foo`; `[this]` 
 
 ### 4.2 Conversion to ASTv1 (`PathExpression` visitor)
 
-`handlebars-node-visitors.ts:457-562`. Given the layer-1 `original` and `parts`:
+`handlebars-node-visitors.ts:457-562`. Given the Handlebars `original` and `parts` (§02-4.1):
 
 1. If `original` contains `/`:
    1. if it starts with `./` → error `Using "./" is not supported in Glimmer and unnecessary`;
@@ -539,7 +637,7 @@ original `this/foo`; `../foo` has parts `[foo]` and original `../foo`; `[this]` 
 3. Else segments = `parts`.
 4. The head is determined:
    - If `original` matches `/^this(?:\..+)?$/`: head is `ThisHead` and **all** segments are
-     the tail (layer 1 already dropped the `this`).
+     the tail (§02-4.1 already dropped the `this`).
    - Else if the path is a data path: the first segment `s` is removed and head is
      `AtHead { name: '@' + s }`; if there is none, error
      `Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z.`
@@ -576,7 +674,7 @@ Resulting behavior table (normative):
 | `../foo`, `./foo`, `foo.bar/baz`, `this.foo/bar`, `@../foo` | errors as above | | |
 | `this.@foo`, `@`, `@0`, `@@`, `@=`, `@!` | parse error (tests `packages/@glimmer/syntax/test/parser-error-test.ts:50-83`) | | |
 | `@1a` | At `@1a` | `[]` | `@1a` |
-| `foo.this`, `foo/..` | layer-1 `Invalid path: …` | | |
+| `foo.this`, `foo/..` | Handlebars exception `Invalid path: …` | | |
 
 *Note:* despite the error wording ("must start with a-z"), no character-class restriction is
 applied to heads beyond the ID rules of §02-2.4; `{{1a}}`, `{{@1a}}`, `{{-}}` all parse. Which
@@ -590,11 +688,21 @@ representable in `tail` but not in `original`.
 
 ## 5. Whitespace control
 
-Applied only in precompile mode, by `WhitespaceControl`
-(`packages/@handlebars/parser/lib/whitespace-control.js`) on the layer-1 AST, *before* any HTML
-tokenization. It edits `ContentStatement.value` (keeping `original`). Because layer 1 does not
-know about HTML, all rules below apply to raw template text regardless of HTML context
-(e.g. the text `<div>\n  ` is a single content statement).
+Applied only in precompile mode. Whitespace control deletes whitespace at the start or end of
+text runs (§02-1.1), and the HTML tokenizer never sees the deleted characters. It is HTML-blind
+(§02-1.1 property 2): all rules below apply to raw template text regardless of HTML context, so
+the text `<div>\n  ` is a single text run, and whitespace inside a tag or an attribute value is
+deleted like any other.
+
+The rules are stated over the *statement lists* of the grammar (§02-3): the body of the template
+and of each block program is a list whose items are text runs (`ContentStatement`) and
+constructs, with a nested block counting as one item. A text run's `value` is its text after the
+deletions so far, and its `original` is its source text. The current implementation applies the
+rules to the Handlebars AST before the HTML pass (`WhitespaceControl`,
+`packages/@handlebars/parser/lib/whitespace-control.js`; §02-1.5). Every rule looks only at a
+construct, the text runs on either side of it, and, for a block closer, the end of the block's
+first inverse program; so a single-pass scanner decides whether to delete the whitespace before a
+construct by lexing that construct and the rest of its line (§02-1.4).
 
 ### 5.1 Strip flags
 
@@ -671,13 +779,20 @@ Candidates:
   `[ \t]*\r?\n?` of the next).
 - **Mustaches** are never standalone.
 - **Blocks** report `openStandalone` = the block's first program starts with whitespace up to a
-  newline (`isNextWhitespace(program.body)`), and `closeStandalone` = the last program before the
-  closer ends with newline+whitespace (`isPrevWhitespace((firstInverse || program).body)`)
-  (`whitespace-control.js:86-94`). In the parent:
+  newline (`isNextWhitespace(program.body)`), and `closeStandalone` = the *first* inverse
+  program, or the default program if there is no inverse, ends with newline+whitespace
+  (`isPrevWhitespace((firstInverse || program).body)`) (`whitespace-control.js:71-94`). For a
+  plain `{{else}}` the first inverse is the last program, the one before the closer. After an
+  `{{else if …}}` chain it is the program of the first link, which ends at the next `{{else …}}`,
+  not at the closer, so whether the closer's line is standalone is decided by text that can be
+  lines away from it. In the parent:
   - if `openStandalone && isPrevWhitespace(parent, i)`: omitRight on the start of the block's
     first program (`program || inverse`), and omitLeft on the preceding sibling;
   - if `closeStandalone && isNextWhitespace(parent, i)`: omitRight on the following sibling,
-    and omitLeft on the end of the block's last program (`inverse || program`).
+    and omitLeft on the end of the block's last program (`inverse || program`). After an
+    `{{else if …}}` chain, `inverse` is the synthetic program of §02-3.3, whose only item is the
+    chained block, so nothing is deleted before the closer: its indentation stays in the last
+    link's program.
 - **`{{else}}`**: inside a block with an inverse, if the default program ends with
   newline+whitespace and the first inverse starts with whitespace+newline, the else line is
   standalone: omitLeft on the end of the default program, omitRight on the start of the
@@ -701,6 +816,10 @@ Worked examples (precompile mode; tests `parser-whitespace-test.ts`, `parser-nod
 | `<div>\n  {{#if x}}\n    foo\n  {{/if}}\n</div>` | div children: `"\n"`, block(`"    foo\n"`) |
 | `  {{foo}}  \n` | `"  "`, mustache, `"  \n"` (mustaches are never standalone) |
 | `{{#if a}}\n{{else}}\n{{/if}}` | both programs empty |
+| `<p>\n  {{#if a}}\n  x\n  {{else if b}}\n  y\n  {{/if}}\n</p>` | p children: `"\n"`, block; program `"  x\n"`; the `b` link's program `"  y\n  "` (indentation before `{{/if}}` kept); nothing after the block |
+| `<p>\n  {{#if a}}\n  x\n  {{else if b}}y{{else}}\n  z\n  {{/if}}\n</p>` | the `{{/if}}` line is not standalone, because the first link's program is `"y"`: the block is followed by `"\n"` |
+| `<div a=b {{x}}></div>` / `<div a=b {{~x}}></div>` | modifier `x` / error E31 (the tilde deletes the space inside the tag, §02-1.1) |
+| `<div class="a  {{~x}}"></div>` | `class` = concat of `"a"` and `x` |
 
 ### 5.4 Interaction with source locations
 
@@ -712,38 +831,53 @@ ends the text earlier. *Note:* the offset computation uses `original.split(value
 first occurrence of the retained text in the original; see Open questions.
 
 ---
-## 6. Layer 2 — the HTML layer
+## 6. HTML tokenization and tree construction
 
-### 6.1 Driving algorithm
+### 6.1 The scan
+
+The scan of §02-1.1, stated as an algorithm. `stack` holds the open elements and the open block
+programs; the node on top is the *current parent*. Whitespace control (§02-5) has already decided
+which characters of each text run are deleted.
 
 ```
-parse(program):
+parse(source):
   template = Template { body: [], blockParams: options.locals, loc: whole source }
-  elementStack = [template]
-  for each HBS statement s in program.body (in order):
-     visit(s)
-  assert elementStack == [template]         (* else "Unclosed element `tag`" *)
-  if pendingError: pendingError.eof(end of template)
+  stack = [template]
+  html = HTML tokenizer (§02-6.2), state beforeData
+  for each text run or construct x, in source order:
+     if x is a text run:
+        set html's position to the start of x's retained text (§02-5.4)
+        feed x's retained text to html
+        boundary(): if html is in data: finish the text node; html.state = beforeData
+     else:
+        handle x by its kind and html's state: mustache §02-6.9, Handlebars comment §02-6.10,
+        block opener, {{else …}} or closer §02-6.11
+        boundary()
+  if stack != [template]: error E22 for the innermost open element
+  if pendingError: pendingError.eof(end of template)          (* §02-6.6 *)
 ```
 
-- `ContentStatement`: set tokenizer line/column to the start of the (stripped) content
-  (§02-5.4), call `tokenizePart(value)`, then `flushData()` (`handlebars-node-visitors.ts:378-383`).
-  `flushData` finishes the current text node *only if the tokenizer is in `data` state*
-  (`simple-html-tokenizer/dist/es6/index.js:665-670`). Therefore:
-  - text in element/template content is split into a separate `TextNode` at every layer-1
-    content boundary (every mustache, comment, block boundary and escape boundary);
-  - but text inside an attribute value, a tag, or an HTML comment continues across content
-    boundaries (the tokenizer's partial token persists).
-- `MustacheStatement`, `CommentStatement`, `BlockStatement`: dispatch on the tokenizer state
-  (§02-6.9–6.11).
-- A block's programs are visited recursively with a new `Block` node pushed on `elementStack`;
-  after the program, the popped node must be that `Block`, otherwise an element opened inside
-  the block was not closed there: `Unclosed element \`tag\`` (span: the element's open tag)
-  (`handlebars-node-visitors.ts:87-117`). Elements therefore MUST be properly nested with
-  respect to blocks: `{{#if}}<div>{{/if}}</div>` → `Unclosed element \`div\``;
-  `<div>{{#if}}</div>{{/if}}` → `Closing tag </div> without an open tag`.
-- The HTML tokenizer is **never** given an end-of-input signal. Any partially-tokenized
+- Feeding text drives the HTML tokenizer's events (§02-6.2): finishing a start tag pushes an
+  element on `stack` (§02-6.4), finishing an end tag pops it, and every finished node is
+  appended to the current parent *at the time it is finished*.
+- Text runs that begin with an escape (§02-2.2) are boundaries at both ends, like constructs.
+  Whitespace deletion can leave a text run empty; an empty run starts no `TextNode`
+  (`parser-whitespace-test.ts:9-13`).
+- A block program is pushed on `stack` as a `Block` node when it begins and popped when it ends.
+  When it is popped, the node on top of `stack` must be that `Block`; otherwise an element
+  opened inside the program was not closed there: ``Unclosed element `tag` `` (span: the
+  element's start tag) (`handlebars-node-visitors.ts:87-117`). Elements therefore MUST be
+  properly nested with respect to blocks: `{{#if}}<div>{{/if}}</div>` →
+  ``Unclosed element `div` ``; `<div>{{#if}}</div>{{/if}}` →
+  `Closing tag </div> without an open tag`. A partially tokenized tag or HTML comment is not
+  on `stack` and does not have to nest (§02-6.11, "Blocks that straddle markup").
+- The HTML tokenizer is **never** given an end-of-input signal. Any partially tokenized
   construct at end of input is silently discarded (see §02-6.12).
+
+*Implementation note:* in the current parser (§02-1.5), a text run is a `ContentStatement`,
+fed with `tokenizePart(value)` and then `flushData()` (`handlebars-node-visitors.ts:378-383`);
+`flushData` is the boundary step above (`simple-html-tokenizer/dist/es6/index.js:665-670`). A
+block's programs are visited recursively, with a `Block` node pushed for each.
 
 ### 6.2 HTML tokenizer states
 
@@ -776,7 +910,7 @@ Glimmer syntax error with a *collapsed* span at the current position (hence the 
 section of the message is empty) (`tokenizer-event-handlers.ts:560-562`; tests
 `parser-node-test.ts:43-61`).
 
-Only whitespace per `[\t\n\f ]` counts as whitespace in layer 2
+Only whitespace per `[\t\n\f ]` counts as whitespace in the HTML tokenizer
 (`simple-html-tokenizer/dist/es6/index.js:36`); `\r` never reaches it (§02-1.3).
 
 ### 6.3 Text and character references
@@ -806,7 +940,7 @@ Normative consequences (all reproduced by tests or directly observable):
 - Numeric references use `String.fromCharCode`, **not** `String.fromCodePoint`, and apply no
   WHATWG replacement: code points above U+FFFF are truncated modulo 2^16 (`&#128512;` →
   U+F600), `&#0;` → U+0000, `&#xD800;` → a lone surrogate. See Open questions.
-- The `;` search is limited to the current layer-1 content chunk; a reference cannot span a
+- The `;` search is limited to the current text run (§02-1.1); a reference cannot span a
   mustache.
 - References are **not** decoded when the most recent tag name is exactly `script` or `style`
   (data state only; attribute values are always decoded). They *are* decoded in `<textarea>`
@@ -949,9 +1083,9 @@ this set differs slightly from the Handlebars ID set: `,` and `-`, `$`, `:`, `?`
 The "as" attribute itself is never recorded. Block params MUST be the last thing in the start
 tag: attributes, modifiers or comments after them are errors (`<Foo as |a| class="x">`,
 `<Foo as |a| {{b}}>`). Attributes and modifiers *before* `as` are fine. A `pendingError` is
-thrown by the next layer-1 mustache visited (`MustacheStatement`, with that mustache's span) or
-at end of template (`eof`, span from `as` to the end); `CommentStatement` and `BlockStatement`
-do **not** consult `pendingError` (see Open questions).
+thrown by the next mustache (with that mustache's span) or
+at end of template (`eof`, span from `as` to the end); Handlebars comments and blocks do
+**not** consult `pendingError` (see Open questions).
 
 Error spans for the other cases begin at the `a` of `as` (tests
 `general-errors-test.ts:60-286`; `parser-node-test.ts:396-490`).
@@ -959,16 +1093,19 @@ Error spans for the other cases begin at the `a` of `as` (tests
 ### 6.7 HTML comments and doctype
 
 `<!-- … -->` produces a `CommentStatement` whose `value` is the text between the delimiters
-(tokenized per §02-6.2; entities are *not* decoded in comments). Mustaches, blocks and
-Handlebars comments encountered anywhere inside an HTML comment are *not* interpreted: their
-**original source text** (from the source lines, joined with `\n`) is appended to the comment
-value. This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
+(tokenized per §02-6.2; entities are *not* decoded in comments). Mustaches, Handlebars comments
+and blocks that begin inside an HTML comment are still lexed and parsed as Handlebars (§02-1.1
+property 1), but are *not* interpreted: their **original source text** (from the source lines,
+joined with `\n`) is appended to the comment value. For a block, that is the whole block from
+its opener to its closer; the text between is not HTML-tokenized, so a `-->` inside it does not
+end the comment. A `{{else}}` or closer of a block that began *outside* the comment is not
+comment text: it ends that block's program (§02-6.11, "Blocks that straddle markup"). This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
 `comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
 because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
 character is not `>` (`handlebars-node-visitors.ts:323-350`;
 `packages/@glimmer/syntax/lib/parser.ts:175-211`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
 ` {{#if x}}y{{/if}} `, `<!--{{x}}-->` has value `{{x}}`, and `<!-- a -{{x}}-->` has value
-` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, because layer 1 has already run, whitespace control *has* been
+` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, whitespace control is HTML-blind, so it *has* been
 applied to the content surrounding them (`<!-- a {{~x~}} b -->` → value ` a{{~x~}}b `), and a
 `--}}`-terminated long comment or a `{{!` short comment still ends at its own delimiter.
 
@@ -993,19 +1130,19 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
   `simple-html-tokenizer/dist/es6/index.js:712-717`). All other `<` are text:
   `<title><b>x</b></title>` → one TextNode `<b>x</b>`; `<svg><title><div></div></title></svg>`
   likewise (test `parser-node-test.ts:96-102`). Mustaches are still recognized inside these
-  elements (layer 1 runs first). References are decoded in `title` but not in `script`/`style`
+  elements (§02-1.1 property 1). References are decoded in `title` but not in `script`/`style`
   data.
 - Tag names are matched case-sensitively in these checks except the `pre`/`textarea` newline
   rule.
 
 ### 6.9 Mustache placement
 
-For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:228-321`):
+For each mustache (`handlebars-node-visitors.ts:228-321`):
 
 1. Throw a pending block-params error if any (§02-6.6).
 2. If the tokenizer is inside an HTML comment (any comment state): append its source to the
    comment (§02-6.7); done.
-3. If the layer-1 path `original` is `...attributes` (i.e. `{{...attributes}}`) → syntax error
+3. If the Handlebars path `original` (§02-4.1) is `...attributes` (i.e. `{{...attributes}}`) → syntax error
    `Illegal use of ...attributes` (span: the mustache) in any position — content, attribute
    value, or modifier (tests `parser-node-test.ts:124-152`; see Open question 15 for how this
    path lexes).
@@ -1059,20 +1196,37 @@ the parent. Templates that relied on those behaviors now either error or parse a
 
 ### 6.11 Block placement
 
-A layer-1 `BlockStatement` (`handlebars-node-visitors.ts:119-226`):
+A block opener is placed by the HTML tokenizer's state at the opener
+(`handlebars-node-visitors.ts:119-226`):
 
-- in any comment state: source appended to the HTML comment (§02-6.7);
-- in `beforeData` or `data`: a `BlockStatement` child of the current parent;
+- in any comment state: the source of the whole block is appended to the HTML comment (§02-6.7);
+- in `beforeData` or `data`: a `BlockStatement` child of the current parent, whose programs are
+  pushed on the stack in turn (§02-6.1);
 - anywhere else (tag, attribute name/value, etc.): error
   `A block may only be used inside an HTML element or another block.` (span: the whole block).
   So `<div {{#if x}}{{/if}}>` and `<div class="{{#if x}}y{{/if}}">` are errors (use inline
   `{{if}}` in attributes).
 
+**Blocks that straddle markup.** Only the opener's state is checked. A block's `{{else}}` and
+closer end the current program in any HTML state, because block structure is HTML-blind
+(§02-1.1 property 3). If the HTML tokenizer is in the middle of a tag or an HTML comment at that
+point, the partial token is not on the stack, so the nesting check of §02-6.1 does not see it: it
+continues into the next program, or past the block, and its node is appended to whichever parent
+is current when it is finished. By experiment (no test pins these down):
+
+| Source | Result |
+|---|---|
+| `{{#if x}}<div class="{{/if}}"></div>` | an empty block, then `<div class="">` after it |
+| `{{#if x}}<div class="{{else}}"></div>{{/if}}` | an empty default program; `<div class="">` in the inverse |
+| `{{#if x}}<!--{{else}}-->{{/if}}` | an empty default program; an empty HTML comment in the inverse |
+| `{{#if x}}\n<!-- a\n{{/if}}\n-->` | an empty block, then the HTML comment ` a\n` after it |
+
+See §02-11 item 18.
+
 Block params on blocks are converted to `VarHead`s with locations found by searching the source
 between the end of the hash and the start of the program for the `|…|` list
 (`handlebars-node-visitors.ts:149-203`). If a name cannot be located in the searched span, its
-loc is the non-existent location. The default block is visited with these params; the inverse
-with none.
+loc is the non-existent location. The default program has these params; the inverse has none.
 
 ### 6.12 Silent discards at end of input and malformed markup (current behavior)
 
@@ -1239,7 +1393,7 @@ Special spans exist for nodes without real source: `synthetic`, `broken`, `nonex
 |---|---|
 | `Template` | the entire source (offset 0 to length), regardless of leading/trailing whitespace |
 | `MustacheStatement`, `BlockStatement`, comments | from the first `{` to the last `}` inclusive, including `~` |
-| `Block` (default program) | from the end of the opener to the start of `{{else}}`/closer (layer-1 program loc). If layer 1 gives no loc (empty program), a fallback derived from the block params span or the block end is used (`repairBlock`, `handlebars-node-visitors.ts:752-780`) — these fallback spans are irregular (see Open questions) |
+| `Block` (default program) | from the end of the opener to the start of `{{else}}`/closer (the Handlebars program loc, §02-1.5). If there is none (empty program), a fallback derived from the block params span or the block end is used (`repairBlock`, `handlebars-node-visitors.ts:752-780`) — these fallback spans are irregular (see Open questions) |
 | chained inverse `Block` | currently the span of the *chained block's default program*, not of the whole chain |
 | `ElementNode` | from `<` of the start tag to `>` of the end tag (or of the start tag if void/self-closing) |
 | `ElementNode.openTag` / `closeTag` | the start tag / end tag text |
@@ -1293,6 +1447,17 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
    match; implementations MUST report `Parse error on line N` with the correct line (tests
    `packages/@handlebars/parser/spec/parser.js:346-434`).
 
+**Error priority.** Only the first error is reported. Errors of kinds 2 and 3 come from the
+Handlebars lexer and grammar, which do not depend on HTML (§02-1.1 property 4). If the input has
+one, the first of them is reported, wherever it is, even when an error of kind 1 comes earlier in
+the source: `</div>{{#a}}{{/b}}` reports `a doesn't match b` (E3), and `</div>{{foo.this}}`
+reports `Invalid path` (E4). Otherwise the first kind-1 error in scan order is reported:
+`</div>{{./foo}}` reports `Closing tag </div> without an open tag` (E23), not E10. A single-pass
+implementation that meets a kind-1 error MUST therefore read the rest of the input by the
+Handlebars rules alone (§02-2, §02-3) before reporting it, to check for an error of kind 2 or 3. In the current parser this order arises
+because the Handlebars pass runs to completion first (§02-1.5). By experiment; see §02-11
+item 19.
+
 ### 9.2 Catalogue
 
 | # | Message | Kind | Condition | Source |
@@ -1336,7 +1501,7 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
 | E46 | `Invalid end tag: closing tag must not contain Handlebars comments` | 1 | `{{! …}}` in an end tag (§02-6.10) | `handlebars-node-visitors.ts:352-356` |
 | E47 | ``Using a Handlebars mustache when in the `S` state is not supported`` | 1 | mustache in a markup declaration or doctype (§02-6.9) | `handlebars-node-visitors.ts:313-317` |
 
-*Note on E15:* for `{{[]}}` layer 1 produces an empty head string, which its `parts` construction
+*Note on E15:* for `{{[]}}` the lexer produces an empty head string, which its `parts` construction
 treats as absent (`lib/helpers.js:82-91`), so Glimmer sees no segments. For `foo..bar` the lexer
 produces `foo` then the `..` ID as a *separate* param expression whose segments were all dropped.
 In contrast `{{foo.[]}}` yields tail `[""]` without error.
@@ -1379,7 +1544,7 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
 3. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
-   `this` regex is `^this(\..+)?$` while layer 1 has already dropped the `this` segment. Loose
+   `this` regex is `^this(\..+)?$` while §02-4.1 has already dropped the `this` segment. Loose
    mode would then resolve `foo` differently from `this.foo`. Untested.
 4. **Literal segments containing `.`** (`{{[foo.bar]}}`, `{{foo.[bar.baz]}}`) produce heads/tails
    containing `.`, violating debug-build builder assertions and making `original` ambiguous.
@@ -1410,16 +1575,16 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     occurrence of the retained text, which is wrong when the stripped prefix contains the same
     text (unlikely since the prefix is whitespace, but `value === ''` handling counts `\n` in
     the whole original).
-12. **CR handling:** layer 2 normalizes lone `\r` to `\n`, but `Source` line tables only split on
+12. **CR handling:** the HTML tokenizer normalizes lone `\r` to `\n`, but `Source` line tables only split on
     `\n` (while `Parser.lines` splits on `\r\n?|\n`). Templates with lone CR line endings get
-    inconsistent line numbers between layer-1 locs, tokenizer positions and `Source`.
+    inconsistent line numbers between Handlebars locs, tokenizer positions and `Source`.
 13. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
     marker and no test in `@glimmer/syntax`. Their runtime meaning is whatever the block helper
     does (chapter 03/05).
 14. **Private-field-looking segments** `foo.#bar` / `this.#foo` parse (tail `"#bar"`); no
     Glimmer test pins down their meaning.
-15. **The `...attributes` check** (E17) compares the layer-1 `original` to `...attributes`.
-    Layer 1 lexes `...attributes` as `..` (ID) `.` (SEP) `attributes`; `preparePath` drops `..`
+15. **The `...attributes` check** (E17) compares the Handlebars `original` to `...attributes`.
+    The lexer lexes `...attributes` as `..` (ID) `.` (SEP) `attributes`; `preparePath` drops `..`
     (depth 1) giving `original = "...attributes"` — the check works only by this coincidence.
     `{{../attributes}}` is a different error. `<div ...attributes={{x}}>` is accepted by the
     parser (validated, if at all, in chapter 03).
@@ -1429,3 +1594,20 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     behavior and should be marked **[Legacy]**.
 17. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
     runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 13.
+18. **Blocks that straddle markup** (§02-6.11). A block's `{{else}}` or closer inside a tag, an
+    attribute value or an HTML comment ends the block's program, and the half-built tag or
+    comment lands in the next program or after the block (`{{#if x}}<div class="{{/if}}"></div>`
+    is an empty block followed by `<div class="">`). Nothing tested relies on it, and the trees
+    are garbled. Recommend making an `{{else}}` or closer in any state but `beforeData`, `data`
+    and the comment states an error like E21, and treating a closer in a comment state as
+    comment text when its opener is outside the comment, which is what an HTML-aware single-pass
+    parser does naturally. Templates that parse today with a sensible tree would be unaffected.
+19. **Error priority** (§02-9.1). Handlebars lexical and grammar errors outrank earlier HTML
+    errors only because the current parser runs the Handlebars pass first. It affects only
+    templates with more than one error. If source order were allowed instead, a single-pass
+    parser could report the first error it meets and stop.
+20. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
+    standalone is decided by the end of the first chain link's program, not by the text before
+    the closer, and the indentation before such a closer is never deleted. This comes from
+    upstream Handlebars (`whitespace-control.js:71-94`) and is untested in Glimmer. Changing it
+    would change rendered whitespace in templates that use `{{else if}}` chains.

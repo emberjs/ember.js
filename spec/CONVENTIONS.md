@@ -59,7 +59,7 @@ it *is* behavior and must be specified.
 |---|---|
 | `00-overview.md` | Scope, layering, glossary, reading guide |
 | `01-authoring-formats.md` | Template tag (.gjs/.gts), content-tag, babel plugin, `template()` / `precompileTemplate` APIs, scope & `eval`, strict vs loose mode, colocation, `setComponentTemplate`, `templateOnly` |
-| `02-syntax.md` | Lexing & parsing: Handlebars layer, HTML tokenizer layer, AST (ASTv1), whitespace control, entities, errors |
+| `02-syntax.md` | Lexing & parsing: the single-scan parsing model, Handlebars constructs, HTML tokenization, AST (ASTv1), whitespace control, entities, errors |
 | `03-static-semantics.md` | Scoping, symbol resolution, keywords, reserved names, normalization (ASTv2), Ember AST transforms, compile-time errors |
 | `04-wire-format.md` | **Informative.** The current serialized precompiled template format and the meaning of each construct. Documents the current encoding only; wire format is not a compatibility requirement (§00-0.2) |
 | `05-runtime-semantics.md` | Evaluation: content, attributes/properties, elements, blocks, control flow keywords, component invocation, yield, curried values, destruction & ordering, rehydration/SSR |

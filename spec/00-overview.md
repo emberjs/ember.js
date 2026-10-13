@@ -72,7 +72,7 @@ records it and leaves it to the reader to decide whether to preserve it.
                        │  or runtime compiler (§01-1.6)
                        ▼
    ┌─────────────── compile time ────────────────────────────────────────┐
-   │ Lexing & parsing: Handlebars layer + HTML tokenizer → ASTv1  (§02)  │
+   │ Parsing: one scan of HTML and mustaches → ASTv1             (§02)   │
    │ Ember source rewrites (§03-7; AST transforms today)                 │
    │ Scope, keyword and resolution analysis → ASTv2              (§03)   │
    │ Encoding → wire format                                      (§04)   │
@@ -227,7 +227,10 @@ choice breaks someone.
 5. `{{^foo}}a{{else}}b{{/foo}}` is accepted and means `{{#foo}}b{{else}}a{{/foo}}`; no test
    covers it, and the form without `{{else}}` is now an error. (§02-11 item 1)
 6. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
-   unterminated tag or comment at EOF. (§02-11 item 5)
+   unterminated tag or comment at EOF. A block's `{{else}}` or closer inside a tag or HTML
+   comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`), and
+   Handlebars grammar errors outrank earlier HTML errors; both are artifacts of the two-pass
+   parser that a single-pass one could drop. (§02-11 items 5, 18, 19)
 7. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
    errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 2, 3;
    §03-10 item 8)
@@ -235,7 +238,9 @@ choice breaks someone.
    `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
    case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
    `foo`) and `<É />` (compiled to nothing), and segments containing `.`
-   (`{{foo.[bar.baz]}}`), give surprising results. (§02-11 items 4, 8–10; §03-10 item 19)
+   (`{{foo.[bar.baz]}}`), give surprising results. After an `{{else if}}` chain, whether the
+   closer's line is standalone depends on the first link's text. (§02-11 items 4, 8–10, 20;
+   §03-10 item 19)
 
 ### 0.7.3 Strict vs loose divergence
 
