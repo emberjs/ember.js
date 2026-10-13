@@ -49,7 +49,7 @@ export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
   @class EmberArray
   @since Ember 0.9.0
   @public
-  @deprecated Use Native array methods instead. 
+  @deprecated Use Native array methods instead. See https://deprecations.emberjs.com/id/deprecate-ember-array-mixin. 
 */
 interface EmberArray<T> {
   /**
@@ -60,6 +60,7 @@ interface EmberArray<T> {
 
     @property {Number} length
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   length: number;
   /**
@@ -85,6 +86,7 @@ interface EmberArray<T> {
     @param {Number} idx The index of the item to return.
     @return {*} item at index or undefined
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   objectAt(idx: number): T | undefined;
   /**
@@ -101,6 +103,7 @@ interface EmberArray<T> {
     @param {Array} indexes An array of indexes of items to return.
     @return {Array}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
    */
   objectsAt(indexes: number[]): Array<T | undefined>;
   /**
@@ -120,6 +123,7 @@ interface EmberArray<T> {
     @property []
     @return this
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   get '[]'(): this;
   set '[]'(newValue: T[] | EmberArray<T>);
@@ -143,6 +147,7 @@ interface EmberArray<T> {
     @property firstObject
     @return {Object | undefined} The first object in the array
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   firstObject: T | undefined;
   /**
@@ -151,6 +156,7 @@ interface EmberArray<T> {
     @property lastObject
     @return {Object | undefined} The last object in the array
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   lastObject: T | undefined;
   /**
@@ -171,6 +177,7 @@ interface EmberArray<T> {
     @param {Number} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   slice(beginIndex?: number, endIndex?: number): NativeArray<T>;
   /**
@@ -209,6 +216,7 @@ interface EmberArray<T> {
     @param {Number} startAt optional starting location to search, default 0
     @return {Number} index or -1 if not found
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   indexOf(object: T, startAt?: number): number;
   /**
@@ -244,6 +252,7 @@ interface EmberArray<T> {
     @return {Number} The last index of the `object` in the array or -1
     if not found
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   lastIndexOf(object: T, startAt?: number): number;
   /**
@@ -292,6 +301,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Object} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   forEach<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => void,
@@ -317,6 +327,7 @@ interface EmberArray<T> {
     @param {String} key name of the property
     @return {Array} The mapped array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   getEach<K extends keyof T>(key: K): NativeArray<T[K]>;
   /**
@@ -337,6 +348,7 @@ interface EmberArray<T> {
     @param {Object} value The object to set
     @return {Object} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   setEach<K extends keyof T>(key: K, value: T[K]): this;
   /**
@@ -372,6 +384,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Array} The mapped array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   map<U, Target>(
     callback: (this: Target, item: T, index: number, arr: this) => U,
@@ -395,6 +408,7 @@ interface EmberArray<T> {
     @param {String} key name of the property
     @return {Array} The mapped array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   mapBy<K extends keyof T>(key: K): NativeArray<T[K]>;
   mapBy(key: string): NativeArray<unknown>;
@@ -457,6 +471,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Array} A filtered array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   filter<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -501,6 +516,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Array} A rejected array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   reject<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -526,6 +542,7 @@ interface EmberArray<T> {
     @param {*} [value] optional value to test against.
     @return {Array} filtered array
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   filterBy(key: string, value?: unknown): NativeArray<T>;
   /**
@@ -550,6 +567,7 @@ interface EmberArray<T> {
     @param {*} [value] optional value to test against.
     @return {Array} rejected array
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   rejectBy(key: string, value?: unknown): NativeArray<T>;
   /**
@@ -593,6 +611,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Object} Found item or `undefined`.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   find<S extends T, Target = void>(
     predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
@@ -629,6 +648,7 @@ interface EmberArray<T> {
     @param {String} [value] optional value to test against.
     @return {Object} found item or `undefined`
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   findBy<K extends keyof T>(key: K, value?: T[K]): T | undefined;
   findBy(key: string, value?: unknown): T | undefined;
@@ -669,6 +689,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Boolean}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   every<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -711,6 +732,7 @@ interface EmberArray<T> {
     @return {Boolean}
     @since 1.3.0
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   isEvery<K extends keyof T>(key: K, value?: T[K]): boolean;
   isEvery(key: string, value?: unknown): boolean;
@@ -752,6 +774,7 @@ interface EmberArray<T> {
     @param {Object} [target] The target object to use
     @return {Boolean} `true` if the passed function returns `true` for any item
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   any<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -780,6 +803,7 @@ interface EmberArray<T> {
     @return {Boolean}
     @since 1.3.0
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   isAny<K extends keyof T>(key: K, value?: T[K]): boolean;
   isAny(key: string, value?: unknown): boolean;
@@ -836,6 +860,7 @@ interface EmberArray<T> {
     @param {Object} initialValue Initial value for the reduce
     @return {Object} The reduced value.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   reduce<V>(
     callback: (summation: V, current: T, index: number, arr: this) => V,
@@ -870,6 +895,7 @@ interface EmberArray<T> {
     @param {Object...} args optional arguments to pass as well.
     @return {Array} return values from calling invoke.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   invoke<M extends MethodNamesOf<T>>(
     methodName: M,
@@ -882,6 +908,7 @@ interface EmberArray<T> {
     @method toArray
     @return {Array} the object as an array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   toArray(): T[];
   /**
@@ -895,6 +922,7 @@ interface EmberArray<T> {
     @method compact
     @return {Array} the array without null and undefined elements.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   compact(): NativeArray<NonNullable<T>>;
   /**
@@ -925,6 +953,7 @@ interface EmberArray<T> {
     @param {Number} startAt optional starting location to search, default 0
     @return {Boolean} `true` if object is found in the array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   includes(object: T, startAt?: number): boolean;
   /**
@@ -950,6 +979,7 @@ interface EmberArray<T> {
     @return {Array} The sorted array.
     @since 1.2.0
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   sortBy(...keys: string[]): T[];
   /**
@@ -966,6 +996,7 @@ interface EmberArray<T> {
     @method uniq
     @return {EmberArray}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   uniq(): NativeArray<T>;
   /**
@@ -984,6 +1015,7 @@ interface EmberArray<T> {
     @param {String,Function} key
     @return {EmberArray}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   uniqBy(key: string): NativeArray<T>;
   uniqBy(callback: (value: T) => unknown): NativeArray<T>;
@@ -1001,6 +1033,7 @@ interface EmberArray<T> {
     @param {Object} value
     @return {EmberArray}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-ember-array-mixin
   */
   without(value: T): NativeArray<T>;
 }
@@ -1032,7 +1065,7 @@ const EmberArray = DeprecatedMixin.create(InternalEmberArrayMixin, {
   @class MutableArray
   @uses EmberArray
   @public
-  @deprecated Use Native array methods instead. 
+  @deprecated Use Native array methods instead. See https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin.
 */
 interface MutableArray<T> extends EmberArray<T> {
   /**
@@ -1052,6 +1085,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {EmberArray} [objects] An optional array of zero or more objects that should be
       inserted into the array at *idx*
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   replace(idx: number, amt: number, objects?: readonly T[]): void;
   /**
@@ -1069,6 +1103,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @method clear
     @return {Array} An empty Array.
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   clear(): this;
   /**
@@ -1087,6 +1122,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {Object} object object to insert
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   insertAt(idx: number, object: T): this;
   /**
@@ -1109,6 +1145,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {Number} len length of passing range
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   removeAt(start: number, len?: number): this;
   /**
@@ -1126,6 +1163,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {*} obj object to push
     @return object same object passed as a param
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   pushObject(obj: T): T;
   /**
@@ -1142,6 +1180,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {Array} objects the objects to add
     @return {MutableArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   pushObjects(objects: T[]): this;
   /**
@@ -1158,6 +1197,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @method popObject
     @return object
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   popObject(): T | null | undefined;
   /**
@@ -1174,6 +1214,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @method shiftObject
     @return object
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin 
   */
   shiftObject(): T | null | undefined;
   /**
@@ -1191,6 +1232,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {*} obj object to unshift
     @return object same object passed as a param
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   unshiftObject(object: T): T;
   /**
@@ -1208,6 +1250,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {Iterable} objects the objects to add
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   unshiftObjects(objects: T[]): this;
   /**
@@ -1217,6 +1260,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @method reverseObjects
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   reverseObjects(): this;
   /**
@@ -1235,6 +1279,7 @@ interface MutableArray<T> extends EmberArray<T> {
         the content of the receiver
     @return {EmberArray} receiver with the new content
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   setObjects(object: T[]): this;
   /**
@@ -1252,6 +1297,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {*} obj object to remove
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   removeObject(object: T): this;
   /**
@@ -1261,6 +1307,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {EmberArray} objects the objects to remove
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   removeObjects(objects: T[]): this;
   /**
@@ -1278,6 +1325,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {*} obj object to add, if not already present
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   addObject(obj: T): this;
   /**
@@ -1287,6 +1335,7 @@ interface MutableArray<T> extends EmberArray<T> {
     @param {EmberArray} objects the objects to add.
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   addObjects(objects: T[]): this;
 }
@@ -1393,6 +1442,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
     @param {*} obj object to remove
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   removeObject(object: T): this;
   /**
@@ -1414,6 +1464,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
     @param {*} obj object to add, if not already present
     @return {EmberArray} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   addObject(obj: T): this;
   /**
@@ -1438,6 +1489,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
     @param {Object} value The object to set
     @return {Object} receiver
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   setEach<K extends keyof T>(key: K, value: T[K]): this;
   /**
@@ -1457,6 +1509,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
     @property []
     @return this
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-mutable-array-mixin
   */
   get '[]'(): this;
   set '[]'(newValue: T[] | this);

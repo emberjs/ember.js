@@ -117,7 +117,7 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @extends EmberObject
   @uses MutableArray
   @public
-  @deprecated Use a tracked array or a native `Proxy` instead.
+  @deprecated Use a tracked array or a native `Proxy` instead. See https://deprecations.emberjs.com/id/deprecate-array-proxy
 */
 interface ArrayProxy<T> extends MutableArray<T> {
   /**
@@ -127,6 +127,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @property content
     @type EmberArray
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   content: T[] | EmberArray<T> | NativeArray<T> | null;
   /**
@@ -136,6 +137,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
 
     @property arrangedContent
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   arrangedContent: EmberArray<T> | null;
   /**
@@ -149,6 +151,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   objectAtContent(idx: number): T | undefined;
   /**
@@ -164,6 +167,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @param {Array} objects Optional array of objects to insert.
     @return {void}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   replaceContent(idx: number, amt: number, objects?: T[]): void;
 
