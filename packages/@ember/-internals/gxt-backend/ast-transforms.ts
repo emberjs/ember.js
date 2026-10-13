@@ -1335,6 +1335,89 @@ function gxtDynamicModifierAssert(findings: GxtAssertFindings) {
   };
 }
 
+// ── Helper call sites ──────────────────────────────────────────────────────
+// The named-argument key that carries a helper call's site id (see
+// `gxtHelperCallSiteTransform`); `$_maybeHelper_ember` takes it out of the
+// call's named arguments before anything else reads them.
+export const GXT_HELPER_SITE_KEY = '__gxtSite';
+
+// Site ids are unique across every template compiled in the process, so two
+// templates rendered with the same `this` cannot share a site.
+let _gxtHelperCallSiteCounter = 0;
+
+// Names gxt or the Ember dialect compile as keywords / built-ins (never a
+// `$_maybeHelper` call by name; gxt's own keyword sets include `mount`,
+// `input` and `textarea`, which compile to elements / components), plus the
+// names the transforms here inject.
+const _GXT_HELPER_SITE_SKIP: ReadonlySet<string> = new Set([
+  ..._GXT_ATTR_QUOTED_HELPER_BUILTINS,
+  'eq',
+  'not',
+  'or',
+  'and',
+  'element',
+  'mount',
+  'input',
+  'textarea',
+  'hasBlock',
+  'hasBlockParams',
+  'gxtEntriesOf',
+  'gxtGetOutletState',
+  _GXT_ON_EXT_ALIAS,
+]);
+
+/**
+ * Give each helper call site its own id: `(my-helper a)` / `{{my-helper a}}`
+ * gain a `__gxtSite=<id>` named argument.
+ *
+ * Glimmer creates one helper instance per call site and render scope; the
+ * compat compiler's call (`$_maybeHelper("my-helper", [a], this)`) carries the
+ * render scope (`this` or a block's context) but nothing that tells two call
+ * sites in one scope apart, so the runtime kept one instance per helper NAME
+ * (two sibling `{{my-helper}}`s, every `{{#each}}` row and every component
+ * shared it). With the id, `$_maybeHelper_ember` keeps one instance per
+ * (render scope, site) and destroys it with the scope.
+ *
+ * Only calls gxt emits as `$_maybeHelper` by NAME are marked: a free
+ * single-part name (not `this.x`, `@x`, a path, a block param or a scope
+ * value) that is not a keyword, called with at least one positional argument
+ * — a SubExpression, or a MustacheStatement (content or attribute). A call
+ * with only named arguments can compile as a component (`{{foo-bar a=1}}` is
+ * `<FooBar @a={{1}} />`), and a zero-argument one keeps its exact emission
+ * (the named-argument resolved-helper guard in compile.ts matches it). Runs
+ * last, on the nodes the other transforms produced.
+ */
+function gxtHelperCallSiteTransform(
+  scopeValues: Record<string, unknown> | undefined,
+  blockParamNames: Set<string>
+) {
+  return (env: GxtAstEnv) => {
+    const b = env.syntax.builders;
+    const mark = (node: any): void => {
+      const p = node.path;
+      if (!p || p.type !== 'PathExpression') return;
+      if (!p.head || p.head.type !== 'VarHead' || p.tail.length !== 0) return;
+      if (node.params.length === 0) return;
+      const name: string = p.head.name;
+      if (_GXT_HELPER_SITE_SKIP.has(name) || name.startsWith('__') || name.startsWith('-')) {
+        return;
+      }
+      if (blockParamNames.has(name)) return;
+      if (scopeValues && Object.prototype.hasOwnProperty.call(scopeValues, name)) return;
+      const pairs: any[] = node.hash.pairs;
+      if (pairs.some((pair) => pair.key === GXT_HELPER_SITE_KEY)) return;
+      pairs.push(b.pair(GXT_HELPER_SITE_KEY, b.string(String(++_gxtHelperCallSiteCounter))));
+    };
+    return {
+      name: 'ember-gxt-helper-call-site',
+      visitor: {
+        SubExpression: mark,
+        MustacheStatement: mark,
+      },
+    };
+  };
+}
+
 export function buildGxtDialectTransforms(
   includeOnExt: boolean,
   scopeValues?: Record<string, unknown>,
@@ -1393,5 +1476,6 @@ export function buildGxtDialectTransforms(
   if (includeOnExt) {
     transforms.push(gxtOnModifierTransform as unknown as GxtAstTransform);
   }
+  transforms.push(gxtHelperCallSiteTransform(scopeValues, bpNames) as unknown as GxtAstTransform);
   return transforms;
 }

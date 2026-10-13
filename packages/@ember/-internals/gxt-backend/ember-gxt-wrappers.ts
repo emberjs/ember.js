@@ -28,6 +28,11 @@ import {
 } from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { capabilitiesErrorPrefix, isPlainHtmlTagFastPath } from './utils';
+import { GXT_HELPER_SITE_KEY } from './ast-transforms';
+import {
+  destroy as destroyDestroyable,
+  isDestroying as isDestroyingDestroyable,
+} from './destroyable';
 
 const g = globalThis as any;
 
@@ -169,6 +174,39 @@ function findHelperManager(obj: any): any {
 // Keyed by helper name for simple per-invocation caching.
 // Cleared during test teardown via compilePipeline.clearHelperCache.
 const classHelperInstanceCache = new Map<string, any>();
+// Helper instances per call site: render scope (a template's `this`, a block's
+// context) → site id (ast-transforms.ts `gxtHelperCallSiteTransform`) → the
+// entry the name-keyed cache above keeps for a call without a site id (a
+// manager bucket, or a classic helper instance). Glimmer creates one helper
+// instance per call site and render scope, and destroys it with the scope.
+const helperSiteInstances = new WeakMap<object, Map<string, any>>();
+
+function helperSiteInstancesFor(ctx: object): Map<string, any> {
+  let sites = helperSiteInstances.get(ctx);
+  if (sites === undefined) {
+    const owned = new Map<string, any>();
+    sites = owned;
+    helperSiteInstances.set(ctx, owned);
+    // The call sites live as long as the render scope holding them.
+    gxtModule.registerDestructor(ctx as never, () => {
+      helperSiteInstances.delete(ctx);
+      owned.forEach(destroyHelperSiteEntry);
+      owned.clear();
+    });
+  }
+  return sites;
+}
+
+function destroyHelperSiteEntry(entry: any): void {
+  const destroyable = entry?.__managerBucket === true ? entry.destroyable : entry;
+  if (
+    destroyable !== null &&
+    typeof destroyable === 'object' &&
+    !isDestroyingDestroyable(destroyable)
+  ) {
+    destroyDestroyable(destroyable);
+  }
+}
 // Exposed to validator.ts and compile.ts through the get-only bridge method
 // `compilePipeline.getClassHelperInstanceCache` (registered below).
 // Cache for simple (function-based) helper results to deduplicate calls within
@@ -396,8 +434,29 @@ function createEmberMaybeHelper(original: Function) {
       hashOrCtx != null &&
       typeof hashOrCtx === 'object' &&
       (typeof nameOrFn === 'string' || _isRenderContext(hashOrCtx));
-    const hash = thirdIsCtx ? {} : (hashOrCtx ?? {});
+    let hash = thirdIsCtx ? {} : (hashOrCtx ?? {});
     const ctx = fourArgs ? maybeCtx : thirdIsCtx ? hashOrCtx : undefined;
+    // The call site's id, which the compiler passes as a named argument
+    // (ast-transforms.ts `gxtHelperCallSiteTransform`); not one of the call's
+    // named arguments. With the render scope it keys the helper instance
+    // (`helperSiteInstances`).
+    let siteCtx: object | null = null;
+    let siteId = '';
+    let siteStripped = false;
+    if (
+      typeof hash === 'object' &&
+      Object.prototype.hasOwnProperty.call(hash, GXT_HELPER_SITE_KEY)
+    ) {
+      const descriptors = Object.getOwnPropertyDescriptors(hash);
+      const site = hash[GXT_HELPER_SITE_KEY];
+      delete descriptors[GXT_HELPER_SITE_KEY];
+      hash = Object.defineProperties({}, descriptors);
+      siteStripped = true;
+      if (ctx !== null && typeof ctx === 'object') {
+        siteCtx = ctx;
+        siteId = String(typeof site === 'function' ? site() : site);
+      }
+    }
 
     // Detect a destroyed render context. When a prior test's component was torn
     // down but its formula closures linger (e.g. a dirtyTagFor cascade pulls the
@@ -796,10 +855,15 @@ function createEmberMaybeHelper(original: Function) {
               typeof delegate.createHelper === 'function' &&
               delegate.capabilities?.hasValue
             ) {
-              // Cache the helper bucket per name so re-renders don't create new instances.
+              // Cache the helper bucket per call site (per name for a call
+              // without a site id) so re-renders don't create new instances.
               // We create a GXT cell to hold the result so GXT's formula system tracks
               // it and re-renders automatically when the cell is updated.
-              let cached = classHelperInstanceCache.get(name) as any;
+              let cached = (
+                siteCtx
+                  ? helperSiteInstances.get(siteCtx)?.get(siteId)
+                  : classHelperInstanceCache.get(name)
+              ) as any;
               const _cellFor = gxtModule.cellFor;
               if (!cached || cached.__managerBucket !== true) {
                 const reactiveArgs = {
@@ -827,12 +891,14 @@ function createEmberMaybeHelper(original: Function) {
                 }
 
                 // Wire up destroyable if supported
+                let bucketDestroyable: object | null = null;
                 if (
                   delegate.capabilities?.hasDestroyable &&
                   typeof delegate.getDestroyable === 'function'
                 ) {
                   const destroyable = delegate.getDestroyable(bucket);
                   if (destroyable) {
+                    bucketDestroyable = destroyable;
                     // Record the instance for destruction (see `pushHelperInstance` in
                     // gxt-bridge.ts).
                     getGxtRenderer()?.compilePipeline.pushHelperInstance?.(destroyable);
@@ -909,8 +975,10 @@ function createEmberMaybeHelper(original: Function) {
                   lastResult: result,
                   helperCell,
                   recomputeTag: _gxtRecomputeTag,
+                  destroyable: bucketDestroyable,
                 } as any;
-                classHelperInstanceCache.set(name, cached);
+                if (siteCtx) helperSiteInstancesFor(siteCtx).set(siteId, cached);
+                else classHelperInstanceCache.set(name, cached);
 
                 // Install PROPERTY_DID_CHANGE hook on the helper bucket so that
                 // tracked property changes (e.g., instance.foo = 456) trigger
@@ -1021,13 +1089,17 @@ function createEmberMaybeHelper(original: Function) {
           typeof factoryClass.create === 'function';
 
         if (isClassBased) {
-          // Use a cached persistent instance for class-based helpers.
+          // Use a cached persistent instance for class-based helpers, one per
+          // call site (per name for a call without a site id).
           // This enables recompute() to trigger re-evaluation of the same instance.
-          let instance = classHelperInstanceCache.get(name);
+          let instance = siteCtx
+            ? helperSiteInstances.get(siteCtx)?.get(siteId)
+            : classHelperInstanceCache.get(name);
           if (!instance) {
             try {
               instance = factory.create();
-              classHelperInstanceCache.set(name, instance);
+              if (siteCtx) helperSiteInstancesFor(siteCtx).set(siteId, instance);
+              else classHelperInstanceCache.set(name, instance);
               // Also record the instance for destruction (see
               // `pushHelperInstance` in gxt-bridge.ts).
               getGxtRenderer()?.compilePipeline.pushHelperInstance?.(instance);
@@ -1235,6 +1307,7 @@ function createEmberMaybeHelper(original: Function) {
       return '';
     }
     // Fall back to GXT's native maybeHelper for other cases
+    if (siteStripped) return original(name, args, hash, ctx);
     return original(name, args, hashOrCtx, maybeCtx);
   };
   (wrapped as any).__emberWrapped = true;
