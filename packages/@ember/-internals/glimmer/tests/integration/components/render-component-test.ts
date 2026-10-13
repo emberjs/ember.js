@@ -23,6 +23,7 @@ import GlimmerishComponent from '../../utils/glimmerish-component';
 import { run } from '@ember/runloop';
 import { destroy, associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, type RenderResult } from '../../../lib/renderer';
+import { renderers } from '../../../lib/renderers';
 import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
@@ -480,6 +481,71 @@ moduleFor(
       );
 
       this.renderComponent(Root, { expect: '<div>hi there</div>' });
+    }
+
+    '@test destroying the result releases its root and renderer'(assert: QUnit['assert']) {
+      let render = defineSimpleModifier((element, [comp]) => {
+        let result = renderComponent(comp, { into: element });
+
+        return () => result.destroy();
+      });
+
+      let Inner = setComponentTemplate(precompileTemplate('hi there'), templateOnly());
+
+      class State {
+        @tracked show = true;
+      }
+      let state = new State();
+
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{#if state.show}}<div {{render Inner}}></div>{{/if}}`, {
+          strictMode: true,
+          scope: () => ({ render, Inner, state }),
+        }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root, { expect: '<div>hi there</div>' });
+
+      let baseline = renderers.length;
+
+      for (let i = 0; i < 5; i++) {
+        run(() => (state.show = false));
+        assertHTML('<!---->');
+        run(() => (state.show = true));
+        assertHTML('<div>hi there</div>');
+      }
+
+      assert.strictEqual(
+        renderers.length,
+        baseline,
+        'renderers for destroyed renderComponent results are not retained'
+      );
+    }
+
+    '@test destroying the result removes its root from a shared renderer'(assert: QUnit['assert']) {
+      let Inner = setComponentTemplate(precompileTemplate('hi there'), templateOnly());
+      let { owner } = this;
+      let element = document.createElement('div');
+
+      let first = run(() => renderComponent(Inner, { owner, into: element }));
+      let renderer = renderers[renderers.length - 1]!;
+
+      assert.strictEqual(renderer.state.roots.length, 1);
+
+      for (let i = 0; i < 5; i++) {
+        let other = document.createElement('div');
+        let result = run(() => renderComponent(Inner, { owner, into: other }));
+        run(() => result.destroy());
+      }
+
+      assert.strictEqual(renderer.state.roots.length, 1, 'destroyed roots are not retained');
+
+      run(() => first.destroy());
+
+      assert.false(renderers.includes(renderer), 'renderer with no roots is deregistered');
+
+      run(() => destroy(this));
     }
 
     '@test can render in to a detached element'() {
