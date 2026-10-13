@@ -3,7 +3,8 @@
  * classic Ember. The test page loads this file only in GXT builds
  * (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, ApplicationTestCase, runTask } from 'internal-test-helpers';
+import { set } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import Route from '@ember/routing/route';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -150,6 +151,42 @@ moduleFor(
         full: ObjectProxy.create({ content: {} }),
       });
       this.assertText('no|yes');
+    }
+  }
+);
+
+moduleFor(
+  'GXT correctness: URL sanitization',
+  class extends RenderingTestCase {
+    ['@test a bound href and xlink:href of an SVG <a> are sanitized, also on update'](assert: any) {
+      this.render('<svg><a href={{this.url}}></a><a xlink:href={{this.url}}></a></svg>', {
+        url: 'javascript:foo()',
+      });
+      const urls = () => {
+        const [a, b] = this.element!.querySelectorAll('a');
+        return [a!.getAttribute('href'), b!.getAttribute('xlink:href')];
+      };
+      assert.deepEqual(urls(), ['unsafe:javascript:foo()', 'unsafe:javascript:foo()']);
+
+      runTask(() => set(this.context, 'url', 'http://foo.bar'));
+      assert.deepEqual(urls(), ['http://foo.bar', 'http://foo.bar']);
+
+      runTask(() => set(this.context, 'url', 'vbscript:foo()'));
+      assert.deepEqual(urls(), ['unsafe:vbscript:foo()', 'unsafe:vbscript:foo()']);
+    }
+
+    ['@test a URL attribute written camelCased (formAction) is sanitized, also on update'](
+      assert: any
+    ) {
+      this.render('<button formAction={{this.url}}></button>', { url: 'javascript:foo()' });
+      const url = () => this.element!.querySelector('button')!.getAttribute('formaction');
+      assert.strictEqual(url(), 'unsafe:javascript:foo()');
+
+      runTask(() => set(this.context, 'url', 'http://foo.bar/derp'));
+      assert.strictEqual(url(), 'http://foo.bar/derp');
+
+      runTask(() => set(this.context, 'url', 'javascript:bar()'));
+      assert.strictEqual(url(), 'unsafe:javascript:bar()');
     }
   }
 );

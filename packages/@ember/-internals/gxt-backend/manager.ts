@@ -51,6 +51,11 @@ import {
   getViewId,
 } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
+import type { SimpleElement } from '@glimmer/interfaces';
+import {
+  requiresSanitization,
+  sanitizeAttributeValue,
+} from '@glimmer/runtime/lib/dom/sanitized-values';
 
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
@@ -3328,19 +3333,12 @@ function _warnUnsafeStyleBinding(wrapper: HTMLElement, attrName: string, value: 
   }
 }
 
-// `unsafe:<value>` for a `javascript:` / `vbscript:` URL bound to `href`,
-// `src`, `cite` or `action`; `null` when the value is fine as it is.
-function _unsafeUrlBindingValue(attrName: string, value: any): string | null {
-  if (
-    (attrName === 'href' || attrName === 'src' || attrName === 'cite' || attrName === 'action') &&
-    typeof value === 'string'
-  ) {
-    const protocol = value.split(':')[0]?.toLowerCase();
-    if (protocol === 'javascript' || protocol === 'vbscript') {
-      return `unsafe:${value}`;
-    }
-  }
-  return null;
+// The value an attribute binding writes: a URL attribute of the element is
+// sanitized first, as Glimmer's SafeDynamicAttribute does.
+function _sanitizedBindingValue(wrapper: Element, attrName: string, value: any): any {
+  return requiresSanitization(wrapper.tagName, attrName)
+    ? sanitizeAttributeValue(wrapper as unknown as SimpleElement, attrName, value)
+    : value;
 }
 
 // `value` on an <input>, <textarea> or <select> is bound as the DOM property:
@@ -3408,13 +3406,9 @@ function syncWrapperElement(
       // Never update id — it's frozen after first render
       if (attrName === 'id') continue;
 
-      const value = _attributeBindingValue(instance, propName);
-      _warnUnsafeStyleBinding(wrapper, attrName, value);
-      const unsafeUrl = _unsafeUrlBindingValue(attrName, value);
-      if (unsafeUrl !== null) {
-        wrapper.setAttribute(attrName, unsafeUrl);
-        continue;
-      }
+      const rawValue = _attributeBindingValue(instance, propName);
+      _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
+      const value = _sanitizedBindingValue(wrapper, attrName, rawValue);
       if (_isValuePropertyAttr(wrapper, attrName)) {
         (wrapper as any)[attrName] = value != null && value !== false ? String(value) : '';
         // Remove the HTML attribute if it was previously set
@@ -5493,13 +5487,9 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
         assert(`Illegal attributeBinding: '${propName}' is not a valid attribute name.`, false);
       }
 
-      const value = _attributeBindingValue(instance, propName);
-      _warnUnsafeStyleBinding(wrapper, attrName, value);
-      const unsafeUrl = _unsafeUrlBindingValue(attrName, value);
-      if (unsafeUrl !== null) {
-        wrapper.setAttribute(attrName, unsafeUrl);
-        continue;
-      }
+      const rawValue = _attributeBindingValue(instance, propName);
+      _warnUnsafeStyleBinding(wrapper, attrName, rawValue);
+      const value = _sanitizedBindingValue(wrapper, attrName, rawValue);
       if (_isValuePropertyAttr(wrapper, attrName)) {
         if (value !== undefined && value !== null && value !== false) {
           (wrapper as any)[attrName] = String(value);

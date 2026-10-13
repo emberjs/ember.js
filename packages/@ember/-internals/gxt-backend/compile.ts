@@ -495,6 +495,12 @@ import { isProxy } from '@ember/-internals/utils';
 import { RECOMPUTE_TAG } from '@ember/-internals/glimmer/lib/helper';
 // The class of `templateOnly()` component definitions.
 import { TemplateOnlyComponentDefinition } from '@glimmer/runtime/lib/component/template-only';
+// Glimmer's URL sanitization (which tag/attribute pairs need it, and how).
+import type { SimpleElement } from '@glimmer/interfaces';
+import {
+  requiresSanitization,
+  sanitizeAttributeValue,
+} from '@glimmer/runtime/lib/dom/sanitized-values';
 // Import the GXT runtime compiler
 // @ts-ignore - direct path to avoid GXT Babel plugin
 import {
@@ -1787,59 +1793,19 @@ if (DEBUG) {
   }, 0);
 }
 
-// Patch GXT's HTMLBrowserDOMApi.attr() to handle undefined values.
-// GXT's native implementation: attr(t,e,n){t.setAttribute(e,null===n?"":n)}
-// This only handles null -> "" but not undefined. In Ember, when a bound attribute
-// value becomes undefined, the attribute should be REMOVED from the element.
-// Without this patch, undefined becomes the string "undefined" on the DOM.
+// URL sanitization is Glimmer's own (`@glimmer/runtime/lib/dom/sanitized-values`,
+// imported above): `requiresSanitization` picks the tag/attribute pairs and
+// `sanitizeAttributeValue` prefixes a dangerous URL with `unsafe:`. The
+// `normalizeAttrValue` host hook below applies it to every gxt attribute and
+// property write, and the SVG/MathML element path (`applyNsAttr`) to its bound
+// values.
 //
-// Additionally, sanitize dangerous `javascript:`/`vbscript:` URL values for
-// href/src/action/background attributes on A/IMG/LINK/IFRAME/BASE/FORM/BODY
-// tags (matching Glimmer's sanitizeAttributeValue contract in
-// `@glimmer/runtime/lib/dom/sanitized-values.ts`). Without this, tests that
-// expect `href="unsafe:javascript:..."` see the raw `javascript:...` instead.
-const _SANITIZE_BAD_PROTOCOLS = ['javascript:', 'vbscript:'];
-const _SANITIZE_BAD_TAGS = new Set(['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM']);
-const _SANITIZE_BAD_ATTRS = new Set(['href', 'src', 'background', 'action']);
-const _SANITIZE_DATAURI_TAGS = new Set(['EMBED']);
-const _SANITIZE_DATAURI_ATTRS = new Set(['src']);
-function _sanitizeUrlAttribute(element: any, name: string, strValue: string): string {
-  if (!element || typeof element.tagName !== 'string') return strValue;
-  const tagName = element.tagName.toUpperCase();
-  const attr = name;
-  // Skip if this element/attr combination doesn't require URI sanitization
-  const needsUri = _SANITIZE_BAD_TAGS.has(tagName) && _SANITIZE_BAD_ATTRS.has(attr);
-  const needsDataUri = _SANITIZE_DATAURI_TAGS.has(tagName) && _SANITIZE_DATAURI_ATTRS.has(attr);
-  if (!needsUri && !needsDataUri) return strValue;
-  // Extract protocol via URL parser (robust to spaces/case/encoded schemes)
-  let protocol = ':';
-  try {
-    if (typeof URL === 'function') {
-      protocol = new URL(strValue, 'http://_/').protocol.toLowerCase();
-    }
-  } catch {
-    // Malformed URL — fall back to naive split (safe for explicit javascript:foo)
-    const idx = strValue.indexOf(':');
-    if (idx > -1) protocol = strValue.slice(0, idx + 1).toLowerCase();
-  }
-  if (needsUri && _SANITIZE_BAD_PROTOCOLS.indexOf(protocol) !== -1) {
-    return `unsafe:${strValue}`;
-  }
-  if (needsDataUri) {
-    return `unsafe:${strValue}`;
-  }
-  return strValue;
-}
-// Fallback sanitization: patch Element.prototype.setAttribute too. Vite dev
-// server sometimes loads duplicate copies of the GXT dom chunk (versioned
-// URL vs unversioned), and the runtime may use the unpatched copy. A global
-// Element.prototype hook guarantees sanitization regardless of which chunk
-// provides the DOM API. The override is gated on tag/attr/protocol so it
-// never touches unrelated setAttribute calls.
-// DEBUG-only: the duplicate-chunk hazard is a dev-server artifact — a
-// production build bundles a single dom chunk, so the primary
-// HTMLBrowserDOMApi.attr patch below fully owns sanitization there. Gating
-// drops a global Element.prototype override from shipped bundles.
+// DEBUG-only fallback: the compat layer also writes some forwarded attributes
+// with a plain `setAttribute` (`...attributes` on component elements, curly
+// component wrappers), outside the host hook. In development this patch runs
+// those writes through the same sanitizer. Every write the hook made reaches
+// this patch too; a value that already has the `unsafe:` protocol is left as
+// it is, so `<embed src>` (which Glimmer always prefixes) is not prefixed twice.
 if (
   DEBUG &&
   typeof Element !== 'undefined' &&
@@ -1849,27 +1815,13 @@ if (
 ) {
   const _origSetAttribute = Element.prototype.setAttribute;
   Element.prototype.setAttribute = function (name: string, value: any): void {
-    if (typeof value === 'string') {
-      const tagName = this.tagName ? this.tagName.toUpperCase() : '';
-      const needsUri = _SANITIZE_BAD_TAGS.has(tagName) && _SANITIZE_BAD_ATTRS.has(name);
-      const needsDataUri = _SANITIZE_DATAURI_TAGS.has(tagName) && _SANITIZE_DATAURI_ATTRS.has(name);
-      if (needsUri || needsDataUri) {
-        let protocol = ':';
-        try {
-          if (typeof URL === 'function') {
-            protocol = new URL(value, 'http://_/').protocol.toLowerCase();
-          }
-        } catch {
-          const idx = value.indexOf(':');
-          if (idx > -1) protocol = value.slice(0, idx + 1).toLowerCase();
-        }
-        if (needsUri && _SANITIZE_BAD_PROTOCOLS.indexOf(protocol) !== -1) {
-          return _origSetAttribute.call(this, name, `unsafe:${value}`);
-        }
-        if (needsDataUri) {
-          return _origSetAttribute.call(this, name, `unsafe:${value}`);
-        }
-      }
+    if (
+      typeof value === 'string' &&
+      !value.startsWith('unsafe:') &&
+      requiresSanitization(this.tagName, name)
+    ) {
+      const sanitized = sanitizeAttributeValue(this as unknown as SimpleElement, name, value);
+      return _origSetAttribute.call(this, name, sanitized as string);
     }
     return _origSetAttribute.call(this, name, value);
   };
@@ -1914,9 +1866,14 @@ const _HTML_BOOLEAN_ATTRS = new Set([
 // (HTML/SVG/MathML), in WITH_EMBER_INTEGRATION builds. On the attr side,
 // returning `undefined` removes the attribute. The style warning comes from
 // `_styleEmptyGuard` in the `$_tag_ember` wrapper instead (earlier in the
-// pipeline, so it is not emitted twice); props need no Ember normalization.
+// pipeline, so it is not emitted twice). A URL-bearing attribute or property
+// is sanitized first, on both sides, as Glimmer's SafeDynamicAttribute /
+// SafeDynamicProperty do; props need no other Ember normalization.
 _gxtRegisterHostHooks({
   normalizeAttrValue: (name: string, value: any, element: any, isProp: boolean) => {
+    if (typeof element?.tagName === 'string' && requiresSanitization(element.tagName, name)) {
+      value = sanitizeAttributeValue(element, name, value);
+    }
     if (isProp) return value;
     if (value === undefined || value === false) {
       // Ember removes the attribute entirely for undefined/false bound values.
@@ -1942,11 +1899,6 @@ _gxtRegisterHostHooks({
       //   Symbol(debug) -> "Symbol(debug)"
       //   Object.create(null) -> ""
       return _normalizeStringValue(value);
-    }
-    if (typeof value === 'string') {
-      // Strings are always unsafe and need URL sanitization on
-      // href/src/action/background (SafeStrings have toHTML and are objects).
-      return _sanitizeUrlAttribute(element, name, value);
     }
     return value;
   },
@@ -10798,6 +10750,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
           el.setAttribute(key, String(val));
         };
+        // A bound value of a URL attribute (`<a href={{…}}>`, `xlink:href`) is
+        // sanitized before it is applied, as Glimmer sanitizes a dynamic
+        // attribute; a static value is written as authored.
+        const boundNsValue = (key: string, v: any): any =>
+          requiresSanitization(el.tagName, key)
+            ? sanitizeAttributeValue(el as unknown as SimpleElement, key, v)
+            : v;
 
         // Apply attributes/props from tagProps
         if (tagProps && tagProps !== g.$_edp) {
@@ -10805,13 +10764,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           const props = tagProps[0];
           if (Array.isArray(props)) {
             for (const [key, value] of props) {
-              const val = typeof value === 'function' ? value() : value;
+              const val = typeof value === 'function' ? boundNsValue(key, value()) : value;
               applyNsAttr(key, val);
               // Set up reactive updates for dynamic props
               if (typeof value === 'function') {
                 try {
                   gxtEffect(() => {
-                    const v = value();
+                    const v = boundNsValue(key, value());
                     if (v == null || v === false) {
                       const removeKey = key === '' || key === 'className' ? 'class' : key;
                       el.removeAttribute(removeKey);
@@ -10831,13 +10790,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (Array.isArray(attrs)) {
             for (const [key, value] of attrs) {
               if (key.startsWith('@')) continue; // skip component args
-              const val = typeof value === 'function' ? value() : value;
+              const val = typeof value === 'function' ? boundNsValue(key, value()) : value;
               applyNsAttr(key, val);
               // Reactive attrs
               if (typeof value === 'function') {
                 try {
                   gxtEffect(() => {
-                    const v = value();
+                    const v = boundNsValue(key, value());
                     if (v == null || v === false) {
                       el.removeAttribute(key);
                     } else {
