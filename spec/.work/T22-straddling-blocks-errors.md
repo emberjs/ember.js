@@ -27,6 +27,9 @@ Resume from the first unticked item. Branch from `origin/main`.
       closed inside it, and (b) treating that closer as comment text (§02-11 item 17's suggestion,
       natural for a single-pass parser but awkward in the two-pass one, because the Handlebars
       pass has already matched the closer to its opener). (a) is simpler; confirm with the author.
+
+      > I would prefer (b), so let's attempt that. I want to see how complex the ipmlementation is. If it turns out to be really complex, we can fall back to (a).
+
 - [ ] 4. Tests in `packages/@glimmer/syntax/test/parser-error-test.ts`: `{{else}}` and closer in
       each state family (tag name, before/after attribute name, attribute name, unquoted, single-
       and double-quoted value, HTML comment, markup declaration); chained `{{else if}}`; nested

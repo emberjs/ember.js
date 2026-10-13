@@ -15,6 +15,9 @@ committed except this file and the spec.
       first. It changes a template that compiles and renders today into a compile error, so
       Ember's semver policy probably calls for a deprecation (`until: '8.0.0'`). Record the answer
       here.
+
+      > Let's make it an error right away. I'm going to argue that this is a bugfix and a new compile error is a low risk outcome for users -- it's easy to detect and easy to fix.
+
 - [ ] 2. Usage check: grep this repo's templates and tests (`.hbs`, `.gjs`, `.gts`, inline `hbs`
       and `precompileTemplate` strings) for a literal callee with arguments. Note any hits; they
       must be updated in the same PR.
