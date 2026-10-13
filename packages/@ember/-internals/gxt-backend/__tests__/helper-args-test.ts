@@ -41,6 +41,7 @@ import {
 } from 'internal-test-helpers';
 import templateOnly from '@ember/component/template-only';
 import { capabilities as helperCapabilities, setHelperManager } from '@ember/helper';
+import { A } from '@ember/array';
 import { set } from '@ember/object';
 import type Owner from '@ember/owner';
 import { renderComponent, renderSettled } from '@ember/renderer';
@@ -358,6 +359,16 @@ moduleFor(
       runTask(() => set(this.context, 'fn', greetA));
       this.assertText('[A]');
       assert.strictEqual(calls, afterRender + 2, 'switching back re-computes once more');
+    }
+
+    ['@test an Ember array argument changed in place re-computes the helper']() {
+      this.registerUserHelper('join-words', ([list]) => (list as string[]).join(','));
+
+      this.render('{{join-words this.list}}', { list: A(['a', 'b']) });
+      this.assertText('a,b');
+
+      runTask(() => this.context.list.pushObject('c'));
+      this.assertText('a,b,c');
     }
 
     ['@test one helper invoked at two sites with different arguments']() {

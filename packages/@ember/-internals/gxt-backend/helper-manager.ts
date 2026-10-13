@@ -112,29 +112,79 @@ function argsProxyForCustom(capturedArgs: any): { positional: any; named: any } 
 }
 
 /**
- * Per-slot identity comparison of two positional argument lists, as Glimmer
- * compares a reference's value: `Object.is` on each slot, so a function value
- * (an action, a curried helper) is the same argument only when it is the same
- * function.
+ * The helper-argument comparison. A slot (a positional argument, or a named
+ * argument's key) is unchanged when it holds the same value as before, by
+ * `Object.is`, as Glimmer compares a reference's value: a function (an action,
+ * a curried helper) is the same argument only when it is the same function.
+ * For an array the elements recorded with it must also still be the same:
+ * reading an array argument in Glimmer consumes the array's `[]` tag, so an
+ * array changed in place (`pushObject`, a `trackedArray` push) is a changed
+ * argument.
  */
-function samePositionalArgs(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (!Object.is(a[i], b[i])) return false;
+interface HelperArgSlots {
+  // The array elements recorded for each positional slot (`null`: not an array).
+  positional: (unknown[] | null)[];
+  // The same per named argument.
+  named: Record<string, unknown[] | null>;
+}
+
+function elementsOf(value: unknown): unknown[] | null {
+  return Array.isArray(value) ? value.slice() : null;
+}
+
+function slotUnchanged(value: unknown, elements: unknown[] | null, next: unknown): boolean {
+  if (!Object.is(value, next)) return false;
+  if (elements === null) return true;
+  const array = next as unknown[];
+  if (array.length !== elements.length) return false;
+  for (let i = 0; i < elements.length; i++) {
+    if (!Object.is(array[i], elements[i])) return false;
   }
   return true;
 }
 
-/** Per-key identity comparison of two named argument objects (see above). */
-function sameNamedArgs(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
-  const keys = Object.keys(a);
-  if (keys.length !== Object.keys(b).length) return false;
+function positionalSlots(positional: unknown): (unknown[] | null)[] {
+  return Array.isArray(positional) ? positional.map(elementsOf) : [];
+}
+
+function namedSlots(named: unknown): Record<string, unknown[] | null> {
+  const slots: Record<string, unknown[] | null> = {};
+  if (named !== null && typeof named === 'object') {
+    for (const key of Object.keys(named)) {
+      slots[key] = elementsOf((named as Record<string, unknown>)[key]);
+    }
+  }
+  return slots;
+}
+
+function samePositionalArgs(current: unknown, slots: (unknown[] | null)[], next: unknown): boolean {
+  if (!Array.isArray(current) || !Array.isArray(next)) return current === next;
+  if (current.length !== next.length) return false;
+  for (let i = 0; i < current.length; i++) {
+    if (!slotUnchanged(current[i], slots[i] ?? null, next[i])) return false;
+  }
+  return true;
+}
+
+function sameNamedArgs(
+  current: unknown,
+  slots: Record<string, unknown[] | null>,
+  next: unknown
+): boolean {
+  if (
+    current === null ||
+    next === null ||
+    typeof current !== 'object' ||
+    typeof next !== 'object'
+  ) {
+    return current === next;
+  }
+  const keys = Object.keys(current);
+  if (keys.length !== Object.keys(next).length) return false;
   for (const key of keys) {
-    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
-    if (!Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+    if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
+    const value = (current as Record<string, unknown>)[key];
+    if (!slotUnchanged(value, slots[key] ?? null, (next as Record<string, unknown>)[key])) {
       return false;
     }
   }
@@ -272,7 +322,8 @@ export class CustomHelperManager {
     // argument values on every evaluation of the formula that renders the
     // helper, so the args become accessors over plain storage:
     // - an assignment compares slot by slot (`Object.is`, function values by
-    //   identity) and records a change only when a value differs;
+    //   identity, an array's elements too; see `slotUnchanged`) and records a
+    //   change only when a slot differs;
     // - a change bumps a helper-args tag (validator.ts), which invalidates the
     //   caches that read the args and nothing else: no GXT cell is written, so
     //   assigning the args while a formula reads the helper does not dirty
@@ -311,6 +362,10 @@ export class CustomHelperManager {
         ) {
           let positional = args.positional;
           let named = args.named;
+          const slots: HelperArgSlots = {
+            positional: positionalSlots(positional),
+            named: namedSlots(named),
+          };
           const positionalTag = createHelperArgsTag();
           const namedTag = createHelperArgsTag();
           Object.defineProperty(args, 'positional', {
@@ -319,8 +374,9 @@ export class CustomHelperManager {
               return positional;
             },
             set(next) {
-              if (samePositionalArgs(positional, next)) return;
+              if (samePositionalArgs(positional, slots.positional, next)) return;
               positional = next;
+              slots.positional = positionalSlots(next);
               bumpHelperArgsTag(positionalTag);
             },
             configurable: true,
@@ -332,8 +388,9 @@ export class CustomHelperManager {
               return named;
             },
             set(next) {
-              if (sameNamedArgs(named, next)) return;
+              if (sameNamedArgs(named, slots.named, next)) return;
               named = next;
+              slots.named = namedSlots(next);
               bumpHelperArgsTag(namedTag);
             },
             configurable: true,
