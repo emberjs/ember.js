@@ -1,50 +1,51 @@
 import { renderComponent } from '@ember/renderer';
 import { isTracking, resetTracking } from '@glimmer/validator';
 import { DEBUG } from '@glimmer/env';
-import { module, test } from 'qunit';
-import { setupRenderingTest } from 'ember-qunit';
+import { getElement, moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
-module('render error cleanup', function (hooks) {
-  setupRenderingTest(hooks);
-
-  /**
-   * An open tracking frame makes each later test fail.
-   */
-  hooks.afterEach(() => {
-    resetTracking();
-  });
-
-  test('a render error whose cleanup throws still resets tracking [GH#21681]', function (assert) {
-    if (!DEBUG) {
-      assert.expect(0);
-      return;
+moduleFor(
+  'render error cleanup',
+  class extends RenderingTestCase {
+    /**
+     * An open tracking frame makes each later test fail.
+     */
+    afterEach() {
+      resetTracking();
+      super.afterEach();
     }
 
-    let element = document.createElement('div');
-    let marker = document.createComment('');
+    '@test a render error whose cleanup throws still resets tracking [GH#21681]'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
 
-    element.append(marker);
-    this.element.append(element);
+      let element = document.createElement('div');
+      let marker = document.createComment('');
 
-    let into = { element, nextSibling: marker };
+      element.append(marker);
+      getElement().append(element);
 
-    /**
-     * The cursor is now stale.
-     * The render fails at its first insert before `marker`,
-     * and the VM fails again when it closes the open block.
-     */
-    element.innerHTML = '';
+      let into = { element, nextSibling: marker };
 
-    /**
-     * The message text of this error differs between browsers.
-     */
-    assert.throws(
-      () => {
-        renderComponent(<template>hello</template>, { into, owner: this.owner });
-      },
-      (error) => error.name === 'NotFoundError'
-    );
+      /**
+       * The cursor is now stale.
+       * The render fails at its first insert before `marker`,
+       * and the VM fails again when it closes the open block.
+       */
+      element.innerHTML = '';
 
-    assert.false(isTracking(), 'no tracking frame is left open');
-  });
-});
+      /**
+       * The message text of this error differs between browsers.
+       */
+      assert.throws(
+        () => {
+          renderComponent(<template>hello</template>, { into, owner: this.owner });
+        },
+        (error) => error.name === 'NotFoundError'
+      );
+
+      assert.false(isTracking(), 'no tracking frame is left open');
+    }
+  }
+);
