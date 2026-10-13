@@ -20,7 +20,7 @@ const flags = {
 let unprocessedMixins = false;
 
 export interface Namespace {
-  isNamespace: true;
+  isNamespace?: true;
   destroy(): void;
 }
 
@@ -146,7 +146,7 @@ function _processNamespace<N extends Namespace>(
 }
 
 function isNamespace(obj: unknown): obj is Namespace {
-  return obj != null && typeof obj === 'object' && (obj as Namespace).isNamespace;
+  return obj != null && typeof obj === 'object' && (obj as Namespace).isNamespace === true;
 }
 
 function isUppercase(code: number): boolean {
