@@ -14,5 +14,6 @@ export default precompileTemplate(
   <button type="button" data-test-swap-link {{on "click" this.swapLink}}>swap link</button>
   <p data-test-link-clicks>Link clicks: {{this.linkClicks}}</p>
   <ClassCounter @count={{this.count}} @increment={{this.increment}} />
-  <TrackedCounter />`
+  <TrackedCounter />
+  <SetCounter />`
 );

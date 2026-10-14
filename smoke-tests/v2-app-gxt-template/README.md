@@ -52,7 +52,12 @@ component class written with decorators (`@tracked`, `@action`, `@service`):
 the GXT compiler lowers them with decorator-transforms, and the
 `importsDecoratorRuntime` step in `vite.config.mjs` makes the compiled module
 import `decorator-transforms/runtime` (the app lists `decorator-transforms`),
-so no `dt7948` global is needed.
+so no `dt7948` global is needed. `<SetCounter>` is a `.gjs` component class
+with a plain (untracked) field that its action updates with `set()`: with the
+`EMBER_PROPERTY_TAGS` compiler flag in `vite.config.mjs`, a template's
+property read consumes the property's tag, as Glimmer's does, so `set()` /
+`notifyPropertyChange()` re-render it (and an assignment without them does
+not).
 
 CI coverage: `smoke-tests/scenarios/gxt-boot-test.ts` (build + headless boot
 + click reactivity over both pipelines), matrix name

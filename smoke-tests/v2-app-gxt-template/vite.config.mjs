@@ -123,6 +123,10 @@ export default defineConfig(({ mode }) => ({
           WITH_HELPER_MANAGER: true,
           WITH_MODIFIER_MANAGER: true,
           TRY_CATCH_ERROR_HANDLING: false,
+          // A template's property read consumes the property's tag, as
+          // Glimmer's does: `set()` / `notifyPropertyChange()` on a plain
+          // (untracked) property re-render it.
+          EMBER_PROPERTY_TAGS: true,
         },
       })
     ),

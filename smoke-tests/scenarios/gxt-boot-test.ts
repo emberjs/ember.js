@@ -270,6 +270,41 @@ gxtBootAppScenarios
             ),
             'the decorated component updates in place'
           );
+
+          // `<SetCounter>` is a .gjs component class with a plain field that
+          // its action updates with `set()`: the template's read of the field
+          // consumes the property's tag, so `set()` re-renders it in place.
+          assert.equal(
+            await page.textContent('[data-test-set-counter]'),
+            'Set clicks: 0',
+            'a .gjs component renders its plain field'
+          );
+          await page.evaluate(() => {
+            (window as any).__setCounterElement = document.querySelector(
+              '[data-test-set-counter]'
+            );
+          });
+          await page.click('[data-test-set-increment]');
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-test-set-counter]')?.textContent ===
+              'Set clicks: 1',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.textContent('[data-test-set-counter]'),
+            'Set clicks: 1',
+            'set() on its plain field re-renders it'
+          );
+          assert.true(
+            await page.evaluate(
+              () =>
+                (window as any).__setCounterElement ===
+                document.querySelector('[data-test-set-counter]')
+            ),
+            'the component updates in place'
+          );
           assert.deepEqual(pageErrors, [], 'no uncaught page errors during boot + interaction');
         } finally {
           await browser.close();
