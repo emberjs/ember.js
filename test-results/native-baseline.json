@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7094/7137, 43 known red. emberCommit is the last code commit of the series.",
+    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7106/7148, 42 known red. emberCommit is the last code commit of the series.",
     "The 8 reds of the pre-rebase baseline are unchanged. 7 of them need @lifeart/gxt with lifeart/glimmer-next#266 ({{#if}} renders Glimmer block bounds: no anchor comment while the branch has content); regenerate this baseline after pinning that release:",
     "  Application test: debug render tree :: template-only components",
     "  Application test: debug render tree :: custom components",
@@ -13,18 +13,19 @@
     "  Component Tracked Properties w/ Args Proxy :: downstream property changes do not invalidate upstream component getters/arguments",
     "The other 34 are tests main added (19) or rewrote (15): the .gjs rewrites of the {{array}} / {{hash}} / {{fn}} / {{element}} helper tests, {{get}} tests moved from the Glimmer integration suite, renderComponent roots in the debug render tree, {{#each-in}} key=, {{#each}} @key, {{on}} asserts and spellcheck, custom modifier destruction order, a dynamic style warning with an element modifier, Evented.detect on Component (Evented deprecation), and the argument-less helper test now on a Glimmer component.",
     "Since the previous regeneration (7077/7119) the run gained 11 tests, all green (one is a documented-drop skip): AngleBracket Invocation (attributes are not arguments) (4, an invocation's attributes are not arguments; the classic-component case is skipped), <LinkTo /> component (rendering tests) (1, LinkTo's own href wins over an href attribute), and 6 in Components test: a <template> component invoked by name (an attribute is not an argument; blocks, block params, named blocks, has-block and has-block-params). The 42 known reds are the same tests as before.",
-    "Since the previous regeneration (7088/7130) the run gained 7 tests in two new modules, Components test: a class-body <template> component (5) and Components test: a class-body <template> component invoked by name (2), for a .gjs component class whose template is a class-body <template>. Six pass. The 43rd known red is the seventh, 'a component class without a template yields its block': native renders a component that has no template with an empty template, where Glimmer renders its default {{yield}} (native/managers.ts EMPTY_TEMPLATE). The other 42 known reds are the same tests as before."
+    "Since the previous regeneration (7088/7130) the run gained 7 tests in two new modules, Components test: a class-body <template> component (5) and Components test: a class-body <template> component invoked by name (2), for a .gjs component class whose template is a class-body <template>. Six pass. The 43rd known red is the seventh, 'a component class without a template yields its block': native renders a component that has no template with an empty template, where Glimmer renders its default {{yield}} (native/managers.ts EMPTY_TEMPLATE). The other 42 known reds are the same tests as before.",
+    "Since the previous regeneration (7094/7137) the run gained 11 tests, all green: 5 in a new module, Components test: a component class with a registered template, and 2 in Components test: a class-body <template> component invoked by name, for a component class with a registered template invoked lexically (the nearest template wins); 2 more in that module for set() / notifyPropertyChange() on a plain or object field; and 2 in gxt-native | components, for a templateOnly() definition and a component class with no template. The 43rd known red, 'a component class without a template yields its block', is green: a component with no template now renders Glimmer's default {{yield}}. The other 42 known reds are the same tests as before."
   ],
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T23:34:19.318Z",
+    "capturedAt": "2026-10-14T02:11:02.412Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "b45fb02823",
-    "totalTests": 7137,
-    "totalModules": 678,
+    "emberCommit": "701d545944",
+    "totalTests": 7148,
+    "totalModules": 679,
     "quarantinedTests": 0,
-    "totalAssertions": 35587,
-    "totalAssertionsPassing": 35509
+    "totalAssertions": 35613,
+    "totalAssertionsPassing": 35536
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1206,21 +1207,23 @@
     },
     "Components test: a class-body <template> component": {
       "total": 5,
-      "passing": 4,
+      "passing": 5,
       "assertionsTotal": 10,
-      "assertionsPassing": 9,
-      "failingTests": [
-        {
-          "name": "a component class without a template yields its block",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 10,
+      "failingTests": []
     },
     "Components test: a class-body <template> component invoked by name": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 13,
-      "assertionsPassing": 13,
+      "total": 6,
+      "passing": 6,
+      "assertionsTotal": 26,
+      "assertionsPassing": 26,
+      "failingTests": []
+    },
+    "Components test: a component class with a registered template": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "Components test: contextual components": {
@@ -4713,10 +4716,10 @@
       "failingTests": []
     },
     "gxt-native | components": {
-      "total": 19,
-      "passing": 19,
-      "assertionsTotal": 44,
-      "assertionsPassing": 44,
+      "total": 21,
+      "passing": 21,
+      "assertionsTotal": 47,
+      "assertionsPassing": 47,
       "failingTests": []
     },
     "gxt-native | content": {
@@ -5430,6 +5433,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 43
+    "gxt:triage": 42
   }
 }

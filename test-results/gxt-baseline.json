@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T00:32:05.941Z",
+    "capturedAt": "2026-10-14T01:58:19.985Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "e1c6bb3901",
-    "totalTests": 10024,
-    "totalModules": 974,
+    "emberCommit": "701d545944",
+    "totalTests": 10033,
+    "totalModules": 975,
     "quarantinedTests": 0,
-    "totalAssertions": 59885,
-    "totalAssertionsPassing": 58299,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after decorators in gxt-compiled .gjs/.gts import decorator-transforms' runtime (the gxt compiler lowers them to calls on a dt7948 global; each compiled module that calls it now imports decorator-transforms/runtime, and the test page no longer installs the global), written by runner.mjs. 9211/10024 green (unchanged), no timeouts, no harness errors, no green->red, no red->green: every decorated .gjs/.gts test module now runs through the runtime import. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59911,
+    "totalAssertionsPassing": 58322,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a component class with a registered template renders through its component manager when invoked lexically, and after set() on a plain field re-renders a .gjs template that reads it (the compat gxt compiler uses property tags), written by runner.mjs. 9219/10033 green (was 9211/10024): 9 new tests, all green (7 for registered templates invoked lexically, nearest template first; 2 for set() / notifyPropertyChange() on a plain or object field). One test turned red, a false green until now: '[integration] jit :: [owner] :: owner can be changed by a component with the hasSubOwner capability'. Its Glimmer component (a registered template, invoked lexically) was never constructed, so the 3 owner assertions in its constructor never ran (4 assertions, now 7); it is now constructed, with the test's owner, because the compat build does not apply a hasSubOwner manager's owner to what it renders. No timeouts, no harness errors, no other green->red, no red->green. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1549,10 +1549,17 @@
       "failingTests": []
     },
     "Components test: a class-body <template> component invoked by name": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 13,
-      "assertionsPassing": 13,
+      "total": 6,
+      "passing": 6,
+      "assertionsTotal": 26,
+      "assertionsPassing": 26,
+      "failingTests": []
+    },
+    "Components test: a component class with a registered template": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "Components test: attrs lookup": {
@@ -7016,10 +7023,15 @@
     },
     "[integration] jit :: [owner]": {
       "total": 2,
-      "passing": 2,
-      "assertionsTotal": 4,
+      "passing": 1,
+      "assertionsTotal": 7,
       "assertionsPassing": 4,
-      "failingTests": []
+      "failingTests": [
+        {
+          "name": "owner can be changed by a component with the hasSubOwner capability",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `component` keyword syntax errors": {
       "total": 14,
@@ -10370,6 +10382,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 813
+    "gxt:triage": 814
   }
 }
