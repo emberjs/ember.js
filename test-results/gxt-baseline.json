@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T01:58:19.985Z",
+    "capturedAt": "2026-10-14T03:13:46.284Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "701d545944",
-    "totalTests": 10033,
-    "totalModules": 975,
+    "emberCommit": "c6355fb7b5",
+    "totalTests": 10046,
+    "totalModules": 976,
     "quarantinedTests": 0,
-    "totalAssertions": 59911,
-    "totalAssertionsPassing": 58322,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a component class with a registered template renders through its component manager when invoked lexically, and after set() on a plain field re-renders a .gjs template that reads it (the compat gxt compiler uses property tags), written by runner.mjs. 9219/10033 green (was 9211/10024): 9 new tests, all green (7 for registered templates invoked lexically, nearest template first; 2 for set() / notifyPropertyChange() on a plain or object field). One test turned red, a false green until now: '[integration] jit :: [owner] :: owner can be changed by a component with the hasSubOwner capability'. Its Glimmer component (a registered template, invoked lexically) was never constructed, so the 3 owner assertions in its constructor never ran (4 assertions, now 7); it is now constructed, with the test's owner, because the compat build does not apply a hasSubOwner manager's owner to what it renders. No timeouts, no harness errors, no other green->red, no red->green. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 59992,
+    "totalAssertionsPassing": 58415,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a bound attribute updated to null or undefined is removed (the normalizeAttrValue hook applies Glimmer's normalizeValue removal rule on every write) and after class is an attribute whose classes merge as Glimmer merges them (false, null and undefined remove a lone class; merged classes skip empty parts), written by runner.mjs. 9244/10046 green (was 9219/10033): 13 new tests, all green (11 in 'Dynamic attribute values (null, undefined and false)', 2 in 'Components test: a <template> component invoked by name'), and 12 tests turned green: the 9 rehydration 'Unquoted a href / img src attribute is not rendered when set to null / undefined' tests, '[components] scope :: false / null class name do not render' and 'Updating :: class attribute is removed if the binding becomes null or undefined'. No timeouts, no harness errors, no green->red. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1535,10 +1535,10 @@
       ]
     },
     "Components test: a <template> component invoked by name": {
-      "total": 11,
-      "passing": 11,
-      "assertionsTotal": 34,
-      "assertionsPassing": 34,
+      "total": 13,
+      "passing": 13,
+      "assertionsTotal": 42,
+      "assertionsPassing": 42,
       "failingTests": []
     },
     "Components test: a class-body <template> component": {
@@ -1945,6 +1945,13 @@
       "passing": 24,
       "assertionsTotal": 165,
       "assertionsPassing": 165,
+      "failingTests": []
+    },
+    "Dynamic attribute values (null, undefined and false)": {
+      "total": 11,
+      "passing": 11,
+      "assertionsTotal": 73,
+      "assertionsPassing": 73,
       "failingTests": []
     },
     "Dynamic content tests (attribute position)": {
@@ -6605,9 +6612,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 41,
+      "passing": 42,
       "assertionsTotal": 792,
-      "assertionsPassing": 675,
+      "assertionsPassing": 676,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6663,10 +6670,6 @@
         },
         {
           "name": "block helpers whose template has a morph at the edge",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "class attribute is removed if the binding becomes null or undefined",
           "category": "gxt:triage"
         },
         {
@@ -6891,19 +6894,10 @@
     },
     "[integration] jit :: [components] scope": {
       "total": 8,
-      "passing": 6,
+      "passing": 8,
       "assertionsTotal": 24,
-      "assertionsPassing": 22,
-      "failingTests": [
-        {
-          "name": "`false` class name do not render",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "`null` class name do not render",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 24,
+      "failingTests": []
     },
     "[integration] jit :: [components] teardown": {
       "total": 5,
@@ -9125,24 +9119,12 @@
     },
     "[integration] rehydration :: Components :: initial render": {
       "total": 101,
-      "passing": 97,
+      "passing": 100,
       "assertionsTotal": 568,
-      "assertionsPassing": 564,
+      "assertionsPassing": 567,
       "failingTests": [
         {
           "name": "Loops",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted a href attribute is not rendered when set to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `undefined`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `null`",
           "category": "gxt:triage"
         }
       ],
@@ -9166,24 +9148,12 @@
     },
     "[integration] rehydration :: Components :: initial render > [integration] Glimmer": {
       "total": 101,
-      "passing": 97,
+      "passing": 100,
       "assertionsTotal": 568,
-      "assertionsPassing": 564,
+      "assertionsPassing": 567,
       "failingTests": [
         {
           "name": "Loops",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted a href attribute is not rendered when set to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `undefined`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `null`",
           "category": "gxt:triage"
         }
       ],
@@ -9240,9 +9210,9 @@
     },
     "[integration] rehydration :: rehydration": {
       "total": 126,
-      "passing": 117,
+      "passing": 120,
       "assertionsTotal": 665,
-      "assertionsPassing": 656,
+      "assertionsPassing": 659,
       "failingTests": [
         {
           "name": "modifiers do not run in the server render but run in the client render",
@@ -9262,18 +9232,6 @@
         },
         {
           "name": "{{component}} invocation: interacting with builtins",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `null`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted img src attribute is not rendered when set to `undefined`",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Unquoted a href attribute is not rendered when set to `null`",
           "category": "gxt:triage"
         },
         {
@@ -10382,6 +10340,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 814
+    "gxt:triage": 802
   }
 }
