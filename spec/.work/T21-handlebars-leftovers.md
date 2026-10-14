@@ -61,8 +61,8 @@ out of scope.
       - Filter `Inherited from Handlebars`: 52 tests, 52 pass. `[glimmer-syntax]`: 367 pass. Full suite: 9281 tests,
         9261 pass, 20 skip, 0 fail.
       **Revised (2026-10-14, author):** only F1, F2, F3 and F5 are inherited legacy (see "Review"
-      below). The branch was rewritten, now on `origin/main` `c02a9ee118`: `bc88b2ca3a` (8 parser
-      tests) and `462cb01852` (10 rendering tests), F1, F2, F3, F5 only. No new tests for F4, F6,
+      below). The branch was rewritten, now on `origin/main` `c02a9ee118`: `4b96a37a2c` (8 parser
+      tests) and `8aea3f031a` (10 rendering tests), F1, F2, F3, F5 only. No new tests for F4, F6,
       F7 (existing coverage suffices). F8 rendering coverage is task T23 (the removed F8 tests are
       its seed). Filter `Inherited from Handlebars`: 18 tests, 18 pass. Full suite: 9249 tests,
       9229 pass, 20 skip, 0 fail.
