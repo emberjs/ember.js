@@ -35,6 +35,14 @@ const ForwardedButton = <template>
   <button type="button" data-test-button ...attributes>{{@label}}</button>
 </template>;
 
+const LoneClass = <template>
+  <p data-test-lone class={{@cls}}>x</p>
+</template>;
+
+const MergedClass = <template>
+  <p data-test-merged ...attributes class={{@cls}}>x</p>
+</template>;
+
 moduleFor(
   'Components test: a <template> component invoked by name',
   class extends RenderingTestCase {
@@ -236,6 +244,46 @@ moduleFor(
       assert.strictEqual(link?.textContent, 'go');
       runTask(() => link.click());
       assert.strictEqual(clicks, 1);
+    }
+
+    // Glimmer's class rules on a build-time template's element: a lone class
+    // is removed when false, null or undefined; merged classes skip their
+    // empty parts and are removed when none is left.
+    '@test a class bound on its element is removed when false or null'(assert) {
+      this.owner.register('component:lone-class', LoneClass);
+
+      this.render('<LoneClass @cls={{this.cls}} />', { cls: false });
+      let cls = () => this.element.querySelector('p[data-test-lone]').getAttribute('class');
+      assert.strictEqual(cls(), null);
+
+      runTask(() => set(this.context, 'cls', 'a'));
+      assert.strictEqual(cls(), 'a');
+
+      runTask(() => set(this.context, 'cls', null));
+      assert.strictEqual(cls(), null);
+
+      runTask(() => set(this.context, 'cls', true));
+      assert.strictEqual(cls(), '');
+    }
+
+    '@test its element merges its class with a forwarded one'(assert) {
+      this.owner.register('component:merged-class', MergedClass);
+
+      this.render('<MergedClass @cls={{this.cls}} class={{this.outer}} />', {
+        cls: null,
+        outer: null,
+      });
+      let cls = () => this.element.querySelector('p[data-test-merged]').getAttribute('class');
+      assert.strictEqual(cls(), null);
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      assert.strictEqual(cls(), 'b');
+
+      runTask(() => set(this.context, 'cls', 'a'));
+      assert.strictEqual(cls(), 'b a');
+
+      runTask(() => set(this.context, 'outer', undefined));
+      assert.strictEqual(cls(), 'a');
     }
   }
 );

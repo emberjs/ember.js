@@ -1852,6 +1852,11 @@ _gxtRegisterHostHooks({
       // undefined arrives here as null too (gxt `$_qStr`, Glimmer's concat).
       return undefined; // gxt remove sentinel
     }
+    if (value === true && name === 'class') {
+      // `class` is always an attribute in Glimmer (`classAsAttribute`,
+      // utils.ts), so `true` is a bare `class=""` (normalizeValue).
+      return '';
+    }
     if (value === true && typeof name === 'string' && _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())) {
       // HTML boolean attribute — write bare (empty string value) so the
       // serialized innerHTML reads `<option selected>` instead of
@@ -8619,23 +8624,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
           if (tagProps && tagProps !== g.$_edp) {
             if (Array.isArray(tagProps[0])) {
-              for (const entry of tagProps[0]) {
-                const key = entry[0] === '' ? 'class' : entry[0];
-                if (key === 'class') {
-                  const val = entry[1];
-                  fwProps.push([
-                    entry[0],
-                    typeof val === 'function'
-                      ? () => {
-                          const v = val();
-                          return v == null || v === false ? '' : v;
-                        }
-                      : val,
-                  ]);
-                } else {
-                  fwProps.push(entry);
-                }
-              }
+              // The class slot (key '') is forwarded as it is: the element
+              // that receives it merges it with its own (`classAsAttribute`).
+              for (const entry of tagProps[0]) fwProps.push(entry);
             }
             if (Array.isArray(tagProps[1])) {
               for (const [key, value] of tagProps[1]) {
@@ -9542,24 +9533,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               for (const [key, value] of props) {
                 // Empty key means class attribute in GXT's format
                 const attrKey = key === '' ? 'class' : key;
-                // Collect for forwarding via ...attributes — keep in GXT's prop format
-                // Class uses empty key "" in GXT's prop format
-                // For class values, wrap to return "" instead of undefined/null/false
-                // because GXT joins class values with " " and undefined becomes "undefined"
-                if (key === '' || attrKey === 'class') {
-                  const wrappedValue =
-                    typeof value === 'function'
-                      ? () => {
-                          const v = value();
-                          return v == null || v === false ? '' : v;
-                        }
-                      : value == null || value === false
-                        ? ''
-                        : value;
-                  fwProps.push([key, wrappedValue]);
-                } else {
-                  fwProps.push([key, value]);
-                }
+                // Collect for forwarding via ...attributes — keep in GXT's prop
+                // format (class uses the empty key ""). A class value is
+                // forwarded as it is: the element that receives it merges it
+                // with its own as Glimmer does (`classAsAttribute`).
+                fwProps.push([key, value]);
                 // The class attribute is not an argument (`@class`), but a
                 // classic component's wrapper reads it: keep it under an
                 // internal key, as the id attribute below.

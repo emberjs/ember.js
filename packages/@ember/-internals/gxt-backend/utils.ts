@@ -2,6 +2,7 @@
  * Shared utility functions for the GXT compat layer.
  */
 import type { SimpleElement } from '@glimmer/interfaces';
+import { normalizeStringValue } from '@glimmer/runtime/lib/dom/normalize';
 import {
   requiresSanitization,
   sanitizeAttributeValue,
@@ -45,6 +46,80 @@ export function removesAttribute(value: unknown): boolean {
     typeof value === 'function' ||
     typeof (value as { toString?: unknown }).toString !== 'function'
   );
+}
+
+/**
+ * gxt `$_tag` props with the element's classes as ONE `class` attribute,
+ * merged as Glimmer merges them (compat build only).
+ *
+ * The compat gxt runtime applies `class` through the `className` property
+ * (only EMBER_NATIVE builds apply it as an attribute). A property cannot
+ * remove the attribute: `class={{false}}` rendered `class="false"`, a null one
+ * `class=""`, and merged classes kept stray spaces or a literal "null".
+ * Glimmer treats `class` as an attribute (`normalizeProperty` never maps it to
+ * a property), and merges an element's classes in `mergeClasses`:
+ * - one class is its value as it is, which the `normalizeAttrValue` hook
+ *   normalizes like any attribute (false, null and undefined remove it,
+ *   `true` is `class=""`);
+ * - several classes (the element's own and those `...attributes` forwards)
+ *   that are all static strings are joined with a space (`allStringClasses`);
+ * - otherwise they are `createClassListRef`: each part through
+ *   `normalizeStringValue`, empty parts skipped, joined with a space, and
+ *   null (no attribute) when nothing is left.
+ * The parts keep gxt's order: the forwarded classes (`fw[0]` class slots, by
+ * now ordered by where `...attributes` sits), then the element's own. A
+ * `class` attribute forwarded in `fw[1]` (the inner `$_tag` wrapper's by-name
+ * component path forwards it there) is a forwarded class too.
+ */
+export function classAsAttribute(tagProps: any, edp: unknown): any {
+  if (tagProps === edp || tagProps == null) return tagProps;
+  const own = tagProps[0];
+  const fw = tagProps[3];
+  const fwProps = Array.isArray(fw) ? fw[0] : undefined;
+  const fwAttrs = Array.isArray(fw) ? fw[1] : undefined;
+  const parts: unknown[] = [];
+  collectEntries(fwProps, '', parts);
+  collectEntries(fwAttrs, 'class', parts);
+  collectEntries(own, '', parts);
+  if (parts.length === 0) return tagProps;
+  const value = parts.length === 1 ? parts[0] : mergeClassParts(parts);
+  const attrs = Array.isArray(tagProps[1])
+    ? [...tagProps[1], ['class', value]]
+    : [['class', value]];
+  const result: any[] = [withoutKey(own, ''), attrs, tagProps[2]];
+  if (tagProps.length > 3) {
+    result[3] = Array.isArray(fw)
+      ? [withoutKey(fwProps, ''), withoutKey(fwAttrs, 'class'), fw[2]]
+      : fw;
+  }
+  return result;
+}
+
+function collectEntries(entries: unknown, key: string, into: unknown[]): void {
+  if (!Array.isArray(entries)) return;
+  for (const entry of entries) {
+    if (Array.isArray(entry) && entry[0] === key) into.push(entry[1]);
+  }
+}
+
+function withoutKey(entries: unknown, key: string): unknown {
+  if (!Array.isArray(entries)) return entries;
+  return entries.filter((entry) => !Array.isArray(entry) || entry[0] !== key);
+}
+
+function mergeClassParts(parts: unknown[]): unknown {
+  if (parts.every((part) => typeof part === 'string')) return parts.join(' ');
+  return () => {
+    let merged = '';
+    for (const part of parts) {
+      // A bound part is a gxt getter (possibly returning another getter).
+      let value = part;
+      while (typeof value === 'function') value = (value as () => unknown)();
+      const name = normalizeStringValue(value);
+      if (name !== '') merged = merged === '' ? name : `${merged} ${name}`;
+    }
+    return merged === '' ? null : merged;
+  };
 }
 
 /** Convert PascalCase/camelCase to kebab-case without regex */
@@ -228,9 +303,10 @@ const PLAIN_HTML_TAG_RE = /^[a-z][a-z0-9]*$/;
  * - events (`tagProps[2]`): no TEXT_CONTENT entry (`'1'`), the only thing the
  *   SafeString text scan and the modifier/text reorder look at; listeners and
  *   ON_CREATED modifiers are applied by GXT either way;
- * - props (`tagProps[0]`): only the class slot (empty key), which GXT applies
- *   and the post-apply scan skips. A reactive `style` lands here under
- *   `'style'`, so it always takes the slow path.
+ * - props (`tagProps[0]`): only the class slot (empty key), which the inner
+ *   wrapper hands to GXT as the `class` attribute (`classAsAttribute`) on
+ *   both paths and the post-apply scan skips. A reactive `style` lands here
+ *   under `'style'`, so it always takes the slow path.
  * compile.ts's wrapper also requires that no SVG/MathML namespace is active.
  */
 export function isPlainHtmlTagFastPath(tag: unknown, tagProps: any, edp: unknown): boolean {

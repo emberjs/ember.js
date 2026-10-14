@@ -27,7 +27,12 @@ import {
   GXT_ARGS_SYMBOL,
 } from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { capabilitiesErrorPrefix, isPlainHtmlTagFastPath, sanitizedAttrValue } from './utils';
+import {
+  capabilitiesErrorPrefix,
+  classAsAttribute,
+  isPlainHtmlTagFastPath,
+  sanitizedAttrValue,
+} from './utils';
 import { GXT_HELPER_SITE_KEY } from './ast-transforms';
 import {
   destroy as destroyDestroyable,
@@ -1359,9 +1364,11 @@ function createEmberTag(original: Function) {
     const children = gxtChildren;
     const ctx = gxtCtx;
     // Fast path (see _emberTagFastPathEligible): skip the scans for plain-HTML
-    // elements and forward straight to `original`.
+    // elements and forward straight to `original`. Every HTML element's
+    // classes reach gxt as one `class` attribute (`classAsAttribute`), here
+    // and at the slow path's exit below.
     if (_emberTagFastPathEligible(tag, tagProps)) {
-      return original(tag, tagProps, ctx, children);
+      return original(tag, classAsAttribute(tagProps, gxtModule.$_edp), ctx, children);
     }
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
@@ -1702,6 +1709,11 @@ function createEmberTag(original: Function) {
     // instead of having the attribute removed. Applying the attrs through a
     // modifier + effect gives us a place to special-case undefined/null/false
     // and call removeAttribute instead.
+    //
+    // The classes go first, into one `class` attribute (`classAsAttribute`),
+    // so a `class` forwarded in fw[1] merges with the element's own classes
+    // instead of being captured below as an ordinary attribute.
+    tagProps = classAsAttribute(tagProps, gxtModule.$_edp);
     let patchedTagProps = tagProps;
 
     // Modifier vs. text-child ordering fix.

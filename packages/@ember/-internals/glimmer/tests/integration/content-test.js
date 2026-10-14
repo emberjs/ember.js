@@ -1757,6 +1757,144 @@ moduleFor(
       runTask(() => set(this.context, 'a', ''));
       this.assertHTML('<div data-foo="" data-bar="a-">hello</div>');
     }
+
+    // `class` is always an attribute in Glimmer, so it follows the same rule;
+    // `true` is a bare `class=""`.
+    ['@test a class set to false, null or undefined is not rendered, and "" keeps the attribute']() {
+      this.render('<div class={{this.cls}}>hello</div>', { cls: false });
+      this.assertHTML('<div>hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'cls', 'foo'));
+      this.assertHTML('<div class="foo">hello</div>');
+
+      runTask(() => set(this.context, 'cls', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'cls', 0));
+      this.assertHTML('<div class="0">hello</div>');
+
+      runTask(() => set(this.context, 'cls', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'cls', ''));
+      this.assertHTML('<div class="">hello</div>');
+
+      runTask(() => set(this.context, 'cls', true));
+      this.assertHTML('<div class="">hello</div>');
+
+      runTask(() => set(this.context, 'cls', false));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a class that starts null is not rendered']() {
+      this.render('<p class={{this.cls}}>hello</p>', { cls: null });
+      this.assertHTML('<p>hello</p>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'cls', 'foo'));
+      this.assertHTML('<p class="foo">hello</p>');
+
+      runTask(() => set(this.context, 'cls', undefined));
+      this.assertHTML('<p>hello</p>');
+    }
+
+    // Glimmer merges an element's classes with the ones `...attributes`
+    // forwards (`createClassListRef`): each part is stringified, null,
+    // undefined and "" parts are skipped, and no class at all removes the
+    // attribute. A lone class (nothing else to merge) keeps the rule above.
+    ['@test classes merged through ...attributes skip empty parts, and no class at all is no attribute']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class={{@inner}} ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar @inner={{this.inner}} class={{this.outer}} />', {
+        inner: 'a',
+        outer: 'b',
+      });
+      this.assertHTML('<div class="a b">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'inner', null));
+      this.assertHTML('<div class="b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'inner', ''));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'inner', false));
+      this.assertHTML('<div class="false">hello</div>');
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="false b">hello</div>');
+
+      runTask(() => set(this.context, 'inner', 'a'));
+      this.assertHTML('<div class="a b">hello</div>');
+    }
+
+    ['@test a static class merged with a forwarded one keeps its place']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class="x" ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar class={{this.outer}} />', { outer: null });
+      this.assertHTML('<div class="x">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="x b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', undefined));
+      this.assertHTML('<div class="x">hello</div>');
+    }
+
+    ['@test a class forwarded alone through ...attributes is removed when false or null']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar class={{this.outer}} />', { outer: false });
+      this.assertHTML('<div>hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', null));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a class and an attribute in {{#each}} rows follow the same rules']() {
+      this.render(
+        '<ul>{{#each this.items as |item|}}<li class={{item.cls}} data-x={{item.cls}}>{{item.n}}</li>{{/each}}</ul>',
+        {
+          items: [
+            { n: 1, cls: null },
+            { n: 2, cls: false },
+            { n: 3, cls: 'c' },
+          ],
+        }
+      );
+      this.assertHTML('<ul><li>1</li><li>2</li><li class="c" data-x="c">3</li></ul>');
+      runTask(() => set(this.context.items[2], 'cls', null));
+      this.assertHTML('<ul><li>1</li><li>2</li><li>3</li></ul>');
+      runTask(() => set(this.context.items[0], 'cls', 'a'));
+      this.assertHTML('<ul><li class="a" data-x="a">1</li><li>2</li><li>3</li></ul>');
+    }
   }
 );
 
