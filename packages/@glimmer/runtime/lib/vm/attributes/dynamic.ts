@@ -33,6 +33,16 @@ export function dynamicAttribute(
   }
 
   if (namespaceURI === NS_SVG) {
+    // SVG attributes skip `normalizeProperty`, so an `on...` binding would be
+    // written with `setAttribute`, which compiles the string into a live
+    // inline event handler and runs it. In the HTML namespace the same binding
+    // resolves to a DOM event-handler property (below), where a bound string is
+    // inert. Route event-handler attributes through the property path so a
+    // `{{...}}` value is treated the same (inert) way in both namespaces.
+    if (isEventHandler(attr)) {
+      return buildDynamicProperty(tagName, attr, attribute);
+    }
+
     return buildDynamicAttribute(tagName, attr, attribute);
   }
 
@@ -43,6 +53,15 @@ export function dynamicAttribute(
   } else {
     return buildDynamicProperty(tagName, normalized, attribute);
   }
+}
+
+// Matches event-handler attribute names (`onclick`, `onload`, ...). In SVG
+// these are the only attributes that start with `on`, so this cannot catch a
+// presentation/geometry attribute.
+const EVENT_HANDLER_ATTR = /^on[a-z]+$/iu;
+
+function isEventHandler(name: string): boolean {
+  return EVENT_HANDLER_ATTR.test(name);
 }
 
 function buildDynamicAttribute(

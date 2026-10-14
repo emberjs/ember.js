@@ -595,6 +595,28 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'svg does not install a bound on* attribute as a live event handler'() {
+    // In the HTML namespace `<div onclick={{x}}>` routes the value to a DOM
+    // event-handler property, where a bound string is inert. SVG attributes
+    // skip property normalization, so without a guard the same binding is
+    // written with setAttribute, which the browser compiles into a live inline
+    // handler. The bound value must not become a content attribute.
+    this.render('<svg onclick={{this.foo}}></svg>', { foo: 'globalThis.svgOnclickRan = true' });
+    let svg = this.element.firstChild as SimpleElement;
+    this.assert.strictEqual(svg.getAttribute('onclick'), null);
+
+    this.rerender({ foo: 'globalThis.svgOnclickRan = true /* updated */' });
+    this.assert.strictEqual(svg.getAttribute('onclick'), null);
+  }
+
+  @test
+  'html does not install a bound on* attribute as a live event handler'() {
+    this.render('<div onclick={{this.foo}}></div>', { foo: 'globalThis.divOnclickRan = true' });
+    let div = this.element.firstChild as SimpleElement;
+    this.assert.strictEqual(div.getAttribute('onclick'), null);
+  }
+
+  @test
   'marks data: urls as unsafe on iframe[src] and object[data]'() {
     this.render('<iframe src={{this.foo}}></iframe>', {
       foo: 'data:text/html,<script>alert(1)</script>',
