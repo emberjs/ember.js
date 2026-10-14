@@ -28,7 +28,6 @@ import {
 } from './scripts/gxt-alias-map.mjs';
 import { templateTag } from '@embroider/vite';
 import { replaceBuildConstant } from './scripts/replace-build-constant.mjs';
-import { withDecoratorRuntime } from './scripts/gxt-native-package/decorator-runtime.mjs';
 
 const localRequire = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -124,24 +123,23 @@ export default defineConfig(({ mode }) => {
       // this plugin ensures consistency in environments where that doesn't work.
       ...(useGxt ? [gxtModuleDedup()] : []),
       // Use gxt compiler for glimmer-next or templateTag for standard Ember.
-      // The decorators it lowers import decorator-transforms' runtime, as the
-      // babel pass makes plain modules do (no `dt7948` global).
+      // Under WITH_EMBER_INTEGRATION the decorators it lowers import
+      // decorator-transforms' runtime, as the babel pass makes plain modules do
+      // (no `dt7948` global).
       // EMBER_PROPERTY_TAGS: a template's property read consumes the
       // property's tag (Glimmer's getProp), so `set()` /
       // `notifyPropertyChange()` on an untracked property re-render it.
       ...(useGxt
         ? isolateTestCompileErrors(
-            withDecoratorRuntime(
-              compiler(mode, {
-                flags: {
-                  WITH_EMBER_INTEGRATION: true,
-                  WITH_HELPER_MANAGER: true,
-                  WITH_MODIFIER_MANAGER: true,
-                  TRY_CATCH_ERROR_HANDLING: false,
-                  EMBER_PROPERTY_TAGS: true,
-                },
-              })
-            )
+            compiler(mode, {
+              flags: {
+                WITH_EMBER_INTEGRATION: true,
+                WITH_HELPER_MANAGER: true,
+                WITH_MODIFIER_MANAGER: true,
+                TRY_CATCH_ERROR_HANDLING: false,
+                EMBER_PROPERTY_TAGS: true,
+              },
+            })
           )
         : [templateTag()]),
       // Give GXT-compiled templates the Ember wrappers of $_tag,
@@ -544,9 +542,7 @@ function nativeConfig(mode) {
       gxtNativeRelativeRedirect(),
       gxtNativeTestModules(),
       gxtNativeTestHelpersTemplates(),
-      ...isolateTestCompileErrors(
-        withDecoratorRuntime(compiler(mode, { flags: { ...NATIVE_FLAGS } }))
-      ),
+      ...isolateTestCompileErrors(compiler(mode, { flags: { ...NATIVE_FLAGS } })),
       // NO gxtEmberWrapperRedirect: AOT templates import the gxt runtime directly.
       ...isolateTestCompileErrors(
         babel({

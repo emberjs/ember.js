@@ -49,9 +49,10 @@ export default defineConfig({
 ```
 
 The app lists `decorator-transforms` (as an Embroider app does). Decorators in
-`.gjs` / `.gts` need no babel of their own: the gxt compiler lowers them, and
-the preset makes each compiled module import `decorator-transforms/runtime`,
-the runtime the babel config above uses for `.js` / `.ts`. No `dt7948` global
+`.gjs` / `.gts` need no babel of their own: the gxt compiler lowers them and,
+under the native flags, makes each compiled module import
+`decorator-transforms/runtime`, the runtime the babel config above uses for
+`.js` / `.ts`. No `dt7948` global
 is needed.
 
 `emberGxtNative()`:

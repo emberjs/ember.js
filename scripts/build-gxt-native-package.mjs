@@ -477,7 +477,6 @@ log(
 // ---- 6. package files ---------------------------------------------------------
 mkdirSync(join(OUT, 'vite'), { recursive: true });
 copyFileSync(join(TEMPLATES, 'vite.mjs'), join(OUT, 'vite', 'index.mjs'));
-copyFileSync(join(TEMPLATES, 'decorator-runtime.mjs'), join(OUT, 'vite', 'decorator-runtime.mjs'));
 copyFileSync(join(TEMPLATES, 'vite.d.ts'), join(OUT, 'vite', 'index.d.ts'));
 mkdirSync(join(OUT, 'lib'), { recursive: true });
 copyFileSync(join(TEMPLATES, 'addon-main.cjs'), join(OUT, 'lib', 'index.cjs'));
@@ -638,7 +637,7 @@ for (const mode of ['production', 'development']) {
     join(OUT, 'probe.gjs')
   );
   const code = out?.code ?? '';
-  if (!/\bdt7948\.[a-z]\(/.test(code) || !code.includes('from "decorator-transforms/runtime"')) {
+  if (code.includes('dt7948') || !/\bfrom "decorator-transforms\/runtime"/.test(code)) {
     fail(`preset (${mode}): a decorated .gjs does not import decorator-transforms/runtime`);
   }
 }

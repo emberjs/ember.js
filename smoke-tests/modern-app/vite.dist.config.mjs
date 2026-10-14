@@ -31,7 +31,6 @@ import { join, resolve } from 'node:path';
 import { babel } from '@rollup/plugin-babel';
 import { templateTag } from '@embroider/vite';
 import { compiler } from '@lifeart/gxt/compiler';
-import { withDecoratorRuntime } from '../../scripts/gxt-native-package/decorator-runtime.mjs';
 import { NATIVE_FLAGS } from '../../scripts/gxt-alias-map.mjs';
 import { EMBER_ROOT, bundleStats, strictResolverEntry } from './harness-shared.mjs';
 
@@ -144,9 +143,9 @@ export function distAppConfig({ mode, appDir, input, outDir, statsDir, flavor, d
       emberDistResolver(distDir, distMode),
       ...(flavor === 'classic'
         ? [templateTag()]
-        : // As the package's Vite preset compiles them: decorators in .gjs
-          // import decorator-transforms' runtime.
-          withDecoratorRuntime(compiler(mode, { flags: { ...NATIVE_FLAGS }, disableHMR: true }))),
+        : // As the package's Vite preset compiles them (decorators in .gjs
+          // import decorator-transforms' runtime under the native flags).
+          [compiler(mode, { flags: { ...NATIVE_FLAGS }, disableHMR: true })]),
       appBabel,
       bundleStats(statsDir),
     ],
