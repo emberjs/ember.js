@@ -13,6 +13,7 @@ import * as templateCompiler from 'ember-template-compiler';
 import { CustomComponentManager, componentCapabilities } from '../manager';
 import { destroy } from '../destroyable';
 import { getGxtRenderer } from '../gxt-bridge';
+import { precompileValidatedTemplate } from '../compile';
 import { createCache, getValue, isConst } from '@glimmer/tracking/primitives/cache';
 import { DEBUG } from '@glimmer/env';
 
@@ -133,26 +134,40 @@ QUnit.module('GXT correctness: compile-time template checks', function () {
   });
 });
 
-QUnit.module('GXT correctness: compile pipeline throwOnCompileError', function () {
-  function compile(source: string, options: object) {
+QUnit.module('GXT correctness: compile pipeline errors', function () {
+  function compile(source: string, options: object = {}) {
     return getGxtRenderer()!.compilePipeline.compileTemplate!(source, options);
   }
 
-  QUnit.test('throws a parse error', function (assert: any) {
-    assert.throws(() => compile('<div>{{#if this.x}}</div>', { throwOnCompileError: true }));
+  const failingPlugin = () => ({
+    name: 'failing-plugin',
+    visitor: {
+      ElementNode() {
+        throw new Error('plugin failed');
+      },
+    },
   });
 
-  QUnit.test('throws the error of an AST plugin', function (assert: any) {
-    const failingPlugin = () => ({
-      name: 'failing-plugin',
-      visitor: {
-        ElementNode() {
-          throw new Error('plugin failed');
-        },
-      },
-    });
+  QUnit.test('compileTemplate throws a parse error', function (assert: any) {
+    assert.throws(() => compile('<div>{{#if this.x}}</div>'), /Parse error on line 1/);
+  });
+
+  QUnit.test('compileTemplate throws the error of an AST plugin', function (assert: any) {
+    assert.throws(() => compile('<p></p>', { plugins: { ast: [failingPlugin] } }), /plugin failed/);
+  });
+
+  // Without the development-time Glimmer checks (as in a production build),
+  // the errors come from the GXT compiler.
+  QUnit.test('the GXT compiler throws a parse error', function (assert: any) {
     assert.throws(
-      () => compile('<p></p>', { plugins: { ast: [failingPlugin] }, throwOnCompileError: true }),
+      () => precompileValidatedTemplate('<div>{{#if this.x}}</div>'),
+      /Parse error on line 1/
+    );
+  });
+
+  QUnit.test('the GXT compiler throws the error of an AST plugin', function (assert: any) {
+    assert.throws(
+      () => precompileValidatedTemplate('<p></p>', { plugins: { ast: [failingPlugin] } }),
       /plugin failed/
     );
   });

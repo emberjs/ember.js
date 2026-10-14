@@ -320,7 +320,6 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     const factory = gxtPipeline().compileTemplate(template, {
       scopeValues: { ...this.helpers },
       plugins: { ast: this.plugins },
-      throwOnCompileError: true,
     }) as GxtTemplateFactory;
     factory().render(context, target as unknown as Element);
   }

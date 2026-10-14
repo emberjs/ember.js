@@ -256,8 +256,9 @@ export interface GxtCompilePipelineCapabilities {
   /**
    * Compile a template string into a GXT template factory. Contributed by
    * compile.ts. Besides Ember's compile options it takes `plugins.ast` (AST
-   * plugins, run in the gxt compiler's transform hook) and
-   * `throwOnCompileError` (throw the compiler's errors instead of logging).
+   * plugins, run in the gxt compiler's transform hook). An invalid template
+   * throws: Glimmer's compile-time error in development builds, the GXT
+   * compiler's error otherwise.
    */
   compileTemplate?(templateString: string, options?: unknown): unknown;
 

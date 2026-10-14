@@ -11470,9 +11470,6 @@ interface GxtPrecompileOptions {
   // gxt compiler's `transforms` hook, before the Ember-dialect transforms, as
   // classic Ember runs user plugins before its built-in ones.
   plugins?: { ast?: ReadonlyArray<ReturnType<typeof buildGxtDialectTransforms>[number]> };
-  // Throw the gxt compiler's errors (parse errors, errors thrown by an AST
-  // plugin) instead of only logging them.
-  throwOnCompileError?: boolean;
 }
 
 /**
@@ -11798,6 +11795,7 @@ function _gxtPrecompileTemplate(
     dynamicHelper: false,
     dynamicModifier: false,
     dottedMustache: null,
+    dynamicScope: null,
   };
 
   // Compile using GXT runtime compiler
@@ -11880,10 +11878,10 @@ function _gxtPrecompileTemplate(
 
   // Fire the AST-detected Ember-dialect asserts now (the detection ran inside the
   // transforms above; the throw/assert MUST happen here — a throw raised inside a
-  // transform is swallowed into compilationResult.errors by the GXT compiler and
-  // never re-thrown, so it would silently fail to abort. See GxtAssertFindings).
-  // Order: textarea → dotted-mustache → dynamic-helper → dynamic-modifier (the
-  // source asserts for dotted tags / attrs / this.attrs already ran above).
+  // transform is caught into compilationResult.errors by the GXT compiler, which
+  // keeps only a message. See GxtAssertFindings).
+  // Order: textarea → dotted-mustache → dynamic-helper → dynamic-modifier →
+  // dynamic scope (the source assert for dotted tags already ran above).
   if (_gxtDialectFindings.textArea) {
     // Use getDebugFunction('assert') so expectAssertion's stub is the one called.
     const _assert = getDebugFunction('assert');
@@ -11902,15 +11900,22 @@ function _gxtPrecompileTemplate(
   if (_gxtDialectFindings.dynamicModifier) {
     emberAssert('Passing a dynamic string to the `(modifier)` keyword is disallowed.', false);
   }
+  if (_gxtDialectFindings.dynamicScope !== null) {
+    emberAssert(_gxtDialectFindings.dynamicScope, false);
+  }
 
-  if (compilationResult.errors && compilationResult.errors.length > 0) {
-    if (options?.throwOnCompileError) {
-      throw new Error(
-        compilationResult.errors.map((e: { message: string }) => e.message).join('\n')
-      );
-    }
-    console.warn('[gxt-compile] Compilation errors:', compilationResult.errors);
-    console.warn('[gxt-compile] Template:', transformedTemplate.slice(0, 200));
+  // The GXT compiler's own errors (a parse error, an error thrown by an AST
+  // plugin or transform): the compiler produced no template, so compiling it
+  // fails, as it does in classic Ember. In development builds Glimmer's checks
+  // above have already rejected an invalid template with its classic error.
+  // `RUNTIME_EVAL_ERROR` is different: the compiler produced the template code
+  // but could not evaluate its own template function from it; the template
+  // function assembled below from the same code decides.
+  const compileErrors = (compilationResult.errors ?? []).filter(
+    (e: { code?: string }) => e.code !== 'RUNTIME_EVAL_ERROR'
+  );
+  if (compileErrors.length > 0) {
+    throw new Error(compileErrors.map((e: { message: string }) => e.message).join('\n'));
   }
 
   // Eligible templates keep gxt's OWN templateFn (built inside
@@ -12355,7 +12360,14 @@ function _gxtPrecompileTemplate(
       }
       compilationResult.templateFn = cachedFn;
     } catch (e) {
-      console.error('[gxt-compile] Failed to recreate template function:', e);
+      // The template code does not evaluate (e.g. a binding name that is not a
+      // valid JavaScript identifier): the template cannot render.
+      throw new Error(
+        `Failed to create the template function of ${options?.moduleName || 'a template'}: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+        { cause: e }
+      );
     }
   }
 

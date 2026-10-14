@@ -16,7 +16,6 @@
  * `__gxtCommentLookup` builtin resolver in `compile.ts` reads it back at render
  * time via the exported `lookupGxtComment`.
  */
-import { assert as emberAssert } from '@ember/debug';
 // Public AST-transform hook type. `transforms: AstTransform[]` runs
 // `@glimmer/syntax`-style visitors on the parsed template AST after preprocess,
 // before glimmer-next codegen.
@@ -413,14 +412,14 @@ function gxtEachInTransform(env: GxtAstEnv) {
  * `transformDynamicVars` string scanner + its `_findInnermostWithDynamicVars` /
  * `_parseDynamicVarsArgs` / `_rewriteGetOutletInBody` helpers):
  *   - Only `outletState` is a valid key. Any other key on a
- *     `{{#-with-dynamic-vars}}` block fires an `Ember.assert` with the
+ *     `{{#-with-dynamic-vars}}` block calls for an `Ember.assert` with the
  *     `-with-dynamic-scope` message; any other key on a `-get-dynamic-var` call
- *     fires one with the `-get-dynamic-scope` message. These asserts are what
- *     the `expectAssertion` tests in `with-dynamic-var-test.js` rely on. Because
- *     these visitors run in **ember's** process (the `transforms` hook is
- *     applied inside `gxtCompileTemplate`), `emberAssert` resolves to the same
- *     swappable debug function the string version used — so `expectAssertion`'s
- *     stub captures the message exactly as before.
+ *     for one with the `-get-dynamic-scope` message. The visitor records the
+ *     first such message in `findings.dynamicScope` and `precompileTemplate`
+ *     fires the assert after the compile call (see GxtAssertFindings): an
+ *     assert raised inside the visitor would be caught by the GXT compiler as a
+ *     compile error. These asserts are what the `expectAssertion` tests in
+ *     `with-dynamic-var-test.js` rely on.
  *   - `{{#-with-dynamic-vars outletState=EXPR}}BODY{{/-with-dynamic-vars}}`
  *     lowers to `{{#let EXPR as |VAR|}}BODY'{{/let}}` (GXT accepts `{{#let}}`),
  *     where BODY' has inner `{{-get-dynamic-var "outletState"}}` rewritten to the
@@ -450,8 +449,17 @@ function gxtEachInTransform(env: GxtAstEnv) {
  * inside a string literal / comment, and the innermost-first scan + same-depth
  * matching the string version hand-rolled fall out of `traverse` for free.
  */
-function gxtDynamicVarsTransform(env: GxtAstEnv) {
+function gxtDynamicVarsTransform(findings: GxtAssertFindings) {
+  return (env: GxtAstEnv) => gxtDynamicVarsVisitor(env, findings);
+}
+
+function gxtDynamicVarsVisitor(env: GxtAstEnv, findings: GxtAssertFindings) {
   const b = env.syntax.builders;
+  // The first non-`outletState` key, as the message of the assert
+  // `precompileTemplate` fires.
+  const recordDynamicScopeAssert = (message: string): void => {
+    if (findings.dynamicScope === null) findings.dynamicScope = message;
+  };
   // Names currently in lexical scope (bodies of enclosing `-with-dynamic-vars`).
   // Pushed on the program `Block`'s enter, popped on its exit.
   const scopeStack: string[] = [];
@@ -497,9 +505,8 @@ function gxtDynamicVarsTransform(env: GxtAstEnv) {
           // Validate keys — only `outletState` is permitted (Phase-1 assert).
           for (const pair of node.hash.pairs) {
             if (pair.key !== 'outletState') {
-              emberAssert(
-                `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${pair.key}\`).`,
-                false
+              recordDynamicScopeAssert(
+                `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${pair.key}\`).`
               );
             }
           }
@@ -552,9 +559,8 @@ function gxtDynamicVarsTransform(env: GxtAstEnv) {
             : b.mustache(getOutletStateCall());
         }
         // Non-`outletState` get (Phase-2 assert), then lower to the helper.
-        emberAssert(
-          `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-          false
+        recordDynamicScopeAssert(
+          `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`
         );
         return b.mustache(getOutletStateCall());
       },
@@ -567,9 +573,8 @@ function gxtDynamicVarsTransform(env: GxtAstEnv) {
             ? b.path(scopeStack[scopeStack.length - 1]!)
             : getOutletStateCall();
         }
-        emberAssert(
-          `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-          false
+        recordDynamicScopeAssert(
+          `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`
         );
         return getOutletStateCall();
       },
@@ -1226,12 +1231,12 @@ function _isDynamicKeywordArg(node: any): boolean {
  * Ember-dialect assert findings, populated by the read-only assert VISITORS
  * during the GXT compile traverse and acted on by `precompileTemplate` AFTER the
  * compile call. The visitors must NOT assert/throw inline: the GXT compiler
- * swallows any exception raised inside a transform into its `errors[]` array,
- * and `precompileTemplate` does not re-throw those — so an inline throw would be
- * silently dropped (it would never reach `assert.throws` / abort compilation).
- * Detecting in the visitor (AST-exact, replacing the former source scanners) but
- * firing the assert/throw from `precompileTemplate` preserves the original
- * control flow (propagating throw, real compile abort) exactly.
+ * catches any exception raised inside a transform into its `errors[]` array,
+ * and `precompileTemplate` re-throws those only as a generic compile error (the
+ * message of a non-Error value, such as `expectAssertion`'s stub break, is
+ * lost). Detecting in the visitor (AST-exact, replacing the former source
+ * scanners) but firing the assert/throw from `precompileTemplate` preserves the
+ * original control flow (the assert's own throw, real compile abort) exactly.
  */
 export interface GxtAssertFindings {
   textArea: boolean;
@@ -1240,6 +1245,9 @@ export interface GxtAssertFindings {
   // First offending `{{head.tail}}` (matches the former scanner, which threw on
   // the first match in document order).
   dottedMustache: { head: string; tail: string } | null;
+  // The message of the first `-with-dynamic-vars` / `-get-dynamic-var` use of
+  // a key other than `outletState` (recorded by `gxtDynamicVarsTransform`).
+  dynamicScope: string | null;
 }
 
 /**
@@ -1488,18 +1496,17 @@ export function buildGxtDialectTransforms(
   // string scanners ran on — and in their original relative priority order
   // (textarea → dotted-mustache → dynamic-helper → dynamic-modifier). They only
   // RECORD into `assertFindings`; `precompileTemplate` fires the asserts/throws
-  // AFTER the compile call (the GXT compiler swallows transform-internal throws
-  // into errors[], which precompileTemplate does not re-throw — see
-  // GxtAssertFindings). These visitors never touch `env.syntax.builders`, so
+  // AFTER the compile call (the GXT compiler catches transform-internal throws
+  // into errors[], keeping only a message — see GxtAssertFindings). These visitors never touch `env.syntax.builders`, so
   // running before the tbody env-shape guard is safe; the guard still fires on
   // the first builder-using transform (tbody) below.
   //
-  // NOTE: `findDottedTags` (the `<foo.bar>` tag-not-in-scope assert) and the
-  // `{{attrs.x}}` / `{{this.attrs.x}}` location-bearing asserts are intentionally
-  // NOT ported — `findDottedTags`'s tested "requires whitespace after the tail"
-  // quirk and the attrs asserts' source-offset `(L:C)` location string can't be
-  // reproduced from the normalized AST without re-inspecting source, so they stay
-  // pre-compile string asserts in `precompileTemplate`.
+  // NOTE: `findDottedTags` (the `<foo.bar>` tag-not-in-scope assert) is
+  // intentionally NOT ported — its tested "requires whitespace after the tail"
+  // quirk can't be reproduced from the normalized AST without re-inspecting
+  // source, so it stays a pre-compile string assert in `precompileTemplate`.
+  // The `{{attrs.x}}` / `{{this.attrs.x}}` checks come from Ember's own AST
+  // plugin, run by the development-time template validation.
   const scopeValueNames = scopeValues ? new Set(Object.keys(scopeValues)) : null;
   const bpNames = blockParamNames || new Set<string>();
   const findings: GxtAssertFindings = assertFindings || {
@@ -1507,6 +1514,7 @@ export function buildGxtDialectTransforms(
     dynamicHelper: false,
     dynamicModifier: false,
     dottedMustache: null,
+    dynamicScope: null,
   };
   const transforms: GxtAstTransform[] = [
     gxtTextAreaTypoAssert(findings) as unknown as GxtAstTransform,
@@ -1529,7 +1537,7 @@ export function buildGxtDialectTransforms(
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
     gxtAttrComponentCurryTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
     gxtEachInTransform as unknown as GxtAstTransform,
-    gxtDynamicVarsTransform as unknown as GxtAstTransform,
+    gxtDynamicVarsTransform(findings) as unknown as GxtAstTransform,
     gxtBlockParamsTransform as unknown as GxtAstTransform,
     gxtBodyBareHelperTransform(scopeValues) as unknown as GxtAstTransform,
   ];
