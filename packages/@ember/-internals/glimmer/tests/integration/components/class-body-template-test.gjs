@@ -3,18 +3,22 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { moduleFor, RenderingTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
-import { capabilities, setComponentManager } from '@ember/component';
+import { capabilities, setComponentManager, setComponentTemplate } from '@ember/component';
 import { renderComponent } from '@ember/renderer';
+import { precompileTemplate } from '@ember/template-compilation';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 
 // Component classes whose template is a class-body `<template>`, the way a
 // `.gjs` / `.gts` module authors a component class: the component manager
 // creates the component, and the class-body template renders with the
-// component as `this`.
+// component as `this`. Also component classes with a registered template
+// (`setComponentTemplate`), invoked from a `.gjs` template: the nearest
+// template wins, as in Glimmer.
 
 class State {
   @tracked value = 'one';
+  @tracked show = true;
 }
 
 class Panel extends Component {
@@ -139,6 +143,111 @@ module('Components test: a class-body <template> component', function (hooks) {
   });
 });
 
+module('Components test: a component class with a registered template', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('it renders through its component manager, with its arguments, attributes and block', async function (assert) {
+    class Counter extends Component {
+      count = 0;
+
+      get label() {
+        return `${this.args.name}:${this.count}`;
+      }
+    }
+    setComponentTemplate(
+      precompileTemplate('<p data-test-counter ...attributes>{{this.label}}{{yield "y"}}</p>'),
+      Counter
+    );
+
+    let state = new State();
+
+    await render(
+      <template><Counter @name={{state.value}} title="t" as |v|>[{{v}}]</Counter></template>
+    );
+
+    assert.dom('[data-test-counter]').hasText('one:0[y]').hasAttribute('title', 't');
+
+    state.value = 'two';
+    await settled();
+
+    assert.dom('[data-test-counter]').hasText('two:0[y]');
+  });
+
+  test('a subclass renders the template registered for its base class', async function (assert) {
+    class Base extends Component {
+      get value() {
+        return 'base';
+      }
+    }
+    setComponentTemplate(precompileTemplate('registered {{this.value}} {{@name}}'), Base);
+
+    class Sub extends Base {
+      get value() {
+        return 'sub';
+      }
+    }
+
+    await render(<template><Base @name="a" />|<Sub @name="b" /></template>);
+
+    assert.dom().hasText('registered base a|registered sub b');
+  });
+
+  test('a subclass with a class-body template renders it, not the template registered for its base class', async function (assert) {
+    class Base extends Component {
+      value = 'base';
+    }
+    setComponentTemplate(precompileTemplate('registered {{this.value}}'), Base);
+
+    class WithBody extends Base {
+      <template>body {{this.value}} {{@name}}</template>
+    }
+
+    let state = new State();
+
+    await render(<template><WithBody @name={{state.value}} /></template>);
+
+    assert.dom().hasText('body base one');
+
+    state.value = 'two';
+    await settled();
+
+    assert.dom().hasText('body base two');
+  });
+
+  test('a template registered for a subclass wins over the class-body template it inherits', async function (assert) {
+    class Own extends Panel {}
+    setComponentTemplate(precompileTemplate('own {{this.label}}'), Own);
+
+    await render(<template><Own /></template>);
+
+    assert.dom().hasText('own panel');
+  });
+
+  test('it is destroyed when it is torn down', async function (assert) {
+    let destroyed = 0;
+
+    class Live extends Component {
+      willDestroy() {
+        super.willDestroy();
+        destroyed++;
+      }
+    }
+    setComponentTemplate(precompileTemplate('live'), Live);
+
+    let state = new State();
+
+    await render(<template>{{#if state.show}}<Live />{{/if}}</template>);
+
+    assert.dom().hasText('live');
+
+    state.show = false;
+    await settled();
+
+    assert.dom().hasText('');
+    assert.strictEqual(destroyed, 1, 'willDestroy ran');
+  });
+});
+
 moduleFor(
   'Components test: a class-body <template> component invoked by name',
   class extends RenderingTestCase {
@@ -220,6 +329,69 @@ moduleFor(
       assert.strictEqual(this.element.textContent, 'live');
       assert.strictEqual(instances.length, 2, 'rendering again creates a new component');
       assert.deepEqual(destroyed, [1], 'the new component is live');
+    }
+
+    '@test a subclass with a class-body template renders it, not the template registered for its base class'(
+      assert
+    ) {
+      class Base extends Component {
+        value = 'base';
+      }
+      setComponentTemplate(precompileTemplate('registered {{this.value}}'), Base);
+
+      class WithBody extends Base {
+        <template>body {{this.value}} {{@name}}</template>
+      }
+
+      this.owner.register('component:with-body', WithBody);
+
+      this.render('<WithBody @name={{this.name}} />', { name: 'a' });
+
+      assert.strictEqual(this.element.textContent, 'body base a');
+
+      runTask(() => set(this.context, 'name', 'b'));
+
+      assert.strictEqual(this.element.textContent, 'body base b');
+    }
+
+    '@test a strict-mode template renders a class with a registered template from its scope'(
+      assert
+    ) {
+      let instances = [];
+
+      class Inner extends Component {
+        @tracked count = 0;
+
+        constructor(owner, args) {
+          super(owner, args);
+          instances.push(this);
+        }
+      }
+      setComponentTemplate(precompileTemplate('[{{this.count}} {{@name}}]'), Inner);
+
+      class Outer extends Component {}
+      setComponentTemplate(
+        precompileTemplate('<Inner @name={{@name}} />', {
+          strictMode: true,
+          scope: () => ({ Inner }),
+        }),
+        Outer
+      );
+
+      this.owner.register('component:outer-host', Outer);
+
+      this.render('<OuterHost @name={{this.name}} />', { name: 'a' });
+
+      assert.strictEqual(this.element.textContent, '[0 a]');
+
+      runTask(() => set(this.context, 'name', 'b'));
+
+      assert.strictEqual(this.element.textContent, '[0 b]');
+
+      runTask(() => instances[0].count++);
+
+      assert.strictEqual(this.element.textContent, '[1 b]');
+      assert.strictEqual(instances.length, 1, 'the component updated in place');
     }
   }
 );
