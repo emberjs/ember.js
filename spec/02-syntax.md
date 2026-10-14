@@ -634,7 +634,11 @@ original `this/foo`; `../foo` has parts `[foo]` and original `../foo`; `[this]` 
    2. if it starts with `../` → error `Changing context using "../" is not supported in Glimmer`;
    3. if it contains `.` anywhere → error
       `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths`;
-   4. otherwise the whole path becomes a **single segment** `parts.join('/')`. **[Legacy]**
+   4. otherwise the whole path becomes a **single segment** `parts.join('/')`. This is Glimmer's
+      own meaning, not Handlebars' (where `foo/bar` is the property path `foo.bar`): it names a
+      nested component or helper, `{{foo/bar}}` for `components/foo/bar`. **[Loose mode]**: no
+      strict-mode template can bind a name containing `/` (T21, by experiment). Test:
+      `packages/@ember/-internals/glimmer/tests/integration/components/classic/curly-components-test.js:2336`.
 2. Else if `original === '.'` → error
    `'.' is not a supported path in Glimmer; check for a path with a trailing '.'`.
 3. Else segments = `parts`.
@@ -661,7 +665,7 @@ Resulting behavior table (normative):
 | `this` | This | `[]` | `this` |
 | `this.foo` | This | `[foo]` | `this.foo` |
 | `@foo.bar` | At `@foo` | `[bar]` | `@foo.bar` |
-| `foo/bar` | Var `foo/bar` | `[]` | `foo/bar` **[Legacy]** |
+| `foo/bar` | Var `foo/bar` | `[]` | `foo/bar` **[Loose mode]** |
 | `@foo/bar` | At `@foo/bar` | `[]` | `@foo/bar` |
 | `foo/[bar]` | Var `foo/bar` | `[]` | `foo/bar` |
 | `this/foo` | **Var `foo`** | `[]` | `foo` (see Open questions) |
@@ -1588,13 +1592,15 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     (depth 1) giving `original = "...attributes"` — the check works only by this coincidence.
     `{{../attributes}}` is a different error. `<div ...attributes={{x}}>` is accepted by the
     parser (validated, if at all, in chapter 03).
-15. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`, `foo/bar`
-    paths, `{{{{raw}}}}` blocks, `\{{` escapes and standalone-line stripping are all inherited
-    from Handlebars and only partially tested in Glimmer. They are specified here as current
-    behavior and should be marked **[Legacy]**. *Planned* (author ruling, 2026-10-13): task
-    T21 (`spec/.work/T21-handlebars-leftovers.md`) proves which of them current Ember can use,
-    removes the unusable ones from the parser, and adds tests marked as inherited from
-    Handlebars, legacy behavior for the rest.
+15. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`,
+    `{{^foo}}…{{else}}…{{/foo}}` (§02-3.3, **[Out of spec]**) and `{{{{raw}}}}` blocks are
+    inherited from Handlebars and had no test in Ember or Glimmer. They are specified here as
+    current behavior and should be marked **[Legacy]**. T21 found every one usable, so none is
+    removed; its branch `test/handlebars-legacy-features` adds tests in modules named
+    "Inherited from Handlebars (legacy behavior)". `foo/bar` paths, `\{{` escapes and
+    whitespace control also came from Handlebars, but Ember tests and documents them, so they
+    are Ember features (§02-4.2, §02-2.2, §02-5), not leftovers (author, 2026-10-14). `{{else …}}`
+    chains are core syntax; their missing rendering tests are task T23.
 
 16. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
     runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 13.

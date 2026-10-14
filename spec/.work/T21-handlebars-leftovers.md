@@ -60,7 +60,13 @@ out of scope.
         glimmer harness, so no Ember-internals test was needed).
       - Filter `Inherited from Handlebars`: 52 tests, 52 pass. `[glimmer-syntax]`: 367 pass. Full suite: 9281 tests,
         9261 pass, 20 skip, 0 fail.
-- [ ] 5. Spec follow-up: mark each kept feature **[Legacy]** in its §02 section and cite the new
+      **Revised (2026-10-14, author):** only F1, F2, F3 and F5 are inherited legacy (see "Review"
+      below). The branch was rewritten, now on `origin/main` `c02a9ee118`: `bc88b2ca3a` (8 parser
+      tests) and `462cb01852` (10 rendering tests), F1, F2, F3, F5 only. No new tests for F4, F6,
+      F7 (existing coverage suffices). F8 rendering coverage is task T23 (the removed F8 tests are
+      its seed). Filter `Inherited from Handlebars`: 18 tests, 18 pass. Full suite: 9249 tests,
+      9229 pass, 20 skip, 0 fail.
+- [ ] 5. Spec follow-up (F1, F2, F3, F5 only): mark each kept feature **[Legacy]** in its §02 section and cite the new
       tests; describe the removed ones as errors (new E-catalogue rows); remove §02-11 item 15.
 
 ## Step 1 results
@@ -130,4 +136,6 @@ own suite):
 Consequence: the "Inherited from Handlebars (legacy behavior)" label fits only F1, F2, F3 and F5.
 F4, F6, F7 and F8 tests on `test/handlebars-legacy-features` should move to ordinary modules
 (dropping parser tests that duplicate `parser-escape-test.ts`/`parser-whitespace-test.ts`, keeping
-the new rendering tests, which add coverage, notably for F8). Pending the author's go-ahead.
+the new rendering tests, which add coverage, notably for F8). **Author (2026-10-14):** keep
+only F1, F2, F3, F5 in T21; no new tests for F4, F6, F7; F8 rendering coverage becomes task T23.
+Done (step 4 note); §02-4.2 and §02-11 item 15 updated.
