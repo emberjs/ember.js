@@ -139,3 +139,22 @@ F4, F6, F7 and F8 tests on `test/handlebars-legacy-features` should move to ordi
 the new rendering tests, which add coverage, notably for F8). **Author (2026-10-14):** keep
 only F1, F2, F3, F5 in T21; no new tests for F4, F6, F7; F8 rendering coverage becomes task T23.
 Done (step 4 note); §02-4.2 and §02-11 item 15 updated.
+
+## Deprecation guides (2026-10-14)
+
+Author request: deprecation guides for F1, F2, F3, F5, `until: 8.0.0`. Written in
+`/Users/edward/hacking/deprecation-app`, branch `deprecate-legacy-handlebars-syntax`, commit
+`46ae444` (not pushed), `content/ember/v7/`. The file names are the deprecation ids, which the
+Ember deprecations (not implemented yet) must use, with `url: 'https://deprecations.emberjs.com/id/<id>'`:
+
+| Feature | Id | Prettier auto-fix |
+|---|---|---|
+| F1 `{{&foo}}` | `template-ampersand-mustache` | yes, `{{{foo}}}`; **broken with `~`**: prints `{{{~foo}}}` / `{{{foo~}}}`, a parse error (correct: `{{~{foo}}}`, `{{{foo}~}}`) |
+| F2 `{{^}}` | `template-caret-else` | yes, `{{else}}`, tildes kept |
+| F3 `{{^foo}}a{{else}}b{{/foo}}` | `template-inverse-block-with-else` | yes, `{{#foo}}b{{else}}a{{/foo}}`, tildes kept (same tree). Block params on such a block are dropped by the parser itself (they attach to the swapped half), so `{{^each xs as \|i\|}}…{{else}}{{i}}` never bound `i`; Prettier drops `as \|i\|` too |
+| F5 raw blocks | `template-raw-block` | yes, `{{#foo}}…{{/foo}}` with `\{{` in the body |
+
+Checked with Prettier 2.8.8, 3.0.0, 3.8.3 and 3.9.10 (`glimmer` parser and
+`prettier-plugin-ember-template-tag` 2.1.8); every before/after pair in the guides parsed with
+`@glimmer/syntax` to the same tree. `since: 7.5.0` is a placeholder for the release that ships the
+deprecations. The Prettier `~` bug for `{{&foo}}` could be reported upstream.
