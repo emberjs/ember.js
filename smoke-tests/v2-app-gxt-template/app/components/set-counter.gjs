@@ -3,8 +3,8 @@ import { set } from '@ember/object';
 
 // A .gjs component class with a plain (untracked) field, updated with `set()`:
 // the template's read of `this.clicks` consumes the property's tag, as
-// Glimmer's does, so `set()` re-renders it (the `EMBER_PROPERTY_TAGS`
-// compiler flag in vite.config.mjs).
+// Glimmer's does, so `set()` re-renders it (the GXT compiler does this under
+// WITH_EMBER_INTEGRATION).
 export default class SetCounter extends Component {
   clicks = 0;
 

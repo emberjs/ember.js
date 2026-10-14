@@ -65,17 +65,16 @@ export default defineConfig(({ mode }) => ({
     // With WITH_EMBER_INTEGRATION the decorators the compiler lowers in
     // .gjs/.gts (`@tracked`, `@action`, `@service`) import
     // decorator-transforms' runtime, as an Embroider app's babel config makes
-    // them (the app lists `decorator-transforms`; no `dt7948` global).
+    // them (the app lists `decorator-transforms`; no `dt7948` global), and a
+    // template's property read consumes the property's tag, as Glimmer's
+    // does: `set()` / `notifyPropertyChange()` on a plain (untracked)
+    // property re-render it.
     compiler(mode, {
       flags: {
         WITH_EMBER_INTEGRATION: true,
         WITH_HELPER_MANAGER: true,
         WITH_MODIFIER_MANAGER: true,
         TRY_CATCH_ERROR_HANDLING: false,
-        // A template's property read consumes the property's tag, as
-        // Glimmer's does: `set()` / `notifyPropertyChange()` on a plain
-        // (untracked) property re-render it.
-        EMBER_PROPERTY_TAGS: true,
       },
     }),
     emberSourceResolver(),
