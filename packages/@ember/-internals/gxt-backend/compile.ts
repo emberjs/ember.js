@@ -467,6 +467,12 @@ import {
   // Set by gxt on its native block wrappers ($_ucw / $_inElement); the $_tag
   // root-id re-stamp skips contexts that carry it (see the guard's use site).
   $BLOCK_WRAPPER_SYMBOL,
+  // A property's cell, created without reading the property (`tagFor`) or
+  // only looked up (`peekTagFor`), and the global revision (see
+  // `_gxtEvaluateOncePerCreation`).
+  tagFor as _gxtTagFor,
+  peekTagFor as _gxtPeekTagFor,
+  currentRevision as _gxtCurrentRevision,
 } from '@lifeart/gxt';
 // Host hooks: the gxt runtime calls the hooks registered here.
 // `registerHostHooks`, the named-block marker predicate and the each-in
@@ -3054,16 +3060,7 @@ function _gxtCaptureLeafOwnersForGetter(getter: any): void {
       const path = extractThisPath(String(getter));
       const pc = _gxtCurrentTemplateThis;
       if (path && pc && typeof pc === 'object') {
-        let cur: any = pc;
-        for (const seg of path.split('.')) {
-          if (!cur || typeof cur !== 'object') break;
-          try {
-            const segCell = cellFor(cur, seg, /* skipDefine */ false);
-            cur = segCell ? segCell.value : cur[seg];
-          } catch {
-            cur = cur[seg];
-          }
-        }
+        _gxtSubscribeUntrackedThisPath(path, pc);
       }
     }
   } catch {
@@ -3090,6 +3087,124 @@ function _gxtCaptureLeafOwnersForGetter(getter: any): void {
       }
     });
   }
+}
+
+// Whether `key` is an accessor of `obj` (an own getter or one on its
+// prototype chain): a class getter, a `@tracked` or computed property.
+function _gxtIsAccessorProperty(obj: object, key: string): boolean {
+  let pointer: object | null = obj;
+  while (pointer !== null && pointer !== Object.prototype) {
+    const desc = Object.getOwnPropertyDescriptor(pointer, key);
+    if (desc !== undefined) return typeof desc.get === 'function';
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return false;
+}
+
+// A `this.<path>` binding whose evaluation read no cell subscribes to the
+// cells of its path, so a `set()` / `notifyPropertyChange()` of a segment
+// re-renders it, as Glimmer's `getProp` consumes the property tag of every
+// segment it reads. A data property gets its cell, an absent one too (a later
+// `set()` adds the property). A getter is neither read again nor shadowed: the
+// binding's evaluation has run it, so its cell is created without a read
+// (`tagFor`) and the walk ends there; a cell from `cellFor` would read it a
+// second time and define an accessor that freezes its value.
+function _gxtSubscribeUntrackedThisPath(path: string, ctx: object): void {
+  let cur: any = ctx;
+  for (const seg of path.split('.')) {
+    if (!cur || typeof cur !== 'object') return;
+    if (_gxtIsAccessorProperty(cur, seg)) {
+      const tracker = _gxtGetTracker();
+      if (tracker) tracker.add(_gxtTagFor(cur, seg));
+      return;
+    }
+    const segCell = cellFor(cur, seg, /* skipDefine */ false);
+    cur = segCell ? segCell.value : cur[seg];
+  }
+}
+
+// The value a binding's first evaluation computed, kept for gxt's second read
+// of it while the binding is being created (see `_gxtEvaluateOncePerCreation`).
+// The tracking frame gxt records a formula's cells in.
+type _GxtTrackerFrame = NonNullable<ReturnType<typeof _gxtGetTracker>>;
+interface _GxtCreationRead {
+  value: unknown;
+  cells: _GxtTrackerFrame;
+  evaluation: number;
+  revision: number;
+}
+// Counts the first evaluations of the bindings created through
+// `_gxtEvaluateOncePerCreation`.
+let _gxtCreationEvaluations = 0;
+
+// Wraps a binding's getter so that creating the binding evaluates it once.
+//
+// gxt evaluates a binding twice while it creates it: `resolveRenderable` reads
+// its formula to tell a constant from a reactive value, and `opcodeFor` reads
+// the formula again for the opcode's first run. Glimmer computes a reference
+// once per revision. The wrapper evaluates the getter on its first call, under
+// its own tracking frame, and keeps the value and the cells it read. The next
+// call, when it immediately follows (no other binding was evaluated, nothing
+// changed: same global revision), is that second read: it returns the kept
+// value and adds the kept cells to the reading formula, so the formula
+// subscribes to exactly what the evaluation read. Every later call evaluates
+// the getter.
+//
+// A `this.<path>` binding (`path`) whose first evaluation read no cell
+// subscribes to its path's cells (`_gxtSubscribeUntrackedThisPath`). Without
+// that, gxt's recovery for a constant `this.<path>` binding would define the
+// path's cells itself, reading a getter again and shadowing it, and evaluate
+// the binding a second time. A first evaluation that still read no cell is a
+// constant and is not kept.
+//
+// `onFirstValue` sees the value of the first evaluation.
+function _gxtEvaluateOncePerCreation<T extends (...args: any[]) => any>(
+  getter: T,
+  path: string | null,
+  onFirstValue?: (value: ReturnType<T>) => void
+): T {
+  let evaluated = false;
+  let creationRead: _GxtCreationRead | null = null;
+  return function evaluateOncePerCreation(this: unknown, ...args: unknown[]) {
+    const kept = creationRead;
+    creationRead = null;
+    if (
+      kept !== null &&
+      kept.evaluation === _gxtCreationEvaluations &&
+      kept.revision === _gxtCurrentRevision()
+    ) {
+      const tracker = _gxtGetTracker();
+      if (tracker) kept.cells.forEach((cell) => tracker.add(cell));
+      return kept.value;
+    }
+    if (evaluated) return getter.apply(this, args);
+    evaluated = true;
+    const outer = _gxtGetTracker();
+    const cells: _GxtTrackerFrame = new Set();
+    _gxtSetTracker(cells);
+    let value: ReturnType<T>;
+    try {
+      value = getter.apply(this, args);
+      const templateThis = _gxtCurrentTemplateThis;
+      if (cells.size === 0 && path !== null && templateThis && typeof templateThis === 'object') {
+        _gxtSubscribeUntrackedThisPath(path, templateThis);
+      }
+    } finally {
+      _gxtSetTracker(outer);
+      if (outer) cells.forEach((cell) => outer.add(cell));
+    }
+    _gxtCreationEvaluations++;
+    if (cells.size > 0) {
+      creationRead = {
+        value,
+        cells,
+        evaluation: _gxtCreationEvaluations,
+        revision: _gxtCurrentRevision(),
+      };
+    }
+    onFirstValue?.(value);
+    return value;
+  } as T;
 }
 
 function _gxtIsInTriggerReRender(): boolean {
@@ -5337,26 +5452,26 @@ const _eachItemReadInflight = new WeakMap<object, Set<string>>();
 function _eachItemReadProp(raw: any, prop: string, holder: _EachItemHolder | undefined): any {
   const value = Reflect.get(raw, prop, raw);
   if (typeof value === 'function') return value;
-  try {
-    // Subscribe to the per-holder revision cell so a REBIND (holder.raw swap)
-    // re-fires this read even though the new object has different per-prop cells.
-    // Only ENTANGLE it when the owning list can ever rebind this row (explicit
-    // `key=`); for `@identity`-keyed lists the rev cell is never bumped, so it
-    // would be pure dead weight.
-    if (holder && holder.rebindPossible) {
-      const revCell = cellFor(holder, '__gxtRev', /* skipDefine */ true);
-      if (revCell) (revCell as any).value;
-    }
-    const cell = cellFor(raw, prop, /* skipDefine */ true);
-    if (cell) {
-      if ((cell as any)._value !== value) {
-        (cell as any)._value = value;
-      }
-      (cell as any).value;
-    }
-  } catch {
-    /* ignore */
+  // Subscribe to the per-holder revision cell so a REBIND (holder.raw swap)
+  // re-fires this read even though the new object has different per-prop cells.
+  // Only ENTANGLE it when the owning list can ever rebind this row (explicit
+  // `key=`); for `@identity`-keyed lists the rev cell is never bumped, so it
+  // would be pure dead weight.
+  if (holder && holder.rebindPossible) {
+    const revCell = cellFor(holder, '__gxtRev', /* skipDefine */ true);
+    if (revCell) (revCell as any).value;
   }
+  // Subscribe to the property's cell, holding the value just read. The cell is
+  // created without reading the property: `cellFor` would read it again for the
+  // cell's initial value, evaluating a getter twice.
+  let cell: any = _gxtPeekTagFor(raw, prop);
+  if (cell === undefined) {
+    cell = _gxtTagFor(raw, prop);
+    cell._relatedObj = raw;
+    cell._relatedKey = prop;
+  }
+  cell._value = value;
+  cell.value;
   return _wrapNestedEachValue(value);
 }
 const _eachItemProxyHandler: ProxyHandler<any> = {
@@ -10423,12 +10538,21 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // (Date, Object, Symbol) are stringified before reaching GXT's $ev/resolveRenderable.
     // GXT's resolveRenderable returns raw objects for non-primitive values, which then
     // fails in opcodeFor (expects a cell/tag). Ember stringifies all values in text positions.
+    //
+    // Creating the element evaluates each text getter once
+    // (`_gxtEvaluateOncePerCreation`). A text child whose value is a SafeString
+    // (an object with a toHTML() method) is rendered as HTML: Ember renders it
+    // as raw HTML, but GXT would coerce the object via String() to
+    // `[object Object]` and `_normalizeStringValue` strips it to ''. The first
+    // evaluation records its HTML, which is injected into the element after
+    // originalTag (below).
+    const _safeHtmlInjections: Array<{ html: string }> = [];
     if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
       for (let ei = 0; ei < tagProps[2].length; ei++) {
         const entry = tagProps[2][ei];
         if (Array.isArray(entry) && entry[0] === '1' && typeof entry[1] === 'function') {
           const origGetter = entry[1];
-          const _stringifyTextContent = function _stringifyTextContent(this: any) {
+          const _stringifyTextValue = function _stringifyTextValue(this: any) {
             const val = origGetter.apply(this, arguments);
             if (
               val == null ||
@@ -10453,19 +10577,22 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
             return val;
           };
+          const _thisPath = extractThisPath(String(origGetter));
+          const _stringifyTextContent = _gxtEvaluateOncePerCreation(
+            _stringifyTextValue,
+            _thisPath,
+            (value: any) => {
+              if (value && typeof value === 'object' && typeof value.toHTML === 'function') {
+                _safeHtmlInjections.push({ html: value.toHTML() ?? '' });
+              }
+            }
+          );
           // Stamp the wrapper with the raw getter's `this.<path>` so
           // glimmer-next's const-binding recovery (materializeAbsentPathCell, via
           // resolveRenderable) can materialize a leaf cell for an
           // initially-undefined `<p>{{this.name}}</p>` text child whose source
           // the wrapper's own toString hides.
-          {
-            try {
-              const _p = extractThisPath(String(origGetter));
-              if (_p) (_stringifyTextContent as any).__gxtPath = _p;
-            } catch {
-              /* best-effort */
-            }
-          }
+          if (_thisPath) (_stringifyTextContent as any).__gxtPath = _thisPath;
           entry[1] = _stringifyTextContent;
         }
       }
@@ -10522,7 +10649,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           const origGetter = val;
           // Preserve __isCell / __isMutCell markers etc. by only wrapping plain getters.
           if ((origGetter as any).__isCell || (origGetter as any).__isMutCell) continue;
-          const _attrNormalize = function _attrNormalize(this: any) {
+          const _attrNormalizeValue = function _attrNormalizeValue(this: any) {
             const v = origGetter.apply(this, arguments);
             if (v === null || v === undefined) return v;
             if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return v;
@@ -10541,19 +10668,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
             return v;
           };
+          // Creating the element evaluates the getter once
+          // (`_gxtEvaluateOncePerCreation`).
+          const _attrPath = extractThisPath(String(origGetter));
+          const _attrNormalize = _gxtEvaluateOncePerCreation(_attrNormalizeValue, _attrPath);
           // Stamp the wrapper with the raw getter's `this.<path>` so
           // glimmer-next's const-binding recovery (materializeAbsentPathCell)
           // can find the path it cannot read off the wrapper's own toString
           // (which only shows `origGetter.apply`). Enables initial-undefined
           // attribute bindings to materialize a leaf cell.
-          {
-            try {
-              const _p = extractThisPath(String(origGetter));
-              if (_p) (_attrNormalize as any).__gxtPath = _p;
-            } catch {
-              /* best-effort */
-            }
-          }
+          if (_attrPath) (_attrNormalize as any).__gxtPath = _attrPath;
           entry[1] = _attrNormalize;
         }
       }
@@ -10568,49 +10692,54 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // Track whether we've warned for this style binding in this render pass
       // to avoid duplicate warnings from reactive re-evaluations.
       let _styleWarnedPassId = -1;
-      styleEntryRef[1] = function _styleEmptyGuard() {
-        const val = origGetter();
-        // SafeString object: convert to plain HTML string, no warning needed
-        if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
-          const html = val.toHTML();
-          return html || null;
-        }
-        if (val == null || val === false || val === '') return null;
-        // Non-safe dynamic value — potentially warn for style binding XSS.
-        // Do not warn during force-rerender (the initial render already warned).
-        if (!_gxtIsForceRerender()) {
-          // Bridge-routed render-pass id read.
-          const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-          if (_styleWarnedPassId !== currentPassId) {
-            // Check if the string value came from a SafeString.toString() conversion.
-            // For quoted attrs like style="{{safeExpr}}", the quoted-attr helper
-            // calls String(safeString) → toString() → sets
-            // `_gxtLastSafeStringResult`. If the final concatenated value matches
-            // the last SafeString result exactly, the entire value came from a
-            // single SafeString — no warning needed. If the value differs (e.g.
-            // static text was mixed in), warn.
-            let isSafeFromConcat = false;
-            if (typeof val === 'string') {
-              const lastSafe = _gxtLastSafeStringResult;
-              if (lastSafe !== undefined && val === lastSafe) {
-                isSafeFromConcat = true;
+      // Creating the element evaluates the getter once
+      // (`_gxtEvaluateOncePerCreation`).
+      styleEntryRef[1] = _gxtEvaluateOncePerCreation(
+        function _styleEmptyGuard() {
+          const val = origGetter();
+          // SafeString object: convert to plain HTML string, no warning needed
+          if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
+            const html = val.toHTML();
+            return html || null;
+          }
+          if (val == null || val === false || val === '') return null;
+          // Non-safe dynamic value — potentially warn for style binding XSS.
+          // Do not warn during force-rerender (the initial render already warned).
+          if (!_gxtIsForceRerender()) {
+            // Bridge-routed render-pass id read.
+            const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+            if (_styleWarnedPassId !== currentPassId) {
+              // Check if the string value came from a SafeString.toString() conversion.
+              // For quoted attrs like style="{{safeExpr}}", the quoted-attr helper
+              // calls String(safeString) → toString() → sets
+              // `_gxtLastSafeStringResult`. If the final concatenated value matches
+              // the last SafeString result exactly, the entire value came from a
+              // single SafeString — no warning needed. If the value differs (e.g.
+              // static text was mixed in), warn.
+              let isSafeFromConcat = false;
+              if (typeof val === 'string') {
+                const lastSafe = _gxtLastSafeStringResult;
+                if (lastSafe !== undefined && val === lastSafe) {
+                  isSafeFromConcat = true;
+                }
               }
-            }
-            // Clear the last-safe-string tracker regardless
-            _gxtLastSafeStringResult = undefined;
-            if (!isSafeFromConcat) {
-              _styleWarnedPassId = currentPassId;
-              const warnFn = getDebugFunction('warn');
-              if (warnFn) {
-                warnFn(_constructStyleDeprecationMessage(String(val)), false, {
-                  id: 'ember-htmlbars.style-xss-warning',
-                });
+              // Clear the last-safe-string tracker regardless
+              _gxtLastSafeStringResult = undefined;
+              if (!isSafeFromConcat) {
+                _styleWarnedPassId = currentPassId;
+                const warnFn = getDebugFunction('warn');
+                if (warnFn) {
+                  warnFn(_constructStyleDeprecationMessage(String(val)), false, {
+                    id: 'ember-htmlbars.style-xss-warning',
+                  });
+                }
               }
             }
           }
-        }
-        return val;
-      };
+          return val;
+        },
+        extractThisPath(String(origGetter))
+      );
     }
 
     // SVG/MathML namespace handling: when _gxtNamespace is set (by $_c_ember
@@ -10925,53 +11054,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // a static one, and the `normalizeAttrValue` host hook removes a bound one
     // on the first write and on every update.
 
-    // Detect tagProps[2] text entries whose getter returns a SafeString
-    // (an object with a toHTML() method). Ember renders those as raw HTML,
-    // but GXT would coerce the object via String() to `[object Object]`
-    // and `_normalizeStringValue` strips it to ''. Capture the raw HTML
-    // from toHTML() here and inject it into the element after originalTag.
-    const _safeHtmlInjections: Array<{ html: string }> = [];
-    if (
-      tagProps &&
-      tagProps !== g.$_edp &&
-      typeof tag === 'string' &&
-      !_gxtNamespace &&
-      Array.isArray(tagProps[2])
-    ) {
-      for (const entry of tagProps[2]) {
-        if (!Array.isArray(entry) || entry.length < 2) continue;
-        // Only text entries — key "1" is GXT's text-child marker.
-        if (entry[0] !== '1') continue;
-        const val = entry[1];
-        if (typeof val !== 'function') continue;
-        let v: unknown;
-        try {
-          v = val();
-          while (typeof v === 'function') v = (v as () => unknown)();
-        } catch {
-          v = undefined;
-        }
-        if (
-          v &&
-          typeof v === 'object' &&
-          typeof (v as { toHTML?: () => string }).toHTML === 'function'
-        ) {
-          try {
-            _safeHtmlInjections.push({
-              html: (v as { toHTML: () => string }).toHTML() ?? '',
-            });
-          } catch {
-            /* ignore toHTML errors */
-          }
-        }
-      }
-    }
+    // SafeString text children of a plain HTML element are injected as HTML.
+    const _injectSafeHtml = typeof tag === 'string' && !_gxtNamespace;
 
     const result = originalTag(tag, tagProps, ctx, children);
 
     // Inject SafeString HTML: replace any text node created from the
     // `[object Object]` placeholder with the parsed HTML fragment.
-    if (_safeHtmlInjections.length > 0 && result instanceof Element) {
+    if (_injectSafeHtml && _safeHtmlInjections.length > 0 && result instanceof Element) {
       // GXT's originalTag produced text nodes for the getter's String()
       // coercion. Those nodes have nodeValue `"[object Object]"` or an
       // empty string; remove them and replace with parsed HTML.
@@ -12493,33 +12583,15 @@ function _gxtPrecompileTemplate(
           // yet on the context), reading it touches NO cell —
           // `_captureFrame.size === 0` — so the effect subscribes to nothing
           // and a later `set(context,'name',...)` never updates the text node.
-          // Materialize the leaf cell explicitly by walking the `this.<path>`
-          // chain on the parent render context and calling `cellFor(...).value`
-          // INSIDE this capture frame so the cell is recorded. Only fires when
-          // capture came up empty (so defined paths and helpers are untouched).
+          // Subscribe it to the cells of the `this.<path>` chain on the parent
+          // render context INSIDE this capture frame, so the cells are
+          // recorded (a getter is not read again). Only fires when capture
+          // came up empty (so defined paths and helpers are untouched).
           if (_captureFrame.size === 0) {
-            try {
-              const _path = extractThisPath(String(item));
-              const _pc = _gxtCurrentTemplateThis;
-              if (_path && _pc && typeof _pc === 'object') {
-                let _cur: any = _pc;
-                const _parts = _path.split('.');
-                for (let _pi = 0; _pi < _parts.length; _pi++) {
-                  const _seg = _parts[_pi]!;
-                  if (!_cur || typeof _cur !== 'object') break;
-                  // Read through cellFor so the cell registers in the active
-                  // capture frame. skipDefine=false so an absent property gets
-                  // a real cell that `set()` will dirty.
-                  try {
-                    const _segCell = cellFor(_cur, _seg, /* skipDefine */ false);
-                    _cur = _segCell ? _segCell.value : _cur[_seg];
-                  } catch {
-                    _cur = _cur[_seg];
-                  }
-                }
-              }
-            } catch {
-              /* best-effort cell materialization */
+            const _path = extractThisPath(String(item));
+            const _pc = _gxtCurrentTemplateThis;
+            if (_path && _pc && typeof _pc === 'object') {
+              _gxtSubscribeUntrackedThisPath(_path, _pc);
             }
           }
         } finally {

@@ -416,6 +416,69 @@ moduleFor(
       destroy(owner);
       await renderSettled();
     }
+
+    async '@test the initial render evaluates each binding once'(assert: QUnit['assert']) {
+      let reads: string[] = [];
+      class Item {
+        @tracked label: string;
+
+        constructor(label: string) {
+          this.label = label;
+        }
+
+        get name() {
+          reads.push(`name:${this.label}`);
+          return this.label;
+        }
+      }
+      class Root extends GlimmerComponent {
+        @tracked n = 1;
+        list = [new Item('a'), new Item('b')];
+
+        get text() {
+          reads.push('text');
+          return `text${this.n}`;
+        }
+        get plainText() {
+          reads.push('plainText');
+          return 'plain';
+        }
+        get top() {
+          reads.push('top');
+          return `top${this.n}`;
+        }
+        get plainTop() {
+          reads.push('plainTop');
+          return 'plainTop';
+        }
+      }
+      setComponentTemplate(
+        precompileTemplate(
+          '<p>{{this.text}}</p><p>{{this.plainText}}</p>{{this.top}} {{this.plainTop}}{{#each this.list as |item|}}[{{item.name}}]{{/each}}'
+        ),
+        Root
+      );
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('<p>text1</p><p>plain</p>top1 plainTop[a][b]');
+      assert.deepEqual(
+        reads.sort(),
+        ['name:a', 'name:b', 'plainText', 'plainTop', 'text', 'top'],
+        'each binding is evaluated once'
+      );
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
   }
 );
 
