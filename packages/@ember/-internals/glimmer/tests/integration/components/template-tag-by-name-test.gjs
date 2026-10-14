@@ -1,5 +1,8 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
+import { setComponentTemplate } from '@ember/component';
+import templateOnly from '@ember/component/template-only';
+import { precompileTemplate } from '@ember/template-compilation';
 
 // `<template>` components from a .gjs module, registered in the owner and
 // invoked BY NAME from a loose (runtime-compiled) template, as an app's
@@ -41,6 +44,10 @@ const LoneClass = <template>
 
 const MergedClass = <template>
   <p data-test-merged ...attributes class={{@cls}}>x</p>
+</template>;
+
+const ArgBlockReceiver = <template>
+  <@comp class="r" as |v|>[{{v}}]</@comp>
 </template>;
 
 const OwnBeforeSplat = <template>
@@ -292,6 +299,38 @@ moduleFor(
 
       runTask(() => set(this.context, 'outer', undefined));
       assert.strictEqual(cls(), 'a');
+    }
+
+    // `<@comp as |v|>` invokes the component an argument holds, with a block
+    // whose block params are the component's yielded values.
+    '@test an argument component invoked with angle brackets receives a block with block params'(
+      assert
+    ) {
+      this.owner.register('component:arg-block-receiver', ArgBlockReceiver);
+      this.owner.register('component:block-yielder', Yielder);
+
+      this.render('<ArgBlockReceiver @comp={{component "block-yielder"}} />');
+      let p = this.element.querySelector('p[data-test-yielder]');
+      assert.strictEqual(p?.textContent.trim(), '[p]');
+      assert.strictEqual(p?.getAttribute('class'), 'r');
+    }
+
+    '@test a runtime template invokes an argument component with a block with block params'(
+      assert
+    ) {
+      this.owner.register('component:block-yielder', Yielder);
+      this.owner.register(
+        'component:runtime-arg-block-receiver',
+        setComponentTemplate(
+          precompileTemplate('<@comp class="r" as |v|>[{{v}}]</@comp>', { strictMode: true }),
+          templateOnly()
+        )
+      );
+
+      this.render('<RuntimeArgBlockReceiver @comp={{component "block-yielder"}} />');
+      let p = this.element.querySelector('p[data-test-yielder]');
+      assert.strictEqual(p?.textContent.trim(), '[p]');
+      assert.strictEqual(p?.getAttribute('class'), 'r');
     }
 
     // Glimmer applies an element's attributes in source order with

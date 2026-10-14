@@ -1478,11 +1478,8 @@ function _emberTagFastPathEligible(tag: unknown, tagProps: any): boolean {
  * lookup is reachable: an undeclared PascalCase tag and a hyphenated tag
  * (`<foo-bar>`) compile to `$_tag('Name')` / `$_tag('foo-bar')`.
  *
- * The `<@foo/>` arg-component branch (resolvedTag.startsWith('@')) is
- * load-bearing: an arg is not a lexical binding, so build-time templates emit
- * a string `$_tag('@foo', ...)` for `<@foo/>`, and this wrapper is its only
- * handler — native GXT `$_tag` has no `@`-handling and would build a broken
- * `<@foo>` element.
+ * `<@foo/>` needs no branch either: in Ember mode gxt compiles an `@`-headed
+ * tag to `$_dc` (a dynamic component with its block and block params).
  */
 function createEmberTag(original: Function) {
   // GXT's $_tag signature is: $_tag(tag, tagProps, ctx, children)
@@ -1506,62 +1503,6 @@ function createEmberTag(original: Function) {
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
     if (resolvedTag && typeof resolvedTag === 'string') {
-      // Dynamic component: <@foo />
-      if (resolvedTag.startsWith('@')) {
-        const argName = resolvedTag.slice(1);
-        const args = ctx?.[GXT_ARGS_SYMBOL] || ctx?.args || {};
-        const componentValue = args[argName];
-        if (componentValue) {
-          const managers = g.$_MANAGERS;
-          if (managers?.component?.canHandle?.(componentValue)) {
-            // Extract named args and block content from tagProps
-            const invokeArgs: any = {};
-            const slots: Record<string, any> = {};
-
-            if (tagProps && tagProps !== gxtModule.$_edp) {
-              // Extract named args from attrs (position 1)
-              const attrs = tagProps[1];
-              if (Array.isArray(attrs)) {
-                for (const [key, value] of attrs) {
-                  if (key.startsWith('@')) {
-                    const argKey = key.slice(1);
-                    Object.defineProperty(invokeArgs, argKey, {
-                      get: () => (typeof value === 'function' ? value() : value),
-                      enumerable: true,
-                      configurable: true,
-                    });
-                  }
-                }
-              }
-
-              // Extract text children from events position (position 2)
-              // GXT puts text children as [["1", textContent]] in the events array
-              const textChildren = tagProps[2];
-              if (Array.isArray(textChildren) && textChildren.length > 0) {
-                const blockContent: any[] = [];
-                for (const entry of textChildren) {
-                  if (Array.isArray(entry) && entry.length === 2) {
-                    blockContent.push(entry[1]);
-                  }
-                }
-                if (blockContent.length > 0) {
-                  slots.default = (slotCtx: any) => [...blockContent];
-                }
-              }
-            }
-
-            // Also check 4th arg (children) for block content
-            if (children && children.length > 0 && !slots.default) {
-              slots.default = (slotCtx: any) => [...children];
-            }
-
-            invokeArgs.$slots = slots;
-            return managers.component.handle(componentValue, invokeArgs, null, ctx);
-          }
-        }
-        return document.createComment(`dynamic component @${argName} not found`);
-      }
-
       // EmberHtmlRaw (triple mustaches)
       // Returns a getter function marked __htmlRaw for reactive innerHTML updates.
       // The getter must call the @value getter lazily (not eagerly) so that
