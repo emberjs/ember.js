@@ -158,3 +158,14 @@ Checked with Prettier 2.8.8, 3.0.0, 3.8.3 and 3.9.10 (`glimmer` parser and
 `prettier-plugin-ember-template-tag` 2.1.8); every before/after pair in the guides parsed with
 `@glimmer/syntax` to the same tree. `since: 7.5.0` is a placeholder for the release that ships the
 deprecations. The Prettier `~` bug for `{{&foo}}` could be reported upstream.
+
+## Deprecation RFC (2026-10-14)
+
+Drafted in `/Users/edward/hacking/rfcs`, branch `deprecate-legacy-handlebars-syntax` (from
+`origin/master`), commit `66fbfd71`, `text/0000-deprecate-legacy-handlebars-syntax.md`, from
+`deprecation-template.md`. Teams: framework, learning. "How We Teach This" holds the four
+deprecation guides verbatim (frontmatter dropped, each in a `<details>` block, as RFC 1006 did);
+if a guide changes, regenerate that section. Not pushed. The `rfcs-tooling` v3.0.0 frontmatter
+lint passes except `prs.accepted`, which is filled in once the PR exists (with the number in the
+file name). Precedent cited for compile-time template deprecations:
+`ember-template-compiler.deprecate-render` (a template-compiler plugin, `9b608cd014`).
