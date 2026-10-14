@@ -7351,12 +7351,19 @@ function _forwardedAttrValue(el: Element, key: string, value: unknown): unknown 
 
 // Forwarded events (`fw[2]`): an ON_CREATED entry (event name `'0'`) is a
 // modifier, run in an effect owned by `owner` so its dependencies are tracked
-// and it re-runs reactively (as gxt's `$ev` does); the rest are listeners.
+// and it re-runs reactively; the rest are listeners. As in gxt's own
+// ON_CREATED binding, a re-run first calls the destructor the previous run
+// returned, so the modifier manager updates the installed modifier
+// (`_modifierSlot`) instead of installing another one.
 function _forwardEventsToElement(el: HTMLElement, events: any[], owner: object): void {
   for (const [eventName, handler] of events) {
     if (typeof handler === 'function') {
       if (eventName === '0') {
-        _gxtEffectWithOwner(owner, () => (handler as any)(el));
+        let destructor: unknown;
+        _gxtEffectWithOwner(owner, () => {
+          if (typeof destructor === 'function') destructor();
+          destructor = (handler as any)(el);
+        });
       } else {
         el.addEventListener(eventName, handler);
       }
@@ -7620,6 +7627,33 @@ export function getOwnerWithFallback(): any {
 
 // compile.ts imports getOwnerWithFallback directly to use the shared owner
 // cache during reactive re-evaluations when the ambient owner is null.
+
+// The cache slot of one modifier invocation on an element (see
+// `$_MANAGERS.modifier._cache`). Every invocation of a modifier owns a slot:
+// the first one of `name` on the element is `name`, the next ones are
+// `name#1`, `name#2`, ... A slot whose modifier is pending destroy belongs to
+// an invocation that is re-running (gxt calls the destructor the previous run
+// returned, then the modifier again), so it is returned with its record, for
+// the update path. Otherwise the call is a new invocation, and a free slot is
+// returned without a record.
+function _modifierSlot(
+  elCache: Map<string, any> | undefined,
+  name: string
+): { key: string; cached: any } {
+  let freeKey: string | undefined;
+  // `size + 1` keys always include a free one.
+  const last = elCache === undefined ? 0 : elCache.size;
+  for (let i = 0; i <= last; i++) {
+    const key = i === 0 ? name : `${name}#${i}`;
+    const cached = elCache?.get(key);
+    if (cached === undefined) {
+      if (freeKey === undefined) freeKey = key;
+    } else if (cached.pendingDestroy) {
+      return { key, cached };
+    }
+  }
+  return { key: freeKey!, cached: undefined };
+}
 
 const $_MANAGERS = {
   component: {
@@ -8423,7 +8457,8 @@ const $_MANAGERS = {
   },
 
   modifier: {
-    // Cache modifier instances by element+modifier-name to support update lifecycle.
+    // Cache modifier instances by element, one slot per modifier invocation
+    // (`_modifierSlot`), to support the update lifecycle.
     // GXT's reactive system re-calls $_maybeModifier on each arg change inside a formula.
     // The formula pattern is: call destructor() → call fn(element) again.
     // We intercept this to provide install/update/destroy lifecycle.
@@ -8630,53 +8665,21 @@ const $_MANAGERS = {
         return { positional: positionalProxy, named: namedProxy };
       };
 
-      // Check for cached modifier instance (update path)
-      // Include the first positional arg in the key ONLY for string-based
-      // modifiers (built-in keywords like "on") to differentiate multiple
-      // {{on "click" fn}} / {{on "mouseenter" fn}} on the same element.
-      // For custom modifier classes, use only the baseName — including the
-      // first arg would cause cache misses when positional args change,
-      // breaking per-arg tracking (the modifier would be re-created instead
-      // of updated).
-      // IMPORTANT: Read firstArg UNTRACKED so it doesn't establish a cell dependency.
+      // Find this invocation's cache slot. A re-run of an installed invocation
+      // finds its slot pending destroy (its destructor ran first) and takes
+      // the update path. Any other call is a new invocation and installs a
+      // new modifier instance in a free slot, as Glimmer installs every
+      // modifier on an element: e.g. the element's own `{{on "click"}}` and
+      // another `{{on "click"}}` forwarded through `...attributes` are two
+      // listeners. The key is the modifier's name only: an argument change
+      // (even the event name of an `{{on}}`) is an update of the same slot.
       const baseName = typeof modifier === 'string' ? modifier : modifier?.name || String(modifier);
-      // Only include firstArg for the built-in "on" modifier to differentiate
-      // {{on "click" fn}} from {{on "mouseenter" fn}} on the same element.
-      // Other modifiers (including custom string-based ones) should use a stable
-      // key so positional arg changes trigger the update path, not fresh installs.
-      let firstArg = '';
-      if (modifier === 'on') {
-        firstArg = _untracked(() =>
-          props && props.length > 0
-            ? String(typeof props[0] === 'function' && !props[0].prototype ? props[0]() : props[0])
-            : ''
-        );
-      }
-      const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
-      let elCache = self._cache.get(element);
-      // If the element-based cache misses, check the secondary (element-independent)
-      if (elCache) {
-        const cached = elCache.get(modKey);
-        // If the modifier is already active and not pending destroy, return a no-op
-        // destructor. This prevents double-creation when GXT evaluates the formula
-        // multiple times during initial setup.
-        if (cached && !cached.pendingDestroy) {
-          return () => {
-            cached.pendingDestroy = true;
-            const destroyable = cached.isInternal
-              ? cached.manager.getDestroyable?.(cached.instance)
-              : null;
-            _pendingModifierDestroys.push({
-              cached,
-              destroyable,
-              element,
-              modKey,
-              cache: self._cache,
-              isCustom: !cached.isInternal,
-            });
-          };
-        }
-        if (cached && cached.pendingDestroy) {
+      const slot = _modifierSlot(self._cache.get(element), baseName);
+      const modKey = slot.key;
+      // (A block: the install path below declares its own `cached`.)
+      {
+        const cached = slot.cached;
+        if (cached) {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
           cached.pendingDestroy = false;
@@ -12844,16 +12847,12 @@ const _pendingBuiltinModifiers: Array<{ name: string; modifier: any }> = [];
 //      the only reliable hook point — GXT's DOM API provider is used for
 //      some paths but `{{on}}` native bindings land directly on the
 //      Element.prototype method.
-//   4. Synthesize a remove when the same (element, event-type) pair is
-//      re-bound (GXT re-attaches on callback changes without calling
-//      removeEventListener first), matching stock OnModifierManager's
-//      install-then-destroy behaviour.
+//   4. A second listener for the same event on one element counts as an add
+//      only: an element can have several `{{on "click"}}` listeners (its own
+//      and one forwarded through `...attributes`). A changed `{{on}}`
+//      callback is counted by the real remove + add the OnModifierManager
+//      makes (every `{{on}}` reaches it through the `on-ext` alias).
 const __gxtOnCounters: { adds: number; removes: number } = { adds: 0, removes: 0 };
-// Per-element listener tracking keyed by event type, so that re-binding the
-// same event (GXT's native reaction to a callback argument changing) is
-// reported as a remove+add pair (matching stock OnModifierManager's
-// install-then-destroy behaviour).
-const __gxtOnListenerMap: WeakMap<Element, Map<string, number>> = new WeakMap();
 let __gxtOnDomApiPatched = false;
 
 function __gxtInstallOnElementPatch(): void {
@@ -12871,19 +12870,6 @@ function __gxtInstallOnElementPatch(): void {
   // calls through Element.prototype.addEventListener, the one reliable
   // hook point.
   Element.prototype.addEventListener = function patchedAdd(this: Element, ...args: any[]): void {
-    const eventType = typeof args[0] === 'string' ? args[0] : '';
-    let byType = __gxtOnListenerMap.get(this);
-    if (!byType) {
-      byType = new Map();
-      __gxtOnListenerMap.set(this, byType);
-    }
-    const prev = byType.get(eventType) || 0;
-    // GXT re-attaches listeners on every callback-change rerender without
-    // calling removeEventListener. Mimic stock OnModifierManager by
-    // emitting a synthetic remove when a fresh listener is installed for
-    // an event type that already has one tracked on this element.
-    if (prev > 0) __gxtOnCounters.removes++;
-    byType.set(eventType, prev + 1);
     __gxtOnCounters.adds++;
     return (originalAdd as any).apply(this, args);
   } as any;
@@ -12891,13 +12877,7 @@ function __gxtInstallOnElementPatch(): void {
     this: Element,
     ...args: any[]
   ): void {
-    const eventType = typeof args[0] === 'string' ? args[0] : '';
     __gxtOnCounters.removes++;
-    const byType = __gxtOnListenerMap.get(this);
-    if (byType) {
-      const prev = byType.get(eventType) || 0;
-      if (prev > 0) byType.set(eventType, prev - 1);
-    }
     return (originalRemove as any).apply(this, args);
   } as any;
   // We intentionally do not patch ChildNode.remove / Node.removeChild
