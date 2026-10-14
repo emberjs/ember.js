@@ -1,8 +1,6 @@
-// Boot entry. `decorator-transforms/globals` installs the `dt7948` global that
-// the gxt compiler's decorator pass emits for `.gjs` class fields (it uses the
-// globals runtime, unlike the root babel pass which imports the runtime
-// module). Imported in every variant so the app source is identical.
-import 'decorator-transforms/globals';
+// Boot entry. No `dt7948` global: decorators import decorator-transforms'
+// runtime in every variant (babel for .js; for .gjs on gxt, the compiler's
+// output gets the import, see scripts/gxt-native-package/decorator-runtime.mjs).
 import App from './app.js';
 import config from './config/environment.js';
 

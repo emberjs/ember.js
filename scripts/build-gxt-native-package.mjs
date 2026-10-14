@@ -477,6 +477,7 @@ log(
 // ---- 6. package files ---------------------------------------------------------
 mkdirSync(join(OUT, 'vite'), { recursive: true });
 copyFileSync(join(TEMPLATES, 'vite.mjs'), join(OUT, 'vite', 'index.mjs'));
+copyFileSync(join(TEMPLATES, 'decorator-runtime.mjs'), join(OUT, 'vite', 'decorator-runtime.mjs'));
 copyFileSync(join(TEMPLATES, 'vite.d.ts'), join(OUT, 'vite', 'index.d.ts'));
 mkdirSync(join(OUT, 'lib'), { recursive: true });
 copyFileSync(join(TEMPLATES, 'addon-main.cjs'), join(OUT, 'lib', 'index.cjs'));
@@ -625,6 +626,23 @@ for (const [mode, dir] of [
 log(
   '  ok: the preset loads, takes the native flags and resolves / refuses as specified (dev + prod)'
 );
+
+// Decorators in a compiled .gjs import decorator-transforms' runtime, so the
+// app needs no `dt7948` global.
+for (const mode of ['production', 'development']) {
+  const [resolver, compile] = emberGxtNative();
+  resolver.config({}, { mode, command: mode === 'production' ? 'build' : 'serve' });
+  const out = await compile.transform(
+    `import Component from '@glimmer/component';\nimport { tracked } from '@glimmer/tracking';\n` +
+      `export default class Probe extends Component {\n  @tracked count = 0;\n  <template>{{this.count}}</template>\n}\n`,
+    join(OUT, 'probe.gjs')
+  );
+  const code = out?.code ?? '';
+  if (!/\bdt7948\.[a-z]\(/.test(code) || !code.includes('from "decorator-transforms/runtime"')) {
+    fail(`preset (${mode}): a decorated .gjs does not import decorator-transforms/runtime`);
+  }
+}
+log('  ok: decorators in a compiled .gjs import decorator-transforms/runtime (dev + prod)');
 
 if (!readFileSync(rootPkgPath).equals(rootPkgBytes)) fail('the tracked package.json changed');
 if (treeHash(join(ROOT, 'dist')) !== distHashBefore) fail('dist/ (the classic build) changed');

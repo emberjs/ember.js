@@ -15,10 +15,6 @@
       listed in native-skip.json run as QUnit.skip.
     -->
     <script type="module">
-      // gxt lowers decorators in .gjs/.gts to the `dt7948` globals.
-      import 'decorator-transforms/globals';
-    </script>
-    <script type="module">
       // By package name, as in the tests (and index.html). The dev server then
       // gives this page and the tests the same copy of QUnit.
       import 'qunit';

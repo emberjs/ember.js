@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, parseAst } from 'vite';
 import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -56,20 +56,76 @@ function emberSourceResolver() {
   };
 }
 
+// Decorators (`@tracked`, `@action`, `@service`) in .gjs/.gts: the gxt
+// compiler lowers them with decorator-transforms' "globals" runtime, i.e. to
+// calls on a `dt7948` global that nothing installs. An Embroider app's babel
+// config uses `runtime: { import: … }` instead, so each module imports the
+// runtime it calls; this gives the compiled module that import (a
+// module-scoped `dt7948`, from decorator-transforms' runtime module, whose
+// exports are the functions the global would hold). The app lists
+// `decorator-transforms`. The same step as the gxt-native package's preset
+// (ember.js scripts/gxt-native-package/decorator-runtime.mjs).
+const DECORATOR_GLOBAL = 'dt7948';
+
+function importsDecoratorRuntime(plugin) {
+  // Whether the module reads `dt7948.<fn>` without declaring `dt7948` itself.
+  const callsGlobal = (code) => {
+    if (!code.includes(DECORATOR_GLOBAL)) return false;
+    const program = parseAst(code);
+    const declared = program.body.some(
+      (node) =>
+        node.type === 'ImportDeclaration' &&
+        node.specifiers.some((s) => s.local.name === DECORATOR_GLOBAL)
+    );
+    if (declared) return false;
+    const pending = [program];
+    while (pending.length > 0) {
+      const node = pending.pop();
+      if (
+        node.type === 'MemberExpression' &&
+        node.object.type === 'Identifier' &&
+        node.object.name === DECORATOR_GLOBAL
+      ) {
+        return true;
+      }
+      for (const value of Object.values(node)) {
+        for (const child of [value].flat()) {
+          if (child && typeof child.type === 'string') pending.push(child);
+        }
+      }
+    }
+    return false;
+  };
+  return {
+    ...plugin,
+    async transform(code, id) {
+      const result = await plugin.transform.call(this, code, id);
+      if (!result?.code || !callsGlobal(result.code)) return result;
+      // Appended: imports are hoisted, and the source map stays valid.
+      return {
+        ...result,
+        code: `${result.code}\nimport * as ${DECORATOR_GLOBAL} from 'decorator-transforms/runtime';\n`,
+      };
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   plugins: [
     // Build-time GXT template compilation for .gjs/.gts (<template> tags).
     // The plugin also `define`s the GXT build-flag identifiers
     // (WITH_CONTEXT_API, IS_DEV_MODE, …) that the prebuilt @lifeart/gxt dist
     // chunks reference, so no manual define block is needed.
-    compiler(mode, {
-      flags: {
-        WITH_EMBER_INTEGRATION: true,
-        WITH_HELPER_MANAGER: true,
-        WITH_MODIFIER_MANAGER: true,
-        TRY_CATCH_ERROR_HANDLING: false,
-      },
-    }),
+    importsDecoratorRuntime(
+      compiler(mode, {
+        flags: {
+          WITH_EMBER_INTEGRATION: true,
+          WITH_HELPER_MANAGER: true,
+          WITH_MODIFIER_MANAGER: true,
+          TRY_CATCH_ERROR_HANDLING: false,
+        },
+      })
+    ),
     emberSourceResolver(),
   ],
   resolve: {

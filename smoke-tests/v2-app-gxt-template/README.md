@@ -13,7 +13,7 @@ runtime vehicle for the consumable-package work (see
 | ember-source | classic build | `dist-gxt-package/` (`node scripts/build-gxt-package.mjs`) |
 | build pipeline | `@embroider/vite` `classicEmberSupport()` + `ember()` | `@lifeart/gxt/compiler` + a ~40-line `ember-source-resolver` vite plugin (see `vite.config.mjs`) |
 | template compilation | build-time wire-format (`babel-plugin-ember-template-compilation`) | **both**: `.gjs`/`.gts` `<template>` compiled at BUILD time by the GXT compiler (`app/components/counter.gjs`), route templates compiled at RUNTIME through the GXT `@ember/template-compilation` shim (`app/templates/application.js`) |
-| babel | template + decorator transforms | only what the GXT compiler runs internally over `.gjs` (`decorator-transforms`); plain app modules need none |
+| babel | template + decorator transforms | only what the GXT compiler runs internally over `.gjs` (`decorator-transforms`, whose output `vite.config.mjs` makes import `decorator-transforms/runtime`, as an Embroider app's babel config does); plain app modules need none |
 
 The Embroider template pipeline and GXT's compiler are mutually exclusive
 (RFC §5.5), so this template demonstrates the supported non-Embroider path:

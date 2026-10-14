@@ -18,7 +18,9 @@
 //   2. compiles `.gjs` / `.gts` and build-time `precompileTemplate(…)` with the
 //      gxt compiler under the NATIVE_FLAGS the dist was built with (read from
 //      the package's `dist/gxt-native-contract.json` — app and dist cannot
-//      drift);
+//      drift); the decorators it lowers import decorator-transforms' runtime
+//      (`./decorator-runtime.mjs`), as an Embroider app's babel config makes
+//      them, so the app needs no `dt7948` global;
 //   3. fails loudly instead of building something subtly wrong: a gxt that
 //      lacks an export the dist imports (e.g. the published 0.0.81, which
 //      predates the native hooks), a second gxt copy, @embroider/vite's
@@ -29,6 +31,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseAst } from 'vite';
 import { compiler as gxtCompiler } from '@lifeart/gxt/compiler';
+import { importDecoratorRuntime } from './decorator-runtime.mjs';
 
 const PKG_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PKG = JSON.parse(readFileSync(join(PKG_ROOT, 'package.json'), 'utf8'));
@@ -255,7 +258,7 @@ export function emberGxtNative(options = {}) {
       name: 'ember-gxt-native:compile',
       enforce: 'pre',
       transform(code, id) {
-        return compiler.transform.call(this, code, id);
+        return importDecoratorRuntime(compiler.transform.call(this, code, id));
       },
     },
   ];

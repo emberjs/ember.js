@@ -48,8 +48,11 @@ export default defineConfig({
 });
 ```
 
-and import `decorator-transforms/globals` once in the app entry (the gxt
-compiler's decorator pass in `.gjs` / `.gts` uses the globals runtime).
+The app lists `decorator-transforms` (as an Embroider app does). Decorators in
+`.gjs` / `.gts` need no babel of their own: the gxt compiler lowers them, and
+the preset makes each compiled module import `decorator-transforms/runtime`,
+the runtime the babel config above uses for `.js` / `.ts`. No `dt7948` global
+is needed.
 
 `emberGxtNative()`:
 
@@ -61,7 +64,8 @@ compiler's decorator pass in `.gjs` / `.gts` uses the globals runtime).
   bundle, whatever else is in `node_modules`;
 - compiles `.gjs` / `.gts` and build-time `precompileTemplate()` with the gxt
   compiler under the flags this dist was built with
-  (`dist/gxt-native-contract.json`).
+  (`dist/gxt-native-contract.json`); the decorators it lowers import
+  `decorator-transforms/runtime`.
 
 Do not add `@embroider/vite`'s `ember()` / `templateTag()` / `hbs()` /
 `resolver()` or `babel-plugin-ember-template-compilation`; the preset fails the

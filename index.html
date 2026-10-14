@@ -7,14 +7,6 @@
   </head>
   <body>
     <script type="module">
-      // GXT builds: the gxt compiler lowers decorators in .gjs/.gts to the
-      // `dt7948` global. `__GXT_MODE__` is inlined per build by replaceBuildConstant.
-      import * as _dt from 'decorator-transforms/runtime';
-      if (__GXT_MODE__) {
-        globalThis.dt7948 = _dt;
-      }
-    </script>
-    <script type="module">
       // By package name, as in the tests. The dev server then gives this page
       // and the tests the same copy of QUnit.
       import 'qunit';
