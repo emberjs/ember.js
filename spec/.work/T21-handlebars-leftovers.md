@@ -108,3 +108,26 @@ a scope object (harness-only, see F4), `template()` from `@ember/template-compil
 - Raw blocks record empty strip flags (`openStrip`, `inverseStrip`, `closeStrip` are `{}`), whereas `{{#raw}}` records
   `{open:false, close:false}`. So `astEqual` of a raw block against the same `{{#raw}}` block fails, and the raw-block parser
   tests assert structure instead. Not observable in rendering.
+
+## Review (2026-10-14): which features are really "inherited legacy"?
+
+Author's question: are slash paths really untested elsewhere? If a feature is already tested in
+Ember/Glimmer's own suite, it is a deliberate feature, not an inherited leftover. Grep of
+`origin/main` tests (excluding `packages/@handlebars/parser/spec`, which is the upstream parser's
+own suite):
+
+| # | Existing Ember/Glimmer coverage | Verdict |
+|---|---|---|
+| F1 `{{&foo}}` | none | inherited, legacy |
+| F2 `{{^}}` | none | inherited, legacy |
+| F3 `{{^foo}}…{{else}}` | only the error without `{{else}}` (`parser-error-test.ts`) | inherited, legacy, out of spec |
+| F4 `foo/bar` | rendering test `curly-components-test.js:2336` ("a component with a slashed name can be invoked with curlies"); Glimmer's own handling and errors at `handlebars-node-visitors.ts:471-490` | **Ember feature** (loose-mode nested names). Glimmer *redefines* the syntax: in Handlebars `foo/bar` is the property path `foo.bar`, in Glimmer a single name |
+| F5 raw blocks | none | inherited, legacy |
+| F6 `\{{` escapes | `parser-escape-test.ts` (19 tests) | **Ember feature** (also documented in the Guides) |
+| F7 standalone stripping / `~` | `parser-whitespace-test.ts`, `parser-node-test.ts` (whitespace control tests) | **Ember feature** |
+| F8 `{{else if …}}` chains | parser/loc/print tests (`loc-node-test.ts`, `print-test.ts`) and the `@ember/helper` docs; **no rendering test** found | **Ember feature** (core syntax); rendering coverage is a gap |
+
+Consequence: the "Inherited from Handlebars (legacy behavior)" label fits only F1, F2, F3 and F5.
+F4, F6, F7 and F8 tests on `test/handlebars-legacy-features` should move to ordinary modules
+(dropping parser tests that duplicate `parser-escape-test.ts`/`parser-whitespace-test.ts`, keeping
+the new rendering tests, which add coverage, notably for F8). Pending the author's go-ahead.
