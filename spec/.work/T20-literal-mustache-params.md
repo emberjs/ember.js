@@ -85,5 +85,3 @@ No template in this repository uses the form, and none in a local corpus of Embe
 57,329 templates, 28,770 distinct, none newly rejected (`spec/tools/compare-parsers.mjs`). Tests: `packages/@glimmer/syntax/test/parser-node-test.ts`
 (8 error cases, including triple curlies and both attribute-value forms; the argument-free
 literals; the modifier position).
-
-Found while writing the template language spec (§02-3.7).

@@ -142,5 +142,3 @@ Templates that do not straddle markup parse exactly as before (full test suite g
 `{{^foo}}a{{else}}b{{/foo}}` keeps its old handling.
 
 Tests: `packages/@glimmer/syntax/test/parser-error-test.ts`, `parser-node-test.ts`.
-
-Found while writing the template language spec (§02-6.11).
