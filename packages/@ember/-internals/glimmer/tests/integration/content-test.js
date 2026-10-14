@@ -1650,6 +1650,116 @@ moduleFor(
   }
 );
 
+// Glimmer's dynamic attribute rule (`normalizeValue` in
+// `@glimmer/runtime/lib/vm/attributes/dynamic.ts`, and a property's
+// `DefaultDynamicProperty`): `null` and `undefined` remove the attribute,
+// whether it is set first or updated later, while `""` keeps it.
+moduleFor(
+  'Dynamic attribute values (null, undefined and false)',
+  class extends RenderingTestCase {
+    ['@test an attribute updated to null, undefined or false is removed, and "" keeps it']() {
+      this.render('<div data-foo={{this.value}}>hello</div>', { value: 'bar' });
+      this.assertHTML('<div data-foo="bar">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', ''));
+      this.assertHTML('<div data-foo="">hello</div>');
+
+      runTask(() => set(this.context, 'value', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', 0));
+      this.assertHTML('<div data-foo="0">hello</div>');
+
+      runTask(() => set(this.context, 'value', false));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', 'bar'));
+      this.assertHTML('<div data-foo="bar">hello</div>');
+    }
+
+    ['@test an href that starts null is not rendered, and is removed again when set to null or undefined']() {
+      this.render('<a href={{this.href}}>link</a>', { href: null });
+      this.assertHTML('<a>link</a>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'href', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+
+      runTask(() => set(this.context, 'href', ''));
+      this.assertHTML('<a href="">link</a>');
+
+      runTask(() => set(this.context, 'href', null));
+      this.assertHTML('<a>link</a>');
+
+      runTask(() => set(this.context, 'href', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+
+      runTask(() => set(this.context, 'href', undefined));
+      this.assertHTML('<a>link</a>');
+    }
+
+    ['@test a title updated to null or undefined is removed']() {
+      this.render('<div title={{this.title}}>hello</div>', { title: 'a title' });
+      this.assertHTML('<div title="a title">hello</div>');
+
+      runTask(() => set(this.context, 'title', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'title', 'a title'));
+      this.assertHTML('<div title="a title">hello</div>');
+
+      runTask(() => set(this.context, 'title', undefined));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a quoted attribute of one dynamic part is removed when it is null or undefined']() {
+      this.render('<img src="{{this.src}}">', { src: undefined });
+      this.assertHTML('<img>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'src', 'image.png'));
+      this.assertHTML('<img src="image.png">');
+
+      runTask(() => set(this.context, 'src', ''));
+      this.assertHTML('<img src="">');
+
+      runTask(() => set(this.context, 'src', null));
+      this.assertHTML('<img>');
+
+      runTask(() => set(this.context, 'src', 'image.png'));
+      this.assertHTML('<img src="image.png">');
+
+      runTask(() => set(this.context, 'src', undefined));
+      this.assertHTML('<img>');
+    }
+
+    ['@test a quoted attribute is removed when all of its parts are null or undefined']() {
+      this.render('<div data-foo="{{this.a}}{{this.b}}" data-bar="a-{{this.b}}">hello</div>', {
+        a: 'x',
+        b: null,
+      });
+      this.assertHTML('<div data-foo="x" data-bar="a-">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'a', undefined));
+      this.assertHTML('<div data-bar="a-">hello</div>');
+
+      runTask(() => set(this.context, 'b', 'y'));
+      this.assertHTML('<div data-foo="y" data-bar="a-y">hello</div>');
+
+      runTask(() => set(this.context, 'b', null));
+      this.assertHTML('<div data-bar="a-">hello</div>');
+
+      runTask(() => set(this.context, 'a', ''));
+      this.assertHTML('<div data-foo="" data-bar="a-">hello</div>');
+    }
+  }
+);
+
 let warnings, originalWarn;
 class StyleTest extends RenderingTestCase {
   constructor() {

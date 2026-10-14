@@ -27,6 +27,26 @@ export function sanitizedAttrValue(element: Element, name: string, value: unknow
     : value;
 }
 
+/**
+ * Whether a dynamic attribute value removes the attribute. This is the removal
+ * half of Glimmer's `normalizeValue` (`@glimmer/runtime/lib/vm/attributes/
+ * dynamic.ts`): `false`, `null`, `undefined`, a function and a value without a
+ * `toString` method mean "no attribute", on the first write and on every
+ * update. `""` keeps the attribute (`attr=""`). Both gxt `normalizeAttrValue`
+ * host hooks (compat compile.ts, native/host-hooks.ts) use it on the attribute
+ * side, so a hook result of `undefined` (gxt's remove sentinel) means the same
+ * in both builds.
+ */
+export function removesAttribute(value: unknown): boolean {
+  return (
+    value === false ||
+    value === null ||
+    value === undefined ||
+    typeof value === 'function' ||
+    typeof (value as { toString?: unknown }).toString !== 'function'
+  );
+}
+
 /** Convert PascalCase/camelCase to kebab-case without regex */
 export function pascalToKebab(str: string): string {
   let result = '';
@@ -202,9 +222,9 @@ const PLAIN_HTML_TAG_RE = /^[a-z][a-z0-9]*$/;
  *   or helper), so never a component, `@`/`this.` dynamic, `:` named-block or
  *   EmberHtmlRaw tag;
  * - no splat (`tagProps[3]`), so no `...attributes` merge or fw reorder;
- * - attrs (`tagProps[1]`): no function value (would need the nullish-getter
- *   scan and reactive-undefined cleanup) and no static `null`/`undefined`
- *   (stripped by the slow path);
+ * - attrs (`tagProps[1]`): no function value (the slow path wraps attribute
+ *   getters to normalize symbols and objects); a static `null` / `undefined`
+ *   is fine, gxt does not write it;
  * - events (`tagProps[2]`): no TEXT_CONTENT entry (`'1'`), the only thing the
  *   SafeString text scan and the modifier/text reorder look at; listeners and
  *   ON_CREATED modifiers are applied by GXT either way;
@@ -224,7 +244,6 @@ export function isPlainHtmlTagFastPath(tag: unknown, tagProps: any, edp: unknown
       if (!Array.isArray(entry) || entry.length < 2) return false;
       const v = entry[1];
       if (typeof v === 'function') return false;
-      if (v === null || v === undefined) return false;
     }
   } else if (attrs != null) {
     return false;

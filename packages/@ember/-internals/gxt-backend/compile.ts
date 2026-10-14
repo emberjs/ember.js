@@ -19,6 +19,7 @@ import {
   isPlainHtmlTagFastPath,
   createFnHelperValue,
   MUT_CELL_SOURCE,
+  removesAttribute,
   sanitizedAttrValue,
 } from './utils';
 import {
@@ -1844,8 +1845,11 @@ _gxtRegisterHostHooks({
       value = sanitizedAttrValue(element, name, value);
     }
     if (isProp) return value;
-    if (value === undefined || value === false) {
-      // Ember removes the attribute entirely for undefined/false bound values.
+    if (removesAttribute(value)) {
+      // Glimmer's normalizeValue: false, null, undefined (and a function or a
+      // value without toString) remove the attribute, when it is first set and
+      // on every update. A quoted attribute whose parts are all null or
+      // undefined arrives here as null too (gxt `$_qStr`, Glimmer's concat).
       return undefined; // gxt remove sentinel
     }
     if (value === true && typeof name === 'string' && _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())) {
@@ -1857,16 +1861,9 @@ _gxtRegisterHostHooks({
       // stringified booleans (e.g. `aria-pressed="true"`).
       return '';
     }
-    if (
-      typeof value === 'symbol' ||
-      (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')
-    ) {
-      // Symbol values throw on implicit string coercion inside setAttribute.
-      // Objects with no toString method (e.g. Object.create(null)) likewise
-      // throw "Cannot convert object to primitive value". Normalize these
-      // explicitly to match Glimmer's normalizeStringValue semantics:
-      //   Symbol(debug) -> "Symbol(debug)"
-      //   Object.create(null) -> ""
+    if (typeof value === 'symbol') {
+      // A Symbol throws on the implicit string coercion inside setAttribute;
+      // Glimmer's normalizeValue writes `String(value)`: "Symbol(debug)".
       return _normalizeStringValue(value);
     }
     return value;
@@ -8578,14 +8575,13 @@ if (g.$_c && !g.$_c.__emberWrapped) {
 // Every element runs BOTH Ember $_tag_ember wrappers (this compile.ts one + the
 // ember-gxt-wrappers one). For a plain lowercase-HTML element with no
 // Ember-special features, every one of the wrapper's post-resolve scans is a
-// no-op: the null-attr filter, the eager nullish-attr getter scan, the
-// SafeString text-getter scan, the splat merge, the modifier/text reorder, and
-// the position-0 post-apply re-scan all match nothing. This predicate proves
-// (conservatively) that ALL of those scans would no-op, so the wrapper can
-// delegate straight to GXT's native originalTag (which already applies
-// props/attrs/events/splat itself). When ANY check fails, we fall through to the
-// full slow path — so SafeString / null-strip / splat / namespace / reactive-attr
-// semantics are fully preserved for everything else.
+// no-op: the attribute-getter wrapping, the SafeString text-getter scan, the
+// splat merge, the modifier/text reorder, and the position-0 post-apply re-scan
+// all match nothing. This predicate proves (conservatively) that ALL of those
+// scans would no-op, so the wrapper can delegate straight to GXT's native
+// originalTag (which already applies props/attrs/events/splat itself). When ANY
+// check fails, we fall through to the full slow path — so SafeString / splat /
+// namespace / reactive-attr semantics are fully preserved for everything else.
 //
 // `isPlainHtmlTagFastPath` (utils.ts) lists why each skipped scan is dead; this
 // wrapper also requires that no SVG/MathML namespace is active (the namespace
@@ -10989,60 +10985,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
-    // Strip `[key, null]` / `[key, undefined]` entries from attrs before GXT's
-    // originalTag runs. GXT otherwise sets the attribute to the empty string
-    // (so `<a href={{null}}>` renders as `<a href="">` / `<a href>`), while
-    // Ember's semantics treat null/undefined as "do not render this attribute
-    // at all". Filtering here is safer than mutating the attribute after the
-    // fact — GXT's DOM code paths may dispatch on presence.
-    // Also normalise reactive getters whose current value is null/undefined
-    // to a no-op by dropping the entry for the *initial* render (the getter
-    // still gets wrapped by GXT's effect system to re-add it later; but our
-    // wrapping approach here only affects the first synchronous pass).
-    if (tagProps && tagProps !== g.$_edp && typeof tag === 'string' && !_gxtNamespace) {
-      const filteredAttrs = Array.isArray(tagProps[1])
-        ? tagProps[1].filter((entry: [string, unknown]) => {
-            if (!Array.isArray(entry) || entry.length < 2) return true;
-            const v = entry[1];
-            // Skip only *static* null/undefined — reactive getters are
-            // left intact so they can update later.
-            if (typeof v === 'function') return true;
-            return v !== null && v !== undefined;
-          })
-        : tagProps[1];
-      if (filteredAttrs !== tagProps[1]) {
-        tagProps = [tagProps[0], filteredAttrs, tagProps[2], tagProps[3]];
-      }
-    }
-
-    // Track which attr entries have dynamic sources that return null/undefined.
-    // After GXT renders, we'll strip those attributes from the DOM element so
-    // Ember-style "null/undefined means no attribute" semantics win.
-    const _nullishAttrsForCleanup: string[] = [];
-    if (
-      tagProps &&
-      tagProps !== g.$_edp &&
-      typeof tag === 'string' &&
-      !_gxtNamespace &&
-      Array.isArray(tagProps[1])
-    ) {
-      for (const entry of tagProps[1]) {
-        if (!Array.isArray(entry) || entry.length < 2) continue;
-        const key = entry[0];
-        const value = entry[1];
-        if (typeof key !== 'string' || key.startsWith('@')) continue;
-        if (typeof value === 'function') {
-          let v: unknown;
-          try {
-            v = value();
-            while (typeof v === 'function') v = (v as () => unknown)();
-          } catch {
-            v = undefined;
-          }
-          if (v == null) _nullishAttrsForCleanup.push(key);
-        }
-      }
-    }
+    // An attribute whose value is null or undefined is not written: gxt skips
+    // a static one, and the `normalizeAttrValue` host hook removes a bound one
+    // on the first write and on every update.
 
     // Detect tagProps[2] text entries whose getter returns a SafeString
     // (an object with a toHTML() method). Ember renders those as raw HTML,
@@ -11087,16 +11032,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     }
 
     const result = originalTag(tag, tagProps, ctx, children);
-
-    if (_nullishAttrsForCleanup.length > 0 && result instanceof Element) {
-      for (const key of _nullishAttrsForCleanup) {
-        try {
-          result.removeAttribute(key);
-        } catch {
-          /* ignore */
-        }
-      }
-    }
 
     // Inject SafeString HTML: replace any text node created from the
     // `[object Object]` placeholder with the parsed HTML fragment.

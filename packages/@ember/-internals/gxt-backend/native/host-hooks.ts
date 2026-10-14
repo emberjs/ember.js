@@ -36,6 +36,7 @@ import { warn } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import toBool from '@ember/-internals/glimmer/lib/utils/to-bool';
 import { flushRevalidation } from '@lifeart/gxt';
+import { removesAttribute } from '../utils';
 import { commitModifiers } from './modifier-manager';
 import { commitComponents, updateComponents } from './component-lifecycle';
 import { debug } from './validator';
@@ -167,7 +168,8 @@ export function resetRenderLoop(): void {
 // above: DOM-value code with no VM dependency, the two `@glimmer/runtime`
 // modules scripts/gxt-alias-map.mjs GXT_NATIVE_FORBIDDEN lets the native
 // closure ship). On the attribute side, returning `undefined` makes gxt remove
-// the attribute.
+// the attribute; which values remove it is `removesAttribute` (../utils), shared
+// with the compat build's hook.
 
 // A trusting attribute value (`style={{{value}}}`: gxt `$_trustAttr` → the
 // `trustedAttrValue` hook, registered in DEBUG only — install.ts), unwrapped by
@@ -230,13 +232,7 @@ export function normalizeAttrValue(
     // become their HTML).
     return isSafeString(value) ? value.toHTML() : value;
   }
-  if (
-    value === false ||
-    value === undefined ||
-    value === null ||
-    typeof value === 'function' ||
-    typeof (value as { toString?: unknown }).toString !== 'function'
-  ) {
+  if (removesAttribute(value)) {
     return undefined; // remove the attribute
   }
   if (value === true) return '';
