@@ -47,7 +47,12 @@ build-time `.gjs` component, proves the invocation's attributes and
 with the yielded block param. `<ClassCounter>` is a `.gjs` component class
 (`@glimmer/component`) whose template is a class-body `<template>`: its
 component manager creates it with `this.args`, and its template renders its
-own field and `@count`, kept current in place.
+own field and `@count`, kept current in place. `<TrackedCounter>` is a `.gjs`
+component class written with decorators (`@tracked`, `@action`, `@service`):
+the GXT compiler lowers them with decorator-transforms, and the
+`importsDecoratorRuntime` step in `vite.config.mjs` makes the compiled module
+import `decorator-transforms/runtime` (the app lists `decorator-transforms`),
+so no `dt7948` global is needed.
 
 CI coverage: `smoke-tests/scenarios/gxt-boot-test.ts` (build + headless boot
 + click reactivity over both pipelines), matrix name

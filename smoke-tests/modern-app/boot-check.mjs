@@ -2,8 +2,8 @@
 // Boot + interaction check for a built modern-app variant (NOT a test-runner
 // invocation): static-serves dist/<variant>, loads it in headless Chromium and
 // asserts render, a tracked update, the tracked collection, the custom modifier,
-// URL sanitization of a bound attribute, and LinkTo navigation across both
-// routes.
+// URL sanitization of a bound attribute, LinkTo navigation across both routes,
+// and that the app's decorators need no `dt7948` global.
 //
 //   node smoke-tests/modern-app/boot-check.mjs <distDir> [--json out.json]
 //   node smoke-tests/modern-app/boot-check.mjs --url <running app URL> [--json out.json]
@@ -98,6 +98,9 @@ try {
     15000
   );
   if (booted) {
+    // The app's decorators (`@tracked`, `@action`, `@service`, in .js and
+    // .gjs) import decorator-transforms' runtime; none needs a global.
+    record('decorators: no dt7948 global', !(await page.evaluate(() => 'dt7948' in globalThis)));
     await waitText('render: class component @tracked', '[data-test-count]', 'Count: 0 (x2 = 0)');
     await waitText(
       'render: plain-function helper + service getter',

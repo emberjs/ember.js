@@ -229,6 +229,47 @@ gxtBootAppScenarios
             ),
             'the component updates in place'
           );
+
+          // `<TrackedCounter>` is a .gjs component class written with
+          // decorators (`@tracked`, `@action`, `@service`): the gxt compiler
+          // lowers them to decorator-transforms' runtime, which the compiled
+          // module imports, so the app needs no `dt7948` global.
+          assert.false(
+            await page.evaluate(() => 'dt7948' in globalThis),
+            'no decorator-transforms global is installed'
+          );
+          assert.equal(
+            await page.textContent('[data-test-tracked-counter]'),
+            'Tracked clicks: 0',
+            'a decorated .gjs component renders its @service and @tracked state'
+          );
+          await page.evaluate(() => {
+            (window as any).__trackedCounterElement = document.querySelector(
+              '[data-test-tracked-counter]'
+            );
+          });
+          await page.click('[data-test-tracked-increment]');
+          await page.click('[data-test-tracked-increment]');
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-test-tracked-counter]')?.textContent ===
+              'Tracked clicks: 2',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.textContent('[data-test-tracked-counter]'),
+            'Tracked clicks: 2',
+            'its @action updates its @tracked field'
+          );
+          assert.true(
+            await page.evaluate(
+              () =>
+                (window as any).__trackedCounterElement ===
+                document.querySelector('[data-test-tracked-counter]')
+            ),
+            'the decorated component updates in place'
+          );
           assert.deepEqual(pageErrors, [], 'no uncaught page errors during boot + interaction');
         } finally {
           await browser.close();

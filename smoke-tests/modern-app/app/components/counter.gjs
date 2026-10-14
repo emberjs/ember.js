@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { service } from '@ember/service';
+import { action } from '@ember/object';
 import { on } from '@ember/modifier';
 import formatPrice from '../helpers/format-price.js';
 import { tagged } from '../modifiers/tagged.js';
@@ -10,10 +11,11 @@ export default class Counter extends Component {
   @service cart;
   @tracked count = 0;
 
-  increment = () => {
+  @action
+  increment() {
     this.count++;
     this.cart.add(`item-${this.count}`, this.count);
-  };
+  }
 
   get doubled() {
     return this.count * 2;

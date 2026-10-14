@@ -13,5 +13,6 @@ export default precompileTemplate(
   <ForwardedLink href={{this.linkUrl}} title="static" data-count={{this.count}} {{on "click" this.followLink}} as |kind|>{{kind}} link {{this.count}}</ForwardedLink>
   <button type="button" data-test-swap-link {{on "click" this.swapLink}}>swap link</button>
   <p data-test-link-clicks>Link clicks: {{this.linkClicks}}</p>
-  <ClassCounter @count={{this.count}} @increment={{this.increment}} />`
+  <ClassCounter @count={{this.count}} @increment={{this.increment}} />
+  <TrackedCounter />`
 );
