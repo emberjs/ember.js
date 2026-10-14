@@ -1,34 +1,14 @@
 {
-  "_comment": [
-    "Native full run of #21340 (rebased onto main a9501d5d40), against the published @lifeart/gxt 0.0.82: 7127/7171, 44 known red. emberCommit is the last code commit of the series.",
-    "The 8 reds of the pre-rebase baseline are unchanged. 7 of them need @lifeart/gxt with lifeart/glimmer-next#266 ({{#if}} renders Glimmer block bounds: no anchor comment while the branch has content); regenerate this baseline after pinning that release:",
-    "  Application test: debug render tree :: template-only components",
-    "  Application test: debug render tree :: custom components",
-    "  Application test: debug render tree :: <LinkTo> components",
-    "  gxt-native | {{#if}} block bounds (Glimmer DOM) :: a branch with content has no anchor comment; an empty branch is <!---->",
-    "  gxt-native | {{#if}} block bounds (Glimmer DOM) :: {{else}} and {{else if}}: the next branch renders in place, never with an anchor",
-    "  gxt-native | {{#if}} block bounds (Glimmer DOM) :: a branch that is itself an empty block shows one <!---->",
-    "  gxt-native | {{#if}} block bounds (Glimmer DOM) :: {{#each}} rows that start and end with {{#if}}: move, swap, remove, clear",
-    "The 8th is the pre-existing native red, unrelated to #266:",
-    "  Component Tracked Properties w/ Args Proxy :: downstream property changes do not invalidate upstream component getters/arguments",
-    "The other 34 are tests main added (19) or rewrote (15): the .gjs rewrites of the {{array}} / {{hash}} / {{fn}} / {{element}} helper tests, {{get}} tests moved from the Glimmer integration suite, renderComponent roots in the debug render tree, {{#each-in}} key=, {{#each}} @key, {{on}} asserts and spellcheck, custom modifier destruction order, a dynamic style warning with an element modifier, Evented.detect on Component (Evented deprecation), and the argument-less helper test now on a Glimmer component.",
-    "Since the previous regeneration (7077/7119) the run gained 11 tests, all green (one is a documented-drop skip): AngleBracket Invocation (attributes are not arguments) (4, an invocation's attributes are not arguments; the classic-component case is skipped), <LinkTo /> component (rendering tests) (1, LinkTo's own href wins over an href attribute), and 6 in Components test: a <template> component invoked by name (an attribute is not an argument; blocks, block params, named blocks, has-block and has-block-params). The 42 known reds are the same tests as before.",
-    "Since the previous regeneration (7088/7130) the run gained 7 tests in two new modules, Components test: a class-body <template> component (5) and Components test: a class-body <template> component invoked by name (2), for a .gjs component class whose template is a class-body <template>. Six pass. The 43rd known red is the seventh, 'a component class without a template yields its block': native renders a component that has no template with an empty template, where Glimmer renders its default {{yield}} (native/managers.ts EMPTY_TEMPLATE). The other 42 known reds are the same tests as before.",
-    "Since the previous regeneration (7094/7137) the run gained 11 tests, all green: 5 in a new module, Components test: a component class with a registered template, and 2 in Components test: a class-body <template> component invoked by name, for a component class with a registered template invoked lexically (the nearest template wins); 2 more in that module for set() / notifyPropertyChange() on a plain or object field; and 2 in gxt-native | components, for a templateOnly() definition and a component class with no template. The 43rd known red, 'a component class without a template yields its block', is green: a component with no template now renders Glimmer's default {{yield}}. The other 42 known reds are the same tests as before.",
-    "Since the previous regeneration (7106/7148) the run gained 13 tests, all green: a new module, Dynamic attribute values (null, undefined and false) (11: an attribute or a class set to null, undefined or false is removed, \"\" keeps it; classes merged through ...attributes), and 2 in Components test: a <template> component invoked by name (a build-time template's lone class and merged class). The 42 known reds are the same tests as before.",
-    "Since the previous regeneration (7119/7161) the run gained 7 tests, 5 of them green: 4 in a new module, Triple curlies in attribute position (3 green: an attribute triple curly is the attribute's value), 2 in Inline style tests - warnings (green: a trusting style is applied without a warning), and 1 in Components test: contextual components. The 2 new known reds need @lifeart/gxt (its compiler, used by native for runtime and build-time templates alike): 'Components test: contextual components :: a {{component}} mustache passed as an argument is a curried component' (gxt compiles `@comp={{component \"x\" ...}}` to null; it should compile it as the SubExpression `(component \"x\" ...)`, a curried component), and 'Triple curlies in attribute position :: a quoted attribute interpolates the value' (under EMBER_TRUSTED_HTML gxt lowers a triple curly inside a quoted attribute to $_html, rendering \"[object Object]\"; a concat part is an attribute value).",
-    "Since the previous regeneration (7124/7168) the run gained 3 tests, all green: 2 in {{on}} Modifier (listeners for different events on one element are all added; each {{on}} for the same event on one element adds and updates its own listener) and 1 in Basic Custom Modifier Manager: 3.22 (each use of a modifier on one element is its own instance). The 44 known reds are the same tests as before."
-  ],
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T09:39:32.743Z",
+    "capturedAt": "2026-10-14T14:10:27.573Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "63cc148519",
-    "totalTests": 7171,
+    "emberCommit": "6f5611dab1",
+    "totalTests": 7176,
     "totalModules": 681,
     "quarantinedTests": 0,
-    "totalAssertions": 35745,
-    "totalAssertionsPassing": 35662
+    "totalAssertions": 35764,
+    "totalAssertionsPassing": 35681
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -3667,10 +3647,10 @@
       ]
     },
     "Strict Mode - renderComponent (direct)": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 27,
-      "assertionsPassing": 27,
+      "total": 10,
+      "passing": 10,
+      "assertionsTotal": 46,
+      "assertionsPassing": 46,
       "failingTests": []
     },
     "Strict Mode - renderComponent - built ins": {

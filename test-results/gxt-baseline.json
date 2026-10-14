@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T11:10:23.878Z",
+    "capturedAt": "2026-10-14T13:59:01.903Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "4b363558f1",
-    "totalTests": 10067,
-    "totalModules": 980,
+    "emberCommit": "6f5611dab1",
+    "totalTests": 10079,
+    "totalModules": 983,
     "quarantinedTests": 0,
-    "totalAssertions": 60059,
-    "totalAssertionsPassing": 58681,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after runtime-compiled templates get Glimmer's compile-time checks in development (@glimmer/syntax normalize + @glimmer/compiler's normalization pass with Ember's compile options, on the source as written) and a template the GXT compiler cannot compile throws instead of rendering nothing, written by runner.mjs. 9395/10067 green (was 9296/10063): 123 tests turned green (the [integration] compile errors, general / named-block / keyword / if-unless / yield syntax errors, strict-mode not-in-scope errors, 'Strict Mode <-> Loose Mode - renderComponent' and '`action` is not a keyword' strict-mode lookups); 6 new GXT correctness tests (all green) replace the 2 tests of the removed opt-in throwOnCompileError. 28 known reds that passed only because the GXT compile error was logged: the '[integration] jit :: `<keyword>` keyword syntax errors' 'keyword can be used as a value' / 'keyword can be yielded as a parameter' tests for debugger, each-in, has-block, has-block-params, if, in-element, let and yield, whose binding name gxt emits verbatim into the template's JavaScript (the block-param cases are fixed in gxt, pending a release). No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60122,
+    "totalAssertionsPassing": 59216,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after creating a binding evaluates its expression once and a renderComponent root updates in place (no whole-root re-render; destroying the render destroys its tree), with the in-place update fixes it needed (a keyed {{#each}} row renders the new object of its key, a block inside <svg> keeps the SVG namespace and an SVG text child updates, a content mustache renders the component its value is now, a helper call resolves in the owner of its render scope), written by runner.mjs. 9567/10079 green (was 9395/10067): 164 tests turned green (the [integration] Updating, tracked collection, Attributes, modifier, components and #each suites, renderSettled, standalone tracked values, @glimmer/component without re-construction, {{array}}/{{hash}} yields); 12 new tests, all green. 4 known reds that passed only because the root re-render rendered the whole root again and created its components again: '#in-element :: Inside a loop' (an argument of a template-only component in an {{#each}} row does not update), 'Updating :: updating a curly with a safe and unsafe string' (an element text binding that switches between a SafeString and a string), '[components] teardown :: components that are \"destroyed twice\" are destroyed once' (willDestroy in the next run loop) and 'Helpers test: {{hash}} :: works with computeds' (a computed property whose dependent key goes through a (hash) member does not recompute). No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1419,27 +1419,10 @@
     },
     "Component Tracked Properties": {
       "total": 20,
-      "passing": 16,
+      "passing": 20,
       "assertionsTotal": 46,
-      "assertionsPassing": 40,
-      "failingTests": [
-        {
-          "name": " standalone tracked values rerender when updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " standalone tracked values in module scope rerender when updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " standalone tracked values do not rerender when set to an equal value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " tracked can be used as a helper in templates",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 46,
+      "failingTests": []
     },
     "Component Tracked Properties (classic component)": {
       "total": 1,
@@ -1520,19 +1503,10 @@
     },
     "Components test: @glimmer/component": {
       "total": 3,
-      "passing": 1,
-      "assertionsTotal": 44,
+      "passing": 3,
+      "assertionsTotal": 37,
       "assertionsPassing": 37,
-      "failingTests": [
-        {
-          "name": "tracked state and args are reactive without re-constructing the component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "re-mounting constructs a new instance and leaves the old one destroyed",
-          "category": "gxt:triage"
-        }
-      ]
+      "failingTests": []
     },
     "Components test: a <template> component invoked by name": {
       "total": 13,
@@ -2617,6 +2591,20 @@
       "assertionsPassing": 2,
       "failingTests": []
     },
+    "GXT bindings: a getter that a binding reads": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT bindings: a renderComponent root evaluates a binding once on creation": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
+      "failingTests": []
+    },
     "GXT correctness: @glimmer/tracking/primitives/cache": {
       "total": 1,
       "passing": 1,
@@ -2706,6 +2694,13 @@
       "passing": 5,
       "assertionsTotal": 5,
       "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "GXT in-place updates": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "GXT renderComponent: a hasSubOwner component manager's owner": {
@@ -2858,9 +2853,9 @@
     },
     "Helpers test: {{array}}": {
       "total": 12,
-      "passing": 8,
+      "passing": 10,
       "assertionsTotal": 38,
-      "assertionsPassing": 31,
+      "assertionsPassing": 36,
       "failingTests": [
         {
           "name": "the array helper can be shadowed",
@@ -2868,14 +2863,6 @@
         },
         {
           "name": "array helpers can be nested",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "should yield hash of an array of internal properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "should yield hash of an array of internal and external properties",
           "category": "gxt:triage"
         }
       ]
@@ -2984,11 +2971,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "should yield hash of internal properties",
+          "name": "should yield hash of internal and external properties",
           "category": "gxt:triage"
         },
         {
-          "name": "should yield hash of internal and external properties",
+          "name": "works with computeds",
           "category": "gxt:triage"
         }
       ]
@@ -4632,7 +4619,7 @@
     "Strict Mode - renderComponent": {
       "total": 29,
       "passing": 27,
-      "assertionsTotal": 148,
+      "assertionsTotal": 146,
       "assertionsPassing": 143,
       "failingTests": [
         {
@@ -4650,10 +4637,10 @@
       ]
     },
     "Strict Mode - renderComponent (direct)": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 27,
-      "assertionsPassing": 27,
+      "total": 10,
+      "passing": 10,
+      "assertionsTotal": 46,
+      "assertionsPassing": 46,
       "failingTests": []
     },
     "Strict Mode - renderComponent - built ins": {
@@ -5517,14 +5504,10 @@
     },
     "[integration] jit :: #each": {
       "total": 25,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 1878,
-      "assertionsPassing": 1865,
+      "assertionsPassing": 1866,
       "failingTests": [
-        {
-          "name": "a plain array that grows during iteration renders the new items",
-          "category": "gxt:triage"
-        },
         {
           "name": "autotracked custom iterable",
           "category": "gxt:triage"
@@ -5573,24 +5556,20 @@
     },
     "[integration] jit :: #in-element": {
       "total": 9,
-      "passing": 5,
+      "passing": 6,
       "assertionsTotal": 318,
-      "assertionsPassing": 303,
+      "assertionsPassing": 302,
       "failingTests": [
-        {
-          "name": "It works with AST transforms",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "clears existing content",
-          "category": "gxt:triage"
-        },
         {
           "name": "Updating remote element",
           "category": "gxt:triage"
         },
         {
           "name": "Inside an '{{if}}'",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Inside a loop",
           "category": "gxt:triage"
         }
       ],
@@ -5616,8 +5595,8 @@
     "[integration] jit :: Application test: debug render tree": {
       "total": 13,
       "passing": 1,
-      "assertionsTotal": 102,
-      "assertionsPassing": 33,
+      "assertionsTotal": 141,
+      "assertionsPassing": 39,
       "failingTests": [
         {
           "name": "strict-mode components",
@@ -5671,9 +5650,9 @@
     },
     "[integration] jit :: Attributes": {
       "total": 33,
-      "passing": 15,
+      "passing": 29,
       "assertionsTotal": 361,
-      "assertionsPassing": 319,
+      "assertionsPassing": 357,
       "failingTests": [
         {
           "name": "can read the form attribute",
@@ -5684,67 +5663,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles null input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined `toString` input values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
           "category": "gxt:triage"
         },
         {
-          "name": "input[checked] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input[checked] prop updates when set to null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "select[value] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles empty string input placeholders",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined properties initially",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null properties initially",
-          "category": "gxt:triage"
-        },
-        {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
       ]
@@ -5857,7 +5780,7 @@
       "total": 4,
       "passing": 0,
       "assertionsTotal": 30,
-      "assertionsPassing": 22,
+      "assertionsPassing": 21,
       "failingTests": [
         {
           "name": "can get locals",
@@ -5897,7 +5820,7 @@
       "total": 2,
       "passing": 0,
       "assertionsTotal": 15,
-      "assertionsPassing": 11,
+      "assertionsPassing": 10,
       "failingTests": [
         {
           "name": "debugger in template-only component logs template-only message",
@@ -5911,28 +5834,16 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 33,
+      "passing": 36,
       "assertionsTotal": 199,
-      "assertionsPassing": 185,
+      "assertionsPassing": 187,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
           "category": "gxt:triage"
         },
         {
-          "name": "invoking dynamic component (path) via angle brackets supports args, attributes, and blocks",
-          "category": "gxt:triage"
-        },
-        {
           "name": "invoking dynamic component (path) via angle brackets does not work for string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (local) via angle brackets supports args, attributes, and blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports args and attributes",
           "category": "gxt:triage"
         },
         {
@@ -5955,28 +5866,16 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] Glimmer": {
       "total": 38,
-      "passing": 33,
+      "passing": 36,
       "assertionsTotal": 178,
-      "assertionsPassing": 172,
+      "assertionsPassing": 175,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
           "category": "gxt:triage"
         },
         {
-          "name": "invoking dynamic component (path) via angle brackets supports args, attributes, and blocks",
-          "category": "gxt:triage"
-        },
-        {
           "name": "invoking dynamic component (path) via angle brackets does not work for string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (local) via angle brackets supports args, attributes, and blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports args and attributes",
           "category": "gxt:triage"
         }
       ]
@@ -5985,7 +5884,7 @@
       "total": 4,
       "passing": 0,
       "assertionsTotal": 21,
-      "assertionsPassing": 13,
+      "assertionsPassing": 12,
       "failingTests": [
         {
           "name": "throwing an error during rendering gives a readable error stack",
@@ -6008,7 +5907,7 @@
     "[integration] jit :: Components :: Invocation": {
       "total": 19,
       "passing": 16,
-      "assertionsTotal": 169,
+      "assertionsTotal": 168,
       "assertionsPassing": 165,
       "failingTests": [
         {
@@ -6042,7 +5941,7 @@
     "[integration] jit :: Components :: Invocation > [integration] Glimmer": {
       "total": 9,
       "passing": 6,
-      "assertionsTotal": 69,
+      "assertionsTotal": 68,
       "assertionsPassing": 65,
       "failingTests": [
         {
@@ -6547,12 +6446,16 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 43,
+      "passing": 44,
       "assertionsTotal": 787,
-      "assertionsPassing": 696,
+      "assertionsPassing": 710,
       "failingTests": [
         {
           "name": "weird paths",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "updating a curly with a safe and unsafe string",
           "category": "gxt:triage"
         },
         {
@@ -6569,10 +6472,6 @@
         },
         {
           "name": "triple curlies with const Node",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "helpers can add destroyables",
           "category": "gxt:triage"
         },
         {
@@ -6620,10 +6519,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "An implementation of #each using block params",
-          "category": "gxt:triage"
-        },
-        {
           "name": "The each helper with empty string items",
           "category": "gxt:triage"
         },
@@ -6649,7 +6544,7 @@
       "total": 18,
       "passing": 0,
       "assertionsTotal": 630,
-      "assertionsPassing": 590,
+      "assertionsPassing": 525,
       "failingTests": [
         {
           "name": "updating double curlies produces expected result in HTML context, as the only child",
@@ -6743,9 +6638,9 @@
     },
     "[integration] jit :: Updating SVG": {
       "total": 11,
-      "passing": 6,
+      "passing": 7,
       "assertionsTotal": 275,
-      "assertionsPassing": 259,
+      "assertionsPassing": 260,
       "failingTests": [
         {
           "name": "context.root <foreignObject> tag is SVG namespaced",
@@ -6761,10 +6656,6 @@
         },
         {
           "name": "unsafe expression nested inside a namespace",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "expression nested inside a namespaced context.root element",
           "category": "gxt:triage"
         }
       ]
@@ -6808,7 +6699,7 @@
       "total": 1,
       "passing": 0,
       "assertionsTotal": 7,
-      "assertionsPassing": 5,
+      "assertionsPassing": 4,
       "failingTests": [
         {
           "name": "initially missing, then present, then missing",
@@ -6832,7 +6723,7 @@
     },
     "[integration] jit :: [components] teardown": {
       "total": 5,
-      "passing": 1,
+      "passing": 0,
       "assertionsTotal": 42,
       "assertionsPassing": 32,
       "failingTests": [
@@ -6842,6 +6733,10 @@
         },
         {
           "name": "components inside a list are destroyed (when key is @identity)",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "components that are \"destroyed twice\" are destroyed once",
           "category": "gxt:triage"
         },
         {
@@ -6856,9 +6751,9 @@
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
-      "passing": 18,
+      "passing": 32,
       "assertionsTotal": 376,
-      "assertionsPassing": 332,
+      "assertionsPassing": 370,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -6877,67 +6772,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles null input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined `toString` input values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
           "category": "gxt:triage"
         },
         {
-          "name": "input[checked] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input[checked] prop updates when set to null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "select[value] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles empty string input placeholders",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined properties initially",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null properties initially",
-          "category": "gxt:triage"
-        },
-        {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
       ]
@@ -7246,9 +7085,9 @@
     },
     "[integration] jit :: dynamic modifiers in resolution mode": {
       "total": 14,
-      "passing": 5,
-      "assertionsTotal": 76,
-      "assertionsPassing": 67,
+      "passing": 6,
+      "assertionsTotal": 77,
+      "assertionsPassing": 69,
       "failingTests": [
         {
           "name": "Can use a nested argument as a modifier",
@@ -7276,10 +7115,6 @@
         },
         {
           "name": "Can invoke a yielded nested modifier",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Destroys a dynamic modifier that was set after the initial render when its block is removed",
           "category": "gxt:triage"
         },
         {
@@ -7341,9 +7176,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 18,
+      "passing": 32,
       "assertionsTotal": 376,
-      "assertionsPassing": 332,
+      "assertionsPassing": 370,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7362,76 +7197,20 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles null input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined `toString` input values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
           "category": "gxt:triage"
         },
         {
-          "name": "input[checked] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input[checked] prop updates when set to null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "select[value] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles empty string input placeholders",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined properties initially",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null properties initially",
-          "category": "gxt:triage"
-        },
-        {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 20,
+      "passing": 34,
       "assertionsTotal": 376,
-      "assertionsPassing": 334,
+      "assertionsPassing": 372,
       "failingTests": [
         {
           "name": "can read the form attribute",
@@ -7442,76 +7221,20 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles null input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined `toString` input values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
           "category": "gxt:triage"
         },
         {
-          "name": "input[checked] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input[checked] prop updates when set to null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "select[value] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles empty string input placeholders",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined properties initially",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null properties initially",
-          "category": "gxt:triage"
-        },
-        {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 18,
+      "passing": 32,
       "assertionsTotal": 376,
-      "assertionsPassing": 332,
+      "assertionsPassing": 370,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7530,67 +7253,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "handles null input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined input values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles undefined `toString` input values",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
           "category": "gxt:triage"
         },
         {
-          "name": "input[checked] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input[checked] prop updates when set to null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "select[value] prop updates when set to undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "handles empty string input placeholders",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set undefined properties initially",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "does not set null properties initially",
-          "category": "gxt:triage"
-        },
-        {
           "name": "input list attribute updates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "svg a[xlink:href] marks javascript: protocol as unsafe",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "marks javascript: protocol as unsafe on a camelCased url attribute",
           "category": "gxt:triage"
         }
       ]
@@ -7800,40 +7467,12 @@
     },
     "[integration] jit :: modifiers": {
       "total": 11,
-      "passing": 3,
-      "assertionsTotal": 57,
-      "assertionsPassing": 42,
+      "passing": 10,
+      "assertionsTotal": 49,
+      "assertionsPassing": 48,
       "failingTests": [
         {
           "name": "Element modifier with hooks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "didUpdate is not called when params are constants",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "same element destruction order",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parent -> child destruction order",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "sibling destruction order",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "with params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "with hash",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "with hash and params",
           "category": "gxt:triage"
         }
       ]
@@ -7849,7 +7488,7 @@
       "total": 45,
       "passing": 31,
       "assertionsTotal": 290,
-      "assertionsPassing": 264,
+      "assertionsPassing": 265,
       "failingTests": [
         {
           "name": "Can use a dynamic component in append position (with args)",
@@ -7971,39 +7610,10 @@
     },
     "[integration] jit :: trackedArray() (rendering)": {
       "total": 11,
-      "passing": 4,
+      "passing": 11,
       "assertionsTotal": 787,
-      "assertionsPassing": 571,
-      "failingTests": [
-        {
-          "name": "getting and setting an index",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can push into a newly created TrackedArray during construction",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can unshift into a newly created TrackedArray during construction",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "ARRAY_GETTER_METHODS",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Mutating collection set methods + default equals",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "copyWithin with no arguments does not cause a change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "ARRAY_SETTER_METHODS",
-          "category": "gxt:triage"
-        }
-      ],
+      "assertionsPassing": 787,
+      "failingTests": [],
       "skippedTests": [
         "{{each-in}} works with new items",
         "{{each-in}} works when updating old items"
@@ -8011,76 +7621,12 @@
     },
     "[integration] jit :: trackedMap() (rendering)": {
       "total": 21,
-      "passing": 1,
-      "assertionsTotal": 159,
-      "assertionsPassing": 119,
+      "passing": 17,
+      "assertionsTotal": 160,
+      "assertionsPassing": 152,
       "failingTests": [
         {
           "name": "options.equals: using equals can dirty on every change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set existing value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "has",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "entries",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keys",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "forEach",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "size",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "clear",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "values: set existing value triggers reactivity",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "entries: set existing value triggers reactivity",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "forEach: set existing value triggers reactivity",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "set existing falsy value triggers reactivity",
           "category": "gxt:triage"
         },
         {
@@ -8099,126 +7645,34 @@
     },
     "[integration] jit :: trackedObject() (rendering)": {
       "total": 9,
-      "passing": 3,
+      "passing": 8,
       "assertionsTotal": 69,
-      "assertionsPassing": 58,
+      "assertionsPassing": 68,
       "failingTests": [
         {
           "name": "options.equals: using equals can dirty on every change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "in operator works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "for in works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Object.keys works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete works",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: trackedSet() (rendering)": {
       "total": 20,
-      "passing": 2,
-      "assertionsTotal": 154,
-      "assertionsPassing": 120,
+      "passing": 19,
+      "assertionsTotal": 155,
+      "assertionsPassing": 154,
       "failingTests": [
         {
           "name": "options.equals: using equals can dirty on every change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has existing value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has existing value (with always-dirty)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "entries",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keys",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "values",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "forEach",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "size",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "clear",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "each: add",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "union",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "intersection",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "difference",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "symmetricDifference",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: trackedValue() (rendering)": {
       "total": 3,
-      "passing": 1,
+      "passing": 2,
       "assertionsTotal": 27,
-      "assertionsPassing": 25,
+      "assertionsPassing": 26,
       "failingTests": [
-        {
-          "name": "renders and updates when set",
-          "category": "gxt:triage"
-        },
         {
           "name": "options.equals: () => false dirties on every set",
           "category": "gxt:triage"
@@ -8227,84 +7681,24 @@
     },
     "[integration] jit :: trackedWeakMap() (rendering)": {
       "total": 11,
-      "passing": 1,
+      "passing": 10,
       "assertionsTotal": 83,
-      "assertionsPassing": 64,
+      "assertionsPassing": 82,
       "failingTests": [
         {
           "name": "options.equals: using equals can dirty on every change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set existing value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set existing value set to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set existing value set to the same value (always dirtying)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "get/set unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "has",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "set existing falsy value triggers reactivity",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete unrelated value",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: trackedWeakSet() (rendering)": {
       "total": 8,
-      "passing": 1,
+      "passing": 7,
       "assertionsTotal": 62,
-      "assertionsPassing": 49,
+      "assertionsPassing": 61,
       "failingTests": [
         {
           "name": "options.equals: using equals can dirty on every change",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has existing value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has existing value (always invalidates)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "add/has unrelated value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "delete unrelated value",
           "category": "gxt:triage"
         }
       ]
@@ -8619,15 +8013,10 @@
     },
     "[integration] rehydration :: Components :: initial render": {
       "total": 101,
-      "passing": 100,
+      "passing": 101,
       "assertionsTotal": 568,
-      "assertionsPassing": 567,
-      "failingTests": [
-        {
-          "name": "Loops",
-          "category": "gxt:triage"
-        }
-      ],
+      "assertionsPassing": 568,
+      "failingTests": [],
       "skippedTests": [
         "Dynamic multi-select",
         "Dynamic selected options",
@@ -8648,15 +8037,10 @@
     },
     "[integration] rehydration :: Components :: initial render > [integration] Glimmer": {
       "total": 101,
-      "passing": 100,
+      "passing": 101,
       "assertionsTotal": 568,
-      "assertionsPassing": 567,
-      "failingTests": [
-        {
-          "name": "Loops",
-          "category": "gxt:triage"
-        }
-      ],
+      "assertionsPassing": 568,
+      "failingTests": [],
       "skippedTests": [
         "Dynamic multi-select",
         "Dynamic selected options",
@@ -8710,9 +8094,9 @@
     },
     "[integration] rehydration :: rehydration": {
       "total": 126,
-      "passing": 120,
+      "passing": 121,
       "assertionsTotal": 665,
-      "assertionsPassing": 659,
+      "assertionsPassing": 660,
       "failingTests": [
         {
           "name": "modifiers do not run in the server render but run in the client render",
@@ -8732,10 +8116,6 @@
         },
         {
           "name": "{{component}} invocation: interacting with builtins",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Loops",
           "category": "gxt:triage"
         }
       ],
@@ -9462,15 +8842,10 @@
     },
     "renderSettled": {
       "total": 5,
-      "passing": 4,
+      "passing": 5,
       "assertionsTotal": 9,
-      "assertionsPassing": 8,
-      "failingTests": [
-        {
-          "name": "resolves when rendering has completed (after property update)",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 9,
+      "failingTests": []
     },
     "runloop `later`": {
       "total": 6,
@@ -9828,6 +9203,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 672
+    "gxt:triage": 512
   }
 }
