@@ -215,6 +215,40 @@ export function doubleColonToSlash(str: string): string {
   return str.split('::').join('/');
 }
 
+/**
+ * A trusting `style` value: `style={{{value}}}`, which Glimmer compiles to a
+ * trusting dynamic attribute (`TrustingDynamicAttr`). Its only difference from
+ * `style={{value}}` is that the style-binding XSS warning does not fire. Every
+ * compat `style` write skips that warning for a value with `toHTML()` (as for
+ * an htmlSafe string) and writes the HTML string it returns.
+ */
+class TrustedStyleValue {
+  constructor(private readonly html: string) {}
+
+  toHTML(): string {
+    return this.html;
+  }
+
+  toString(): string {
+    return this.html;
+  }
+}
+
+/**
+ * The value of a trusting `style={{{value}}}` binding (the `__gxtTrustedStyle`
+ * built-in helper the triple-mustache AST transform emits). A value that
+ * removes the attribute (see `removesAttribute`) and a value that already has
+ * `toHTML()` are returned as they are; anything else becomes its string, as
+ * Glimmer's `normalizeValue` gives it (`true` is `""`), marked as trusted.
+ */
+export function trustedStyleValue(value: unknown): unknown {
+  if (removesAttribute(value)) return value;
+  if (typeof value === 'object' && typeof (value as { toHTML?: unknown }).toHTML === 'function') {
+    return value;
+  }
+  return new TrustedStyleValue(value === true ? '' : String(value));
+}
+
 // Inline the style warning message to avoid importing @ember/-internals/views
 // (which can cause circular dependency issues during module initialization).
 export function constructStyleDeprecationMessage(affectedStyle: string): string {

@@ -21,6 +21,7 @@ import {
   MUT_CELL_SOURCE,
   removesAttribute,
   sanitizedAttrValue,
+  trustedStyleValue,
 } from './utils';
 import {
   initChildViews as _emberInitChildViews,
@@ -8070,6 +8071,10 @@ const _emberBuiltinHelpers: Record<string, any> = {
   // survives the GXT parser without being interpreted as a mustache.
   // The registry lives in ast-transforms.ts (`lookupGxtComment`).
   __gxtCommentLookup: (token: unknown) => lookupGxtComment(token),
+  // __gxtTrustedStyle: the value of a trusting `style={{{value}}}` binding,
+  // emitted by `gxtTripleMustacheTransform`. It is marked as trusted, so the
+  // style-binding XSS warning does not fire (Glimmer's TrustingDynamicAttr).
+  __gxtTrustedStyle: (value: unknown) => trustedStyleValue(value),
 };
 
 // ---------------------------------------------------------------------------

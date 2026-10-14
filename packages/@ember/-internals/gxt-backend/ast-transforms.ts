@@ -913,6 +913,9 @@ function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unk
  * would serialize as literal `&lt;EmberHtmlRaw…&gt;` garbage. There the string
  * version emitted a plain `{{expr}}` interpolation instead; we reproduce that by
  * walking the ancestor chain for an enclosing rawtext `ElementNode`.
+ *
+ * Attribute position: `attr={{{expr}}}` → `attr={{expr}}`, and an unquoted
+ * `style={{{expr}}}` → `style={{(__gxtTrustedStyle expr)}}` (see the visitor).
  */
 function gxtTripleMustacheTransform(env: GxtAstEnv) {
   const b = env.syntax.builders;
@@ -921,14 +924,25 @@ function gxtTripleMustacheTransform(env: GxtAstEnv) {
     visitor: {
       MustacheStatement(node: any, path: any): unknown {
         if (node.escaped !== false) return undefined;
-        // CONTENT position only. In ATTRIBUTE position (`<div style={{{x}}}>`)
-        // emit an empty value — no trusted-attribute channel, and a real binding
-        // would fire the style-XSS warning for a value the user trusted (guards
-        // the `style={{{this.userValue}}}` no-warning test).
+        // ATTRIBUTE position. Glimmer compiles an unquoted `attr={{{x}}}` to a
+        // trusting dynamic attribute: the same value as `attr={{x}}` (removed
+        // when nullish, URLs still sanitized), except that a trusting `style`
+        // does not fire the style-binding XSS warning. Inside a quoted value
+        // (a concat part) and as a component argument the trusting flag has
+        // no effect. So the value is the escaped `{{x}}`, and an unquoted
+        // `style` wraps it in the `__gxtTrustedStyle` built-in, which marks it
+        // as trusted for the warning.
         const parent = path && path.parent && path.parent.node;
         const pt = parent && parent.type;
-        if (pt && pt !== 'Template' && pt !== 'Block' && pt !== 'ElementNode') {
-          return b.text('');
+        if (pt === 'AttrNode' || pt === 'ConcatStatement') {
+          if (pt === 'AttrNode' && parent.name === 'style') {
+            const value =
+              node.params.length === 0 && node.hash.pairs.length === 0
+                ? node.path
+                : b.sexpr(node.path, node.params, node.hash);
+            return b.mustache(b.sexpr(b.path('__gxtTrustedStyle'), [value]));
+          }
+          return b.mustache(node.path, node.params, node.hash);
         }
         // Rawtext fallback: nearest enclosing rawtext element → plain `{{expr}}`.
         let p = path && path.parent;

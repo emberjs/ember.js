@@ -1898,6 +1898,61 @@ moduleFor(
   }
 );
 
+// Glimmer compiles an unquoted `attr={{{value}}}` to a trusting dynamic
+// attribute: the same value as `attr={{value}}` (removed when nullish, a URL
+// still sanitized), except that a trusting `style` does not warn (see
+// 'Inline style tests - warnings'). Inside a quoted value and as a component
+// argument a triple curly is an ordinary value.
+moduleFor(
+  'Triple curlies in attribute position',
+  class extends RenderingTestCase {
+    ['@test an unquoted attribute renders and updates the value, and null removes it']() {
+      this.render('<div data-foo={{{this.value}}}>hello</div>', { value: 'bar' });
+      this.assertHTML('<div data-foo="bar">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', 'baz'));
+      this.assertHTML('<div data-foo="baz">hello</div>');
+
+      runTask(() => set(this.context, 'value', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', htmlSafe('safe')));
+      this.assertHTML('<div data-foo="safe">hello</div>');
+    }
+
+    ['@test a quoted attribute interpolates the value']() {
+      this.render('<div title="a {{{this.value}}} b">hello</div>', { value: 'x' });
+      this.assertHTML('<div title="a x b">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', 'y'));
+      this.assertHTML('<div title="a y b">hello</div>');
+    }
+
+    ['@test a URL attribute is still sanitized']() {
+      this.render('<a href={{{this.url}}}>link</a>', { url: 'javascript:alert(1)' });
+      this.assert.strictEqual(this.firstChild.getAttribute('href'), 'unsafe:javascript:alert(1)');
+
+      runTask(() => set(this.context, 'url', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+    }
+
+    ['@test a component argument receives the value']() {
+      this.owner.register(
+        'component:show-value',
+        setComponentTemplate(precompileTemplate('[{{@value}}]'), class extends Component {})
+      );
+
+      this.render('<ShowValue @value={{{this.value}}} />', { value: 'a' });
+      this.assertText('[a]');
+
+      runTask(() => set(this.context, 'value', 'b'));
+      this.assertText('[b]');
+    }
+  }
+);
+
 let warnings, originalWarn;
 class StyleTest extends RenderingTestCase {
   constructor() {
@@ -2008,6 +2063,54 @@ if (DEBUG) {
       ['@test specifying `<div style={{{this.userValue}}}></div>` works properly without a warning']() {
         this.render('<div style={{{this.userValue}}}></div>', {
           userValue: 'width: 42px',
+        });
+
+        this.assertNoWarning();
+      }
+
+      ['@test `<div style={{{this.userValue}}}></div>` applies and updates the style without a warning']() {
+        this.render('<div style={{{this.userValue}}}></div>', {
+          userValue: 'width: 42px;',
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: '',
+          attrs: { style: 'width: 42px;' },
+        });
+
+        runTask(() => set(this.context, 'userValue', 'height: 42px;'));
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: '',
+          attrs: { style: 'height: 42px;' },
+        });
+
+        runTask(() => set(this.context, 'userValue', null));
+
+        this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: {} });
+
+        this.assertNoWarning();
+      }
+
+      ['@test a `style={{{this.userValue}}}` passed through `...attributes` does not warn']() {
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('<div ...attributes>hello</div>'),
+            class extends Component {}
+          )
+        );
+
+        this.render('<FooBar style={{{this.userValue}}} />', {
+          userValue: 'width: 42px;',
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: 'hello',
+          attrs: { style: 'width: 42px;' },
         });
 
         this.assertNoWarning();
