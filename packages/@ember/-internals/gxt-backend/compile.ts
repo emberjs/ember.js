@@ -3218,6 +3218,61 @@ function _gxtTemplateEffect(fn: () => void): () => void {
   return gxtEffect(fn, owner !== null && typeof owner === 'object' ? owner : undefined);
 }
 
+// A content mustache whose value is a component definition (`{{this.Foo}}`,
+// `{{if @isOk Ok Ko}}`) renders that component; after an update it renders
+// what the value is then: another definition replaces the component, any
+// other value renders as text, as Glimmer's dynamic content in append position
+// does. The content is replaced where it is (an empty comment holds the place
+// while it renders nothing), and the replaced content's components are
+// destroyed. The binding is evaluated once on creation: its first run
+// subscribes to the cells the creation's evaluation read (`capturedDeps`).
+function _gxtRenderDynamicContent(
+  item: () => unknown,
+  initial: object,
+  capturedDeps: Set<any>,
+  isDefinition: (value: unknown) => boolean,
+  renderComponent: (definition: object) => Node | null
+): DocumentFragment {
+  const render = (value: unknown): Node[] => {
+    const node =
+      value !== null && typeof value === 'object' && isDefinition(value)
+        ? renderComponent(value)
+        : document.createTextNode(_gxtCoerceText(value));
+    const nodes =
+      node === null ? [] : node instanceof DocumentFragment ? Array.from(node.childNodes) : [node];
+    return nodes.length > 0 ? nodes : [document.createComment('')];
+  };
+  let current: unknown = initial;
+  let nodes = render(initial);
+  const fragment = document.createDocumentFragment();
+  for (const node of nodes) fragment.appendChild(node);
+  let firstRun = true;
+  _gxtTemplateEffect(() => {
+    if (firstRun) {
+      firstRun = false;
+      const tracker = _gxtGetTracker();
+      if (tracker) capturedDeps.forEach((cell) => tracker.add(cell));
+      return;
+    }
+    const value = item();
+    const next =
+      typeof value === 'function' && !(value as any).__isCurriedComponent
+        ? (value as () => unknown)()
+        : value;
+    if (next === current) return;
+    const parent = nodes[0]!.parentNode;
+    if (!parent) return;
+    current = next;
+    const replacement = render(next);
+    for (const node of replacement) parent.insertBefore(node, nodes[0]!);
+    const removed = nodes;
+    for (const node of removed) parent.removeChild(node);
+    getGxtRenderer()?.destruction.destroyInstancesInNodes(removed);
+    nodes = replacement;
+  });
+  return fragment;
+}
+
 function _gxtIsInTriggerReRender(): boolean {
   return _gxtFlags.inTriggerReRender;
 }
@@ -12887,15 +12942,18 @@ function _gxtPrecompileTemplate(
           // component definition. Detect by checking COMPONENT_TEMPLATES or manager.
           const _gMgrs = (globalThis as any).$_MANAGERS;
           if (_gMgrs?.component?.canHandle?.(finalResult)) {
-            const _handleRes = _gMgrs.component.handle(finalResult, {}, null, null);
-            let _compNode: Node | null = null;
-            if (typeof _handleRes === 'function') {
-              _compNode = _handleRes();
-            } else {
-              _compNode = _handleRes;
-            }
-            if (_compNode instanceof Node) return _compNode;
-            if (_compNode) return itemToNode(_compNode, depth + 1);
+            return _gxtRenderDynamicContent(
+              item,
+              finalResult,
+              _capturedDeps,
+              (value: unknown) => _gMgrs.component.canHandle(value) === true,
+              (definition: object): Node | null => {
+                const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
+                const _compNode = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
+                if (_compNode instanceof Node) return _compNode;
+                return _compNode ? itemToNode(_compNode, depth + 1) : null;
+              }
+            );
           }
           // Plain object (Date, {foo:'bar'}, etc.) — stringify for text rendering.
           // Ember's Glimmer VM stringifies all values in text positions.

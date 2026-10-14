@@ -7,12 +7,17 @@
  * - a keyed `{{#each}}` whose new array has a new object for an existing key
  *   keeps the row and renders the new object's values;
  * - a block inside `<svg>` (`{{#if}}`) that renders again creates its elements
- *   in the SVG namespace, and a text child of an SVG element updates.
+ *   in the SVG namespace, and a text child of an SVG element updates;
+ * - a content mustache whose value is a component definition renders the
+ *   component of the current value.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import templateOnly from '@ember/component/template-only';
+import { setComponentTemplate } from '@glimmer/manager';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -63,6 +68,19 @@ moduleFor(
 
       runTask(() => set(this.context, 'label', 'two'));
       this.assertText('two');
+    }
+
+    ['@test a content mustache renders the component its value is now']() {
+      let Ok = setComponentTemplate(precompileTemplate('Ok'), templateOnly());
+      let Ko = setComponentTemplate(precompileTemplate('Ko'), templateOnly());
+      this.render('[{{if this.isOk this.Ok this.Ko}}]', { isOk: true, Ok, Ko });
+      this.assertText('[Ok]');
+
+      runTask(() => set(this.context, 'isOk', false));
+      this.assertText('[Ko]');
+
+      runTask(() => set(this.context, 'isOk', true));
+      this.assertText('[Ok]');
     }
   }
 );
