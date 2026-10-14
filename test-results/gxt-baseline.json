@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-13T23:23:08.233Z",
+    "capturedAt": "2026-10-14T00:32:05.941Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "b45fb02823",
+    "emberCommit": "e1c6bb3901",
     "totalTests": 10024,
     "totalModules": 974,
     "quarantinedTests": 0,
     "totalAssertions": 59885,
     "totalAssertionsPassing": 58299,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a component class with a class-body <template> renders through its component manager (gxt compiles that template to an instance field, not a setComponentTemplate call: a lexical invocation constructed the class itself and @glimmer/component threw 'You must pass both the owner and args to super()', and a by-name invocation or a renderComponent root rendered nothing; the manager now creates the component from the invocation's arguments, the template renders with it as this, its blocks and ...attributes included, the manager destroys it with the render tree it joined, and a class without a template renders the default {{yield}}), written by runner.mjs. 9211/10024 green (was 9188/10017), no timeouts, no harness errors, no green->red. The seven new tests pass: Components test: a class-body <template> component 5, Components test: a class-body <template> component invoked by name 2. Sixteen known reds turn green: Components test: @glimmer/component 1, Helpers test: default helper manager 3, Helpers test: {{log}} 3, Helpers test: {{fn}} 5, Helpers test: {{hash}} 2, Helpers test: {{array}} 1, and Application Lifecycle - Component Context 1 (a Glimmer component with no template yields its block). The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "note": "Compat full run on #21340 (gxt 0.0.82) after decorators in gxt-compiled .gjs/.gts import decorator-transforms' runtime (the gxt compiler lowers them to calls on a dt7948 global; each compiled module that calls it now imports decorator-transforms/runtime, and the test page no longer installs the global), written by runner.mjs. 9211/10024 green (unchanged), no timeouts, no harness errors, no green->red, no red->green: every decorated .gjs/.gts test module now runs through the runtime import. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
