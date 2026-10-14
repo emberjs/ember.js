@@ -1095,6 +1095,28 @@ function gxtCustomComponentManagerFactory(
 }
 
 /**
+ * The internal component manager (`setInternalComponentManager`) of a
+ * component definition, its own or the nearest one on its prototype chain,
+ * when that manager has the `hasSubOwner` capability. A nearer custom component
+ * manager (`setComponentManager`) is the definition's manager instead, as in
+ * @glimmer/manager, where both live in one table.
+ */
+function gxtSubOwnerComponentManager(definition: object): any {
+  const registries = getGxtRenderer()?.registries;
+  if (!registries) return undefined;
+  let pointer: object | null = definition;
+  while (pointer && pointer !== Object.prototype && pointer !== Function.prototype) {
+    if (registries.componentManagers.has(pointer)) return undefined;
+    const manager = registries.internalManagers.get(pointer);
+    if (manager !== undefined) {
+      return manager.getCapabilities?.(definition)?.hasSubOwner === true ? manager : undefined;
+    }
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return undefined;
+}
+
+/**
  * GXT-specific renderComponent implementation.
  * Bypasses Glimmer VM bytecode compilation entirely.
  */
@@ -1216,6 +1238,11 @@ function _renderComponentGxt(
   // created, for its destroyComponent hook.
   let customManager: any = null;
   let customComponent: unknown = undefined;
+  // The owner of everything this render renders: `owner`, or the owner a
+  // `hasSubOwner` internal manager returns for its component (set below).
+  let renderOwner: object = owner;
+  // That manager's destroyable for its component, destroyed with the render.
+  let subOwnerDestroyable: object | null = null;
 
   // Remove all DOM nodes belonging to this entry's range (firstNode through
   // lastNode, inclusive). Used for both destroy and the re-render
@@ -1282,6 +1309,9 @@ function _renderComponentGxt(
       typeof customManager.destroyComponent === 'function'
     ) {
       customManager.destroyComponent(customComponent);
+    }
+    if (subOwnerDestroyable !== null) {
+      destroy(subOwnerDestroyable);
     }
   };
   entry.destroy = doDestroy;
@@ -1439,12 +1469,30 @@ function _renderComponentGxt(
       return result;
     }
 
+    // A root render invokes its component dynamically, as Glimmer's
+    // VIRTUAL_ROOT_SCOPE opcode does: when the component's internal manager has
+    // the `hasSubOwner` capability, the manager creates the component with the
+    // caller's owner, and what the component renders sees
+    // `manager.getOwner(state)` as its owner (the components it creates, the
+    // components, helpers and services looked up in it). Its `this` is the
+    // manager's self; this renders the template with no component, as a
+    // template-only component. Glimmer passes the manager VM arguments only
+    // for `createArgs`, which a GXT render has none of.
+    const subOwnerManager = gxtSubOwnerComponentManager(component);
+    if (subOwnerManager !== undefined) {
+      const state = subOwnerManager.create(owner, component, null, {}, null, null, false);
+      renderOwner = subOwnerManager.getOwner(state);
+      subOwnerDestroyable = subOwnerManager.getDestroyable(state) ?? null;
+      setAmbientOwner(renderOwner);
+    }
+
     // A definition with a custom component manager (a class or a plain
     // object) renders the context its manager creates; a class without one is
     // instantiated; anything else is template-only and renders with `{}`.
     const isClass = typeof component === 'function' && component.prototype;
     const customManagerFactory = gxtCustomComponentManagerFactory(component);
     const isTemplateOnly =
+      subOwnerManager !== undefined ||
       classBodyComponent ||
       (!isClass && !customManagerFactory) ||
       (component as any).__templateOnly === true ||
@@ -1572,7 +1620,7 @@ function _renderComponentGxt(
       renderContext.args = argsObj;
     }
     if (!customManager) {
-      renderContext.owner = owner;
+      renderContext.owner = renderOwner;
     } else if (!('owner' in renderContext)) {
       // A custom manager's context is its own object: it keeps an `owner` it
       // already has, and the one added here is not enumerable.
@@ -1616,7 +1664,7 @@ function _renderComponentGxt(
       if (destroyed || _rendering) return;
       _rendering = true;
       const prevOwnerLocal = getAmbientOwner();
-      setAmbientOwner(owner);
+      setAmbientOwner(renderOwner);
       const _pipelineLocal = getGxtRenderer()?.compilePipeline;
       const prevSkip = _pipelineLocal?.getSkipTextEffects?.() ?? false;
       const wasRenderingLocal = typeof _isRendering === 'function' ? _isRendering() : false;
