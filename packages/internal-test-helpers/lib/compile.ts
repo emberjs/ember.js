@@ -65,10 +65,11 @@ function build(
   scopeValues: Record<string, unknown>
 ): TemplateFactory {
   // In GXT mode, use GXT compilation via ember-template-compiler's compile
-  // (which is aliased to the GXT compat version)
+  // (which is aliased to the GXT compat version). The options reach it as they
+  // reach `precompileJSON` below: without a module name, compile errors name
+  // 'an unknown module', as Glimmer's do.
   if (__GXT_MODE__) {
     return etcCompile(templateSource, {
-      moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
       strictMode: options.strictMode ?? false,
       ...options,
       scopeValues: Object.keys(scopeValues).length > 0 ? scopeValues : undefined,

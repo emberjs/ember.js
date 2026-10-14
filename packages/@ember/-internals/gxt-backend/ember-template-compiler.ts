@@ -28,9 +28,8 @@ export interface EmberPrecompileOptions {
  * Delegates to compile.ts which uses the GXT runtime compiler for proper
  * component invocation (e.g., <XBlah /> -> $_c('x-blah', ...)).
  */
-import { compileTemplate } from './compile';
+import { precompileValidatedTemplate, validateTemplateSource } from './compile';
 import { templateCacheCounters } from '@glimmer/opcode-compiler';
-import { assert as _emberDebugAssert } from '@ember/debug';
 import { ENV } from '@ember/-internals/environment';
 import VERSION from 'ember/version';
 
@@ -104,48 +103,6 @@ function teeLetBlockParam(template: string, name: string, alias: string): string
   return template.replace(re, (_m, prefix: string) => {
     return `{{#let ${prefix} ${prefix} as |${name} ${alias}|}}`;
   });
-}
-
-/**
- * Scan for `{{outlet 'name'}}` or `{{outlet name}}` usages and assert when
- * detected. Named outlets were removed in Ember 4.0. This is a lightweight
- * GXT-mode replacement for the classic AssertAgainstNamedOutlets AST plugin,
- * because GXT's runtime compiler does not expose a pre-parse AST plugin hook.
- *
- * Location is reported as L1:C0 (start of the mustache) since that is what the
- * underlying Glimmer syntax parser emits for the MustacheStatement node.
- */
-function _assertAgainstNamedOutlets(templateString: string, moduleName?: string): void {
-  // Quick filter: if the string has no "{{outlet" at all, skip.
-  if (templateString.indexOf('{{outlet') < 0) return;
-  // Match `{{outlet ARG...}}` allowing arbitrary whitespace and at least one
-  // non-whitespace argument (either a quoted string or bare path). Excludes
-  // the zero-arg form `{{outlet}}`.
-  const re = /\{\{outlet(?:\s+([^}\s]))/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(templateString)) !== null) {
-    // Compute line / column of the mustache start.
-    const idx = m.index;
-    let line = 1;
-    let col = 0;
-    for (let i = 0; i < idx; i++) {
-      if (templateString.charCodeAt(i) === 10) {
-        line++;
-        col = 0;
-      } else col++;
-    }
-    const modulePart = moduleName ? `'${moduleName}' @ ` : '';
-    const loc = `(${modulePart}L${line}:C${col}) `;
-    emberAssertFn(
-      `Named outlets were removed in Ember 4.0. See https://deprecations.emberjs.com/v3.x#toc_route-render-template for guidance on alternative APIs for named outlet use cases. ${loc}`
-    );
-    return; // one per compile is enough
-  }
-}
-
-function emberAssertFn(msg: string): void {
-  // Second arg `false` triggers the assertion.
-  _emberDebugAssert(msg, false);
 }
 
 /**
@@ -233,8 +190,9 @@ function _normalizeHyphenBlockParams(template: string): { source: string; change
 }
 
 export function compile(templateString: string, options?: any) {
-  // Named outlet assertion — matches classic AssertAgainstNamedOutlets plugin.
-  _assertAgainstNamedOutlets(templateString, options?.moduleName);
+  // Glimmer's compile-time checks (and Ember's template assertions) run on the
+  // source as the caller wrote it, before the rewrites below.
+  validateTemplateSource(templateString, options);
 
   const originalScopeValues: Record<string, unknown> | undefined =
     options?.scopeValues && typeof options.scopeValues === 'object'
@@ -284,7 +242,7 @@ export function compile(templateString: string, options?: any) {
   }
 
   if (rewritten === templateString) {
-    return _instrumentFactory(compileTemplate(templateString, options), options);
+    return _instrumentFactory(precompileValidatedTemplate(templateString, options), options);
   }
 
   const patchedOptions = {
@@ -292,7 +250,7 @@ export function compile(templateString: string, options?: any) {
     ...(scopePatch ? { scopeValues: scopePatch } : {}),
     ...(localsPatch ? { locals: localsPatch } : {}),
   };
-  return _instrumentFactory(compileTemplate(rewritten, patchedOptions), patchedOptions);
+  return _instrumentFactory(precompileValidatedTemplate(rewritten, patchedOptions), patchedOptions);
 }
 
 // Wrap a GXT template factory so that `factory(owner)` participates in the

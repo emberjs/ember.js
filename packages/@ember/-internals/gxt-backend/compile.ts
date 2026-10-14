@@ -6,9 +6,7 @@
  * for template compilation instead of Glimmer VM.
  */
 
-// Import Ember debug utilities for attrs assertion/deprecation
 import { assert as emberAssert } from '@ember/debug';
-import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 import {
   pascalToKebab,
@@ -28,6 +26,7 @@ import {
   getElementView as _emberGetElementView,
 } from '@ember/-internals/views/lib/system/utils';
 import { DEBUG } from '@glimmer/env';
+import { validateTemplate } from './template-validation';
 
 // Utility functions (regex-free)
 
@@ -398,98 +397,6 @@ function findDottedTags(str: string): Array<[string, string]> {
     idx = pos;
   }
   return results;
-}
-
-/**
- * Find all {{attrs.X}} patterns in a string.
- * Returns array of { propName, index } objects.
- * Replaces regex /\{\{attrs\.([a-zA-Z0-9_]+)/g
- */
-function findAttrsPatterns(str: string): Array<{ propName: string; index: number }> {
-  const results: Array<{ propName: string; index: number }> = [];
-  const marker = '{{attrs.';
-  let idx = 0;
-  while (idx < str.length) {
-    const found = str.indexOf(marker, idx);
-    if (found === -1) break;
-    let pos = found + marker.length;
-    const nameStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9') ||
-        str[pos] === '_')
-    )
-      pos++;
-    if (pos > nameStart) {
-      results.push({ propName: str.slice(nameStart, pos), index: found });
-    }
-    idx = pos;
-  }
-  return results;
-}
-
-/**
- * Find all {{this.attrs.X}} patterns in a string.
- * Returns array of { propName, index } objects.
- * Replaces regex /\{\{this\.attrs\.([a-zA-Z0-9_]+)/g
- */
-function findThisAttrsPatterns(str: string): Array<{ propName: string; index: number }> {
-  const results: Array<{ propName: string; index: number }> = [];
-  const marker = '{{this.attrs.';
-  let idx = 0;
-  while (idx < str.length) {
-    const found = str.indexOf(marker, idx);
-    if (found === -1) break;
-    let pos = found + marker.length;
-    const nameStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9') ||
-        str[pos] === '_')
-    )
-      pos++;
-    if (pos > nameStart) {
-      results.push({ propName: str.slice(nameStart, pos), index: found });
-    }
-    idx = pos;
-  }
-  return results;
-}
-
-/**
- * Check if 'as |...|' block contains the word 'attrs'.
- * Replaces regex /as\s*\|[^|]*\battrs\b[^|]*\|/
- */
-function hasAttrsInBlockParams(str: string): boolean {
-  let idx = 0;
-  while (idx < str.length) {
-    const asIdx = str.indexOf('as', idx);
-    if (asIdx === -1) return false;
-    // 'as' can be preceded by any char (the regex has no lookbehind requirement except implicitly)
-    let pos = asIdx + 2;
-    // Skip optional whitespace
-    while (
-      pos < str.length &&
-      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
-    )
-      pos++;
-    if (pos >= str.length || str[pos] !== '|') {
-      idx = asIdx + 2;
-      continue;
-    }
-    const pipeStart = pos + 1;
-    const pipeEnd = str.indexOf('|', pipeStart);
-    if (pipeEnd === -1) return false;
-    const content = str.slice(pipeStart, pipeEnd);
-    // Check if 'attrs' appears as a word in this content
-    if (containsWord(content, 'attrs')) return true;
-    idx = pipeEnd + 1;
-  }
-  return false;
 }
 
 import { buildUntouchableThis } from '@glimmer/debug-util';
@@ -11548,25 +11455,98 @@ function _gxtNativeTemplateEligible(
   return true;
 }
 
+interface GxtPrecompileOptions {
+  strictMode?: boolean;
+  scope?: () => Record<string, unknown>;
+  moduleName?: string;
+  scopeValues?: Record<string, unknown>;
+  // Ember's `locals`: the names a strict-mode template's scope provides (the
+  // `ember-template-compiler` option).
+  locals?: string[];
+  // A lexical-scope predicate in addition to the names above: `template()`'s
+  // implicit (`eval`) form passes the one `compileOptions` builds from `eval`.
+  lexicalScope?: (name: string) => boolean;
+  // Ember's `plugins.ast`: AST plugins (`ASTPluginBuilder`s). They run in the
+  // gxt compiler's `transforms` hook, before the Ember-dialect transforms, as
+  // classic Ember runs user plugins before its built-in ones.
+  plugins?: { ast?: ReadonlyArray<ReturnType<typeof buildGxtDialectTransforms>[number]> };
+  // Throw the gxt compiler's errors (parse errors, errors thrown by an AST
+  // plugin) instead of only logging them.
+  throwOnCompileError?: boolean;
+}
+
+/**
+ * Glimmer's compile-time checks on a template source, in development builds
+ * (see template-validation.ts). `scope` is the result of the caller's `scope()`
+ * thunk; its names, the scope values' names and `locals` are the template's
+ * lexical scope.
+ */
+function _gxtValidateTemplateSource(
+  templateString: string,
+  options: (GxtPrecompileOptions & { meta?: { moduleName?: string } }) | undefined,
+  scope: Record<string, unknown> | undefined
+): void {
+  const scopeNames = new Set<string>(scope ? Object.keys(scope) : []);
+  if (options?.scopeValues) {
+    for (const name of Object.keys(options.scopeValues)) scopeNames.add(name);
+  }
+  validateTemplate(templateString, {
+    strictMode: options?.strictMode,
+    moduleName: options?.moduleName,
+    meta: options?.meta,
+    locals: Array.isArray(options?.locals) ? options.locals : undefined,
+    scopeNames,
+    lexicalScope: options?.lexicalScope,
+    plugins: options?.plugins,
+  });
+}
+
+/**
+ * Runs Glimmer's compile-time checks on a template source as the caller wrote
+ * it (development builds only). For `ember-template-compiler`'s `compile`,
+ * which rewrites some sources before compiling them with
+ * `precompileValidatedTemplate`.
+ */
+export function validateTemplateSource(
+  templateString: string,
+  options?: GxtPrecompileOptions & { meta?: { moduleName?: string } }
+): void {
+  if (DEBUG) {
+    _gxtValidateTemplateSource(
+      templateString,
+      options,
+      typeof options?.scope === 'function' ? options.scope() : undefined
+    );
+  }
+}
+
 /**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
+ *
+ * In development builds the template first goes through Glimmer's compile-time
+ * checks, which throw the classic `SyntaxError` / assertion for an invalid
+ * template.
  */
-export function precompileTemplate(
+export function precompileTemplate(templateString: string, options?: GxtPrecompileOptions) {
+  return _gxtPrecompileTemplate(templateString, options, true);
+}
+
+/**
+ * `precompileTemplate` for a source whose original the caller already checked
+ * with `validateTemplateSource`.
+ */
+export function precompileValidatedTemplate(
   templateString: string,
-  options?: {
-    strictMode?: boolean;
-    scope?: () => Record<string, unknown>;
-    moduleName?: string;
-    scopeValues?: Record<string, unknown>;
-    // Ember's `plugins.ast`: AST plugins (`ASTPluginBuilder`s). They run in the
-    // gxt compiler's `transforms` hook, before the Ember-dialect transforms, as
-    // classic Ember runs user plugins before its built-in ones.
-    plugins?: { ast?: ReadonlyArray<ReturnType<typeof buildGxtDialectTransforms>[number]> };
-    // Throw the gxt compiler's errors (parse errors, errors thrown by an AST
-    // plugin) instead of only logging them.
-    throwOnCompileError?: boolean;
-  }
+  options?: GxtPrecompileOptions
+) {
+  return _gxtPrecompileTemplate(templateString, options, false);
+}
+
+function _gxtPrecompileTemplate(
+  templateString: string,
+  options: GxtPrecompileOptions | undefined,
+  validate: boolean
 ) {
   // Strict-mode `precompileTemplate(..., { scope: () => ({ Foo, bar }) })`
   // threading: the test-only / RFC strict-mode form passes a `scope`
@@ -11590,8 +11570,8 @@ export function precompileTemplate(
   //     template is a single `<input ... />` with `{{on "..."}}` modifiers
   //     and `@`-args, so `_templateMayNeedScopeThreading` returns false
   //     for it and the pass is skipped.
+  let extra: Record<string, unknown> | undefined;
   if (typeof options?.scope === 'function') {
-    let extra: Record<string, unknown> | undefined;
     try {
       const scopeResult = options.scope();
       if (scopeResult && typeof scopeResult === 'object') {
@@ -11614,6 +11594,12 @@ export function precompileTemplate(
         options = { ...options, scopeValues: mergedScope };
       }
     }
+  }
+
+  // Glimmer's compile-time checks, on the source as the caller wrote it: the
+  // rewrites below (and the GXT compile) only ever see a valid template.
+  if (DEBUG && validate) {
+    _gxtValidateTemplateSource(templateString, options, extra);
   }
 
   // Pre-transform shadowed block keywords. When `scopeValues` provides a
@@ -11677,53 +11663,6 @@ export function precompileTemplate(
           `Error: You used ${head}.${tail} as a tag name, but ${head} is not in scope`
         );
       }
-    }
-  }
-
-  // Check for {{attrs.X}} (assert) and {{this.attrs.X}} (deprecation)
-  // This mirrors the Glimmer AST plugin assert-against-attrs.ts
-  {
-    // Skip the {{attrs.X}} assertion if `attrs` is used as a block param
-    // (e.g., {{#let ... as |attrs|}}) since that's a valid use case.
-    const hasAttrsBlockParam = hasAttrsInBlockParams(templateString);
-
-    // Check for {{attrs.X}} - this should trigger an assert (throw)
-    if (!hasAttrsBlockParam) {
-      const attrsMatches = findAttrsPatterns(templateString);
-      for (const attrMatch of attrsMatches) {
-        const propName = attrMatch.propName;
-        // Calculate location: column points to 'attrs' (after '{{'), so add 2
-        const beforeMatch = templateString.slice(0, attrMatch.index);
-        const lines = beforeMatch.split('\n');
-        const line = lines.length;
-        const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
-        const locationDisplay = `(L${line}:C${col}) `;
-        const message = `Using {{attrs}} to reference named arguments is not supported. {{attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
-        emberAssert(message, false);
-      }
-    }
-
-    // Check for {{this.attrs.X}} - this should trigger a deprecation
-    const thisAttrsMatches = findThisAttrsPatterns(templateString);
-    for (const thisAttrMatch of thisAttrsMatches) {
-      const propName = thisAttrMatch.propName;
-      // Calculate location: column points to 'this' (after '{{'), so add 2
-      const beforeMatch = templateString.slice(0, thisAttrMatch.index);
-      const lines = beforeMatch.split('\n');
-      const line = lines.length;
-      const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
-      const locationDisplay = `(L${line}:C${col}) `;
-      const message = `Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
-      emberDeprecate(message, false, {
-        id: 'attrs-arg-access',
-        url: 'https://deprecations.emberjs.com/v3.x/#toc_attrs-arg-access',
-        until: '6.0.0',
-        for: 'ember-source',
-        since: {
-          available: '3.26.0',
-          enabled: '3.26.0',
-        },
-      });
     }
   }
 

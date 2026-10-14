@@ -20,9 +20,10 @@ export default function compileWithScope(
   options: Record<string, any> = {},
   _scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
-  // Use gxt compile instead of glimmer-vm compile
+  // Use gxt compile instead of glimmer-vm compile. The options reach it as the
+  // classic harness passes them to `precompileJSON`: without a module name,
+  // compile errors name 'an unknown module', as Glimmer's do.
   return gxtCompile(templateSource, {
-    moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
     strictMode: options.strictMode ?? false,
     ...options,
     scopeValues: Object.keys(_scopeValues).length > 0 ? _scopeValues : undefined,
