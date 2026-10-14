@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T05:40:24.713Z",
+    "capturedAt": "2026-10-14T09:27:55.248Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "64bd42705d",
-    "totalTests": 10060,
+    "emberCommit": "63cc148519",
+    "totalTests": 10063,
     "totalModules": 979,
     "quarantinedTests": 0,
-    "totalAssertions": 60063,
-    "totalAssertionsPassing": 58561,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a {{component}} mustache in an argument or attribute value is a curried component (and a <@foo> invocation renders its component directly instead of handing gxt a render thunk), and after a triple curly in an attribute renders its value (an unquoted style={{{x}}} is trusted and does not warn), written by runner.mjs. 9291/10060 green (was 9257/10053): 7 new tests, all green (1 in 'Components test: contextual components', 4 in the new module 'Triple curlies in attribute position', 2 in 'Inline style tests - warnings'), and 27 test rows turned green: 'Components :: Glimmer' invoking a dynamic component (path / named arg) via angle brackets, with args, attributes, blocks and named blocks (10 tests, each also in the parent module row), the two strict-mode '{{component}} works with static components when passed to another component' tests, and 'triple curlies in attribute position' in Attributes and the four #15675 modules. No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60079,
+    "totalAssertionsPassing": 58581,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after each modifier invocation on an element installs its own instance (an element's own {{on}} and one forwarded through ...attributes are two listeners; a custom modifier used twice on one element is two instances), written by runner.mjs. 9296/10063 green (was 9291/10060): 3 new tests, all green (2 in '{{on}} Modifier', 1 in 'Basic Custom Modifier Manager: 3.22'), and the two '{{on}} Modifier' GH#17877 listener-order tests turned green. No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1067,10 +1067,10 @@
       "failingTests": []
     },
     "Basic Custom Modifier Manager: 3.22": {
-      "total": 17,
-      "passing": 16,
-      "assertionsTotal": 68,
-      "assertionsPassing": 67,
+      "total": 18,
+      "passing": 17,
+      "assertionsTotal": 76,
+      "assertionsPassing": 75,
       "failingTests": [
         {
           "name": " provides a helpful assertion when mutating a tracked value that was consumed already within the constructor",
@@ -10199,10 +10199,10 @@
       "failingTests": []
     },
     "{{on}} Modifier": {
-      "total": 24,
-      "passing": 19,
-      "assertionsTotal": 67,
-      "assertionsPassing": 59,
+      "total": 26,
+      "passing": 23,
+      "assertionsTotal": 75,
+      "assertionsPassing": 71,
       "failingTests": [
         {
           "name": " asserts when callback is a bound undefined value",
@@ -10215,19 +10215,11 @@
         {
           "name": " it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)",
           "category": "gxt:triage"
-        },
-        {
-          "name": " listeners from the invocation run before the element's own listeners, wherever ...attributes is (GH#17877)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " listeners on ancestors in a component run after the caller's listeners, unless propagation is stopped (GH#17877)",
-          "category": "gxt:triage"
         }
       ]
     }
   },
   "categories": {
-    "gxt:triage": 769
+    "gxt:triage": 767
   }
 }
