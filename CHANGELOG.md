@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v6.12.1 (October 13, 2026)
+
+- [#21591](https://github.com/emberjs/ember.js/pull/21591) [BUGFIX] Destroy dynamic modifiers that were set after the initial render
+- [#21638](https://github.com/emberjs/ember.js/pull/21638) [BUGFIX] Include renderComponent roots in captureRenderTree (lts-6-12)
+- [#21683](https://github.com/emberjs/ember.js/pull/21683) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed (lts-6-12)
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
+
 ## v6.12.0 (March 31, 2026)
 
 - [#20908](https://github.com/emberjs/ember.js/pull/20908) / [#21020](https://github.com/emberjs/ember.js/pull/21020) Merge [glimmerjs/glimmer-vm](https://github.com/glimmerjs/glimmer-vm) into the `emberjs/ember.js` monorepo.
