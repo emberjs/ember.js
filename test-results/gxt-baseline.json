@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T04:22:07.496Z",
+    "capturedAt": "2026-10-14T05:40:24.713Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "778464ce35",
-    "totalTests": 10053,
-    "totalModules": 978,
+    "emberCommit": "64bd42705d",
+    "totalTests": 10060,
+    "totalModules": 979,
     "quarantinedTests": 0,
-    "totalAssertions": 60016,
-    "totalAssertionsPassing": 58469,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a renderComponent root whose internal component manager has the hasSubOwner capability renders with the owner the manager returns (Glimmer's dynamic root invocation), and after a helper call without a positional argument (zero-argument or named-only) gets its own helper instance per render scope and owner instead of one per helper name, written by runner.mjs. 9257/10053 green (was 9244/10046): 7 new tests, all green (3 in 'GXT renderComponent: a hasSubOwner component manager's owner', 4 in 'GXT helper call sites: calls without a positional argument'), and 7 tests turned green: '[owner] :: owner can be changed by a component with the hasSubOwner capability', 'Updating :: helpers passed as arguments to {{#unless}} / {{#each}} are not torn down when switching between blocks', and 'initial render (client) :: GH#13999 ... undefined string literal / null / null string literal named arguments' and 'Attribute helpers take a hash'. One test is a known red that passed only by reusing another test's helper: 'Updating :: double curlies with const Node' (it now runs its own helper, whose Text node the dashed-tag helper branch writes as a string, as for 'double curlies with const SafeString'). No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60063,
+    "totalAssertionsPassing": 58561,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a {{component}} mustache in an argument or attribute value is a curried component (and a <@foo> invocation renders its component directly instead of handing gxt a render thunk), and after a triple curly in an attribute renders its value (an unquoted style={{{x}}} is trusted and does not warn), written by runner.mjs. 9291/10060 green (was 9257/10053): 7 new tests, all green (1 in 'Components test: contextual components', 4 in the new module 'Triple curlies in attribute position', 2 in 'Inline style tests - warnings'), and 27 test rows turned green: 'Components :: Glimmer' invoking a dynamic component (path / named arg) via angle brackets, with args, attributes, blocks and named blocks (10 tests, each also in the parent module row), the two strict-mode '{{component}} works with static components when passed to another component' tests, and 'triple curlies in attribute position' in Attributes and the four #15675 modules. No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1570,10 +1570,10 @@
       "failingTests": []
     },
     "Components test: contextual components": {
-      "total": 42,
-      "passing": 41,
-      "assertionsTotal": 201,
-      "assertionsPassing": 196,
+      "total": 43,
+      "passing": 42,
+      "assertionsTotal": 205,
+      "assertionsPassing": 200,
       "failingTests": [
         {
           "name": " renders with dot path and updates attributes",
@@ -3144,10 +3144,10 @@
       "failingTests": []
     },
     "Inline style tests - warnings": {
-      "total": 11,
-      "passing": 10,
-      "assertionsTotal": 11,
-      "assertionsPassing": 10,
+      "total": 13,
+      "passing": 12,
+      "assertionsTotal": 28,
+      "assertionsPassing": 27,
       "failingTests": [
         {
           "name": " specifying `style` on a component with `...attributes` generates a warning",
@@ -5092,6 +5092,13 @@
       "assertionsPassing": 17,
       "failingTests": []
     },
+    "Triple curlies in attribute position": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 14,
+      "assertionsPassing": 14,
+      "failingTests": []
+    },
     "URL-less routes (Async Get Handler)": {
       "total": 3,
       "passing": 3,
@@ -5666,14 +5673,10 @@
     },
     "[integration] jit :: Attributes": {
       "total": 33,
-      "passing": 14,
+      "passing": 15,
       "assertionsTotal": 361,
-      "assertionsPassing": 316,
+      "assertionsPassing": 319,
       "failingTests": [
-        {
-          "name": "triple curlies in attribute position",
-          "category": "gxt:triage"
-        },
         {
           "name": "can read the form attribute",
           "category": "gxt:triage"
@@ -5910,9 +5913,9 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 23,
-      "assertionsTotal": 193,
-      "assertionsPassing": 165,
+      "passing": 33,
+      "assertionsTotal": 199,
+      "assertionsPassing": 185,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
@@ -5923,27 +5926,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "invoking dynamic component (path) via angle brackets supports passing a block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets supports args",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets supports attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets with named block",
-          "category": "gxt:triage"
-        },
-        {
           "name": "invoking dynamic component (path) via angle brackets does not work for string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets",
           "category": "gxt:triage"
         },
         {
@@ -5952,26 +5935,6 @@
         },
         {
           "name": "invoking dynamic component (named arg) via angle brackets supports args and attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports passing a block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports args",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports attributes (invocation attributes clobber)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets",
           "category": "gxt:triage"
         },
         {
@@ -5994,9 +5957,9 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] Glimmer": {
       "total": 38,
-      "passing": 23,
-      "assertionsTotal": 172,
-      "assertionsPassing": 152,
+      "passing": 33,
+      "assertionsTotal": 178,
+      "assertionsPassing": 172,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
@@ -6007,27 +5970,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "invoking dynamic component (path) via angle brackets supports passing a block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets supports args",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets supports attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets with named block",
-          "category": "gxt:triage"
-        },
-        {
           "name": "invoking dynamic component (path) via angle brackets does not work for string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (path) via angle brackets",
           "category": "gxt:triage"
         },
         {
@@ -6036,26 +5979,6 @@
         },
         {
           "name": "invoking dynamic component (named arg) via angle brackets supports args and attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports passing a block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports args",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports attributes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets supports attributes (invocation attributes clobber)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "invoking dynamic component (named arg) via angle brackets",
           "category": "gxt:triage"
         }
       ]
@@ -6935,9 +6858,9 @@
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
-      "passing": 17,
+      "passing": 18,
       "assertionsTotal": 376,
-      "assertionsPassing": 329,
+      "assertionsPassing": 332,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -6945,10 +6868,6 @@
         },
         {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "triple curlies in attribute position",
           "category": "gxt:triage"
         },
         {
@@ -7680,9 +7599,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 17,
+      "passing": 18,
       "assertionsTotal": 376,
-      "assertionsPassing": 329,
+      "assertionsPassing": 332,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7690,10 +7609,6 @@
         },
         {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "triple curlies in attribute position",
           "category": "gxt:triage"
         },
         {
@@ -7772,14 +7687,10 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 19,
+      "passing": 20,
       "assertionsTotal": 376,
-      "assertionsPassing": 331,
+      "assertionsPassing": 334,
       "failingTests": [
-        {
-          "name": "triple curlies in attribute position",
-          "category": "gxt:triage"
-        },
         {
           "name": "can read the form attribute",
           "category": "gxt:triage"
@@ -7856,9 +7767,9 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 17,
+      "passing": 18,
       "assertionsTotal": 376,
-      "assertionsPassing": 329,
+      "assertionsPassing": 332,
       "failingTests": [
         {
           "name": "value below default min but above set min is kept",
@@ -7866,10 +7777,6 @@
         },
         {
           "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "triple curlies in attribute position",
           "category": "gxt:triage"
         },
         {
@@ -8239,9 +8146,9 @@
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
-      "passing": 30,
+      "passing": 31,
       "assertionsTotal": 290,
-      "assertionsPassing": 263,
+      "assertionsPassing": 264,
       "failingTests": [
         {
           "name": "Can use a dynamic component in append position (with args)",
@@ -8285,10 +8192,6 @@
         },
         {
           "name": "Throws an error if a non-modifier is used as a modifier",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{component}} works with static components when passed to another component",
           "category": "gxt:triage"
         },
         {
@@ -8359,9 +8262,9 @@
     },
     "[integration] jit :: strict mode: static template values": {
       "total": 23,
-      "passing": 8,
+      "passing": 9,
       "assertionsTotal": 82,
-      "assertionsPassing": 67,
+      "assertionsPassing": 68,
       "failingTests": [
         {
           "name": "Can use template local in nested blocks with locals",
@@ -8369,10 +8272,6 @@
         },
         {
           "name": "Can use component in ambiguous helper/component position (with args)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{component}} works with static components when passed to another component",
           "category": "gxt:triage"
         },
         {
@@ -10329,6 +10228,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 796
+    "gxt:triage": 769
   }
 }
