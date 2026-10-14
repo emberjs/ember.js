@@ -192,6 +192,26 @@ const helperSiteInstances = new WeakMap<object, Map<string, any>>();
 // The same, per owner, for a call by name that comes with no render scope.
 const helperOwnerInstances = new WeakMap<object, Map<string, any>>();
 
+// The owner a render scope resolves helpers by name in: the owner of the
+// render that created the scope, recorded the first time a call resolves in
+// it. Glimmer resolves a template's helpers once, in the owner it renders with;
+// the compat build resolves a call by name each time it is evaluated, and an
+// update evaluates it outside of any render, where the ambient owner is
+// another render's, or one that has been destroyed since.
+const helperScopeOwners = new WeakMap<object, any>();
+
+// Whether `owner` can still resolve: not destroyed nor being destroyed (an
+// owner without `isDestroyed` / `isDestroying` flags too).
+function isLiveOwner(owner: any): boolean {
+  return (
+    owner !== null &&
+    typeof owner === 'object' &&
+    owner.isDestroyed !== true &&
+    owner.isDestroying !== true &&
+    !isDestroyingDestroyable(owner)
+  );
+}
+
 // The key of a call by name without a site id. Site ids are numbers.
 function helperNameKey(name: string): string {
   return `name:${name}`;
@@ -842,16 +862,22 @@ function createEmberMaybeHelper(original: Function) {
       return helper();
     }
 
-    // Try Ember container lookup — prefer the ambient owner, fall back to cached
+    // Try Ember container lookup — in the owner of the call's render scope
+    // (`helperScopeOwners`), else the ambient owner, else the cached one.
     const currentOwner = getAmbientOwner();
-    if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
+    if (isLiveOwner(currentOwner)) {
       _cachedHelperOwner = currentOwner;
     }
-    if (_cachedHelperOwner && (_cachedHelperOwner.isDestroyed || _cachedHelperOwner.isDestroying)) {
+    if (_cachedHelperOwner && !isLiveOwner(_cachedHelperOwner)) {
       _cachedHelperOwner = null;
     }
-    const owner = currentOwner || _cachedHelperOwner;
-    if (owner && !owner.isDestroyed && !owner.isDestroying) {
+    const scope = siteCtx ?? (ctx !== null && typeof ctx === 'object' ? ctx : null);
+    let owner: any = scope !== null ? helperScopeOwners.get(scope) : undefined;
+    if (owner === undefined || !isLiveOwner(owner)) {
+      owner = isLiveOwner(currentOwner) ? currentOwner : (_cachedHelperOwner ?? undefined);
+      if (owner !== undefined && scope !== null) helperScopeOwners.set(scope, owner);
+    }
+    if (owner !== undefined && isLiveOwner(owner)) {
       // Where this call's helper instance lives: its call site in its render
       // scope, else the helper's name in its render scope, else in its owner
       // (see `helperSiteInstances`).

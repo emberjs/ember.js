@@ -2986,9 +2986,6 @@ const _gxtFlags = {
   inOutletRender: false,
   // Inside renderer.ts's forced `classicRoot.render()`.
   forceRerender: false,
-  // Nested `renderComponent` calls render text nodes without effects (set by
-  // renderer.ts, which owns the save/restore).
-  skipTextEffects: false,
   // A DOM sync is scheduled.
   pendingSync: false,
   // Inside `runTask`/`runAppend`, which sync themselves: the runloop end
@@ -3399,13 +3396,6 @@ function _gxtIsForceRerender(): boolean {
 }
 function _gxtWithForceRerender<T>(fn: () => T): T {
   return _gxtWithFlag('forceRerender', true, fn);
-}
-
-function _gxtGetSkipTextEffects(): boolean {
-  return _gxtFlags.skipTextEffects;
-}
-function _gxtSetSkipTextEffects(value: boolean): void {
-  _gxtFlags.skipTextEffects = value;
 }
 
 // Root outlet-rerender dispatcher. root.ts registers the `(outletRef) => void`
@@ -12626,7 +12616,7 @@ function _gxtPrecompileTemplate(
             const _cinfo: any = { lastRenderedName: _curriedItem.__name, __lastSnapshot: null };
             _snapshotCurriedArgs(_cinfo, _curriedItem);
             try {
-              gxtEffect(() => {
+              _gxtTemplateEffect(() => {
                 // For eagerly-evaluated curried components, track arg getters
                 const cc = _curriedItem;
                 _touchCurriedArgGetters(cc);
@@ -12794,7 +12784,7 @@ function _gxtPrecompileTemplate(
               // Register for manual re-rendering on property changes.
               _curriedRenderInfos.push(curriedRenderInfo);
 
-              gxtEffect(() => {
+              _gxtTemplateEffect(() => {
                 // Determine the current curried component.
                 // If item IS a curried component (not a getter), use it directly.
                 // If item is a getter function, call it to get the curried component.
@@ -12966,7 +12956,7 @@ function _gxtPrecompileTemplate(
           }
           const objTextNode = document.createTextNode(textVal);
           try {
-            gxtEffect(() => {
+            _gxtTemplateEffect(() => {
               const v = item();
               const fv = typeof v === 'function' ? v() : v;
               objTextNode.textContent = _gxtCoerceText(fv);
@@ -12981,7 +12971,7 @@ function _gxtPrecompileTemplate(
         if (typeof finalResult === 'symbol') {
           const symTextNode = document.createTextNode(String(finalResult));
           try {
-            gxtEffect(() => {
+            _gxtTemplateEffect(() => {
               const v = item();
               const fv = typeof v === 'function' ? v() : v;
               symTextNode.textContent = _gxtCoerceText(fv);
@@ -13005,7 +12995,7 @@ function _gxtPrecompileTemplate(
           fragment.appendChild(finalResult);
           fragment.appendChild(endMarker);
           try {
-            gxtEffect(() => {
+            _gxtTemplateEffect(() => {
               const v = item();
               const fv = typeof v === 'function' ? v() : v;
               const parent = startMarker.parentNode;
@@ -13040,16 +13030,8 @@ function _gxtPrecompileTemplate(
         // changing from undefined to an Element), we replace the text node
         // with the actual DOM node. We track the current content node so we
         // can swap it reactively without leaving comment markers in the DOM.
-        //
-        // When the "skip text effects" flag is set (nested renderComponent),
-        // skip creating effects. Nested renders are destroyed and recreated by
-        // the parent, so independent effects cause ordering issues. Read via the
-        // module-local `_gxtGetSkipTextEffects()`.
         const textValue = finalResult == null ? '' : String(finalResult);
         const textNode = document.createTextNode(textValue);
-        if (_gxtGetSkipTextEffects()) {
-          return textNode;
-        }
         let _currentContentNode: Node = textNode;
         let _isNodeContent = finalResult instanceof Node;
         try {
@@ -13066,7 +13048,7 @@ function _gxtPrecompileTemplate(
           // tracking frame (no second helper invocation needed to register
           // deps — they were registered when finalResult was first computed).
           let _firstRun = true;
-          gxtEffect(() => {
+          _gxtTemplateEffect(() => {
             let fv: any;
             if (_firstRun) {
               _firstRun = false;
@@ -13306,7 +13288,23 @@ function _gxtPrecompileTemplate(
       },
 
       // Render function for Ember integration
-      render(context: any, parentElement: Element | null) {
+      render(context: any, parentElement: Element | null, renderRoot?: object): any {
+        // A render that owns a gxt root (a `renderComponent` root, see
+        // base-renderer.ts) renders with that root as the ambient root: the
+        // contexts it creates are its nodes in gxt's render tree, so destroying
+        // the render destroys exactly its tree. Other renders share the ambient
+        // root.
+        if (renderRoot !== undefined) {
+          const prevRootContext = _gxtRootContext;
+          const prevParentContext = _gxtGetParentContext();
+          _gxtRootContext = renderRoot;
+          try {
+            return this.render(context, parentElement);
+          } finally {
+            _gxtRootContext = prevRootContext;
+            gxtSetParentContext(prevParentContext);
+          }
+        }
         if (!parentElement) {
           console.warn('[gxt-compile] No parent element provided for render');
           return { nodes: [] };
@@ -14059,8 +14057,6 @@ installCompilePipelinePart({
   // Set/get for the "skip text effects" flag. Written around each
   // renderComponent template render in renderer.ts; read by the intra-file
   // `$_text` reactive-binding setup to gate `gxtEffect` creation.
-  setSkipTextEffects: _gxtSetSkipTextEffects,
-  getSkipTextEffects: _gxtGetSkipTextEffects,
   // The `_gxtHelperInstances` destroy-tracking array, exposed as set/get + a
   // separate `pushHelperInstance` mutator. The collection identity is stable
   // (contents mutated by push + length=0). `pushHelperInstance` fires the

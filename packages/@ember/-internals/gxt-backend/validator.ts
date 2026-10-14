@@ -735,8 +735,7 @@ export function registerClassicReactor(cb: () => void, source?: string): () => v
 
 // Hard cap on TOTAL fires (any test). Catches the rare case where a
 // reactor is in a tight self-fire loop within one test. 50,000 is far
-// above any plausible legitimate bound — real reactors fire ~1,000 times
-// per test for renderComponent paths.
+// above any plausible legitimate bound.
 const REACTOR_FIRE_HARD_CAP = 50_000;
 
 // Cap on fires WITHIN A SINGLE foreign test (catches fast leaks).
@@ -803,16 +802,9 @@ function _fireClassicReactors() {
 // the sync's write-back of a parent's new arg value onto a child
 // (`_dispatchArgWrite`) and the effect that dirties a child's classic arg tag
 // when the arg changes (`_installArgDirtyEffect`). A `dirtyTagFor` inside the
-// scope does not fire the classic reactors.
-//
-// Those reactors re-render a whole `renderComponent` root (base-renderer.ts),
-// a fallback for classic mutations GXT does not see. Fired from the sync's
-// pass over the component args (manager.ts `_gxtSyncAllWrappersBody`), the
-// re-render replaces the components whose args are being propagated, in the
-// middle of the pass: the pass then visits the new components, whose first
-// comparison sees a change (a lazy arg cell has no previous value; an arg
-// value built afresh on each read is a new identity), propagates it, fires the
-// reactor, re-renders the root again, and so on without end.
+// scope does not fire the classic reactors: the reactors are a fallback for
+// classic mutations GXT does not see, and such a dirty is GXT handing a
+// parent's arg value on to a child, a change GXT is already propagating.
 let _argPropagationDepth = 0;
 export function withArgPropagation<T>(fn: () => T): T {
   _argPropagationDepth++;
@@ -1555,21 +1547,21 @@ export function dirtyTag(tag: any) {
       /* noop */
     }
     // A plain `createUpdatableTag` (the tag backing a custom `cell()`, e.g.
-    // `{{row.label.current}}` inside a keyed `{{#each}}`) must flush through
-    // the COALESCED, non-clearing `_scheduleCollectionFlush()` — NOT the
-    // property-driven `syncDomNow()`. `syncDomNow()`'s non-property-driven branch
-    // CLEARS `tagsToRevalidate`, discarding the just-dirtied cell + its
-    // subscribed text opcode (the dirty originates from a custom cell's
-    // `.set()`, not a tracked-property write, so `_gxtHadPendingSync` is
-    // false). `_scheduleCollectionFlush()` runs ONE `_gxtSyncDom()` microtask that
-    // re-runs only the genuinely-subscribed opcodes — the same flush the reactive
-    // collections (`trackedArray`) already use for in-place mutation. Scoped to
-    // `_isUpdatableCellTag` (set only by `createUpdatableTag`); `tagFor()` cells,
-    // `createTag()` dirtyable-only tags (helper `recompute()`), and the classic-CP
-    // `@tracked` `dirtyTagFor` path are all untouched and keep the synchronous
-    // `syncDomNow()` flush below.
+    // `{{row.label.current}}` inside a keyed `{{#each}}`, and the storages of
+    // the tracked collections: `trackedObject`, `trackedMap`, `trackedSet`, …)
+    // is a state change for the run loop's DOM sync, as a `@tracked` write is,
+    // plus ONE coalesced `_gxtSyncDom()` microtask
+    // (`_scheduleNativeCollectionFlush`). The formulas that read the tag are
+    // subscribed to its cell, and the sync re-runs exactly those. Recorded as
+    // anything else, `syncDomNow()`'s non-property-driven branch CLEARS
+    // `tagsToRevalidate`, discarding the just-dirtied cell + its subscribed
+    // opcodes, when it runs before the microtask (the end of the run loop of
+    // the write). Scoped to `_isUpdatableCellTag` (set only by
+    // `createUpdatableTag`); `tagFor()` cells, `createTag()` dirtyable-only tags
+    // (helper `recompute()`), and the classic-CP `@tracked` `dirtyTagFor` path
+    // are all untouched and keep the synchronous `syncDomNow()` flush below.
     if (tag._isUpdatableCellTag === true) {
-      _scheduleCollectionFlush();
+      _scheduleNativeCollectionFlush();
       return;
     }
     // Flush GXT DOM sync so the updated value is visible immediately (bridge

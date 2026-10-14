@@ -686,16 +686,6 @@ export interface GxtCompilePipelineCapabilities {
    */
   setRootOutletRerenderWrap?(wrap: (fn: any) => any): void;
 
-  /**
-   * Set the flag that makes `$_text` skip creating reactive text effects. The
-   * renderer sets it for `renderComponent` calls nested inside a render, since
-   * the parent re-renders them as a whole.
-   */
-  setSkipTextEffects?(value: boolean): void;
-
-  /** Read the flag set by `setSkipTextEffects`. */
-  getSkipTextEffects?(): boolean;
-
   /** compile.ts's root GXT rendering context. */
   getRootContext?(): any;
   /** Replace the root rendering context; each caller seeds it as it needs. */
