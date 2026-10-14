@@ -175,16 +175,51 @@ function findHelperManager(obj: any): any {
   return found;
 }
 
-// Cache for class-based helper instances created via $_maybeHelper.
-// Keyed by helper name for simple per-invocation caching.
+// The helper-cache entries other modules walk (validator.ts's `dirtyTagFor`,
+// compile.ts's branch teardown): the tag-dirty sentinel below. Helper instances
+// live in the per-scope tables that follow.
 // Cleared during test teardown via compilePipeline.clearHelperCache.
 const classHelperInstanceCache = new Map<string, any>();
-// Helper instances per call site: render scope (a template's `this`, a block's
-// context) → site id (ast-transforms.ts `gxtHelperCallSiteTransform`) → the
-// entry the name-keyed cache above keeps for a call without a site id (a
-// manager bucket, or a classic helper instance). Glimmer creates one helper
-// instance per call site and render scope, and destroys it with the scope.
+// Helper instances (a manager bucket, or a classic helper instance) of calls by
+// name, per render scope (a template's `this`, a block's context, an
+// `{{#each}}` row) and call. Glimmer creates one helper instance per call site
+// and render scope, and destroys it with the scope. A call the compiler marked
+// is keyed by its site id (ast-transforms.ts `gxtHelperCallSiteTransform`). A
+// zero-argument or named-only call carries none, and is keyed by the helper's
+// name (`helperNameKey`): two such calls of one helper in one render scope
+// share an instance, as gxt's compat emission tells them apart nowhere.
 const helperSiteInstances = new WeakMap<object, Map<string, any>>();
+// The same, per owner, for a call by name that comes with no render scope.
+const helperOwnerInstances = new WeakMap<object, Map<string, any>>();
+
+// The key of a call by name without a site id. Site ids are numbers.
+function helperNameKey(name: string): string {
+  return `name:${name}`;
+}
+
+// The table holding the helper instance of a call by name: its render scope's,
+// else its owner's.
+function helperInstancesFor(scope: unknown, owner: object): Map<string, any> {
+  if (scope !== null && typeof scope === 'object') return helperSiteInstancesFor(scope);
+  let instances = helperOwnerInstances.get(owner);
+  if (instances === undefined) {
+    instances = new Map();
+    helperOwnerInstances.set(owner, instances);
+  }
+  return instances;
+}
+
+// A table entry, unless its helper was destroyed (an `{{#if}}` branch's
+// teardown destroys the helpers created in it): a destroyed helper is never
+// reused, the call creates a new one.
+function liveHelperEntry(entry: any): any {
+  const destroyable = entry?.__managerBucket === true ? entry.destroyable : entry;
+  return destroyable !== null &&
+    typeof destroyable === 'object' &&
+    isDestroyingDestroyable(destroyable)
+    ? undefined
+    : entry;
+}
 
 function helperSiteInstancesFor(ctx: object): Map<string, any> {
   let sites = helperSiteInstances.get(ctx);
@@ -817,6 +852,12 @@ function createEmberMaybeHelper(original: Function) {
     }
     const owner = currentOwner || _cachedHelperOwner;
     if (owner && !owner.isDestroyed && !owner.isDestroying) {
+      // Where this call's helper instance lives: its call site in its render
+      // scope, else the helper's name in its render scope, else in its owner
+      // (see `helperSiteInstances`).
+      const instances = helperInstancesFor(siteCtx ?? ctx, owner);
+      const instanceKey = siteCtx ? siteId : helperNameKey(name);
+
       // First try factoryFor to get the registered class/factory
       const factory = owner.factoryFor(`helper:${name}`);
 
@@ -860,17 +901,18 @@ function createEmberMaybeHelper(original: Function) {
               typeof delegate.createHelper === 'function' &&
               delegate.capabilities?.hasValue
             ) {
-              // Cache the helper bucket per call site (per name for a call
-              // without a site id) so re-renders don't create new instances.
+              // Cache the helper bucket per call (`instances`) so re-renders
+              // don't create new instances; a bucket of another definition (the
+              // name registered again) is not this helper's.
               // We create a GXT cell to hold the result so GXT's formula system tracks
               // it and re-renders automatically when the cell is updated.
-              let cached = (
-                siteCtx
-                  ? helperSiteInstances.get(siteCtx)?.get(siteId)
-                  : classHelperInstanceCache.get(name)
-              ) as any;
+              let cached = liveHelperEntry(instances.get(instanceKey));
               const _cellFor = gxtModule.cellFor;
-              if (!cached || cached.__managerBucket !== true) {
+              if (
+                !cached ||
+                cached.__managerBucket !== true ||
+                cached.definition !== factoryClass
+              ) {
                 const reactiveArgs = {
                   positional: Object.freeze([...positional]),
                   named: Object.freeze({ ...named }),
@@ -981,9 +1023,9 @@ function createEmberMaybeHelper(original: Function) {
                   helperCell,
                   recomputeTag: _gxtRecomputeTag,
                   destroyable: bucketDestroyable,
+                  definition: factoryClass,
                 } as any;
-                if (siteCtx) helperSiteInstancesFor(siteCtx).set(siteId, cached);
-                else classHelperInstanceCache.set(name, cached);
+                instances.set(instanceKey, cached);
 
                 // Install PROPERTY_DID_CHANGE hook on the helper bucket so that
                 // tracked property changes (e.g., instance.foo = 456) trigger
@@ -1095,16 +1137,13 @@ function createEmberMaybeHelper(original: Function) {
 
         if (isClassBased) {
           // Use a cached persistent instance for class-based helpers, one per
-          // call site (per name for a call without a site id).
+          // call (`instances`).
           // This enables recompute() to trigger re-evaluation of the same instance.
-          let instance = siteCtx
-            ? helperSiteInstances.get(siteCtx)?.get(siteId)
-            : classHelperInstanceCache.get(name);
-          if (!instance) {
+          let instance = liveHelperEntry(instances.get(instanceKey));
+          if (!instance || instance.__managerBucket === true) {
             try {
               instance = factory.create();
-              if (siteCtx) helperSiteInstancesFor(siteCtx).set(siteId, instance);
-              else classHelperInstanceCache.set(name, instance);
+              instances.set(instanceKey, instance);
               // Also record the instance for destruction (see
               // `pushHelperInstance` in gxt-bridge.ts).
               getGxtRenderer()?.compilePipeline.pushHelperInstance?.(instance);

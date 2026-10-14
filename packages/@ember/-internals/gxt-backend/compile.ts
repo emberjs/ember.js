@@ -7309,13 +7309,48 @@ function _gxtSetHelperInstancePushHook(hook: (inst: any) => void): void {
   _gxtHelperInstancePushHook = hook;
 }
 
-// Cache for helper instances created in $_tag to prevent re-creation during
-// force re-render (which does innerHTML='' + full rebuild). Keyed by helper name.
+// Class-based helper instances created in $_tag (a zero-argument or
+// named-only call by name), so a force re-render (innerHTML='' + full rebuild)
+// reuses them. Glimmer creates one helper instance per call site and render
+// scope and destroys it with the scope: an instance is keyed by its render
+// scope (the tag's context, else the owner) and the helper's name
+// (`_tagHelperInstanceKey`), and a render scope's instances are destroyed with
+// it. (Two such calls of one helper in one render scope share an instance: the
+// compat emission tells call sites apart nowhere.)
 // Cleared during test teardown via `_gxtClearTagHelperCache`. Exposed to
 // ember-gxt-wrappers.ts (the `_tagDirtySentinel.lastArgsSer` setter that
 // propagates classic-tag dirties into cached tag-helper instances) via the
 // get-only bridge method `compilePipeline.getTagHelperInstanceCache`.
 const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: any }>();
+// The process-unique ids of the render scopes and owners keying it.
+const _tagHelperScopeIds = new WeakMap<object, number>();
+let _tagHelperScopeCount = 0;
+function _tagHelperInstanceKey(scope: object, name: string, isRenderScope: boolean): string {
+  let id = _tagHelperScopeIds.get(scope);
+  if (id === undefined) {
+    const scopeId = ++_tagHelperScopeCount;
+    id = scopeId;
+    _tagHelperScopeIds.set(scope, scopeId);
+    if (isRenderScope) {
+      // The render scope's helpers live as long as it.
+      _gxtRegisterDestructor(scope as never, () => {
+        const prefix = `${scopeId}:`;
+        const keys: string[] = [];
+        _tagHelperInstanceCache.forEach((_entry, key) => {
+          if (key.startsWith(prefix)) keys.push(key);
+        });
+        for (const key of keys) {
+          const instance = _tagHelperInstanceCache.get(key)?.instance;
+          _tagHelperInstanceCache.delete(key);
+          if (instance && !instance.isDestroyed && !instance.isDestroying) {
+            instance.destroy();
+          }
+        }
+      });
+    }
+  }
+  return `${id}:${name}`;
+}
 function _gxtClearTagHelperCache(): void {
   _tagHelperInstanceCache.clear();
 }
@@ -9352,7 +9387,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 factoryClass.prototype &&
                 typeof factoryClass.prototype.compute === 'function';
               if (isClassBased) {
-                const cached = _tagHelperInstanceCache.get(kebabName);
+                const isRenderScope = ctx !== null && typeof ctx === 'object';
+                const instanceKey = _tagHelperInstanceKey(
+                  isRenderScope ? ctx : owner,
+                  kebabName,
+                  isRenderScope
+                );
+                const cached = _tagHelperInstanceCache.get(instanceKey);
                 if (
                   cached &&
                   cached.instance &&
@@ -9365,7 +9406,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   try {
                     helperInstance = helperFactory.create();
                     recomputeTag = helperInstance[RECOMPUTE_TAG] ?? null;
-                    _tagHelperInstanceCache.set(kebabName, {
+                    _tagHelperInstanceCache.set(instanceKey, {
                       instance: helperInstance,
                       recomputeTag,
                     });

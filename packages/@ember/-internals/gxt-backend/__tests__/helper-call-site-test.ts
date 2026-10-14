@@ -9,6 +9,11 @@
  *   (a template instance, a block instance, an `{{#each}}` row): two call
  *   sites of the same class-based helper do not share state, and tearing one
  *   down (its `{{#if}}` branch, its `{{#each}}` row) destroys only that one.
+ *   That holds for a call with no positional argument (`(my-helper)`,
+ *   `{{my-helper a=1}}`) too: two components, or two `{{#each}}` rows, never
+ *   share its helper instance. (Two such calls of one helper in ONE render
+ *   scope still share one under GXT: the compat emission does not tell those
+ *   call sites apart.)
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -257,6 +262,133 @@ moduleFor(
       runTask(() => set(this.context, 'b', 'c'));
       this.assertText('[a1][c2]');
       assert.strictEqual(created.length, 2);
+    }
+  }
+);
+
+class NamedCountingHelper extends Helper {
+  label = '';
+  computes = 0;
+
+  override init(properties: object | undefined) {
+    super.init(properties);
+    instances.push(this as unknown as CountingHelper);
+  }
+
+  compute(_positional: unknown[], { label }: { label: string }): string {
+    this.label = label;
+    this.computes++;
+    return `${label}${this.computes}`;
+  }
+
+  override willDestroy() {
+    destroyed.push(this.label);
+    super.willDestroy();
+  }
+}
+
+// A custom-manager helper whose value names the helper it is (1, 2, … in
+// creation order) and the call's `a` argument.
+function defineNumberedHelper(created: unknown[]): object {
+  class NumberedManager {
+    capabilities = helperCapabilities('3.23', { hasValue: true });
+
+    createHelper(_definition: object, args: any) {
+      const bucket = { args, n: created.length + 1 };
+      created.push(bucket);
+      return bucket;
+    }
+
+    getValue(bucket: { args: any; n: number }) {
+      return `h${bucket.n}${bucket.args.named.a ?? ''}`;
+    }
+  }
+  return setHelperManager(() => new NumberedManager(), {});
+}
+
+moduleFor(
+  'GXT helper call sites: calls without a positional argument',
+  class extends RenderingTestCase {
+    constructor(assert: QUnit['assert']) {
+      super(assert);
+      instances = [];
+      destroyed = [];
+    }
+
+    ['@test a zero-argument call of a custom-manager helper gets one helper per component'](
+      assert: QUnit['assert']
+    ) {
+      const created: unknown[] = [];
+      this.owner.register('helper:numbered', defineNumberedHelper(created), {
+        instantiate: false,
+      });
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(precompileTemplate('{{concat "[" (numbered) "]"}}'), templateOnly())
+      );
+
+      this.render('<Bar /><Bar />');
+      this.assertText('[h1][h2]');
+      assert.strictEqual(created.length, 2, 'one helper per component');
+    }
+
+    ['@test a named-only call of a custom-manager helper gets one helper per component'](
+      assert: QUnit['assert']
+    ) {
+      const created: unknown[] = [];
+      this.owner.register('helper:numbered', defineNumberedHelper(created), {
+        instantiate: false,
+      });
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(precompileTemplate('[{{numbered a=@a}}]'), templateOnly())
+      );
+
+      this.render('<Bar @a="x" /><Bar @a={{this.y}} />', { y: 'y' });
+      this.assertText('[h1x][h2y]');
+      assert.strictEqual(created.length, 2, 'one helper per component');
+
+      runTask(() => set(this.context, 'y', 'z'));
+      this.assertText('[h1x][h2z]', 'each component keeps its helper');
+      assert.strictEqual(created.length, 2, 'no new helper');
+    }
+
+    ['@test a named-only call of a class-based helper gets one instance per component'](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register('helper:named-counting', NamedCountingHelper);
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('[{{named-counting label=@label}}]'),
+          templateOnly()
+        )
+      );
+
+      this.render('<Bar @label="a" /><Bar @label={{this.b}} />', { b: 'b' });
+      this.assertText('[a1][b1]');
+      assert.strictEqual(instances.length, 2, 'one instance per component');
+
+      runTask(() => set(this.context, 'b', 'c'));
+      this.assertText('[a1][c2]', 'only the component whose argument changed re-computes');
+      assert.strictEqual(instances.length, 2, 'no new instance');
+      assert.deepEqual(destroyed, [], 'nothing destroyed');
+    }
+
+    ['@test a named-only call of a class-based helper in {{#each}} rows gets one instance per row'](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register('helper:named-counting', NamedCountingHelper);
+
+      this.render('{{#each this.items as |item|}}[{{named-counting label=item}}]{{/each}}', {
+        items: ['x', 'y', 'z'],
+      });
+      this.assertText('[x1][y1][z1]');
+      assert.strictEqual(instances.length, 3, 'one instance per row');
+
+      runTask(() => set(this.context, 'items', ['x', 'y']));
+      this.assertText('[x1][y1]');
+      assert.deepEqual(destroyed, ['z'], 'only the removed row is destroyed');
     }
   }
 );
