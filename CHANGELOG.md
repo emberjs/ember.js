@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v7.4.0-beta.2 (October 13, 2026)
+
+- [#21619](https://github.com/emberjs/ember.js/pull/21619) [BUGFIX] Type overload for one of the new tracked forms was not appropriately allowing the equality options
+- [#21623](https://github.com/emberjs/ember.js/pull/21623) [BUGFIX] Include renderComponent roots in captureRenderTree
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
+- [#21719](https://github.com/emberjs/ember.js/pull/21719) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed
+
 ## v7.4.0-beta.1 (September 14, 2026)
 
 - [#21586](https://github.com/emberjs/ember.js/pull/21586) Update browser support per Ember's browser support policy (RFC #685). Support is now Support is now Chrome >= 109, Edge >= 149 Firefox >= 121, Safari >= 16.6, ChromeAndroid >= 151, FirefoxAndroid >= 153
