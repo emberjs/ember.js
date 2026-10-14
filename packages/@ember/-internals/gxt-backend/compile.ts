@@ -8843,10 +8843,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
           const fw = [dynFwProps, dynFwAttrs, events];
 
-          // Render the dynamic component
+          // Render the dynamic component now, as the by-name branch above and
+          // `$_dc_ember` do. A render thunk returned to gxt is evaluated inside
+          // a reactive formula (gxt's resolveRenderable), and each re-run of
+          // that formula creates the component again: a new instance and new
+          // DOM. Under a renderComponent root that re-renders on writes, a
+          // constructor writing its own @tracked field re-ran it without end.
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, dynArgs, fw, ctx);
+            return handleEmberComponent(managers, componentValue, dynArgs, fw, ctx);
           }
         }
         // If no component found, return empty comment

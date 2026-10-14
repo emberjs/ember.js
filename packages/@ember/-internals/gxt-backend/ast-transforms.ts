@@ -296,6 +296,50 @@ function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
 }
 
 /**
+ * `@Foo={{component "foo" a=1}}` → `@Foo={{(component "foo" a=1)}}` (any
+ * unquoted attribute or argument value).
+ *
+ * In Glimmer, the `component` keyword in a value position curries: the
+ * argument (or attribute) receives a curried component definition, which the
+ * receiver invokes as `<@Foo />`, `<this.args.Foo />` or `{{component @Foo}}`,
+ * with the curried arguments and any later overrides. GXT's compat compiler
+ * lowers every `{{component …}}` MUSTACHE to a component invocation element,
+ * which is meaningless as a value: the attribute-value visitor drops it and
+ * the argument is `null`. The SubExpression form is GXT's curry
+ * (`$_componentHelper`), the same value `(component "foo")` produces anywhere.
+ *
+ * Only an unquoted value whose head is the bare `component` keyword with at
+ * least one positional argument is rewritten. A template that shadows
+ * `component` (a scope value or a block param of that name) keeps its emission.
+ */
+function gxtAttrComponentCurryTransform(
+  scopeValues: Record<string, unknown> | undefined,
+  blockParamNames: Set<string>
+) {
+  const shadowed =
+    blockParamNames.has('component') ||
+    (scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, 'component'));
+  return (env: GxtAstEnv) => {
+    const b = env.syntax.builders;
+    return {
+      name: 'ember-gxt-attr-component-curry',
+      visitor: {
+        AttrNode(node: any): void {
+          if (shadowed) return;
+          const v = node.value;
+          if (!v || v.type !== 'MustacheStatement') return;
+          const p = v.path;
+          if (!p || p.type !== 'PathExpression' || !p.head || p.head.type !== 'VarHead') return;
+          if (p.head.name !== 'component' || p.tail.length !== 0) return;
+          if (v.params.length === 0) return;
+          node.value = b.mustache(b.sexpr(p, v.params, v.hash));
+        },
+      },
+    };
+  };
+}
+
+/**
  * `{{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}` →
  * `{{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}
  *    {{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}
@@ -1087,8 +1131,9 @@ function gxtTableTbodyTransform(env: GxtAstEnv) {
  * Build the ordered list of Ember dialect AST transforms for one compile.
  *
  * `gxtOutletTransform`, `gxtBlockAtArgTransform`, `gxtAttrQuotedHelperTransform`,
- * `gxtEachInTransform`, `gxtDynamicVarsTransform`, `gxtBlockParamsTransform` and
- * `gxtBodyBareHelperTransform` are always active (they target disjoint node kinds
+ * `gxtAttrComponentCurryTransform`, `gxtEachInTransform`, `gxtDynamicVarsTransform`,
+ * `gxtBlockParamsTransform` and `gxtBodyBareHelperTransform` are always active
+ * (they target disjoint node kinds
  * — or, for the `MustacheStatement` visitors, disjoint name/shape predicates — so
  * order between them is irrelevant). The `{{on}}`→`{{on-ext}}` transform is
  * appended only when the strict-mode scope does NOT shadow `on` — mirroring the
@@ -1468,6 +1513,7 @@ export function buildGxtDialectTransforms(
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
+    gxtAttrComponentCurryTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
     gxtEachInTransform as unknown as GxtAstTransform,
     gxtDynamicVarsTransform as unknown as GxtAstTransform,
     gxtBlockParamsTransform as unknown as GxtAstTransform,
