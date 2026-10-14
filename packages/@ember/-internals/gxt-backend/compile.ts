@@ -3208,6 +3208,16 @@ function _gxtEvaluateOncePerCreation<T extends (...args: any[]) => any>(
   } as T;
 }
 
+// An effect a template render creates (itemToNode's bindings) belongs to that
+// render: it is registered as a destructor of the template's `this`, so
+// destroying the render's context (gxt's `destroyElementSync`) stops it, as
+// destroying a Glimmer render destroys its references. Without an owner it
+// kept running, and writing to detached nodes, after its render was destroyed.
+function _gxtTemplateEffect(fn: () => void): () => void {
+  const owner = _gxtCurrentTemplateThis;
+  return gxtEffect(fn, owner !== null && typeof owner === 'object' ? owner : undefined);
+}
+
 function _gxtIsInTriggerReRender(): boolean {
   return _gxtFlags.inTriggerReRender;
 }
@@ -4553,9 +4563,23 @@ function patchGlobalIf() {
       }
       return null;
     })();
+    // The namespace (`<svg>`, MathML) the block renders in. A branch renders
+    // again when the condition changes, outside of the render that created
+    // the block, and its elements must still be created in that namespace.
+    const _capturedNamespace = _gxtNamespace;
+    const inCapturedNamespace = (render: (...args: any[]) => any) =>
+      function renderInCapturedNamespace(this: any, ...renderArgs: any[]) {
+        const prevNamespace = _gxtNamespace;
+        _gxtNamespace = _capturedNamespace;
+        try {
+          return render.apply(this, renderArgs);
+        } finally {
+          _gxtNamespace = prevNamespace;
+        }
+      };
     const wrapBranch = (fn: any, scope: Set<any>) => {
       if (typeof fn !== 'function') return fn;
-      return function wrappedBranch(this: any, ...branchArgs: any[]) {
+      return inCapturedNamespace(function wrappedBranch(this: any, ...branchArgs: any[]) {
         // Suppress branch evaluation when our parent {{#if}} collapsed earlier
         // in the same sync cycle. GXT calls the bound original syncState from
         // its tag-listener loop, which then calls renderState → trueBranch
@@ -4747,7 +4771,7 @@ function patchGlobalIf() {
                 _gxtCurrentParentIfRef = prev3;
               }
             };
-            return wrappedInner;
+            return inCapturedNamespace(wrappedInner);
           }
           return result;
         } finally {
@@ -4761,7 +4785,7 @@ function patchGlobalIf() {
           _gxtCurrentHelperScope = prev;
           _gxtCurrentParentIfRef = prevParentIf;
         }
-      };
+      });
     };
     const wrappedTrue = wrapBranch(trueBranch, trueBranchHelpers);
     const wrappedFalse = wrapBranch(falseBranch, falseBranchHelpers);
@@ -10861,11 +10885,18 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               if (!Array.isArray(entry) || entry.length < 2) continue;
               const [keyStr, valOrFn] = entry;
               if (keyStr === '1') {
-                // Text child
-                const val = typeof valOrFn === 'function' ? valOrFn() : valOrFn;
-                if (val != null && val !== false) {
-                  el.appendChild(document.createTextNode(String(val)));
+                // Text child, updated in place when it is bound.
+                const textOf = (val: unknown) =>
+                  val == null || val === false ? '' : _gxtCoerceText(val);
+                const textNode = document.createTextNode('');
+                if (typeof valOrFn === 'function') {
+                  _gxtTemplateEffect(() => {
+                    textNode.textContent = textOf(valOrFn());
+                  });
+                } else {
+                  textNode.textContent = textOf(valOrFn);
                 }
+                el.appendChild(textNode);
               } else if (keyStr === '0') {
                 // Modifier — skip, not supported in this lightweight path
               } else if (typeof valOrFn === 'function') {
