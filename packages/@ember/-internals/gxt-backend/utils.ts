@@ -115,10 +115,14 @@ export function attributeText(element: Element, name: string, value: unknown): s
  * - otherwise they are `createClassListRef`: each part through
  *   `normalizeStringValue`, empty parts skipped, joined with a space, and
  *   null (no attribute) when nothing is left.
- * The parts keep gxt's order: the forwarded classes (`fw[0]` class slots, by
- * now ordered by where `...attributes` sits), then the element's own. A
- * `class` attribute forwarded in `fw[1]` (the inner `$_tag` wrapper's by-name
- * component path forwards it there) is a forwarded class too.
+ * The parts are in source order, as Glimmer concatenates them: the element's
+ * own classes come before the forwarded ones (`fw[0]` class slots, then a
+ * `class` attribute forwarded in `fw[1]`, which the inner `$_tag` wrapper's
+ * by-name component path forwards there), unless the compiler's
+ * `__splatLocal__` marker says the element's class is written after
+ * `...attributes` (`__class__`). compile.ts's runtime-template wrapper strips
+ * the marker and has already moved the element's own classes into `fw[0]`, in
+ * order.
  */
 export function classAsAttribute(tagProps: any, edp: unknown): any {
   if (tagProps === edp || tagProps == null) return tagProps;
@@ -127,9 +131,11 @@ export function classAsAttribute(tagProps: any, edp: unknown): any {
   const fwProps = Array.isArray(fw) ? fw[0] : undefined;
   const fwAttrs = Array.isArray(fw) ? fw[1] : undefined;
   const parts: unknown[] = [];
+  const ownFirst = Array.isArray(fw) && !splatLocalNames(tagProps).has(CLASS_AFTER_SPLAT);
+  if (ownFirst) collectEntries(own, '', parts);
   collectEntries(fwProps, '', parts);
   collectEntries(fwAttrs, 'class', parts);
-  collectEntries(own, '', parts);
+  if (!ownFirst) collectEntries(own, '', parts);
   if (parts.length === 0) return tagProps;
   const value = parts.length === 1 ? parts[0] : mergeClassParts(parts);
   const attrs = Array.isArray(tagProps[1])
@@ -142,6 +148,30 @@ export function classAsAttribute(tagProps: any, edp: unknown): any {
       : fw;
   }
   return result;
+}
+
+/** The compiler's marker listing what an element writes after `...attributes`. */
+export const SPLAT_LOCAL_MARKER = '__splatLocal__';
+/** The marker's entry for a `class` written after `...attributes`. */
+export const CLASS_AFTER_SPLAT = '__class__';
+
+/**
+ * The names the `__splatLocal__` marker of gxt `$_tag` props lists (the
+ * attributes an element writes after `...attributes`, and `__class__`), empty
+ * when there is no marker. The compiler emits it in the props or the attrs.
+ */
+export function splatLocalNames(tagProps: any): Set<string> {
+  const names = new Set<string>();
+  for (const pos of [0, 1]) {
+    const entries = tagProps?.[pos];
+    if (!Array.isArray(entries)) continue;
+    for (const entry of entries) {
+      if (!Array.isArray(entry) || entry[0] !== SPLAT_LOCAL_MARKER) continue;
+      const value = typeof entry[1] === 'function' ? entry[1]() : entry[1];
+      for (const name of String(value ?? '').split(',')) if (name) names.add(name);
+    }
+  }
+  return names;
 }
 
 function collectEntries(entries: unknown, key: string, into: unknown[]): void {

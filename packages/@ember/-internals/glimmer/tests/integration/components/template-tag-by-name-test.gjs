@@ -43,6 +43,14 @@ const MergedClass = <template>
   <p data-test-merged ...attributes class={{@cls}}>x</p>
 </template>;
 
+const OwnBeforeSplat = <template>
+  <p data-test-before class="own" data-x="own" title="own" ...attributes>x</p>
+</template>;
+
+const OwnAfterSplat = <template>
+  <p data-test-after ...attributes class="own" data-x="own" title={{@title}}>x</p>
+</template>;
+
 moduleFor(
   'Components test: a <template> component invoked by name',
   class extends RenderingTestCase {
@@ -284,6 +292,51 @@ moduleFor(
 
       runTask(() => set(this.context, 'outer', undefined));
       assert.strictEqual(cls(), 'a');
+    }
+
+    // Glimmer applies an element's attributes in source order with
+    // `...attributes` expanded in place: a forwarded attribute overrides one
+    // written before `...attributes` and is overridden by one written after
+    // it, and classes concatenate in source order.
+    '@test attributes and a class written before ...attributes come first and lose to forwarded ones'(
+      assert
+    ) {
+      this.owner.register('component:own-before-splat', OwnBeforeSplat);
+
+      this.render('<OwnBeforeSplat class="fw" data-x={{this.x}} />', { x: 'fw' });
+      let p = () => this.element.querySelector('p[data-test-before]');
+      assert.strictEqual(p().getAttribute('class'), 'own fw');
+      assert.strictEqual(p().getAttribute('data-x'), 'fw');
+      assert.strictEqual(p().getAttribute('title'), 'own');
+
+      runTask(() => set(this.context, 'x', 'fw2'));
+      assert.strictEqual(p().getAttribute('data-x'), 'fw2');
+      assert.strictEqual(p().getAttribute('class'), 'own fw');
+    }
+
+    '@test attributes and a class written after ...attributes come last and win over forwarded ones'(
+      assert
+    ) {
+      this.owner.register('component:own-after-splat', OwnAfterSplat);
+
+      this.render(
+        '<OwnAfterSplat class={{this.cls}} data-x={{this.x}} title="fw" @title={{this.title}} />',
+        { cls: 'fw', x: 'fw', title: 'own-t' }
+      );
+      let p = () => this.element.querySelector('p[data-test-after]');
+      assert.strictEqual(p().getAttribute('class'), 'fw own');
+      assert.strictEqual(p().getAttribute('data-x'), 'own');
+      assert.strictEqual(p().getAttribute('title'), 'own-t');
+
+      runTask(() => {
+        set(this.context, 'x', 'fw2');
+        set(this.context, 'cls', 'fw2');
+        set(this.context, 'title', 'own-t2');
+      });
+      assert.strictEqual(p().getAttribute('data-x'), 'own');
+      assert.strictEqual(p().getAttribute('class'), 'fw2 own');
+      assert.strictEqual(p().getAttribute('title'), 'own-t2');
+      assert.false(p().hasAttribute('__splatLocal__'), 'no marker attribute');
     }
   }
 );

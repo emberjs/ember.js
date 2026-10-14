@@ -11236,20 +11236,24 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         tagProps[3] = newFw;
       }
 
-      // Reorder class entries for ...attributes precedence.
-      // GXT applies fw classes first (from tagProps[3][0]) then local (from tagProps[0]).
-      // Ember wants:
-      //   <div class="qux" ...attributes /> → local first, fw second (need to swap)
-      //   <div ...attributes class="qux" /> → fw first, local second (GXT default, no swap)
-      // If __class__ is NOT in splatLocalSet, ...attributes was AFTER class → swap.
-      // If __class__ IS in splatLocalSet, ...attributes was BEFORE class → no swap.
+      // Order the class entries for ...attributes precedence (source order):
+      //   <div class="qux" ...attributes /> → local first, fw second
+      //   <div ...attributes class="qux" /> → fw first, local second
+      // The marker is stripped above, so the local classes move into fw[0] in
+      // their final place: the inner wrapper's `classAsAttribute` then merges
+      // fw[0] in order (with no marker it would put local classes first).
       const classAfterSplat = splatLocalSet.has('__class__');
-      if (!classAfterSplat && Array.isArray(tagProps[0]) && Array.isArray(tagProps[3]?.[0])) {
+      if (Array.isArray(tagProps[0]) && Array.isArray(tagProps[3]?.[0])) {
         const localClassEntries = tagProps[0].filter((e: any) => e[0] === '');
         if (localClassEntries.length > 0) {
           tagProps[0] = tagProps[0].filter((e: any) => e[0] !== '');
-          // Prepend local class entries to fw[0] so they come first in GXT's class concat
-          tagProps[3] = [[...localClassEntries, ...tagProps[3][0]], tagProps[3][1], tagProps[3][2]];
+          tagProps[3] = [
+            classAfterSplat
+              ? [...tagProps[3][0], ...localClassEntries]
+              : [...localClassEntries, ...tagProps[3][0]],
+            tagProps[3][1],
+            tagProps[3][2],
+          ];
         }
       }
       // Clean __class__ from splatLocalSet (it's a meta-marker, not an actual attr)

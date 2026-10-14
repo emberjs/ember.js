@@ -33,6 +33,7 @@ import {
   createCurriedModifierValue,
   isPlainHtmlTagFastPath,
   keyEachInEntries,
+  splatLocalNames,
   sanitizedAttrValue,
   type EachInEntry,
 } from './utils';
@@ -1896,6 +1897,12 @@ function createEmberTag(original: Function) {
       const parentFw = tagProps[3];
       const parentFwAttrs = parentFw[1];
       if (Array.isArray(parentFwAttrs) && parentFwAttrs.length > 0) {
+        // Glimmer's `...attributes` precedence (source order): an attribute
+        // the element writes AFTER `...attributes` (listed in the compiler's
+        // `__splatLocal__` marker, which gxt applies first) wins over the
+        // forwarded one, which is dropped here; a forwarded attribute wins
+        // over one written before `...attributes`.
+        const local = splatLocalNames(tagProps);
         const capturedAttrs: Array<[string, any]> = [];
         const remainingFwAttrs: any[] = [];
         for (const entry of parentFwAttrs) {
@@ -1903,7 +1910,7 @@ function createEmberTag(original: Function) {
           // Only intercept reactive (function-valued) data-/aria-/title/etc.
           // attrs. Skip @-prefixed entries (named args) and static values.
           if (key && !String(key).startsWith('@') && typeof val === 'function') {
-            capturedAttrs.push([key, val]);
+            if (!local.has(String(key))) capturedAttrs.push([key, val]);
           } else {
             remainingFwAttrs.push(entry);
           }
@@ -1939,10 +1946,26 @@ function createEmberTag(original: Function) {
             }
           };
           localEvents.push(['0', onCreated]);
+          // The effect sets the forwarded value; the element's own attribute
+          // of the same name (written before `...attributes`) is not applied.
+          const captured = new Set(capturedAttrs.map(([aKey]) => String(aKey).toLowerCase()));
+          const notCaptured = (entries: any) =>
+            Array.isArray(entries)
+              ? entries.filter(
+                  (e: any) => !Array.isArray(e) || !captured.has(String(e[0]).toLowerCase())
+                )
+              : entries;
           patchedTagProps = [
-            tagProps[0],
-            tagProps[1],
+            notCaptured(tagProps[0]),
+            notCaptured(tagProps[1]),
             localEvents,
+            [parentFw[0], remainingFwAttrs, parentFw[2]],
+          ];
+        } else if (remainingFwAttrs.length !== parentFwAttrs.length) {
+          patchedTagProps = [
+            patchedTagProps[0],
+            patchedTagProps[1],
+            patchedTagProps[2],
             [parentFw[0], remainingFwAttrs, parentFw[2]],
           ];
         }
