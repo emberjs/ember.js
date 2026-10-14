@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T03:13:46.284Z",
+    "capturedAt": "2026-10-14T04:22:07.496Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "c6355fb7b5",
-    "totalTests": 10046,
-    "totalModules": 976,
+    "emberCommit": "778464ce35",
+    "totalTests": 10053,
+    "totalModules": 978,
     "quarantinedTests": 0,
-    "totalAssertions": 59992,
-    "totalAssertionsPassing": 58415,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a bound attribute updated to null or undefined is removed (the normalizeAttrValue hook applies Glimmer's normalizeValue removal rule on every write) and after class is an attribute whose classes merge as Glimmer merges them (false, null and undefined remove a lone class; merged classes skip empty parts), written by runner.mjs. 9244/10046 green (was 9219/10033): 13 new tests, all green (11 in 'Dynamic attribute values (null, undefined and false)', 2 in 'Components test: a <template> component invoked by name'), and 12 tests turned green: the 9 rehydration 'Unquoted a href / img src attribute is not rendered when set to null / undefined' tests, '[components] scope :: false / null class name do not render' and 'Updating :: class attribute is removed if the binding becomes null or undefined'. No timeouts, no harness errors, no green->red. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60016,
+    "totalAssertionsPassing": 58469,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a renderComponent root whose internal component manager has the hasSubOwner capability renders with the owner the manager returns (Glimmer's dynamic root invocation), and after a helper call without a positional argument (zero-argument or named-only) gets its own helper instance per render scope and owner instead of one per helper name, written by runner.mjs. 9257/10053 green (was 9244/10046): 7 new tests, all green (3 in 'GXT renderComponent: a hasSubOwner component manager's owner', 4 in 'GXT helper call sites: calls without a positional argument'), and 7 tests turned green: '[owner] :: owner can be changed by a component with the hasSubOwner capability', 'Updating :: helpers passed as arguments to {{#unless}} / {{#each}} are not torn down when switching between blocks', and 'initial render (client) :: GH#13999 ... undefined string literal / null / null string literal named arguments' and 'Attribute helpers take a hash'. One test is a known red that passed only by reusing another test's helper: 'Updating :: double curlies with const Node' (it now runs its own helper, whose Text node the dashed-tag helper branch writes as a string, as for 'double curlies with const SafeString'). No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2680,6 +2680,13 @@
       "assertionsPassing": 22,
       "failingTests": []
     },
+    "GXT helper call sites: calls without a positional argument": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
+    },
     "GXT helper call sites: instances": {
       "total": 4,
       "passing": 4,
@@ -2692,6 +2699,13 @@
       "passing": 5,
       "assertionsTotal": 5,
       "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "GXT renderComponent: a hasSubOwner component manager's owner": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "HashLocation": {
@@ -6612,9 +6626,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 42,
+      "passing": 43,
       "assertionsTotal": 792,
-      "assertionsPassing": 676,
+      "assertionsPassing": 699,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6622,6 +6636,10 @@
         },
         {
           "name": "double curlies with const SafeString",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "double curlies with const Node",
           "category": "gxt:triage"
         },
         {
@@ -6634,14 +6652,6 @@
         },
         {
           "name": "helpers can add destroyables",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "helpers passed as arguments to {{#unless}} are not torn down when switching between blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "helpers passed as arguments to {{#each}} are not torn down when switching between blocks",
           "category": "gxt:triage"
         },
         {
@@ -7017,15 +7027,10 @@
     },
     "[integration] jit :: [owner]": {
       "total": 2,
-      "passing": 1,
+      "passing": 2,
       "assertionsTotal": 7,
-      "assertionsPassing": 4,
-      "failingTests": [
-        {
-          "name": "owner can be changed by a component with the hasSubOwner capability",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 7,
+      "failingTests": []
     },
     "[integration] jit :: `component` keyword syntax errors": {
       "total": 14,
@@ -7652,9 +7657,9 @@
     },
     "[integration] jit :: initial render (client)": {
       "total": 88,
-      "passing": 82,
+      "passing": 86,
       "assertionsTotal": 680,
-      "assertionsPassing": 672,
+      "assertionsPassing": 676,
       "failingTests": [
         {
           "name": "Dynamic selected options",
@@ -7662,22 +7667,6 @@
         },
         {
           "name": "Dynamic multi-select",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle components with undefined string literal named arguments",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle components with null named arguments",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "GH#13999 The compiler can handle components with null string literal named arguments",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Attribute helpers take a hash",
           "category": "gxt:triage"
         }
       ]
@@ -10340,6 +10329,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 802
+    "gxt:triage": 796
   }
 }
