@@ -87,6 +87,25 @@ export class ServerSideSuite extends AbstractNodeTest {
   }
 
   @test
+  'A dynamic event handler attribute is not serialized'() {
+    // In the browser this binding resolves to the `onclick` property, where a
+    // non-function is discarded. The serialized output must not turn the same
+    // binding into an executing inline handler.
+    this.render('<div onclick={{this.handler}}>content</div>', {
+      handler: 'alert(document.cookie)',
+    });
+    this.assertHTML('<div>content</div>');
+  }
+
+  @test
+  'A dynamic camelCased event handler attribute is not serialized'() {
+    this.render('<div onClick={{this.handler}}>content</div>', {
+      handler: 'alert(document.cookie)',
+    });
+    this.assertHTML('<div>content</div>');
+  }
+
+  @test
   'The compiler can handle nesting'() {
     this.render(
       '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div>&nbsp;More content'

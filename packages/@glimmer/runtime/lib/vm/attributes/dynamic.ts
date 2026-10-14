@@ -15,7 +15,7 @@ import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 
 import type { MutableKey } from '../element-builder';
 
-import { normalizeStringValue } from '../../dom/normalize';
+import { isSafeString, normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
 
@@ -45,11 +45,26 @@ export function dynamicAttribute(
   }
 }
 
+// Event handler content attributes (onclick, onmouseover, ...) execute their
+// value when the browser parses the markup. On HTML elements these names never
+// take the attribute path: `normalizeProperty` resolves them to the element's
+// event handler property, whose IDL setter nulls out any non-function, so a
+// bound string is inert. SVG elements skip `normalizeProperty`, and simple-dom
+// elements during server-side rendering have no event handler properties, so
+// on those paths the same binding would be written as a real attribute and run
+// as script once (de)serialized. Matching the property-path semantics here
+// keeps a dynamic binding from ever producing an inline event handler.
+const EVENT_HANDLER_ATTRIBUTE = /^on[a-z]+$/i;
+
 function buildDynamicAttribute(
   tagName: string,
   name: string,
   attribute: AttributeCursor
 ): DynamicAttribute {
+  if (EVENT_HANDLER_ATTRIBUTE.test(name)) {
+    return new EventHandlerDynamicAttribute(attribute);
+  }
+
   if (requiresSanitization(tagName, name)) {
     return new SafeDynamicAttribute(attribute);
   } else {
@@ -159,6 +174,16 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
     const { element, name } = this.attribute;
     const sanitized = sanitizeAttributeValue(element, name, value);
     super.update(sanitized, env);
+  }
+}
+
+export class EventHandlerDynamicAttribute extends SimpleDynamicAttribute {
+  override set(dom: TreeBuilder, value: unknown, env: Environment): void {
+    super.set(dom, isSafeString(value) ? value.toHTML() : null, env);
+  }
+
+  override update(value: unknown, env: Environment): void {
+    super.update(isSafeString(value) ? value.toHTML() : null, env);
   }
 }
 

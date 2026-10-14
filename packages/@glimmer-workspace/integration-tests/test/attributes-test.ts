@@ -627,6 +627,21 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'svg does not render dynamic event handler attributes'() {
+    // On HTML elements `onclick` resolves to the event handler property, where
+    // the browser discards a non-function value. SVG attributes skip property
+    // normalization, so without the event handler guard the string would land
+    // in a real `onclick` attribute and execute on click.
+    this.render('<svg onclick={{this.foo}}></svg>', { foo: 'alert(document.cookie)' });
+    this.assertHTML('<svg></svg>');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'alert(1)' });
+    this.assertHTML('<svg></svg>');
+    this.assertStableNodes();
+  }
+
+  @test
   'marks javascript: protocol as unsafe on a camelCased url attribute'() {
     // `formAction` resolves to the DOM property, so the attribute name reaches
     // the sanitizer camelCased rather than as the lowercase `formaction`.
