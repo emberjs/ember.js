@@ -13,6 +13,13 @@
 - [#21536](https://github.com/emberjs/ember.js/pull/21536) [DOC] Document the `key` option for `{{#each-in}}`
 - [#21571](https://github.com/emberjs/ember.js/pull/21571) Improve batch rendering performance by moving VM blocks out of the DESTRYABLE_META
 
+## v7.3.1 (October 13, 2026)
+
+- [#21619](https://github.com/emberjs/ember.js/pull/21619) [BUGFIX] Type overload for one of the new tracked forms was not appropriately allowing the equality options
+- [#21623](https://github.com/emberjs/ember.js/pull/21623) [BUGFIX] Include renderComponent roots in captureRenderTree
+- [#21682](https://github.com/emberjs/ember.js/pull/21682) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
+
 ## v7.3.0 (September 14, 2026)
 
 - [#21471](https://github.com/emberjs/ember.js/pull/21471) [FEATURE] Overload tracked to be able to work outside of classes per [RFC #1071](https://rfcs.emberjs.com/id/1071-overload-tracked-for-non-class-use/).
