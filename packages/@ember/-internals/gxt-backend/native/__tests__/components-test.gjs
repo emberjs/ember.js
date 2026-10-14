@@ -29,6 +29,23 @@ module('gxt-native | components', function (hooks) {
     assert.strictEqual(htmlOf(this.element), '<b>new</b>');
   });
 
+  test('a templateOnly() definition without a template yields its block', function (assert) {
+    const Bare = templateOnly();
+    const Root = <template>
+      <Bare><i>block</i></Bare>|{{#let (component Bare) as |B|}}<B>curried</B>{{/let}}
+    </template>;
+    this.render(Root);
+    assert.strictEqual(textOf(this.element), 'block|curried');
+    assert.strictEqual(this.element.querySelector('i')?.textContent, 'block');
+  });
+
+  test('a component class without a template yields its block', function (assert) {
+    class Bare extends Component {}
+    const Root = <template><Bare>block {{1}}</Bare></template>;
+    this.render(Root);
+    assert.strictEqual(textOf(this.element), 'block 1');
+  });
+
   test('a component class with setComponentTemplate (no class-body template)', function (assert) {
     class Shout extends Component {
       get loud() {

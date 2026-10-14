@@ -22,10 +22,11 @@
 //     lazy, autotracked args object, so `this.args.x` subscribes the reading
 //     formula), gives the template context a gxt tree id, sets its template
 //     (own registration > class-body `<template>` > inherited registration >
-//     empty), and registers a gxt destructor that calls `destroyComponent`
+//     Glimmer's default `{{yield}}`), and registers a gxt destructor that calls `destroyComponent`
 //     (Glimmer manager: willDestroy + Ember `destroy()` + isDestroying /
 //     isDestroyed on the runloop) when gxt removes the node.
-//   - handle (templateOnly definition): its registered template function.
+//   - handle (templateOnly definition): its registered template function, else
+//     Glimmer's default `{{yield}}`.
 //   - handle (Ember INTERNAL component manager — LinkTo's InternalComponent):
 //     per invocation, the classic `InternalManager.create` with Glimmer's
 //     captured-arguments shape (one compute ref per named argument over gxt's
@@ -134,10 +135,20 @@ function ownerFor(ctx: object): object {
   return owner;
 }
 
-// A component without any template renders nothing (Glimmer parity).
+// What a curried component with no definition renders: nothing.
 function EMPTY_TEMPLATE(this: object): unknown {
   $_GET_ARGS(this as never, arguments);
   return $_fin([], this as never);
+}
+
+// Glimmer's template for a component that has none (no registered or
+// class-body template): `{{yield}}` (program/lib/constants.ts
+// `defaultTemplate`, for every manager without `dynamicLayout` — template-only,
+// custom and Ember's internal managers).
+function DEFAULT_TEMPLATE(this: object): unknown {
+  $_GET_ARGS(this as never, arguments);
+  const slots = $_GET_SLOTS(this, arguments);
+  return $_fin([$_slot('default', () => [], slots, this as never)], this as never);
 }
 
 function resolveTemplate(value: unknown, owner: object, definition: object): GxtTemplate {
@@ -258,7 +269,7 @@ function handleCurried(curried: object, args: object, fw: unknown, ctx: object):
     resolved = handle(definition as object, merged, fw, ctx, positional);
     // A manager factory closes over `merged`; a template function is
     // constructed by gxt with the INVOCATION args — hand it the merged ones.
-    if (isTemplateFn(resolved) || resolved === EMPTY_TEMPLATE) {
+    if (isTemplateFn(resolved) || resolved === DEFAULT_TEMPLATE || resolved === EMPTY_TEMPLATE) {
       resolved = curriedTemplate(resolved as GxtTemplate, merged);
     }
   } else {
@@ -351,7 +362,7 @@ function handle(
   if (definition instanceof TemplateOnlyComponentDefinition) {
     const registered = getComponentTemplate(definition);
     const template =
-      registered === undefined ? EMPTY_TEMPLATE : resolveTemplate(registered, owner, definition);
+      registered === undefined ? DEFAULT_TEMPLATE : resolveTemplate(registered, owner, definition);
     DEFINITION_OF_TEMPLATE.set(template, definition);
     return template;
   }
@@ -407,10 +418,11 @@ function handle(
     if (ownTemplate !== undefined) {
       node[$template] = resolveTemplate(ownTemplate, owner, definition);
     } else if (!($template in node)) {
-      // no class-body `<template>`: inherited registration, else nothing.
+      // no class-body `<template>`: inherited registration, else Glimmer's
+      // default `{{yield}}`.
       node[$template] =
         inheritedTemplate === undefined
-          ? EMPTY_TEMPLATE
+          ? DEFAULT_TEMPLATE
           : resolveTemplate(inheritedTemplate, owner, definition);
     }
     if (delegate.capabilities.destructor && typeof delegate.destroyComponent === 'function') {
@@ -439,7 +451,7 @@ function internalComponent(
 ): unknown {
   const registered = getComponentTemplate(definition);
   const template =
-    registered === undefined ? EMPTY_TEMPLATE : resolveTemplate(registered, owner, definition);
+    registered === undefined ? DEFAULT_TEMPLATE : resolveTemplate(registered, owner, definition);
   const source = args as Record<string, unknown>;
 
   return function NativeInternalComponent(): object {
