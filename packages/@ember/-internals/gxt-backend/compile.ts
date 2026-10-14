@@ -472,6 +472,7 @@ import {
   // `_gxtEvaluateOncePerCreation`).
   tagFor as _gxtTagFor,
   peekTagFor as _gxtPeekTagFor,
+  tagMetaFor as _gxtTagMetaFor,
   currentRevision as _gxtCurrentRevision,
 } from '@lifeart/gxt';
 // Host hooks: the gxt runtime calls the hooks registered here.
@@ -5407,6 +5408,8 @@ const _eachItemHolderByTarget = new WeakMap<object, _EachItemHolder>();
 interface _EachItemHolder {
   raw: any;
   rebindPossible: boolean;
+  // The row body's proxy for the item (see `wrapEachItemForTracking`).
+  proxy?: object;
 }
 
 // Shared trap skip-list (framework/internal props bypass cell tracking).
@@ -5595,6 +5598,7 @@ function wrapEachItemForTracking(item: any, rebindPossible: boolean = false): an
   // literal / trap-closure allocation.
   _eachItemHolderByTarget.set(item, holder);
   const proxy = new Proxy(item, _eachItemProxyHandler);
+  holder.proxy = proxy;
   _eachItemProxies.set(item, proxy);
   _eachItemProxyToRaw.set(proxy, item);
   return proxy;
@@ -5768,11 +5772,22 @@ const _eachNestedProxyHandler: ProxyHandler<any> = {
 // draining it via `_gxtDrainPendingEachRebinds()` BETWEEN the two
 // `_gxtSyncDomNow` passes — landing the dirty revision in the second pass's
 // revalidation set, which re-executes the row body formula in place.
-const _pendingEachRebindHolders: Array<{ raw: any }> = [];
+//
+// The row body reads the item's members through gxt cells keyed on the row's
+// proxy (`$__cellFor(item, key)`), which hold the values of the item the row was
+// rendered with. They are given the new item's values: a member reads the
+// cell again without reading the item.
+const _pendingEachRebindHolders: Array<_EachItemHolder> = [];
 function _gxtDrainPendingEachRebinds(): void {
   if (_pendingEachRebindHolders.length === 0) return;
   const holders = _pendingEachRebindHolders.splice(0);
   for (const holder of holders) {
+    const proxy = holder.proxy as any;
+    if (proxy !== undefined) {
+      _gxtTagMetaFor(proxy).forEach((cell: any, key: string | number | symbol) => {
+        if (typeof key === 'string') cell.update(proxy[key]);
+      });
+    }
     try {
       const revCell = cellFor(holder as any, '__gxtRev', /* skipDefine */ true);
       if (revCell) {
