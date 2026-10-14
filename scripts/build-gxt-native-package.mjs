@@ -637,7 +637,7 @@ for (const mode of ['production', 'development']) {
     join(OUT, 'probe.gjs')
   );
   const code = out?.code ?? '';
-  if (code.includes('dt7948') || !/\bfrom "decorator-transforms\/runtime"/.test(code)) {
+  if (!code.includes('import * as dt7948 from "decorator-transforms/runtime"')) {
     fail(`preset (${mode}): a decorated .gjs does not import decorator-transforms/runtime`);
   }
 }
