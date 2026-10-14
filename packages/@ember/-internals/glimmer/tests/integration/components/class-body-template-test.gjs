@@ -223,6 +223,40 @@ module('Components test: a component class with a registered template', function
     assert.dom().hasText('own panel');
   });
 
+  // Glimmer renders the NEAREST template on the class chain, whether it is a
+  // registration or a class-body `<template>`.
+  test('a template registered for an intermediate class wins over a class-body template further up', async function (assert) {
+    class Mid extends Panel {}
+    setComponentTemplate(precompileTemplate('mid {{this.label}}'), Mid);
+
+    class Leaf extends Mid {
+      label = 'leaf';
+    }
+
+    await render(<template><Mid />|<Leaf /></template>);
+
+    assert.dom().hasText('mid panel|mid leaf');
+  });
+
+  test('a class-body template of an intermediate class wins over a registration further up', async function (assert) {
+    class Base extends Component {
+      value = 'base';
+    }
+    setComponentTemplate(precompileTemplate('registered {{this.value}}'), Base);
+
+    class Mid extends Base {
+      <template>mid {{this.value}}</template>
+    }
+
+    class Leaf extends Mid {
+      value = 'leaf';
+    }
+
+    await render(<template><Base />|<Mid />|<Leaf /></template>);
+
+    assert.dom().hasText('registered base|mid base|mid leaf');
+  });
+
   test('it is destroyed when it is torn down', async function (assert) {
     let destroyed = 0;
 

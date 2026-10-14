@@ -150,6 +150,38 @@ export function classAsAttribute(tagProps: any, edp: unknown): any {
   return result;
 }
 
+// gxt brands a class that declares a class-body `<template>` with this own
+// static property (gxt `CLASS_BODY_TEMPLATE`, a registry symbol).
+const CLASS_BODY_TEMPLATE = Symbol.for('gxt-class-body-template');
+
+/**
+ * Which template of a component class's chain is the nearest, as Glimmer
+ * renders it: `'registered'` when the first class (from `definition` up) that
+ * has a template has a registered one (`hasOwnRegistration`), `'class-body'`
+ * when it declares a class-body `<template>`. `undefined` when no class in the
+ * chain carries gxt's class-body brand (the declaring class is then unknown:
+ * the caller falls back to the instance's own `[$template]` field). A class
+ * with both prefers its registration.
+ */
+export function nearestTemplateKind(
+  definition: object,
+  hasOwnRegistration: (klass: object) => boolean
+): 'registered' | 'class-body' | undefined {
+  let first: 'registered' | 'class-body' | undefined;
+  let branded = false;
+  let pointer: any = definition;
+  while (pointer && pointer !== Function.prototype && pointer !== Object.prototype) {
+    const brand = Object.prototype.hasOwnProperty.call(pointer, CLASS_BODY_TEMPLATE);
+    if (brand) branded = true;
+    if (first === undefined) {
+      if (hasOwnRegistration(pointer)) first = 'registered';
+      else if (brand) first = 'class-body';
+    }
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return branded ? first : undefined;
+}
+
 /** The compiler's marker listing what an element writes after `...attributes`. */
 export const SPLAT_LOCAL_MARKER = '__splatLocal__';
 /** The marker's entry for a `class` written after `...attributes`. */

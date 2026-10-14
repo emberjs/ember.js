@@ -57,6 +57,7 @@ import {
   registerDestructor as gxtRegisterDestructor,
   resolveCurried,
 } from '@lifeart/gxt';
+import { nearestTemplateKind } from '../utils';
 import { argsProxyFor, unwrapArg } from './args';
 import { trackComponent, type LifecycleDelegate } from './component-lifecycle';
 import { destroy } from './destroyable';
@@ -378,6 +379,12 @@ function handle(
   const ownTemplate = getOwnComponentTemplate(definition);
   const inheritedTemplate =
     ownTemplate === undefined ? getComponentTemplate(definition) : undefined;
+  // The nearest template wins, as in Glimmer: an inherited registration that
+  // is nearer than the class-body `<template>` the instance inherits.
+  const registrationIsNearer =
+    inheritedTemplate !== undefined &&
+    nearestTemplateKind(definition, (klass) => getOwnComponentTemplate(klass) !== undefined) ===
+      'registered';
 
   // gxt constructs this per INVOCATION (`new NativeComponent(args, fw)`): every
   // invocation creates its own component through the manager.
@@ -417,6 +424,8 @@ function handle(
     }
     if (ownTemplate !== undefined) {
       node[$template] = resolveTemplate(ownTemplate, owner, definition);
+    } else if (registrationIsNearer) {
+      node[$template] = resolveTemplate(inheritedTemplate, owner, definition);
     } else if (!($template in node)) {
       // no class-body `<template>`: inherited registration, else Glimmer's
       // default `{{yield}}`.

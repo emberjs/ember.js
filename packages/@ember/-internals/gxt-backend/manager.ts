@@ -24,6 +24,7 @@ import {
   capabilitiesErrorPrefix,
   keepArgValue,
   sanitizedAttrValue,
+  nearestTemplateKind,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -9550,6 +9551,14 @@ function _inheritsComponentTemplate(definition: any, template: any): boolean {
   return inherited !== undefined && (template == null || template === inherited);
 }
 
+// The nearest template of a component class's chain (`nearestTemplateKind`):
+// a registration or a class-body `<template>`, `undefined` when gxt branded no
+// class of the chain.
+function _nearestTemplateKind(definition: any): 'registered' | 'class-body' | undefined {
+  const raw = _proxyToRaw.get(definition) || definition;
+  return nearestTemplateKind(raw, (klass) => COMPONENT_TEMPLATES.has(klass));
+}
+
 // Whether a component has a class-body `<template>`: gxt compiles one to an
 // instance field (`[$template]`), an own property of the component.
 function _hasClassBodyTemplate(component: any): boolean {
@@ -10241,9 +10250,13 @@ function handleCustomManagedComponent(
       // component is created as a class-body component is (`classBodyArgs`,
       // its arguments read from the invocation when it reads them) and, when
       // it has one, rendered as one.
-      const classBodyArgs = _inheritsComponentTemplate(ComponentClass, template)
-        ? _gxtInvocationArgs(args, _gxtFwTuple(args, fw))
-        : null;
+      // gxt brands the class that declares a class-body template: a
+      // registration nearer than it (an intermediate class's) wins.
+      const classBodyArgs =
+        _inheritsComponentTemplate(ComponentClass, template) &&
+        _nearestTemplateKind(ComponentClass) !== 'registered'
+          ? _gxtInvocationArgs(args, _gxtFwTuple(args, fw))
+          : null;
       const capturedArgs = { named: classBodyArgs ?? liveNamed, positional: livePositional };
       instance = actualManager.createComponent(ComponentClass, capturedArgs);
 
