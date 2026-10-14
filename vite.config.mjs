@@ -126,6 +126,9 @@ export default defineConfig(({ mode }) => {
       // Use gxt compiler for glimmer-next or templateTag for standard Ember.
       // The decorators it lowers import decorator-transforms' runtime, as the
       // babel pass makes plain modules do (no `dt7948` global).
+      // EMBER_PROPERTY_TAGS: a template's property read consumes the
+      // property's tag (Glimmer's getProp), so `set()` /
+      // `notifyPropertyChange()` on an untracked property re-render it.
       ...(useGxt
         ? isolateTestCompileErrors(
             withDecoratorRuntime(
@@ -135,6 +138,7 @@ export default defineConfig(({ mode }) => {
                   WITH_HELPER_MANAGER: true,
                   WITH_MODIFIER_MANAGER: true,
                   TRY_CATCH_ERROR_HANDLING: false,
+                  EMBER_PROPERTY_TAGS: true,
                 },
               })
             )

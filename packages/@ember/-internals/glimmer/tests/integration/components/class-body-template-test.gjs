@@ -2,7 +2,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { moduleFor, RenderingTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
-import { set } from '@ember/object';
+import { notifyPropertyChange, set } from '@ember/object';
 import { capabilities, setComponentManager, setComponentTemplate } from '@ember/component';
 import { renderComponent } from '@ember/renderer';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -392,6 +392,79 @@ moduleFor(
 
       assert.strictEqual(this.element.textContent, '[1 b]');
       assert.strictEqual(instances.length, 1, 'the component updated in place');
+    }
+
+    '@test set() on a plain field updates its template; an assignment without set() does not'(
+      assert
+    ) {
+      let instance;
+
+      class Clicks extends Component {
+        clicks = 0;
+        data = { count: 0 };
+
+        constructor(owner, args) {
+          super(owner, args);
+          instance = this;
+        }
+
+        <template>{{this.clicks}}/{{this.data.count}}</template>
+      }
+
+      this.owner.register('component:x-clicks', Clicks);
+
+      this.render('<XClicks />');
+
+      assert.strictEqual(this.element.textContent, '0/0');
+
+      runTask(() => set(instance, 'clicks', 1));
+
+      assert.strictEqual(this.element.textContent, '1/0');
+
+      runTask(() => set(instance.data, 'count', 1));
+
+      assert.strictEqual(this.element.textContent, '1/1', 'set() on an object it reads');
+
+      runTask(() => (instance.clicks = 2));
+
+      assert.strictEqual(this.element.textContent, '1/1', 'an assignment does not notify');
+
+      runTask(() => notifyPropertyChange(instance, 'clicks'));
+
+      assert.strictEqual(this.element.textContent, '2/1', 'notifyPropertyChange() does');
+    }
+
+    '@test set() on a plain field updates the template of a class invoked from a strict-mode template'(
+      assert
+    ) {
+      let instance;
+
+      class Clicks extends Component {
+        clicks = 0;
+
+        constructor(owner, args) {
+          super(owner, args);
+          instance = this;
+        }
+
+        <template>{{this.clicks}}</template>
+      }
+
+      class Host extends Component {}
+      setComponentTemplate(
+        precompileTemplate('<Clicks />', { strictMode: true, scope: () => ({ Clicks }) }),
+        Host
+      );
+
+      this.owner.register('component:clicks-host', Host);
+
+      this.render('<ClicksHost />');
+
+      assert.strictEqual(this.element.textContent, '0');
+
+      runTask(() => set(instance, 'clicks', 1));
+
+      assert.strictEqual(this.element.textContent, '1');
     }
   }
 );

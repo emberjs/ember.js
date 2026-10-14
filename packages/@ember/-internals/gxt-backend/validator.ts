@@ -9,7 +9,12 @@ import * as _glimmerGlobalContext from '@glimmer/global-context';
 // classic @glimmer/validator tag mutations can be bridged into GXT's effect system.
 // Using the same cell factory that _gxtEffect tracks ensures reads inside an
 // effect register a subscription that will re-fire the effect on updates.
-import { cell as _gxtNativeCell, syncDom as _gxtSyncDom } from '@lifeart/gxt';
+import {
+  cell as _gxtNativeCell,
+  dirtyCell as _gxtDirtyCell,
+  peekTagFor as _gxtPeekTagFor,
+  syncDom as _gxtSyncDom,
+} from '@lifeart/gxt';
 // Routes the track() reentrancy-guard save-restore through the typed bridge
 // helper. See `withTriggerSuppressed` doc in gxt-bridge.ts.
 import { getGxtRenderer, getEmberAssertDirect } from './gxt-bridge';
@@ -189,6 +194,13 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
         enumerable: false,
       });
     }
+    // A property's tag, once it exists, is returned as is. A build-time
+    // template's read of the property creates it without a value
+    // (`$__tag(obj, key)`, Glimmer's getProp), and glimmer-compat's `tagFor`
+    // would fill that value by reading the property: a getter that asks for
+    // its own tag (a computed property) would re-enter it without end.
+    const existing = _gxtPeekTagFor(obj, safeKey as string);
+    if (existing !== undefined) return existing;
     return gxtTagFor(obj, safeKey, meta);
   } catch (err: any) {
     if (
@@ -829,6 +841,14 @@ export function dirtyTagFor(obj: any, key: any) {
   const tag = tagFor(obj, safeKey);
   if (tag && typeof tag === 'object') {
     markTagDirty(tag);
+  }
+  // Invalidate the tag itself, as Glimmer does, so that what consumed it
+  // re-renders: a build-time template's read of the property (`$__tag(obj,
+  // key)`) consumed it. gxt's own `dirtyTagFor` below re-validates it only
+  // when the value it holds changed, and a property tag holds none.
+  const propertyTag = _gxtPeekTagFor(obj, safeKey);
+  if (propertyTag !== undefined) {
+    _gxtDirtyCell(propertyTag);
   }
 
   // Mark GXT sync as pending so the next `_gxtSyncDomNow` processes this
