@@ -64,6 +64,9 @@ Handlebars side does not look at HTML state:
    closed in the block program that opened it (E22, E23), but a partially tokenized tag or HTML
    comment is not an element. A block's `{{else}}` or closer therefore ends the program in any
    HTML state, and the partial tag or comment continues into what follows (§02-6.11).
+   **[Deprecated]**: a new implementation SHOULD reject a block's `{{else}}` or closer in any
+   HTML state but `beforeData` and `data` (§02-6.11), so it needs no carry-over of a partial tag
+   or comment across a program boundary.
 
 Which error is reported for a template with more than one error is not specified (§02-9.1,
 "Error priority"). The current parser reports Handlebars lexical and grammar errors before any
@@ -141,7 +144,7 @@ before any HTML tokenization (§02-1.5), and templates depend on the result:
   would change rendered whitespace in existing templates.
 - *Block structure.* This property changes only what happens to inputs that are accepted with
   a garbled tree today (§02-6.11, "Blocks that straddle markup"). It could be relaxed without
-  breaking a working template; §02-11 item 17 plans to make those inputs errors. Error priority
+  breaking a working template, and those inputs are **[Deprecated]** (§02-11 item 17). Error priority
   was in the same position and has been relaxed (§02-9.1).
 
 The single-scan statement of §02-1.1 removes what is *not* fixed: the Handlebars parse tree, the
@@ -415,7 +418,12 @@ tokenizer, so `{{{{raw}}}}<div>{{{{/raw}}}}` fails with `Unclosed element \`div\
 `{{{{raw}}}} {{x}} {{{{/raw}}}}` yields a single `TextNode` `" {{x}} "`. Nested raw openers and
 closers produce *separate* `ContentStatement`s and therefore separate `TextNode`s. Standalone
 whitespace stripping (§02-5.3) applies to raw blocks. There is no syntactic trace in ASTv1
-that a block was raw. **[Legacy]**
+that a block was raw.
+
+**[Deprecated]** Raw blocks are inherited from Handlebars (§02-11 item 15). Deprecation id
+`template-raw-block`, until 8.0.0 (not yet implemented in Ember). A new implementation SHOULD NOT
+accept `{{{{`, and SHOULD reject it with a syntax error that suggests an ordinary block with
+`\{{` escapes in its body (§02-2.2).
 
 ---
 
@@ -501,6 +509,10 @@ Observations that follow directly from the grammar:
 escapeFlag is the 4th char, or the 3rd when there is no tilde — i.e. the char right after
 `{{` or `{{~`). `{{&…}}}` is not valid (`{{&` closes with `}}`).
 
+**[Deprecated]** `{{&foo}}` is inherited from Handlebars (§02-11 item 15). Deprecation id
+`template-ampersand-mustache`, until 8.0.0 (not yet implemented in Ember). A new implementation
+SHOULD NOT accept it, and SHOULD reject it with a syntax error that suggests `{{{foo}}}`.
+
 The first `expr` is the callee/value (`path`), the rest are positional `params`, then an optional
 `hash`.
 
@@ -534,11 +546,16 @@ the `program`. Glimmer handles the two forms differently:
   (span: the whole block; `handlebars-node-visitors.ts:133-140`; test
   `parser-error-test.ts:110-119`).
 - **With `{{else}}`**, `{{^foo}}a{{else}}b{{/foo}}` is accepted by the current implementation
-  and means `{{#foo}}b{{else}}a{{/foo}}` (untested). **[Out of spec]** (author ruling,
-  2026-10-13): the existing implementation need not change, but a new implementation SHOULD NOT
-  accept this form, and SHOULD reject it with the same error as the form without `{{else}}`.
+  and means `{{#foo}}b{{else}}a{{/foo}}` (untested). **[Deprecated]** (author rulings of
+  2026-10-13 and 2026-10-14; deprecation id `template-inverse-block-with-else`, until 8.0.0, not
+  yet implemented in Ember): a new implementation SHOULD NOT accept this form, and SHOULD reject
+  it with the same error as the form without `{{else}}`. Block params on such a block attach to
+  the swapped half, so `{{^each xs as |i|}}…{{else}}{{i}}{{/each}}` never binds `i`.
 
-`{{^}}` *inside* a block is fully supported as a synonym for `{{else}}`.
+`{{^}}` *inside* a block is a synonym for `{{else}}`. **[Deprecated]** (inherited from
+Handlebars, §02-11 item 15; deprecation id `template-caret-else`, until 8.0.0, not yet
+implemented in Ember): a new implementation SHOULD NOT accept it, and SHOULD reject it with a
+syntax error that suggests `{{else}}`.
 
 ### 3.4 Sub-expressions
 
@@ -1106,7 +1123,8 @@ property 1), but are *not* interpreted: their **original source text** (from the
 joined with `\n`) is appended to the comment value. For a block, that is the whole block from
 its opener to its closer; the text between is not HTML-tokenized, so a `-->` inside it does not
 end the comment. A `{{else}}` or closer of a block that began *outside* the comment is not
-comment text: it ends that block's program (§02-6.11, "Blocks that straddle markup"). This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
+comment text: it ends that block's program (§02-6.11, "Blocks that straddle markup";
+**[Deprecated]**). This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
 `comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
 because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
 character is not `>` (`handlebars-node-visitors.ts:323-350`;
@@ -1228,7 +1246,12 @@ is current when it is finished. By experiment (no test pins these down):
 | `{{#if x}}<!--{{else}}-->{{/if}}` | an empty default program; an empty HTML comment in the inverse |
 | `{{#if x}}\n<!-- a\n{{/if}}\n-->` | an empty block, then the HTML comment ` a\n` after it |
 
-See §02-11 item 17.
+**[Deprecated]** (author, 2026-10-14; no deprecation id yet). Ember will deprecate these inputs
+before rejecting them. A new implementation SHOULD NOT accept them: a block's `{{else}}` (also
+`{{^}}` and `{{else …}}`) or closer in any HTML state but `beforeData` and `data` SHOULD be a
+syntax error, with the `{{else}}` or closer as its span. That includes an `{{else}}` or closer
+inside an HTML comment that began inside the block. Whether Ember's final behavior makes such an
+`{{else}}` comment text instead is open (§02-11 item 17).
 
 Block params on blocks are converted to `VarHead`s with locations found by searching the source
 between the end of the hash and the start of the program for the `|…|` list
@@ -1592,12 +1615,15 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     (depth 1) giving `original = "...attributes"` — the check works only by this coincidence.
     `{{../attributes}}` is a different error. `<div ...attributes={{x}}>` is accepted by the
     parser (validated, if at all, in chapter 03).
-15. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`,
-    `{{^foo}}…{{else}}…{{/foo}}` (§02-3.3, **[Out of spec]**) and `{{{{raw}}}}` blocks are
-    inherited from Handlebars and had no test in Ember or Glimmer. They are specified here as
-    current behavior and should be marked **[Legacy]**. T21 found every one usable, so none is
-    removed; its branch `test/handlebars-legacy-features` adds tests in modules named
-    "Inherited from Handlebars (legacy behavior)". `foo/bar` paths, `\{{` escapes and
+15. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting, §02-3.2), `{{^}}` as `{{else}}`
+    and `{{^foo}}…{{else}}…{{/foo}}` (§02-3.3), and `{{{{raw}}}}` blocks (§02-2.7) are
+    inherited from Handlebars and had no test in Ember or Glimmer. T21 found every one usable.
+    *Decided* (author, 2026-10-14): all four go through a full deprecation cycle and are
+    **[Deprecated]**, until 8.0.0, with the ids `template-ampersand-mustache`,
+    `template-caret-else`, `template-inverse-block-with-else` and `template-raw-block`. A
+    deprecation RFC and the four deprecation guides are drafted (T21); the Ember deprecations are
+    not implemented yet. Until they are removed, T21's branch `test/handlebars-legacy-features`
+    tests them in modules named "Inherited from Handlebars (legacy behavior)". `foo/bar` paths, `\{{` escapes and
     whitespace control also came from Handlebars, but Ember tests and documents them, so they
     are Ember features (§02-4.2, §02-2.2, §02-5), not leftovers (author, 2026-10-14). `{{else …}}`
     chains are core syntax; their missing rendering tests are task T23.
@@ -1612,9 +1638,15 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     and the comment states an error like E21, and treating a closer in a comment state as
     comment text when its opener is outside the comment, which is what an HTML-aware single-pass
     parser does naturally. Templates that parse today with a sensible tree would be unaffected.
-    *Planned* (author ruling, 2026-10-13): an upstream PR that makes these parse errors, with
-    tests and the case that no sane template breaks, task T22
-    (`spec/.work/T22-straddling-blocks-errors.md`).
+    *Decided* (author, 2026-10-14): these inputs are **[Deprecated]**, and Ember will go through
+    a longer deprecation cycle rather than make them errors right away. T22's branch
+    `fix/blocks-straddling-markup` (errors in tags and attribute values, an `{{else}}` inside an
+    HTML comment that began in the block as comment text, a closer there as an error; a corpus of
+    28,770 distinct templates had none) is parked
+    (`spec/.work/T22-straddling-blocks-errors.md`). *Open:* the deprecation id, the `until`
+    version, and Ember's end state for an `{{else}}` inside such a comment: an error (what
+    §02-6.11 asks of a new implementation) or comment text (the T22 branch). Comment text changes
+    a template's meaning without an error, so a deprecation must warn on it first.
 
 18. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
     standalone is decided by the end of the first chain link's program, not by the text before

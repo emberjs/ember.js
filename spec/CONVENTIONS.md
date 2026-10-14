@@ -21,6 +21,10 @@ it *is* behavior and must be specified.
 - Mark current behavior that is outside the spec with **[Out of spec]**: the existing
   implementation keeps it, but a new implementation SHOULD NOT reproduce it, and the text says
   what it should do instead. It is documented so the existing behavior stays known.
+- Mark current behavior that Ember is removing through a deprecation cycle with
+  **[Deprecated]**: the existing implementation keeps it until the deprecation ends, but a new
+  implementation SHOULD NOT include it, and the text says what it does instead (normally the
+  syntax error that replaces it). Give the deprecation id and `until` version once they are known.
 
 ## Abstraction rules
 

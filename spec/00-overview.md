@@ -28,6 +28,10 @@ A conforming implementation MUST, for every input that the current implementatio
 6. provide the same **Ember built-ins**, resolution, classic component behavior, and
    rendering entry points (§08).
 
+The exception is behavior marked **[Deprecated]** or **[Out of spec]** (§0.5). The current
+implementation accepts it, but a new implementation SHOULD NOT. The legacy Handlebars syntax
+(§02-11 item 15) and blocks that straddle markup (§02-11 item 17) are deprecated.
+
 Implementation internals are not part of the contract. That includes the VM, its opcodes,
 references, tags, revisions, the program heap, and the **wire format** (§04).
 
@@ -154,6 +158,8 @@ proposed API. Existing behavior never depends on a **[Proposed]** API.
 | **[Legacy]** | Exists for backward compatibility, e.g. classic components. |
 | **[Dev]** | Development-build-only behavior: assertions, deprecations, debug-only checks. A production build MUST NOT depend on it, and a conforming implementation SHOULD provide equivalent diagnostics in development. |
 | **[Proposed]** | New API introduced by this spec; not in the current implementation. |
+| **[Deprecated]** | Being removed from the current implementation through a deprecation cycle. The existing implementation keeps it until then; a new implementation SHOULD NOT include it, and SHOULD do what the text says instead (normally reject it as a syntax error). |
+| **[Out of spec]** | Current behavior outside the spec, with no deprecation planned yet. The existing implementation keeps it; a new implementation SHOULD NOT reproduce it. |
 
 ## 0.6 Status and verification
 
@@ -227,8 +233,9 @@ choice breaks someone.
 5. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
    unterminated tag or comment at EOF. A block's `{{else}}` or closer inside a tag or HTML
    comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`), an
-   artifact of the two-pass parser; an upstream PR to make it an error is planned (T22).
-   (§02-11 items 4, 17)
+   artifact of the two-pass parser. It is **[Deprecated]** (author, 2026-10-14), with a long
+   deprecation cycle before it becomes an error; the deprecation id and the end state for an
+   `{{else}}` inside an HTML comment are open. (§02-11 items 4, 17)
 6. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
    errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 1, 2;
    §03-10 item 8)
@@ -269,9 +276,8 @@ choice breaks someone.
 to addon tooling.
 
 14. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
-    ASTv1 marker. The upstream-Handlebars leftovers (`{{&x}}`, `{{^}}`, `foo/bar`,
-    standalone-line stripping) are only partly tested, so their re-printed form is also
-    unpinned. (§02-11 items 9, 12, 15)
+    ASTv1 marker. The deprecated Handlebars leftovers (`{{&x}}`, `{{^}}`, raw blocks) have no
+    upstream test of their re-printed form. (§02-11 items 9, 12, 15)
 
 ### 0.7.6 Runtime DOM behavior
 

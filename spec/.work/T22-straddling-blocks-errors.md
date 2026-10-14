@@ -65,6 +65,13 @@ Resume from the first unticked item. Worktree `/Users/edward/hacking/ember.js-t2
         `spec/tools/`.
       Done: corpus result under "Evidence"; full suite 9235 tests, 9215 pass, 20 skip, 0 fail;
       PR description drafted below. Not pushed: waiting for the author's go-ahead.
+**Parked (author, 2026-10-14):** not landing right away; probably a longer deprecation cycle.
+The spec marks these inputs **[Deprecated]** (§02-1.1 property 3, §02-6.7, §02-6.11, §02-11
+item 17, §0.7.2 item 5): a new implementation SHOULD reject them. Open before resuming: the
+deprecation id and `until`, and whether an `{{else}}` inside a comment that began in the block
+ends up an error or comment text (option (b) changes meaning silently, so it needs a warning
+first). The branch stays as the eventual error change.
+
 - [ ] 6. When it lands: rewrite §02-1.1 property 3 and §02-6.11 to the new rule (the scan then
       needs no carry-over of a partial token across a program boundary), add the E-catalogue row,
       remove §02-11 item 17 and the matching §00-0.7.2 sentence, update STATUS.

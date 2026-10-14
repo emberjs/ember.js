@@ -66,8 +66,16 @@ out of scope.
       F7 (existing coverage suffices). F8 rendering coverage is task T23 (the removed F8 tests are
       its seed). Filter `Inherited from Handlebars`: 18 tests, 18 pass. Full suite: 9249 tests,
       9229 pass, 20 skip, 0 fail.
-- [ ] 5. Spec follow-up (F1, F2, F3, F5 only): mark each kept feature **[Legacy]** in its §02 section and cite the new
+- [x] 5. Spec follow-up (F1, F2, F3, F5 only): mark each kept feature **[Legacy]** in its §02 section and cite the new
       tests; describe the removed ones as errors (new E-catalogue rows); remove §02-11 item 15.
+      **Revised (2026-10-14, author):** all four go through a full deprecation cycle. New marker
+      **[Deprecated]** (CONVENTIONS, §0.5, §0.1); §02-2.7, §02-3.2, §02-3.3 mark them with their ids;
+      a new implementation SHOULD reject them. §02-11 item 15 stays, as the decision record.
+      Test citations wait until `test/handlebars-legacy-features` lands.
+- [ ] 6. Ember: implement the four deprecations (template-compiler plugin, as
+      `ember-template-compiler.deprecate-render` was) once the RFC is accepted; push the guides
+      and the RFC (author's call). When the removal lands (8.0.0), describe the errors in §02
+      (E-catalogue rows) and drop the **[Deprecated]** text.
 
 ## Step 1 results
 

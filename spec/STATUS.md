@@ -2,7 +2,7 @@
 
 This file is the single source of truth for resuming work on the spec. Keep it current: an
 agent or session that has only this file, `plan.md`, and the git history must be able to
-continue the work. Last updated: 2026-10-13.
+continue the work. Last updated: 2026-10-14.
 
 ## Working protocol
 
@@ -73,12 +73,21 @@ continue the work. Last updated: 2026-10-13.
 - **Author rulings of 2026-10-13** (on §02-11, feedback commits `8dd43f4d83`, `1871c6cf4a`):
   - *Error priority is not specified.* For a template with several errors, an implementation may
     report any of them (§02-9.1). §02-1.1 now has three HTML-blind properties, not four.
-  - *Inverse section with `{{else}}`* (`{{^foo}}a{{else}}b{{/foo}}`) is **[Out of spec]**: the
-    existing implementation keeps it, a new one SHOULD NOT accept it (§02-3.3). The marker is new
-    in CONVENTIONS.
+  - *Inverse section with `{{else}}`* (`{{^foo}}a{{else}}b{{/foo}}`) is outside the spec: the
+    existing implementation keeps it, a new one SHOULD NOT accept it (§02-3.3). Superseded by the
+    deprecation of 2026-10-14 below.
   - *Planned upstream work*: T20 (literal mustache with arguments becomes an error), T21 (audit
     the Handlebars leftovers: remove what Ember cannot use, test the rest as legacy), T22
     (blocks that straddle markup become parse errors).
+- **Author rulings of 2026-10-14** (deprecations):
+  - *Handlebars leftovers (T21).* `{{&foo}}`, `{{^}}`, `{{^foo}}…{{else}}…{{/foo}}` and raw blocks
+    go through a full deprecation cycle (ids in §02-11 item 15, until 8.0.0). They are marked
+    **[Deprecated]** (new marker in CONVENTIONS and §0.5): the current implementation keeps them
+    for now; a new implementation SHOULD NOT include them and SHOULD reject them as syntax errors
+    (§02-2.7, §02-3.2, §02-3.3, §0.1).
+  - *Blocks that straddle markup (T22).* Not landing now; probably a longer deprecation cycle.
+    Marked **[Deprecated]** (§02-1.1 property 3, §02-6.11, §02-11 item 17): a new implementation
+    SHOULD reject an `{{else}}` or closer outside `beforeData`/`data`. The T22 branch is parked.
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
   revalidation without reverse edges: the core may schedule effects that are not stale, and
   filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
@@ -123,8 +132,9 @@ review are based on `9bec1cb2a8`.
 | §05-14 item 1 | ember.js | `fix/namespaced-attribute-updates` | Open for review | Updates of a namespaced attribute keep its namespace after removal. |
 | §05-14 item 6 | ember.js | `fix/svg-inside-foreign-object` | Open for review | `<svg>`/`<math>` inside `<foreignObject>` get their own namespace. |
 | §02-11 item 1 | ember.js | `fix/literal-mustache-arguments` | Local, not pushed (T20) | `{{"foo" bar}}` is a syntax error instead of dropping the arguments. |
-| §02-11 item 15 | ember.js | `test/handlebars-legacy-features` | Local, not pushed (T21) | Tests only: parser and rendering tests for `{{&}}`, `{{^}}`, `{{^foo}}…{{else}}` and raw blocks, designated as inherited from Handlebars (legacy behavior). |
-| §02-11 item 17 | ember.js | `fix/blocks-straddling-markup` | Local, not pushed (T22) | `{{else}}`/closer inside a tag is an error; `{{else}}` inside an HTML comment from the block is comment text; a closer there is an error. |
+| §02-11 item 15 | ember.js | `test/handlebars-legacy-features` | Local, not pushed (T21) | Tests only: parser and rendering tests for `{{&}}`, `{{^}}`, `{{^foo}}…{{else}}` and raw blocks, designated as inherited from Handlebars (legacy behavior). These features are now deprecated; the deprecations themselves are not implemented yet. |
+| §02-11 item 15 | deprecation-app, rfcs | `deprecate-legacy-handlebars-syntax` | Local, not pushed (T21) | Four deprecation guides (`46ae444`) and the deprecation RFC (`66fbfd71`). |
+| §02-11 item 17 | ember.js | `fix/blocks-straddling-markup` | **Parked** (T22, author 2026-10-14) | `{{else}}`/closer inside a tag is an error; `{{else}}` inside an HTML comment from the block is comment text; a closer there is an error. Not landing now: a longer deprecation cycle comes first. |
 | §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | **PR open**: emberjs/ember.js#21718 | Duplicate attributes and named arguments become compile errors; the PR description is the full explainer. |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
@@ -185,8 +195,8 @@ Run these in order, one at a time.
 | T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | `.work/T18-merge-w2-landed.md` | done; 142 citations remapped, 26 FLAGs and about 100 moved or deleted test spans fixed by hand (deleted tests now cite their Ember twins); W2 tests cited on `main` (§05-7.6, §06-2.2, §08-6.1, §08-6.6); §05-14 item 12 resolved (the yield and has-block suites now run under angle brackets); §09 harness description and counts; behavior changes written in: render-error cleanup is development-only (new §05-14 item 15, upstream PR #21634), `transform-resolutions` in production (§03-7.11), `@dependentKeyCompat` read fix and computed-macro deprecation (§07-3.6.5, §07-3.6.7). Two claims lost their only test and are now marked untested: the compiler `keywords` option (§01, §03) and `insertBefore=<node>` (§05) |
 | T19 | Author question: can §02 be a single-pass parser (HTML tokenizer with mustache states) instead of Handlebars-then-HTML layering? | Opus | `.work/T19-single-pass-parser.md` | done; yes. Compatibility does not preclude it, but four HTML-blind properties must hold (§02-1.1): Handlebars lexing, whitespace control, block structure, and error priority. §02-1 rewritten (model, rationale §02-1.4, implementation note §02-1.5), §02-6.1 is the scan, §02-6.11 states the block-straddling rule, §02-9.1 the error priority. §02-5.3 corrected: a closer's standalone check uses the *first* inverse. New §02-11 open questions on block straddling, error priority and the `else if` standalone quirk. Author feedback (`1871c6cf4a`) applied: error priority relaxed, out-of-spec marker, T20–T22 planned |
 | T20 | Upstream PR: a literal mustache with arguments (`{{"foo" bar}}`) becomes an error instead of dropping them (§02-11 item 1) | Opus (decision), Sonnet (PR) | `.work/T20-literal-mustache-params.md` | code done on local branch `fix/literal-mustache-arguments` (worktree `../ember.js-t20`, `985c4f5a0e`): error right away (author, `036d98ba70`); full suite green; corpus of 28,770 templates, none newly rejected; PR description drafted in the checklist. Not pushed: waiting for the author. Step 7 (spec) when it lands |
-| T21 | Audit the Handlebars leftovers (§02-11 item 15): prove which Ember cannot use, remove those from the parser, add legacy-designated tests for the rest | Sonnet (experiments), Opus (case for removal) | `.work/T21-handlebars-leftovers.md` | steps 1–4 done: every feature is usable, so nothing is removed. Only F1 `{{&}}`, F2 `{{^}}`, F3 `{{^foo}}…{{else}}` and F5 raw blocks are inherited legacy; `foo/bar`, escapes and whitespace control are tested Ember features (author, 2026-10-14). 18 legacy-designated tests on local branch `test/handlebars-legacy-features` (worktree `../ember.js-t21`, `4b96a37a2c`, `8aea3f031a`, on `origin/main` `c02a9ee118`). Not pushed. Step 5 (spec) when it lands |
-| T22 | Upstream PR: blocks whose `{{else}}` or closer is inside a tag or HTML comment become parse errors, with tests and the no-sane-template-breaks argument (§02-11 item 17) | Opus | `.work/T22-straddling-blocks-errors.md` | code done on local branch `fix/blocks-straddling-markup` (worktree `../ember.js-t22`, `1fc261a10e`) with option (b) for `{{else}}` (author, `036d98ba70`); complexity and its limit in the checklist; full suite green; corpus of 28,770 templates, none changed; PR description drafted. Not pushed: waiting for the author. Step 6 (spec) when it lands |
+| T21 | Audit the Handlebars leftovers (§02-11 item 15): prove which Ember cannot use, remove those from the parser, add legacy-designated tests for the rest | Sonnet (experiments), Opus (case for removal) | `.work/T21-handlebars-leftovers.md` | steps 1–4 done: every feature is usable, so nothing is removed. Only F1 `{{&}}`, F2 `{{^}}`, F3 `{{^foo}}…{{else}}` and F5 raw blocks are inherited legacy; `foo/bar`, escapes and whitespace control are tested Ember features (author, 2026-10-14). 18 legacy-designated tests on local branch `test/handlebars-legacy-features` (worktree `../ember.js-t21`, `4b96a37a2c`, `8aea3f031a`, on `origin/main` `c02a9ee118`). Not pushed. Steps 5–7 done (2026-10-14): deprecation guides (deprecation-app `46ae444`), deprecation RFC (rfcs `66fbfd71`), spec marks all four **[Deprecated]**. Not pushed. Next: implement the deprecations in Ember (template-compiler plugin, as `deprecate-render` was) once the RFC is accepted |
+| T22 | Upstream PR: blocks whose `{{else}}` or closer is inside a tag or HTML comment become parse errors, with tests and the no-sane-template-breaks argument (§02-11 item 17) | Opus | `.work/T22-straddling-blocks-errors.md` | code done on local branch `fix/blocks-straddling-markup` (worktree `../ember.js-t22`, `1fc261a10e`) with option (b) for `{{else}}` (author, `036d98ba70`); complexity and its limit in the checklist; full suite green; corpus of 28,770 templates, none changed; PR description drafted. **Parked** (author, 2026-10-14): not landing now; probably a longer deprecation cycle. Spec marks the inputs **[Deprecated]** (§02-6.11, §02-11 item 17). Open: deprecation id and `until`, and the end state for an `{{else}}` inside an HTML comment (error, or comment text as on the branch) |
 | T23 | Rendering tests for `{{else …}}` chains (split from T21; no rendering test exists) | Sonnet | `.work/T23-else-chain-rendering.md` | planned; seed tests from T21 in the checklist |
 
 ## Cross-chapter findings (from chapter authors' reports)
