@@ -3,8 +3,7 @@ import type { Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
 import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import { isIndexable } from '@glimmer/util/lib/collections';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { TrackedValue } from '@glimmer/validator/lib/tracked-value';
 
 import type { Reference, ReferenceEnvironment } from './reference';
 
@@ -159,20 +158,18 @@ export function createIteratorRef(listRef: Reference, key: string) {
   });
 }
 
-export function createIteratorItemRef(_value: unknown) {
-  let value = _value;
-  let tag = createTag();
+const ITEM_OPTIONS = Object.freeze({
+  equals: (a: unknown, b: unknown) => a === b,
+  description: undefined,
+});
+
+export function createIteratorItemRef(value: unknown) {
+  let item = new TrackedValue(value, ITEM_OPTIONS);
 
   return createComputeRef(
-    () => {
-      consumeTag(tag);
-      return value;
-    },
+    () => item.value,
     (newValue) => {
-      if (value !== newValue) {
-        value = newValue;
-        dirtyTag(tag);
-      }
+      item.value = newValue;
     }
   );
 }

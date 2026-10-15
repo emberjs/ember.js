@@ -13,7 +13,6 @@ import {
   isTracking,
   resetTracking,
   track,
-  trackedData,
   untrack,
   validateTag,
   valueForTag,
@@ -515,84 +514,6 @@ module('@glimmer/validator: tracking', () => {
           () => isConst(123 as any),
           /Error: isConst\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/u
         );
-      });
-    }
-  });
-
-  module('trackedData', () => {
-    test('it creates a storage cell that can be accessed and updated', (assert) => {
-      class Foo {
-        foo = 123;
-      }
-
-      let { getter, setter } = trackedData<Foo, keyof Foo>('foo');
-
-      let foo = new Foo();
-
-      setter(foo, 456);
-      assert.strictEqual(getter(foo), 456, 'value is set correctly');
-      assert.strictEqual(foo.foo, 123, 'value is not set on the actual object');
-    });
-
-    test('it can receive an initializer', (assert) => {
-      class Foo {
-        foo = 123;
-        bar = 456;
-      }
-
-      let { getter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
-        return this.bar;
-      });
-
-      let foo = new Foo();
-
-      assert.strictEqual(getter(foo), 456, 'value is initialized correctly');
-      assert.strictEqual(foo.foo, 123, 'value is not set on the actual object');
-    });
-
-    test('it tracks changes to the storage cell', (assert) => {
-      class Foo {
-        foo = 123;
-        bar = 456;
-      }
-
-      let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
-        return this.bar;
-      });
-
-      let foo = new Foo();
-      let tag = track(() => {
-        assert.strictEqual(getter(foo), 456, 'value is set correctly');
-      });
-
-      let snapshot = valueForTag(tag);
-
-      setter(foo, 789);
-      assert.notOk(validateTag(tag, snapshot));
-    });
-
-    if (DEBUG) {
-      test('it errors when attempting to update a value already consumed in the same transaction', (assert) => {
-        class Foo {
-          foo = 123;
-          bar = 456;
-        }
-
-        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
-          return this.bar;
-        });
-
-        let foo = new Foo();
-
-        assert.throws(() => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-          debug.runInTrackingTransaction!(() => {
-            track(() => {
-              getter(foo);
-              setter(foo, 789);
-            });
-          });
-        }, /You attempted to update `foo` on `Foo`/);
       });
     }
   });

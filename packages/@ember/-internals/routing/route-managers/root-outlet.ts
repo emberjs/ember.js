@@ -16,8 +16,7 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 import type { OutletParent, OutletState } from './outlet-state';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { TrackedValue } from '@glimmer/validator/lib/tracked-value';
 
 // `this` == <@outlet />; returned by `getSelf`
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{this}}', {
@@ -91,16 +90,17 @@ export interface UpdatableOutletRootState {
   set(root: OutletState): void;
 }
 
+/** A set of the root always notifies, also with the same state object. */
+const ROOT_OPTIONS = Object.freeze({ equals: () => false, description: undefined });
+
 /** The chain's head: a reactive first level. */
 export function createRootOutletState(initial: OutletState): UpdatableOutletRootState {
-  let tag = createTag();
-  let current = initial;
+  let current = new TrackedValue(initial, ROOT_OPTIONS);
 
   let state: OutletParent = {
     outlets: {
       get main(): OutletState {
-        consumeTag(tag);
-        return current;
+        return current.value;
       },
     },
   };
@@ -108,8 +108,7 @@ export function createRootOutletState(initial: OutletState): UpdatableOutletRoot
   return {
     state,
     set(root: OutletState) {
-      current = root;
-      dirtyTag(tag);
+      current.value = root;
     },
   };
 }
