@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T18:03:21.353Z",
+    "capturedAt": "2026-10-15T19:27:47.876Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "92f0889789",
+    "emberCommit": "b608afded1",
     "totalTests": 10133,
     "totalModules": 993,
     "quarantinedTests": 0,
     "totalAssertions": 60378,
-    "totalAssertionsPassing": 59678,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a string is not resolved as a component in an angle-bracket invocation or a strict-mode template, a component value called with arguments in append position renders with them, the block of a dynamic invocation of a template-only component renders, a component or helper class in content position renders and content errors are not swallowed, a helper called without arguments in triple curlies renders its result, a name called with arguments that is neither a helper nor a component throws, an invocation's positional arguments follow a curried component's, and an (element) value passed as a component argument renders its element; written by runner.mjs in the GitHub Actions GXT full workflow (run 38782244410, on the code of 92f0889789). 9620/10133 green (was 9600/10129), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 16 tests turned green: strict mode dynamic template values: a dynamic component in append position (with args), with a changing definition (append position) / (append position, with args), in block position; strict mode static template values: component in ambiguous helper/component position (with args); strict mode general properties: {{component}} throws if a string is used indirectly in strict (append / block / expression position); Components Glimmer (and its Glimmer variant): invoking dynamic component (path) via angle brackets does not work for string; Updating: triple curlies with const SafeString / const Node, missing helper; action is not a keyword: in loose mode, an unresolved {{action}} is an ordinary resolution error; contextual components: component helper can curry arguments; element helper: it can be passed as argument and works with ...attributes. 4 new tests, all green: GXT component and helper values in content position."
+    "totalAssertionsPassing": 59701,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after an inline if with no else value is undefined when its condition is false, a {{log}} statement logs again when a value its arguments read changes, an {{#each}} over a native iterable re-iterates when a value its iteration read changes, a track frame that consumed one tag ends with that tag, a bound style forwarded through ...attributes warns like the element's own, and {{#each-in}} keys its rows by the key option; written by runner.mjs in the GitHub Actions GXT full workflow (run 38793945908, on the code of b608afded1). 9637/10133 green (was 9620/10133), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 17 tests turned green: validator manual track frames: it returns the tag itself if the frame consumed one tag many times, it keeps a tag that a nested frame consumed between two consumptions, it takes a tag one time if nested frames consume it at the same index, it does not keep the tags of a frame that did not end (each also under the parent tracking module); Inline style tests - warnings: specifying style on a component with ...attributes generates a warning; {{#each-in}} with the key option: all 5 tests; #each: autotracked custom iterable; Updating: if keyword in SubExpression without falsey value returns undefined; {{log}} keyword: correctly logs when values update."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -270,27 +270,10 @@
     },
     "@glimmer/validator: tracking": {
       "total": 35,
-      "passing": 31,
+      "passing": 35,
       "assertionsTotal": 80,
-      "assertionsPassing": 76,
-      "failingTests": [
-        {
-          "name": "it returns the tag itself if the frame consumed one tag many times",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it keeps a tag that a nested frame consumed between two consumptions",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it takes a tag one time if nested frames consume it at the same index",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it does not keep the tags of a frame that did not end",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 80,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > debug": {
       "total": 4,
@@ -301,27 +284,10 @@
     },
     "@glimmer/validator: tracking > manual track frames": {
       "total": 11,
-      "passing": 7,
+      "passing": 11,
       "assertionsTotal": 18,
-      "assertionsPassing": 14,
-      "failingTests": [
-        {
-          "name": "it returns the tag itself if the frame consumed one tag many times",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it keeps a tag that a nested frame consumed between two consumptions",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it takes a tag one time if nested frames consume it at the same index",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it does not keep the tags of a frame that did not end",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 18,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > track": {
       "total": 7,
@@ -3191,15 +3157,10 @@
     },
     "Inline style tests - warnings": {
       "total": 13,
-      "passing": 12,
+      "passing": 13,
       "assertionsTotal": 28,
-      "assertionsPassing": 27,
-      "failingTests": [
-        {
-          "name": " specifying `style` on a component with `...attributes` generates a warning",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 28,
+      "failingTests": []
     },
     "Inline style tests - warnings (classic component)": {
       "total": 1,
@@ -4846,31 +4807,10 @@
     },
     "Syntax test: {{#each-in}} with the key option": {
       "total": 5,
-      "passing": 0,
+      "passing": 5,
       "assertionsTotal": 30,
-      "assertionsPassing": 22,
-      "failingTests": [
-        {
-          "name": " by default the entry's value is the key, so changing a value replaces its DOM",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " key=\"@key\" uses the property name, so a changed value updates in place",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " key=\"@index\" keys on the property name, not the position or the value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " a path key is looked up on the entry's value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " key=\"@index\" collides when a Map is keyed by objects",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 30,
+      "failingTests": []
     },
     "Syntax test: {{#each}} keys and DOM identity": {
       "total": 7,
@@ -5579,14 +5519,10 @@
     },
     "[integration] jit :: #each": {
       "total": 25,
-      "passing": 14,
+      "passing": 15,
       "assertionsTotal": 1878,
-      "assertionsPassing": 1866,
+      "assertionsPassing": 1868,
       "failingTests": [
-        {
-          "name": "autotracked custom iterable",
-          "category": "gxt:triage"
-        },
         {
           "name": "it does not update items if their key has not changed, and the items are not tracked",
           "category": "gxt:triage"
@@ -6262,9 +6198,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 58,
+      "passing": 59,
       "assertionsTotal": 829,
-      "assertionsPassing": 801,
+      "assertionsPassing": 802,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6272,10 +6208,6 @@
         },
         {
           "name": "helpers passed as arguments to {{component}} are not torn down when switching between blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "if keyword in SubExpression without falsey value returns undefined [GH emberjs/ember.js#19409]",
           "category": "gxt:triage"
         },
         {
@@ -7813,15 +7745,10 @@
     },
     "[integration] jit :: {{log}} keyword": {
       "total": 6,
-      "passing": 5,
+      "passing": 6,
       "assertionsTotal": 39,
-      "assertionsPassing": 36,
-      "failingTests": [
-        {
-          "name": "correctly logs when values update",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 39,
+      "failingTests": []
     },
     "[integration] jit serialization :: Server-side rendering in Node.js (serialize)": {
       "total": 7,
@@ -9289,6 +9216,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 513
+    "gxt:triage": 496
   }
 }
