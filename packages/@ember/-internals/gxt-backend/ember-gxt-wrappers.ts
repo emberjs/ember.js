@@ -1410,6 +1410,21 @@ function createEmberMaybeHelper(original: Function) {
           }
         }
       }
+
+      // A name called with arguments that is neither a helper nor a component
+      // (the component manager resolves no component of that name either) is
+      // Glimmer's resolution error (`resolveComponentOrHelper`): a free name is
+      // never a property of the render context (gxt's `$_maybeHelper` below
+      // would look it up there).
+      if (
+        typeof name === 'string' &&
+        hasCallArguments(args, hash) &&
+        getGxtRenderer()?.compilePipeline.getManagers?.()?.component?.canHandle?.(name) !== true
+      ) {
+        throw new Error(
+          `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
+        );
+      }
     }
 
     // In Ember, bare {{name}} (without this. prefix) in a template is treated
