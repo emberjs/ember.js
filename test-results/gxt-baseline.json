@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T13:51:45.439Z",
+    "capturedAt": "2026-10-15T14:46:01.487Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "0f77b1e682",
-    "totalTests": 10118,
-    "totalModules": 987,
+    "emberCommit": "83810390af",
+    "totalTests": 10125,
+    "totalModules": 989,
     "quarantinedTests": 0,
-    "totalAssertions": 60296,
-    "totalAssertionsPassing": 59432,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a template-only component reads its arguments' values whatever invoked it, every template-only component's argument updates when what it reads changes, and a renderComponent root argument is read as Glimmer reads it, written by runner.mjs in the GitHub Actions GXT full workflow (run 38746129567, on the code of 0f77b1e682). 9556/10118 green (was 9545/10108), 987 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 1 test turned green: [integration] #in-element: Inside a loop (an argument of a template-only component in an {{#each}} row updates). 10 new tests, all green: GXT component arguments (8) and GXT renderComponent root arguments (2)."
+    "totalAssertions": 60310,
+    "totalAssertionsPassing": 59506,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a component's else block is one block, yielded to \"else\" or \"inverse\" (a {{#component}} block passes its {{else}} block too), a tag naming a block param invokes the yielded component, and a block param in a quoted attribute is its value, written by runner.mjs in the GitHub Actions GXT full workflow (run 38754092358, on the code of 83810390af). 9584/10125 green (was 9556/10118), 989 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 11 tests turned green (21 entries with the aggregate modules): curly components: yield to else; yield Curly/Dynamic: yield to \"else\", Dynamic: yield to \"inverse\"; has-block Dynamic: parameterized has-block (concatted attr|attr|prop|content|subexpr, else) when else supplied; has-block Glimmer: has-block works within a yielded curried component invoked with angle bracket invocation (truthy|falsy). 7 new tests, all green: GXT else blocks (4) and GXT block params (3)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1592,9 +1592,9 @@
     },
     "Components test: curly components": {
       "total": 60,
-      "passing": 50,
+      "passing": 51,
       "assertionsTotal": 238,
-      "assertionsPassing": 225,
+      "assertionsPassing": 226,
       "failingTests": [
         {
           "name": " the component and its child components are destroyed",
@@ -1606,10 +1606,6 @@
         },
         {
           "name": " block with properties on attrs is asserted against",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " yield to else",
           "category": "gxt:triage"
         },
         {
@@ -2614,6 +2610,13 @@
       "assertionsPassing": 6,
       "failingTests": []
     },
+    "GXT block params": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
+      "failingTests": []
+    },
     "GXT component arguments": {
       "total": 8,
       "passing": 8,
@@ -2675,6 +2678,13 @@
       "passing": 14,
       "assertionsTotal": 73,
       "assertionsPassing": 73,
+      "failingTests": []
+    },
+    "GXT else blocks": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
@@ -6063,40 +6073,12 @@
     },
     "[integration] jit :: Components :: has-block": {
       "total": 69,
-      "passing": 61,
+      "passing": 68,
       "assertionsTotal": 539,
-      "assertionsPassing": 527,
+      "assertionsPassing": 538,
       "failingTests": [
         {
-          "name": "has-block works within a yielded curried component invoked with angle bracket invocation (truthy)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "has-block works within a yielded curried component invoked with angle bracket invocation (falsy)",
-          "category": "gxt:triage"
-        },
-        {
           "name": "has-block works within a yielded curried component invoked within mustaches",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (concatted attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, else) when else supplied",
           "category": "gxt:triage"
         }
       ]
@@ -6110,46 +6092,17 @@
     },
     "[integration] jit :: Components :: has-block > [integration] Dynamic": {
       "total": 21,
-      "passing": 16,
+      "passing": 21,
       "assertionsTotal": 168,
-      "assertionsPassing": 163,
-      "failingTests": [
-        {
-          "name": "parameterized has-block (concatted attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (content, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (subexpr, else) when else supplied",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 168,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block > [integration] Glimmer": {
       "total": 27,
-      "passing": 24,
+      "passing": 26,
       "assertionsTotal": 203,
-      "assertionsPassing": 196,
+      "assertionsPassing": 202,
       "failingTests": [
-        {
-          "name": "has-block works within a yielded curried component invoked with angle bracket invocation (truthy)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "has-block works within a yielded curried component invoked with angle bracket invocation (falsy)",
-          "category": "gxt:triage"
-        },
         {
           "name": "has-block works within a yielded curried component invoked within mustaches",
           "category": "gxt:triage"
@@ -6196,9 +6149,9 @@
     },
     "[integration] jit :: Components :: yield": {
       "total": 45,
-      "passing": 33,
+      "passing": 36,
       "assertionsTotal": 362,
-      "assertionsPassing": 350,
+      "assertionsPassing": 353,
       "failingTests": [
         {
           "name": "yielding strings",
@@ -6235,48 +6188,22 @@
         {
           "name": "yield",
           "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: yield > [integration] Curly": {
       "total": 15,
-      "passing": 14,
+      "passing": 15,
       "assertionsTotal": 130,
-      "assertionsPassing": 129,
-      "failingTests": [
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 130,
+      "failingTests": []
     },
     "[integration] jit :: Components :: yield > [integration] Dynamic": {
       "total": 15,
-      "passing": 13,
+      "passing": 15,
       "assertionsTotal": 130,
-      "assertionsPassing": 128,
-      "failingTests": [
-        {
-          "name": "yield to \"else\"",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield to \"inverse\"",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 130,
+      "failingTests": []
     },
     "[integration] jit :: Components :: yield > [integration] Glimmer": {
       "total": 15,
@@ -6338,7 +6265,7 @@
       "total": 66,
       "passing": 50,
       "assertionsTotal": 787,
-      "assertionsPassing": 719,
+      "assertionsPassing": 750,
       "failingTests": [
         {
           "name": "weird paths",
@@ -9448,6 +9375,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 562
+    "gxt:triage": 541
   }
 }
