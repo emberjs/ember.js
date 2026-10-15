@@ -465,6 +465,63 @@ moduleFor(
       );
     }
 
+    '@test a child writing a tracked property its Glimmer parent did not render does not assert'() {
+      let parent: any;
+      class Parent extends GlimmerComponent {
+        @tracked title = 'parent';
+        @tracked registered: string | null = null;
+
+        constructor(owner: any, args: any) {
+          super(owner, args);
+          parent = this;
+        }
+      }
+      this.register('x-parent', '<p>{{this.title}}</p>{{yield}}', Parent);
+      this.register(
+        'x-child',
+        'child',
+        class extends GlimmerComponent {
+          constructor(owner: any, args: any) {
+            super(owner, args);
+            parent.registered = 'child';
+          }
+        }
+      );
+
+      this.render('<XParent><XChild /></XParent>');
+      this.assertText('parentchild');
+      this.assert.strictEqual(parent.registered, 'child');
+    }
+
+    '@test a child setting a property its Glimmer parent did not render, of an object the parent rendered, does not assert'() {
+      class Wrapper {
+        @tracked content = 'one';
+        @tracked other = 'a';
+      }
+      let wrapper = new Wrapper();
+      this.register(
+        'x-parent',
+        '<p>{{this.wrapper.content}}</p><XChild @wrapper={{this.wrapper}} />',
+        class extends GlimmerComponent {
+          wrapper = wrapper;
+        }
+      );
+      this.register(
+        'x-child',
+        'child',
+        class extends GlimmerComponent {
+          constructor(owner: any, args: any) {
+            super(owner, args);
+            set(this.args.wrapper, 'other', 'b');
+          }
+        }
+      );
+
+      this.render('<XParent />');
+      this.assertText('onechild');
+      this.assert.strictEqual(wrapper.other, 'b');
+    }
+
     async '@test writes from an action, a next() run loop and a microtask re-render'() {
       class State {
         @tracked count = 0;
