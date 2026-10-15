@@ -7066,7 +7066,11 @@ function _gxtSyncDomNow(): void {
         /* ignore */
       }
       // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
-      // custom modifier managers whose elements were removed (e.g., by #if toggle).
+      // the modifiers whose destructor ran and that no evaluation of their
+      // invocation took back during this sync (the update path clears
+      // `pendingDestroy`): their element was removed (e.g., by #if toggle), or
+      // their invocation now renders another modifier definition, or none, on
+      // the same element, which Glimmer destroys the old modifier for.
       // This must happen BEFORE post-render hooks so willDestroyElement fires
       // before didInsertElement of the replacement element.
       // The pending-modifier-destroys queue lives in `gxt-backend/manager.ts`;
@@ -7079,8 +7083,6 @@ function _gxtSyncDomNow(): void {
           const toFlush = pendingDestroys.splice(0) as any[];
           for (const entry of toFlush) {
             if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
-            // Only destroy if the element is actually disconnected from the DOM.
-            if (entry.element && entry.element.isConnected) continue;
             try {
               if (
                 entry.isCustom &&
