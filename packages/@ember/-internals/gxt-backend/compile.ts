@@ -647,7 +647,13 @@ import {
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
 // $_tag component thunk's template-only-detection snapshots. The writer
 // (`setInstanceCapture` in `./manager`) stores into a module-local.
-import { peekInstanceCapture, getOwnerWithFallback, isTrackedAccessor } from './manager';
+import {
+  peekInstanceCapture,
+  getOwnerWithFallback,
+  isTrackedAccessor,
+  getInternalComponentManager,
+  getInternalModifierManager,
+} from './manager';
 
 // JS reserved words cannot be used as JS variable names, so scope-binding
 // injection (strict-mode templates with scopeValues) prefixes any binding
@@ -3335,7 +3341,16 @@ function _gxtIsComponentDefinition(value: unknown): boolean {
 // (`setHelperManager` / `setInternalHelperManager`): a helper definition, such
 // as a class-based helper.
 function _gxtHasHelperManager(value: object): boolean {
-  const managers = getGxtRenderer()?.registries.internalHelperManagers;
+  return _gxtHasManagerIn(getGxtRenderer()?.registries.internalHelperManagers, value);
+}
+
+// Whether a modifier manager is associated with `value` or a prototype of it
+// (`setModifierManager` / `setInternalModifierManager`).
+function _gxtHasModifierManager(value: object): boolean {
+  return _gxtHasManagerIn(getGxtRenderer()?.registries.internalModifierManagers, value);
+}
+
+function _gxtHasManagerIn(managers: WeakMap<object, unknown> | undefined, value: object): boolean {
   if (!managers) return false;
   for (
     let definition: object | null = value;
@@ -8015,6 +8030,18 @@ function _gxtClearTagHelperCache(): void {
       if (mgrs?.modifier?.canHandle?.(modifier)) {
         return mgrs.modifier.handle(modifier, element, props, hashArgs);
       }
+      // An object or function without a modifier manager is not a modifier.
+      // Glimmer throws for it (`getInternalModifierManager`; its dynamic
+      // modifier throws in production builds too), where gxt's original would
+      // call a function as a function modifier.
+      if (modifier !== null && (typeof modifier === 'object' || typeof modifier === 'function')) {
+        try {
+          getInternalModifierManager(modifier);
+        } catch (error) {
+          getGxtRenderer()!.compilePipeline.captureRenderError(error);
+          throw error;
+        }
+      }
       // Fall back to GXT's original
       return origMaybeModifier(modifier, element, props, hashArgs);
     };
@@ -9198,6 +9225,21 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         // Getter args resolve curried `(helper)` values on read.
         return handleEmberComponent(managers, comp, buildNamedArgs(args, 'getters'), fw, ctx);
       }
+    }
+
+    // A helper or modifier definition without a component manager is not a
+    // component. Glimmer asserts on it in component position
+    // (`getInternalComponentManager`), where the getter branch below and gxt's
+    // original would call a function as a getter or a function component. (A
+    // function with no manager may be a gxt component.)
+    if (
+      DEBUG &&
+      comp !== null &&
+      (typeof comp === 'object' || typeof comp === 'function') &&
+      (_gxtHasHelperManager(comp) || _gxtHasModifierManager(comp)) &&
+      !_gxtIsComponentDefinition(comp)
+    ) {
+      getInternalComponentManager(comp);
     }
 
     // Handle getter functions that resolve to a CurriedComponent.

@@ -179,6 +179,19 @@ function findHelperManager(obj: any): any {
   return found;
 }
 
+/**
+ * Whether a modifier manager is associated with `obj` or a prototype of it
+ * (setModifierManager / setInternalModifierManager).
+ */
+function hasModifierManager(obj: object): boolean {
+  const managers = getGxtRenderer()?.registries.internalModifierManagers;
+  for (let current: object | null = obj; managers && current; ) {
+    if (managers.has(current)) return true;
+    current = Object.getPrototypeOf(current);
+  }
+  return false;
+}
+
 // The helper-cache entries other modules walk (validator.ts's `dirtyTagFor`,
 // compile.ts's branch teardown): the tag-dirty sentinel below. Helper instances
 // live in the per-scope tables that follow.
@@ -861,6 +874,26 @@ function createEmberMaybeHelper(original: Function) {
         }
         return ref;
       }
+    }
+
+    // A component or modifier definition object has no helper manager (a
+    // function does: Glimmer's default helper manager). Glimmer asserts when it
+    // is invoked as a helper (`getInternalHelperManager`), where this call
+    // would look it up as a helper name and render nothing.
+    if (
+      DEBUG &&
+      nameOrFn !== null &&
+      typeof nameOrFn === 'object' &&
+      findHelperManager(nameOrFn) === null &&
+      (getGxtRenderer()?.compilePipeline.getManagers?.()?.component?.canHandle?.(nameOrFn) ===
+        true ||
+        hasModifierManager(nameOrFn))
+    ) {
+      const err = new Error(
+        `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${_dynamicDebugValueLabel(nameOrFn)}`
+      );
+      getGxtRenderer()?.compilePipeline.captureRenderError(err);
+      throw err;
     }
 
     const name = nameOrFn;
@@ -2691,6 +2724,22 @@ function createEmberDc(original: Function) {
         );
         const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
         if (typeof captureFn === 'function') captureFn(err);
+        throw err;
+      }
+      // Any other object is no component definition either (a function may be
+      // a gxt component, and an object with rendered nodes is a component gxt
+      // rendered already). The `{{component}}` helper asserts on it, where
+      // gxt's $_dc would fail reading its rendered nodes.
+      if (
+        DEBUG &&
+        typeof componentValue === 'object' &&
+        !(gxtModule.RENDERED_NODES_PROPERTY in componentValue) &&
+        !(componentValue instanceof Node)
+      ) {
+        const err = new Error(
+          'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
+        );
+        getGxtRenderer()?.compilePipeline.captureRenderError(err);
         throw err;
       }
     }
