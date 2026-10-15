@@ -21,16 +21,23 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           install-playwright: 'true'
+      # runner.mjs exits 1 on any failing test, known reds included, so the
+      # verdict comes from baseline-gate.mjs: no test red that the baseline
+      # lists green, no baseline module missing, no timeout or harness error.
       - name: Run GXT full suite vs baseline
         id: gxt-run
         env:
           GXT_MODE: 'true'
         run: |
+          status=0
           node scripts/gxt-test-runner/runner.mjs \
             --full \
             --auto-serve \
             --url http://localhost:5180/ \
-            --baseline test-results/gxt-baseline.json
+            --baseline test-results/gxt-baseline.json || status=$?
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/gxt-baseline.json \
+            --runner-exit "$status"
       - name: Upload run artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
