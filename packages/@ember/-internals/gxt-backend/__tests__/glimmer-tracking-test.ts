@@ -405,6 +405,66 @@ moduleFor(
       );
     }
 
+    '@test a child writing a tracked property its Glimmer parent rendered asserts'() {
+      let parent: any;
+      class Parent extends GlimmerComponent {
+        @tracked value = 'one';
+
+        constructor(owner: any, args: any) {
+          super(owner, args);
+          parent = this;
+        }
+      }
+      this.register('x-parent', '<p>{{this.value}}</p>{{yield}}', Parent);
+      this.register(
+        'x-child',
+        'child',
+        class extends GlimmerComponent {
+          constructor(owner: any, args: any) {
+            super(owner, args);
+            parent.value = 'two';
+          }
+        }
+      );
+
+      expectAssertion(
+        () => {
+          this.render('<XParent><XChild /></XParent>');
+        },
+        backtrackingMessageFor('value', 'Parent')
+      );
+    }
+
+    '@test a child setting a property of an object its Glimmer parent rendered asserts'() {
+      class Wrapper {
+        @tracked content = 'one';
+      }
+      this.register(
+        'x-parent',
+        '<p>{{this.wrapper.content}}</p><XChild @wrapper={{this.wrapper}} />',
+        class extends GlimmerComponent {
+          wrapper = new Wrapper();
+        }
+      );
+      this.register(
+        'x-child',
+        'child',
+        class extends GlimmerComponent {
+          constructor(owner: any, args: any) {
+            super(owner, args);
+            set(this.args.wrapper, 'content', 'two');
+          }
+        }
+      );
+
+      expectAssertion(
+        () => {
+          this.render('<XParent />');
+        },
+        backtrackingMessageFor('content', 'Wrapper')
+      );
+    }
+
     async '@test writes from an action, a next() run loop and a microtask re-render'() {
       class State {
         @tracked count = 0;
