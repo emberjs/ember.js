@@ -2025,13 +2025,10 @@ function createEmberDc(original: Function) {
         if (slotName.endsWith('_')) continue;
         const slotFn = gxtSlots[slotName];
         if (typeof slotFn === 'function') {
+          // An error rendering the block is an error of the render.
           const wrappedSlot = (slotCtx: any, ...params: any[]) => {
-            try {
-              const result = slotFn(slotCtx, ...params);
-              return Array.isArray(result) ? result : [result];
-            } catch {
-              return [];
-            }
+            const result = slotFn(slotCtx, ...params);
+            return Array.isArray(result) ? result : [result];
           };
           const hasBlockKey = slotName + '_';
           (wrappedSlot as any).__hasBlockParams = gxtSlots[hasBlockKey] === true;

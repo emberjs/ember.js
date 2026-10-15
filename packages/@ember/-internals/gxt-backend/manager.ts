@@ -7776,8 +7776,9 @@ function _renderTemplateOnlyComponent(tpl: any, args: any, fw: any, owner: any):
   }
   renderCtx.args = tplArgs;
   renderCtx.owner = owner;
-  // Pass through slots for {{yield}} support
-  const slots = args?.[$SLOTS_SYMBOL] || args?.args?.[$SLOTS_SYMBOL];
+  // Pass through slots for {{yield}} support: gxt's args carry them under the
+  // slots symbol, the dynamic-component path (`$_dc_ember`) as `$slots`.
+  const slots = args?.[$SLOTS_SYMBOL] || args?.$slots || args?.args?.[$SLOTS_SYMBOL];
   if (slots) {
     renderCtx.$slots = slots;
     renderCtx[$SLOTS_SYMBOL] = slots;
