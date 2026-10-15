@@ -7952,12 +7952,13 @@ const $_MANAGERS = {
           };
         }
 
-        // Copy invocation args (these override curried args)
+        // Copy invocation args (these override curried args). Configurable, so
+        // the positional arguments below can be moved.
         if (args) {
           for (const key of Object.keys(args)) {
             const desc = Object.getOwnPropertyDescriptor(args, key);
             if (desc) {
-              Object.defineProperty(mergedArgs, key, desc);
+              Object.defineProperty(mergedArgs, key, { ...desc, configurable: true });
             }
           }
           // Also copy non-enumerable GXT internal properties that are needed
@@ -7970,67 +7971,78 @@ const $_MANAGERS = {
           }
         }
 
-        // Handle curried positional params
+        // Handle curried positional params. As in Glimmer (the curried
+        // positional arguments are prepended to the invocation's,
+        // `args.positional.prepend`), the curried ones come first and the
+        // invocation's follow them.
         const cPositionals = komp.__curriedPositionals || [];
         if (cPositionals.length > 0) {
-          // Set up positional params from curried values
-          // Only set them if invocation doesn't already provide __posCount__
           const invocationPosCount =
             typeof mergedArgs.__posCount__ === 'function'
               ? mergedArgs.__posCount__()
               : mergedArgs.__posCount__;
-
-          if (invocationPosCount === undefined || invocationPosCount === 0) {
-            // No invocation positionals — use curried positionals
-            // Also store raw getters for mut support
-            const posSourceGetters: any[] = [];
-            for (let i = 0; i < cPositionals.length; i++) {
-              const val = cPositionals[i];
-              const posIdx = i;
-              if (dcGetter) {
-                Object.defineProperty(mergedArgs, `__pos${i}__`, {
-                  get: () => {
-                    let latest: any;
-                    try {
-                      latest = dcGetter();
-                    } catch {
-                      latest = null;
-                    }
-                    if (latest && latest.__isCurriedComponent) {
-                      const latestPos = latest.__curriedPositionals;
-                      if (latestPos && posIdx < latestPos.length) {
-                        const lv = latestPos[posIdx];
-                        return typeof lv === 'function' && !lv.__isCurriedComponent ? lv() : lv;
-                      }
-                    }
-                    const pv = cPositionals[posIdx];
-                    return typeof pv === 'function' && !pv.__isCurriedComponent ? pv() : pv;
-                  },
-                  enumerable: true,
-                  configurable: true,
-                });
-              } else {
-                Object.defineProperty(mergedArgs, `__pos${i}__`, {
-                  get: () => {
-                    const pv = cPositionals[posIdx];
-                    return typeof pv === 'function' && !pv.__isCurriedComponent ? pv() : pv;
-                  },
-                  enumerable: true,
-                  configurable: true,
-                });
-              }
-              // Store the raw getter for mut to use as a setter source
-              if (typeof val === 'function' && !val.__isCurriedComponent) {
-                posSourceGetters[i] = val;
-              }
-            }
-            mergedArgs.__posCount__ = cPositionals.length;
-            // Store positional source getters for mut support
-            if (posSourceGetters.length > 0) {
-              mergedArgs.__posSourceGetters = posSourceGetters;
+          const invocationCount = typeof invocationPosCount === 'number' ? invocationPosCount : 0;
+          // Move the invocation's positional arguments after the curried ones,
+          // the last one first.
+          for (let i = invocationCount - 1; i >= 0; i--) {
+            const desc = Object.getOwnPropertyDescriptor(mergedArgs, `__pos${i}__`);
+            delete mergedArgs[`__pos${i}__`];
+            if (desc) {
+              Object.defineProperty(mergedArgs, `__pos${cPositionals.length + i}__`, desc);
             }
           }
-          // If invocation provides positionals, they override (already in mergedArgs)
+          // Also store raw getters for mut support
+          const posSourceGetters: any[] = [];
+          for (let i = 0; i < cPositionals.length; i++) {
+            const val = cPositionals[i];
+            const posIdx = i;
+            if (dcGetter) {
+              Object.defineProperty(mergedArgs, `__pos${i}__`, {
+                get: () => {
+                  let latest: any;
+                  try {
+                    latest = dcGetter();
+                  } catch {
+                    latest = null;
+                  }
+                  if (latest && latest.__isCurriedComponent) {
+                    const latestPos = latest.__curriedPositionals;
+                    if (latestPos && posIdx < latestPos.length) {
+                      const lv = latestPos[posIdx];
+                      return typeof lv === 'function' && !lv.__isCurriedComponent ? lv() : lv;
+                    }
+                  }
+                  const pv = cPositionals[posIdx];
+                  return typeof pv === 'function' && !pv.__isCurriedComponent ? pv() : pv;
+                },
+                enumerable: true,
+                configurable: true,
+              });
+            } else {
+              Object.defineProperty(mergedArgs, `__pos${i}__`, {
+                get: () => {
+                  const pv = cPositionals[posIdx];
+                  return typeof pv === 'function' && !pv.__isCurriedComponent ? pv() : pv;
+                },
+                enumerable: true,
+                configurable: true,
+              });
+            }
+            // Store the raw getter for mut to use as a setter source
+            if (typeof val === 'function' && !val.__isCurriedComponent) {
+              posSourceGetters[i] = val;
+            }
+          }
+          Object.defineProperty(mergedArgs, '__posCount__', {
+            value: cPositionals.length + invocationCount,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+          });
+          // Store positional source getters for mut support
+          if (posSourceGetters.length > 0) {
+            mergedArgs.__posSourceGetters = posSourceGetters;
+          }
         }
         const resolvedKomp = komp.__name;
         // Temporarily ensure the ambient owner is set for the recursive call,
