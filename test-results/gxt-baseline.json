@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T13:59:01.903Z",
+    "capturedAt": "2026-10-15T04:28:15.499Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "6f5611dab1",
-    "totalTests": 10079,
-    "totalModules": 983,
+    "emberCommit": "82bff4dd8a",
+    "totalTests": 10078,
+    "totalModules": 982,
     "quarantinedTests": 0,
     "totalAssertions": 60122,
-    "totalAssertionsPassing": 59216,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after creating a binding evaluates its expression once and a renderComponent root updates in place (no whole-root re-render; destroying the render destroys its tree), with the in-place update fixes it needed (a keyed {{#each}} row renders the new object of its key, a block inside <svg> keeps the SVG namespace and an SVG text child updates, a content mustache renders the component its value is now, a helper call resolves in the owner of its render scope), written by runner.mjs. 9567/10079 green (was 9395/10067): 164 tests turned green (the [integration] Updating, tracked collection, Attributes, modifier, components and #each suites, renderSettled, standalone tracked values, @glimmer/component without re-construction, {{array}}/{{hash}} yields); 12 new tests, all green. 4 known reds that passed only because the root re-render rendered the whole root again and created its components again: '#in-element :: Inside a loop' (an argument of a template-only component in an {{#each}} row does not update), 'Updating :: updating a curly with a safe and unsafe string' (an element text binding that switches between a SafeString and a string), '[components] teardown :: components that are \"destroyed twice\" are destroyed once' (willDestroy in the next run loop) and 'Helpers test: {{hash}} :: works with computeds' (a computed property whose dependent key goes through a (hash) member does not recompute). No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertionsPassing": 59067,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after dropping the development-only Glimmer template checks (a template the GXT compiler cannot compile still throws, with the GXT compiler's message; {{this.attrs.x}} keeps its deprecation), written by runner.mjs. 9440/10078 green (was 9567/10079). 126 known reds, all tests that expect an invalid template to be rejected at compile time with Glimmer's error: 25 still throw, with a different message (message-only difference: [integration] compile errors and general syntax errors, {{component.foo}}, {{attrs.x}}); 100 are invalid templates the GXT compiler accepts (keyword misuse, if/unless arity, named-block rules, yield/has-block arguments, strict-mode references that are not in scope, argument-less helper and dynamic modifier lookups, `action` in strict mode); 1, 'Strict Mode <-> Loose Mode - renderComponent :: rendering multiple times to adjacent elements', fails with the render-time 'not in scope' error of the previous test's template. The 2 tests of the removed 'GXT correctness: compile-time template checks' module are gone; 1 new GXT correctness test, green. No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1592,12 +1592,20 @@
     },
     "Components test: curly components": {
       "total": 60,
-      "passing": 51,
+      "passing": 49,
       "assertionsTotal": 238,
-      "assertionsPassing": 223,
+      "assertionsPassing": 221,
       "failingTests": [
         {
           "name": " the component and its child components are destroyed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " non-block with properties access via attrs is asserted against",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " block with properties on attrs is asserted against",
           "category": "gxt:triage"
         },
         {
@@ -1636,10 +1644,15 @@
     },
     "Components test: curly components (classic component)": {
       "total": 72,
-      "passing": 72,
+      "passing": 71,
       "assertionsTotal": 498,
-      "assertionsPassing": 498,
-      "failingTests": []
+      "assertionsPassing": 497,
+      "failingTests": [
+        {
+          "name": " using attrs for positional params is asserted against",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "Components test: dynamic components": {
       "total": 20,
@@ -2627,17 +2640,10 @@
       "failingTests": []
     },
     "GXT correctness: compile pipeline errors": {
-      "total": 4,
-      "passing": 4,
-      "assertionsTotal": 4,
-      "assertionsPassing": 4,
-      "failingTests": []
-    },
-    "GXT correctness: compile-time template checks": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 2,
-      "assertionsPassing": 2,
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
       "failingTests": []
     },
     "GXT correctness: ember-template-compiler shim": {
@@ -4652,10 +4658,19 @@
     },
     "Strict Mode <-> Loose Mode - renderComponent": {
       "total": 3,
-      "passing": 3,
-      "assertionsTotal": 12,
-      "assertionsPassing": 12,
-      "failingTests": []
+      "passing": 1,
+      "assertionsTotal": 13,
+      "assertionsPassing": 11,
+      "failingTests": [
+        {
+          "name": " strict-mode components cannot lookup things in the registry",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " rendering multiple times to adjacent elements",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "StrictResolver": {
       "total": 13,
@@ -6790,28 +6805,45 @@
     },
     "[integration] jit :: `component` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 13,
       "assertionsTotal": 15,
-      "assertionsPassing": 15,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `debugger` keyword syntax errors": {
       "total": 14,
-      "passing": 13,
+      "passing": 10,
       "assertionsTotal": 17,
-      "assertionsPassing": 16,
+      "assertionsPassing": 13,
       "failingTests": [
         {
           "name": "keyword can be used as a value in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `each-in` keyword syntax errors": {
       "total": 14,
-      "passing": 6,
+      "passing": 3,
       "assertionsTotal": 17,
-      "assertionsPassing": 9,
+      "assertionsPassing": 6,
       "failingTests": [
         {
           "name": "keyword can be used as a value in non-strict mode",
@@ -6844,21 +6876,46 @@
         {
           "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
           "category": "gxt:triage"
+        },
+        {
+          "name": "non-append keywords cannot be used as appends",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `each` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 11,
       "assertionsTotal": 17,
-      "assertionsPassing": 17,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-append keywords cannot be used as appends",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `has-block-params` keyword syntax errors": {
       "total": 14,
-      "passing": 9,
+      "passing": 7,
       "assertionsTotal": 16,
-      "assertionsPassing": 11,
+      "assertionsPassing": 9,
       "failingTests": [
         {
           "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
@@ -6878,15 +6935,23 @@
         },
         {
           "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `has-block` keyword syntax errors": {
       "total": 14,
-      "passing": 9,
+      "passing": 7,
       "assertionsTotal": 16,
-      "assertionsPassing": 11,
+      "assertionsPassing": 9,
       "failingTests": [
         {
           "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
@@ -6906,34 +6971,55 @@
         },
         {
           "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `helper` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
-    },
-    "[integration] jit :: `if` keyword syntax errors": {
-      "total": 14,
-      "passing": 13,
-      "assertionsTotal": 15,
       "assertionsPassing": 14,
       "failingTests": [
         {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
+    },
+    "[integration] jit :: `if` keyword syntax errors": {
+      "total": 14,
+      "passing": 12,
+      "assertionsTotal": 15,
+      "assertionsPassing": 13,
+      "failingTests": [
+        {
           "name": "keyword can be used as a value in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `in-element` keyword syntax errors": {
       "total": 14,
-      "passing": 8,
+      "passing": 5,
       "assertionsTotal": 17,
-      "assertionsPassing": 11,
+      "assertionsPassing": 8,
       "failingTests": [
         {
           "name": "keyword can be used as a value in strict mode",
@@ -6958,85 +7044,197 @@
         {
           "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
           "category": "gxt:triage"
+        },
+        {
+          "name": "non-append keywords cannot be used as appends",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `let` keyword syntax errors": {
       "total": 14,
-      "passing": 13,
+      "passing": 10,
       "assertionsTotal": 17,
-      "assertionsPassing": 16,
+      "assertionsPassing": 13,
       "failingTests": [
         {
           "name": "keyword can be used as a value in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-append keywords cannot be used as appends",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: `log` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `modifier` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-append keywords cannot be used as appends",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `mount` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 11,
       "assertionsTotal": 17,
-      "assertionsPassing": 17,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `mut` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `outlet` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 11,
       "assertionsTotal": 17,
-      "assertionsPassing": 17,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `readonly` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `unbound` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `unless` keyword syntax errors": {
       "total": 14,
-      "passing": 14,
+      "passing": 13,
       "assertionsTotal": 15,
-      "assertionsPassing": 15,
-      "failingTests": []
+      "assertionsPassing": 14,
+      "failingTests": [
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: `yield` keyword syntax errors": {
       "total": 14,
-      "passing": 13,
+      "passing": 10,
       "assertionsTotal": 17,
-      "assertionsPassing": 16,
+      "assertionsPassing": 13,
       "failingTests": [
         {
           "name": "keyword can be used as a value in strict mode",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-block keywords cannot be used as blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-expr keywords cannot be used as expr",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "non-modifier keywords cannot be used as modifier",
           "category": "gxt:triage"
         }
       ]
@@ -7057,10 +7255,15 @@
     },
     "[integration] jit :: argument-less helper paren-less invoke": {
       "total": 5,
-      "passing": 5,
+      "passing": 4,
       "assertionsTotal": 22,
-      "assertionsPassing": 22,
-      "failingTests": []
+      "assertionsPassing": 21,
+      "failingTests": [
+        {
+          "name": "invoking an argument-less helper without parens in named argument position is a syntax error",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: button[formaction] attribute": {
       "total": 6,
@@ -7071,10 +7274,55 @@
     },
     "[integration] jit :: compile errors": {
       "total": 11,
-      "passing": 11,
+      "passing": 0,
       "assertionsTotal": 29,
-      "assertionsPassing": 29,
-      "failingTests": []
+      "assertionsPassing": 11,
+      "failingTests": [
+        {
+          "name": "A helpful error message is provided for unclosed elements",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "A helpful error message is provided for unmatched end tags",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "A helpful error message is provided for end tags for void elements",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "A helpful error message is provided for end tags with attributes",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "A helpful error message is provided for mismatched start/end tags",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "error line numbers include comment lines",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "error line numbers include mustache only lines",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "error line numbers include block lines",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "error line numbers include whitespace control mustaches",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "error line numbers include multiple mustache lines",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Unquoted attribute with expression throws an exception",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: dynamic helpers in resolution mode": {
       "total": 3,
@@ -7085,9 +7333,9 @@
     },
     "[integration] jit :: dynamic modifiers in resolution mode": {
       "total": 14,
-      "passing": 6,
+      "passing": 5,
       "assertionsTotal": 77,
-      "assertionsPassing": 69,
+      "assertionsPassing": 68,
       "failingTests": [
         {
           "name": "Can use a nested argument as a modifier",
@@ -7118,6 +7366,10 @@
           "category": "gxt:triage"
         },
         {
+          "name": "Cannot invoke a modifier definition based on this fallback lookup in resolution mode",
+          "category": "gxt:triage"
+        },
+        {
           "name": "Destroys a dynamic modifier that was set after the initial render when the render result is destroyed",
           "category": "gxt:triage"
         }
@@ -7125,24 +7377,155 @@
     },
     "[integration] jit :: general syntax errors": {
       "total": 10,
-      "passing": 10,
+      "passing": 0,
       "assertionsTotal": 31,
-      "assertionsPassing": 31,
-      "failingTests": []
+      "assertionsPassing": 10,
+      "failingTests": [
+        {
+          "name": "context switching using ../ is not allowed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "mixing . and / is not allowed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "explicit self ref with ./ is not allowed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - requires a space between as and pipes",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - Throws exception if given zero parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - invalid mustaches in block params list",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - EOF in block params list",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - Throws an error on invalid block params syntax",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - Throws an error on invalid identifiers for params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Block params in HTML syntax - Throws an error on missing `as`",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: if/unless (if) keyword syntax errors": {
       "total": 11,
-      "passing": 11,
+      "passing": 0,
       "assertionsTotal": 22,
-      "assertionsPassing": 22,
-      "failingTests": []
+      "assertionsPassing": 11,
+      "failingTests": [
+        {
+          "name": "{{#${type}}} throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{#${type}}} throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{#${type}}} throws if it received more than one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received only one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received more than 3 positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received only one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received more than 3 positional params",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: if/unless (unless) keyword syntax errors": {
       "total": 11,
-      "passing": 11,
+      "passing": 0,
       "assertionsTotal": 22,
-      "assertionsPassing": 22,
-      "failingTests": []
+      "assertionsPassing": 11,
+      "failingTests": [
+        {
+          "name": "{{#${type}}} throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{#${type}}} throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{#${type}}} throws if it received more than one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received only one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{${type}}} throws if it received more than 3 positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received no positional params",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received only one positional param",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "(${type}) throws if it received more than 3 positional params",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: img[src] attribute": {
       "total": 6,
@@ -7479,10 +7862,51 @@
     },
     "[integration] jit :: named blocks syntax errors": {
       "total": 10,
-      "passing": 10,
+      "passing": 0,
       "assertionsTotal": 25,
-      "assertionsPassing": 25,
-      "failingTests": []
+      "assertionsPassing": 10,
+      "failingTests": [
+        {
+          "name": "Defining block params on a component which has named blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Defining named blocks on a plain element is not allowed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Defining top level named blocks is not allowed",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Passing multiple of the same named block throws an error",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if both inverse and else named blocks are passed, inverse first",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if both inverse and else named blocks are passed, else first",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if there is content outside of the blocks",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Cannot pass self closing named block",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Named blocks must start with a lower case letter",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Named blocks cannot have arguments, attributes, or modifiers",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
@@ -7550,16 +7974,32 @@
     },
     "[integration] jit :: strict mode: general properties": {
       "total": 17,
-      "passing": 11,
+      "passing": 6,
       "assertionsTotal": 70,
-      "assertionsPassing": 64,
+      "assertionsPassing": 59,
       "failingTests": [
+        {
+          "name": "Undefined references is an error",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{component}} throws an error if a string is used in strict (append position)",
+          "category": "gxt:triage"
+        },
         {
           "name": "{{component}} throws an error if a string is used indirectly in strict (append position)",
           "category": "gxt:triage"
         },
         {
+          "name": "{{component.foo}} throws an error (append position)",
+          "category": "gxt:triage"
+        },
+        {
           "name": "{{component}} throws an error if a string is used indirectly in strict after first render (append position)",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{component}} throws an error if a string is used in strict (block position)",
           "category": "gxt:triage"
         },
         {
@@ -7568,6 +8008,10 @@
         },
         {
           "name": "{{component}} throws an error if a string is used indirectly in strict after first render (block position)",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "{{component}} throws an error if a string is used in strict (expression position)",
           "category": "gxt:triage"
         },
         {
@@ -7582,9 +8026,9 @@
     },
     "[integration] jit :: strict mode: static template values": {
       "total": 23,
-      "passing": 18,
+      "passing": 9,
       "assertionsTotal": 82,
-      "assertionsPassing": 77,
+      "assertionsPassing": 68,
       "failingTests": [
         {
           "name": "Can use template local in nested blocks with locals",
@@ -7592,6 +8036,42 @@
         },
         {
           "name": "Can use component in ambiguous helper/component position (with args)",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if component is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if value in append position is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if component or helper in append position is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if a value in argument position is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if a value in attribute position is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if helper in argument position (with args) is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if helper in attribute position (with args) is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if helper in subexpression position is not in scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "Throws an error if modifier is not in scope",
           "category": "gxt:triage"
         },
         {
@@ -7705,10 +8185,43 @@
     },
     "[integration] jit :: yield keywords syntax errors": {
       "total": 8,
-      "passing": 8,
+      "passing": 0,
       "assertionsTotal": 16,
-      "assertionsPassing": 16,
-      "failingTests": []
+      "assertionsPassing": 8,
+      "failingTests": [
+        {
+          "name": "yield throws if receiving any named args besides `to`",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "you can only yield to a literal string value",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block throws if receiving any named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block throws if receiving multiple positional",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block throws if receiving a value besides a string",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block-params throws if receiving any named args",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block-params throws if receiving multiple positional",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "has-block-params throws if receiving a value besides a string",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "[integration] jit :: {{#each}} keyword": {
       "total": 1,
@@ -8156,10 +8669,14 @@
     },
     "`action` is not a keyword": {
       "total": 4,
-      "passing": 3,
+      "passing": 2,
       "assertionsTotal": 4,
-      "assertionsPassing": 3,
+      "assertionsPassing": 2,
       "failingTests": [
+        {
+          "name": " in strict mode, an unbound `action` is not in scope",
+          "category": "gxt:triage"
+        },
         {
           "name": " in loose mode, an unresolved `{{action}}` is an ordinary resolution error",
           "category": "gxt:triage"
@@ -9203,6 +9720,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 512
+    "gxt:triage": 638
   }
 }
