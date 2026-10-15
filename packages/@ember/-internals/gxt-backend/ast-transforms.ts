@@ -341,10 +341,30 @@ const _GXT_ATTR_BARE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
  * matched only `="{{…}}"`, so we restrict to `ConcatStatement` parts and leave
  * bare mustache values alone (rewriting them would invoke a by-reference
  * helper in named-argument position).
+ *
+ * A block param in scope is a local variable, not a helper name: Glimmer reads
+ * `class="index-{{index}}"` inside `{{#each … as |item index|}}` as the
+ * variable, and so does this transform (it keeps such a mustache as it is). As
+ * a helper call the value was resolved as a helper and a falsy one was lost
+ * (`index-` for the row at index 0). Block params are scoped as in Glimmer: a
+ * block's params cover its body, an element's params its children (not its
+ * own attributes).
  */
 function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
   const b = env.syntax.builders;
-  function rewriteMustache(node: any): unknown {
+  // Block-param binders in scope, innermost last, each with the node that
+  // declares it (a program/inverse `Block` or an `ElementNode`).
+  const scopes: Array<{ owner: unknown; names: string[] }> = [];
+  // Whether `name` is a block param in scope for an attribute of `element`.
+  const isBlockParam = (name: string, element: unknown): boolean =>
+    scopes.some((frame) => frame.owner !== element && frame.names.includes(name));
+  const enterBinder = (node: any): void => {
+    scopes.push({ owner: node, names: node.blockParams || [] });
+  };
+  const exitBinder = (): void => {
+    scopes.pop();
+  };
+  function rewriteMustache(node: any, element: unknown): unknown {
     const p = node.path;
     if (!p) return undefined;
     // Only zero-arg, zero-hash mustaches (matching the string scanner, which
@@ -360,6 +380,7 @@ function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
       const name: string = p.head.name;
       if (!_GXT_ATTR_BARE_IDENT_RE.test(name)) return undefined;
       if (_GXT_ATTR_QUOTED_HELPER_BUILTINS.has(name)) return undefined;
+      if (isBlockParam(name, element)) return undefined;
       return b.mustache(b.sexpr(b.path(name)));
     }
     return undefined;
@@ -367,9 +388,13 @@ function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
   return {
     name: 'ember-gxt-attr-quoted-helper',
     visitor: {
-      AttrNode(node: any): void {
+      Block: { enter: enterBinder, exit: exitBinder },
+      ElementNode: { enter: enterBinder, exit: exitBinder },
+      AttrNode(node: any, path: any): void {
         const v = node.value;
         if (!v) return;
+        // The element the attribute is on.
+        const element = path && path.parent && path.parent.node;
         // ONLY rewrite QUOTED attribute values. A quoted value always parses as
         // a `ConcatStatement` (even a single mustache: `="{{x}}"` →
         // `Concat[Mustache]`, and `="pre-{{x}}-post"` → `Concat[Text, Mustache,
@@ -382,7 +407,7 @@ function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
           for (let i = 0; i < v.parts.length; i++) {
             const part = v.parts[i];
             if (part && part.type === 'MustacheStatement') {
-              const r = rewriteMustache(part);
+              const r = rewriteMustache(part, element);
               if (r) v.parts[i] = r;
             }
           }

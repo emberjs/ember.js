@@ -7,7 +7,10 @@
  *   `(has-block "else")` / `(has-block "inverse")` see it, whatever invoked the
  *   component (curly, a `{{#component}}` block, angle brackets);
  * - a tag naming a block param in scope invokes the param's value as a
- *   component, whatever its case (`<Yielder as |greet|><greet /></Yielder>`).
+ *   component, whatever its case (`<Yielder as |greet|><greet /></Yielder>`);
+ * - a block param in a quoted attribute is the variable's value: falsy values
+ *   included (`class="index-{{index}}"` is `index-0` in the first `{{#each}}`
+ *   row), and it updates when the row moves.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -112,6 +115,29 @@ moduleFor(
       );
       this.assertText('hi x|hi y');
       this.assert.strictEqual(this.element.querySelector('greet'), null, 'no <greet> element');
+    }
+
+    ['@test a block param in a quoted attribute is its value']() {
+      this.render(
+        '{{#let 0 false "" as |zero no empty|}}<p class="a{{zero}}b{{no}}c{{empty}}d"></p>{{/let}}'
+      );
+      this.assert.strictEqual(this.element.querySelector('p')!.className, 'a0bfalsecd');
+    }
+
+    ['@test an {{#each}} index in a quoted attribute is the index, and updates when rows move']() {
+      let a = { id: 'a' };
+      let b = { id: 'b' };
+      this.render(
+        '{{#each this.items key="id" as |item index|}}<p class="index-{{index}} {{item.id}}">{{index}}</p>{{/each}}',
+        { items: [a, b] }
+      );
+      let classes = () => Array.from(this.element.querySelectorAll('p'), (p) => p.className);
+      this.assert.deepEqual(classes(), ['index-0 a', 'index-1 b']);
+      this.assertText('01');
+
+      runTask(() => set(this.context, 'items', [b, a]));
+      this.assert.deepEqual(classes(), ['index-0 b', 'index-1 a'], 'after the rows move');
+      this.assertText('01');
     }
   }
 );
