@@ -110,39 +110,65 @@ export function ensureGxtContext() {
   }
 }
 
-// GXT-only: a minimal DebugRenderTree backed by gxt's `captureRenderTree`.
-// Only `.capture()` is reachable in GXT mode — the `begin`/`create`/`update`/
-// `didRender`/`willDestroy`/`commit` bookkeeping lives on the classic Glimmer
-// VM environment, which the GXT build does not include (see the
-// `debugRenderTree` getter).
-//
-// gxt's `captureRenderTree()` already returns Ember-compatible
-// `CapturedRenderNode[]` (gxt adds a harmless extra `template: null` field and
-// always reports `type: 'component'`), so `capture()` is a straight
-// pass-through. Called with no arguments, gxt discovers the render roots from
-// its own component-parent registry. gxt errors propagate.
-let gxtDebugRenderTree: DebugRenderTree | null = null;
+// GXT-only: the `{ROOT}` node of each `renderComponent` root, by root (see
+// `_renderComponentGxt`).
+const GXT_ROOT_NODES = new WeakMap<RendererRoot, () => CapturedRenderNode>();
 
-function getGxtDebugRenderTree(): DebugRenderTree {
+// GXT-only: the gxt roots of the `renderComponent` renders. The tree under one
+// is the `{ROOT}` node of its renderer, so it is not part of the shared tree of
+// the classic roots.
+const GXT_RENDER_ROOTS = new WeakSet<object>();
+
+// GXT-only: the DebugRenderTree of a renderer, backed by gxt's
+// `captureRenderTree`. Only `.capture()` is reachable in GXT mode — the
+// `begin`/`create`/`update`/`didRender`/`willDestroy`/`commit` bookkeeping
+// lives on the classic Glimmer VM environment, which the GXT build does not
+// include (see the `debugRenderTree` getter).
+//
+// `capture()` lists the trees of the renderer's roots, as Glimmer's debug
+// render tree lists the renders of its environment:
+//
+// - a `renderComponent` root is its `{ROOT}` node;
+// - the classic roots (application outlets, classic components) render in
+//   gxt's shared tree. gxt captures it from its own registry of render roots
+//   (no arguments), less the gxt roots of `renderComponent` renders. gxt
+//   returns Ember-compatible `CapturedRenderNode[]` (it adds a harmless
+//   `template: null` field and always reports `type: 'component'`).
+//
+// gxt errors propagate.
+function gxtDebugRenderTree(state: RendererState): DebugRenderTree {
   // GXT-only. Body gated on the literal `__GXT_MODE__` so the `_gxtLib`
   // reference tree-shakes out of the classic dist.
   if (__GXT_MODE__) {
-    if (!gxtDebugRenderTree) {
-      const noop = (): void => {};
-      gxtDebugRenderTree = {
-        begin: noop,
-        create: noop,
-        update: noop,
-        didRender: noop,
-        willDestroy: noop,
-        commit: noop,
-        // No args → gxt discovers the render roots itself (see above).
-        capture: (): CapturedRenderNode[] => _gxtLib().captureRenderTree() as CapturedRenderNode[],
-      } as DebugRenderTree;
-    }
-    return gxtDebugRenderTree;
+    const noop = (): void => {};
+    return {
+      begin: noop,
+      create: noop,
+      update: noop,
+      didRender: noop,
+      willDestroy: noop,
+      commit: noop,
+      capture: (): CapturedRenderNode[] => {
+        const nodes: CapturedRenderNode[] = [];
+        let hasClassicRoots = false;
+        for (const root of state.roots) {
+          const rootNode = GXT_ROOT_NODES.get(root);
+          if (rootNode === undefined) {
+            hasClassicRoots = true;
+          } else if (!root.destroyed) {
+            nodes.push(rootNode());
+          }
+        }
+        if (hasClassicRoots) {
+          for (const node of _gxtLib().captureRenderTree() as CapturedRenderNode[]) {
+            if (!GXT_RENDER_ROOTS.has(node.instance as object)) nodes.push(node);
+          }
+        }
+        return nodes;
+      },
+    } as DebugRenderTree;
   }
-  throw new Error('[gxt] getGxtDebugRenderTree() called outside GXT mode');
+  throw new Error('[gxt] gxtDebugRenderTree() called outside GXT mode');
 }
 
 /**
@@ -418,7 +444,7 @@ export class RendererState {
        * If it stays invalid, `loopEnd` starts one more run loop,
        * and that run loop throws the same error again.
        */
-      if (!completedWithoutError) {
+      if (!completedWithoutError && !__GXT_MODE__) {
         this.#lastRevision = valueForTag(CURRENT_TAG);
       }
       this.#inRenderTransaction = false;
@@ -487,7 +513,14 @@ export class RendererState {
           }
         }
 
-        this.#lastRevision = valueForTag(CURRENT_TAG);
+        // GXT: `isValid` does not compare revisions (gxt renders the updates),
+        // and reading `CURRENT_TAG` would subscribe the formula a nested
+        // `renderComponent` call runs in (a helper that renders a component
+        // and adds its root) to every tag: the formula would run again on any
+        // change, and render the component again.
+        if (!__GXT_MODE__) {
+          this.#lastRevision = valueForTag(CURRENT_TAG);
+        }
       };
 
       if (__GXT_MODE__) {
@@ -674,7 +707,7 @@ export class BaseRenderer {
       // the GXT backend does not build. Return a minimal DebugRenderTree whose
       // `.capture()` delegates to gxt's `captureRenderTree` instead (consumed by
       // `@ember/debug`'s `captureRenderTree(owner)`, e.g. for Ember Inspector).
-      return getGxtDebugRenderTree();
+      return gxtDebugRenderTree(this.state);
     }
 
     let { debugRenderTree } = this.state.env;
@@ -994,6 +1027,42 @@ interface GxtRenderEntry {
    * by this entry (see `rawGxtTemplate`), so its components' destructors run.
    */
   teardownRendered?: () => void;
+  /**
+   * The gxt component a raw gxt template function rendered as (see
+   * `rawGxtTemplate`): its tree is the render's tree.
+   */
+  renderedTree?: object | null;
+  /**
+   * The bounds of the render, as they are now: the render's nodes are the
+   * children of `boundsParent` after `boundsBefore` and before `boundsAfter`,
+   * the nodes around the render (`null`: the render starts, or ends, the
+   * parent's children). An update changes the nodes of the render, and the
+   * nodes around it stay, so these give the render's first and last node
+   * whatever an update did at its edges (`gxtEntryFirstNode` /
+   * `gxtEntryLastNode`), as Glimmer's bounds of a root block do. A render
+   * inserted next to this one becomes this render's neighbour (see
+   * `renderIntoRegion`).
+   */
+  boundsParent: Element | null;
+  boundsBefore: Node | null;
+  boundsAfter: Node | null;
+}
+
+// The first node of a render (see `GxtRenderEntry.boundsParent`), `null` when
+// the render has no nodes.
+function gxtEntryFirstNode(entry: GxtRenderEntry): Node | null {
+  const parent = entry.boundsParent;
+  if (parent === null) return null;
+  const first = entry.boundsBefore === null ? parent.firstChild : entry.boundsBefore.nextSibling;
+  return first === entry.boundsAfter ? null : first;
+}
+
+// The last node of a render, `null` when the render has no nodes.
+function gxtEntryLastNode(entry: GxtRenderEntry): Node | null {
+  const parent = entry.boundsParent;
+  if (parent === null) return null;
+  const last = entry.boundsAfter === null ? parent.lastChild : entry.boundsAfter.previousSibling;
+  return last === entry.boundsBefore ? null : last;
 }
 interface GxtRenderTargetState {
   entries: GxtRenderEntry[];
@@ -1041,6 +1110,7 @@ function rawGxtTemplate(fn: (...args: unknown[]) => unknown, entry: GxtRenderEnt
     if (rendered !== null) {
       const previous = rendered;
       rendered = null;
+      entry.renderedTree = null;
       destroyElementSync(previous);
     }
   };
@@ -1054,6 +1124,7 @@ function rawGxtTemplate(fn: (...args: unknown[]) => unknown, entry: GxtRenderEnt
         element: parentElement,
         nextSibling: null,
       });
+      entry.renderedTree = rendered as object | null;
     },
   };
 }
@@ -1121,7 +1192,8 @@ function _renderComponentGxt(
   component: object,
   into: IntoTarget,
   owner: object,
-  args?: Record<string, unknown>
+  args: Record<string, unknown> | undefined,
+  env: RenderComponentEnv | undefined
 ): RenderResult {
   const globalTemplates = getGxtRenderer()?.registries.componentTemplates;
 
@@ -1158,6 +1230,9 @@ function _renderComponentGxt(
     component,
     ownerObj: owner,
     runloop: currentRunloop,
+    boundsParent: null,
+    boundsBefore: null,
+    boundsAfter: null,
   };
 
   let targetState: GxtRenderTargetState | undefined;
@@ -1246,6 +1321,10 @@ function _renderComponentGxt(
   let renderOwner: object = owner;
   // That manager's destroyable for its component, destroyed with the render.
   let subOwnerDestroyable: object | null = null;
+  // The render's root in its renderer (set below), and the component the
+  // render created (`null` for a template-only component).
+  let root: RendererRoot | null = null;
+  let rootInstance: unknown = null;
 
   // Remove all DOM nodes belonging to this entry's range (firstNode through
   // lastNode, inclusive). Used for both destroy and the re-render
@@ -1297,9 +1376,10 @@ function _renderComponentGxt(
       destroyElementSync(context, true);
     }
     if (renderRoot !== null) {
-      const root = renderRoot;
+      const gxtRoot = renderRoot;
       renderRoot = null;
-      destroyElementSync(root, true);
+      GXT_RENDER_ROOTS.delete(gxtRoot);
+      destroyElementSync(gxtRoot, true);
     }
   };
 
@@ -1323,6 +1403,11 @@ function _renderComponentGxt(
     if (subOwnerDestroyable !== null) {
       destroy(subOwnerDestroyable);
     }
+    // The root leaves its renderer (the destructor `RendererState.renderRoot`
+    // registered), and a renderer without roots leaves the renderer list.
+    if (root !== null) {
+      destroy(root);
+    }
   };
   entry.destroy = doDestroy;
 
@@ -1340,6 +1425,7 @@ function _renderComponentGxt(
       const lib = _gxtLib();
       renderRoot = lib.createRoot(document) as object;
       lib.provideContext(renderRoot, lib.RENDERING_CONTEXT, getGxtDomApi());
+      GXT_RENDER_ROOTS.add(renderRoot);
     }
     if (ctx !== null && typeof ctx === 'object') renderedContext = ctx;
     template.render(ctx, parent, renderRoot);
@@ -1361,9 +1447,22 @@ function _renderComponentGxt(
       }
     }
     if (!hasForeignLiveContent) {
+      const lastBefore = parent.lastChild;
       renderTemplate(template, ctx, parent);
       entry.firstNode = parent.firstChild;
       entry.lastNode = parent.lastChild;
+      entry.boundsParent = parent;
+      entry.boundsBefore = lastBefore;
+      entry.boundsAfter = null;
+      // A render of this target that ended the parent now ends before this one.
+      const firstRendered = lastBefore === null ? parent.firstChild : lastBefore.nextSibling;
+      if (firstRendered !== null) {
+        for (const e of targetState?.entries ?? []) {
+          if (e !== entry && e.boundsParent === parent && e.boundsAfter === null) {
+            e.boundsAfter = firstRendered;
+          }
+        }
+      }
       return;
     }
     // Sibling render: render into a temporary host of the same tag-name
@@ -1372,19 +1471,105 @@ function _renderComponentGxt(
     // FRONT of the actual parent.
     const host = document.createElement(parent.tagName);
     renderTemplate(template, ctx, host);
-    if (host.firstChild === null) return; // nothing rendered
+    const insertBefore = parent.firstChild;
+    const previous = insertBefore === null ? parent.lastChild : insertBefore.previousSibling;
     const firstCollected: Node | null = host.firstChild;
     const lastCollected: Node | null = host.lastChild;
-    const frag = document.createDocumentFragment();
-    while (host.firstChild) {
-      frag.appendChild(host.firstChild);
+    if (firstCollected !== null && lastCollected !== null) {
+      const frag = document.createDocumentFragment();
+      while (host.firstChild) {
+        frag.appendChild(host.firstChild);
+      }
+      parent.insertBefore(frag, insertBefore);
+      entry.firstNode = firstCollected;
+      entry.lastNode = lastCollected;
+      // The renders of this target that were next to the insertion point now
+      // have this render as their neighbour.
+      for (const e of targetState?.entries ?? []) {
+        if (e === entry || e.boundsParent !== parent) continue;
+        if (e.boundsBefore === previous) {
+          e.boundsBefore = lastCollected;
+        } else if (e.boundsAfter === insertBefore) {
+          e.boundsAfter = firstCollected;
+        }
+      }
     }
-    parent.insertBefore(frag, parent.firstChild);
-    entry.firstNode = firstCollected;
-    entry.lastNode = lastCollected;
+    entry.boundsParent = parent;
+    entry.boundsBefore = previous;
+    entry.boundsAfter = insertBefore;
+  };
+
+  // The `{ROOT}` node of the render in its renderer's debug render tree, as
+  // Glimmer names the root component of a `renderComponent` render: the
+  // component the render created, the render's arguments and bounds, and the
+  // tree gxt captures under the render.
+  const captureRootNode = (): CapturedRenderNode => {
+    const named: Record<string, unknown> = {};
+    if (args) {
+      for (const key of Object.keys(args)) named[key] = args[key];
+    }
+    const tree = entry.renderedTree ?? renderRoot;
+    const gxtNode =
+      tree !== null && tree !== undefined
+        ? (_gxtLib().captureRenderTree([tree]) as CapturedRenderNode[])[0]
+        : undefined;
+    const parentElement = entry.boundsParent;
+    const firstNode = gxtEntryFirstNode(entry);
+    const lastNode = gxtEntryLastNode(entry);
+    return {
+      id: gxtNode?.id ?? '',
+      type: 'component',
+      name: '{ROOT}',
+      args: { positional: [], named },
+      instance: rootInstance,
+      bounds:
+        parentElement !== null && firstNode !== null && lastNode !== null
+          ? ({ parentElement, firstNode, lastNode } as unknown as CapturedRenderNode['bounds'])
+          : null,
+      children: gxtNode?.children ?? [],
+    };
+  };
+
+  // The render is a root of its owner's renderer, as a Glimmer
+  // `renderComponent` render is (`RendererState.renderRoot`): the renderer is
+  // in Ember's renderer list while it has roots (`captureRenderTree`, Ember
+  // Inspector, read the list), and destroying the render removes its root.
+  // The root is added before the render, so the roots keep the order of their
+  // renders. gxt updates a render in place, so a render pass of the renderer
+  // has nothing to render for it (`render`), and the render does not wait for
+  // a pass in progress: a render made during another one (a nested
+  // `renderComponent`) renders now, as every GXT render does. The root's
+  // `result` has the bounds of the render.
+  let rendered = false;
+  const rootResult = {
+    parentElement: () => entry.boundsParent,
+    firstNode: () => gxtEntryFirstNode(entry),
+    lastNode: () => gxtEntryLastNode(entry),
+  } as unknown as GlimmerRenderResult;
+  const addRoot = () => {
+    const rendererRoot: RendererRoot = {
+      type: 'component',
+      get result() {
+        return rendered ? rootResult : undefined;
+      },
+      get destroyed() {
+        return destroyed;
+      },
+      render() {
+        // gxt updates the render in place.
+      },
+      destroy: doDestroy,
+      isFor: () => false,
+    };
+    root = rendererRoot;
+    GXT_ROOT_NODES.set(rendererRoot, captureRootNode);
+    rendererFor(owner, env).state.renderRoot(rendererRoot);
+    registerDestructor(rendererRoot, doDestroy);
   };
 
   try {
+    addRoot();
+
     // Resolve template from COMPONENT_TEMPLATES
     let template = globalTemplates?.get(component);
 
@@ -1445,7 +1630,12 @@ function _renderComponentGxt(
             // Prepend (matches the documented "subsequent renders are
             // prepended" semantic) and capture the inserted node as both
             // firstNode and lastNode of this entry so destroy can scope.
-            targetElement.insertBefore(nodes, targetElement.firstChild);
+            const insertBefore = targetElement.firstChild;
+            entry.boundsParent = targetElement;
+            entry.boundsBefore =
+              insertBefore === null ? targetElement.lastChild : insertBefore.previousSibling;
+            entry.boundsAfter = insertBefore;
+            targetElement.insertBefore(nodes, insertBefore);
             entry.firstNode = nodes;
             entry.lastNode = nodes;
           } else {
@@ -1457,6 +1647,7 @@ function _renderComponentGxt(
         console.warn('[renderComponent GXT] No GXT template found for component:', component);
       }
       gxtRenderPass().flushRenderErrors(renderErrorMark);
+      rendered = true;
 
       const result: RenderResult = { destroy: doDestroy };
       entry.result = result;
@@ -1579,6 +1770,7 @@ function _renderComponentGxt(
     } else {
       createComponentInstance();
     }
+    rootInstance = instance;
 
     // Build render context with reactive arg getters
     const renderContext: any = instance || {};
@@ -1647,13 +1839,17 @@ function _renderComponentGxt(
       customManager.didCreateComponent(customComponent);
     }
     gxtRenderPass().flushRenderErrors(renderErrorMark);
+    rendered = true;
   } catch (error) {
     // The caller receives this error and no result, so nothing can destroy
-    // this render: what it rendered before the error is destroyed here. (A
-    // classic root whose render failed stops rendering too, see
-    // errorLoopTransaction.)
+    // this render: what it rendered before the error is destroyed here, and
+    // its root leaves its renderer. (A classic root whose render failed stops
+    // rendering too, see errorLoopTransaction.)
     destroyed = true;
     destroyRenderTree();
+    if (root !== null) {
+      destroy(root);
+    }
     // The queue can hold a copy of the caller's error (several sites queue an
     // error and also throw it) or errors of this same aborted render; left
     // there, the next unrelated render would throw them.
@@ -1770,7 +1966,7 @@ export function renderComponent(
   // GXT escape hatch: bypass Glimmer VM entirely for GXT mode.
   // This avoids bytecode compilation which crashes with GXT templates.
   if (__GXT_MODE__) {
-    return _renderComponentGxt(component, into, owner, args);
+    return _renderComponentGxt(component, into, owner, args, env);
   }
 
   let renderer = rendererFor(owner, env);
