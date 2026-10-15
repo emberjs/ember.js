@@ -108,6 +108,7 @@ import {
   // rendering, the instance-field key of a class-body `<template>`, and the
   // destructors gxt runs when it tears a render-tree node down.
   $_c as _gxtC,
+  $_tag as _gxtTag,
   $_GET_ARGS as _gxtGetArgs,
   $_GET_SLOTS as _gxtGetSlots,
   $_slot as _gxtSlot,
@@ -7756,6 +7757,35 @@ function _templateOnlyArgs(args: any): any {
   return tplArgs;
 }
 
+// The render of an `(element "tag")` definition (the `element` helper of
+// `@ember/helper`, branded `__isElementHelperDefinition` in GXT builds):
+// Glimmer renders the invocation's block in a `<tag>` element that has the
+// invocation's attributes (`<tag ...attributes>{{yield}}</tag>`), and the block
+// alone for an empty tag name. The element is created as a template's own
+// element is (`createElementWithContent` over gxt's `$_tag`), in the
+// invocation's render context.
+function _renderElementHelperDefinition(
+  definition: { tagName: string },
+  args: any,
+  fw: any,
+  ctx: any
+): () => unknown {
+  const slots = args?.[$SLOTS_SYMBOL] || args?.$slots || args?.args?.[$SLOTS_SYMBOL];
+  const block = typeof slots?.default === 'function' ? slots.default : null;
+  return () => {
+    const rendered = block === null ? [] : block(ctx);
+    const content = Array.isArray(rendered) ? rendered : [rendered];
+    if (!definition.tagName) return content;
+    return getGxtRenderer()!.compilePipeline.createElementWithContent!(
+      _gxtTag,
+      definition.tagName,
+      _gxtFwTuple(args, fw),
+      ctx,
+      content
+    );
+  };
+}
+
 // Render a template-only component's template (`tpl`, a template or a factory
 // of one for `owner`) with the invocation's `args` and forwarded attributes
 // (`fw`) into a fragment; `null` when there is no template to render.
@@ -8318,6 +8348,13 @@ const $_MANAGERS = {
             ? _renderClassBodyComponent(komp, customManager, args, fw, ctx, owner)
             : _renderCustomManagedComponent(komp, customManager, args, fw, ctx, owner, template);
         }
+      }
+
+      // An `(element "tag")` definition renders its element. (Its internal
+      // manager builds a wrapped component in the Glimmer VM; here it would
+      // reach the Input/Textarea render of `handleManagedComponent`.)
+      if (komp !== null && typeof komp === 'object' && komp.__isElementHelperDefinition === true) {
+        return _renderElementHelperDefinition(komp, args, fw, ctx);
       }
 
       // Handle component with internal/custom manager (walk prototype chain)
