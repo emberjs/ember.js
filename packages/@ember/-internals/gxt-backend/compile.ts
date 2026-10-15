@@ -2141,58 +2141,36 @@ function _renderCurriedNode(
   return toNode(handleResult, depth);
 }
 
-// Override $__log with Ember-compatible version.
-// Resolves GXT getter args and calls console.log. The compile-time transform
-// (above) ensures $__log calls are eager (not inside reactive getters), so
-// this only fires once per render.
+// Override $__log with Ember-compatible version: `{{log}}` and `(log)` call
+// console.log with the values of their arguments (gxt passes a bound argument
+// as a getter).
+//
+// gxt compiles a `{{log …}}` statement to `($__log("__logSite:N", …args), "")`,
+// which runs once, when the block renders. Glimmer's log keyword is a helper
+// that runs again whenever a value one of its arguments read changes. So the
+// statement logs from an effect of the render (`_gxtTemplateEffect`): the
+// effect logs now and again after each change of what the arguments read, and
+// it stops when the render is destroyed. `(log …)` in a subexpression is called
+// by the formula that reads it, which re-runs it on a change; it returns
+// undefined, as Glimmer's log helper does.
 {
   const g = globalThis as any;
   if (g.$__log) {
-    // Deduplicate using call-site IDs injected by the compile-time transform.
-    // The first arg is "__logSite:N" which uniquely identifies the {{log}} call
-    // in the template. We track which site IDs have fired in the current sync
-    // frame and skip duplicates (caused by root.ts + manager.ts double-rendering).
-    const _loggedSites = new Set<string>();
-    let _logClearTimer: any = null;
+    const logValues = (args: unknown[]): void => {
+      console.log(
+        ...args.map((arg: any) => (typeof arg === 'function' && !arg.prototype ? arg() : arg))
+      );
+    };
 
-    g.$__log = function $__log_ember(...args: any[]) {
-      // Check for call-site ID prefix
-      let siteId: string | null = null;
-      let actualArgs = args;
-      if (args.length > 0 && typeof args[0] === 'string' && args[0].startsWith('__logSite:')) {
-        siteId = args[0];
-        actualArgs = args.slice(1);
+    g.$__log = function $__log_ember(...args: unknown[]) {
+      const first = args[0];
+      if (typeof first === 'string' && first.startsWith('__logSite:')) {
+        const values = args.slice(1);
+        _gxtTemplateEffect(() => logValues(values));
+        return '';
       }
-
-      // Resolve GXT getters in args
-      const resolved = actualArgs.map((a: any) => {
-        if (typeof a === 'function' && !a.prototype) {
-          try {
-            return a();
-          } catch {
-            return a;
-          }
-        }
-        return a;
-      });
-
-      // Deduplicate: skip if this site already logged in the current sync frame
-      if (siteId) {
-        if (_loggedSites.has(siteId)) {
-          return ''; // Skip duplicate
-        }
-        _loggedSites.add(siteId);
-        // Clear tracked sites after the current sync frame
-        if (!_logClearTimer) {
-          _logClearTimer = setTimeout(() => {
-            _loggedSites.clear();
-            _logClearTimer = null;
-          }, 0);
-        }
-      }
-
-      console.log(...resolved);
-      return '';
+      logValues(args);
+      return undefined;
     };
 
     protectGlobal('$__log', g.$__log);
