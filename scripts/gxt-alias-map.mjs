@@ -579,11 +579,12 @@ export function gxtNativeSpecifierForPath(absPath, packagesDir) {
  */
 export const GXT_NATIVE_FORBIDDEN = [
   [
-    // Except `@glimmer/runtime/lib/dom/{sanitized-values,normalize}`: Glimmer's
-    // URL sanitization of attribute values and the string normalization it uses,
-    // DOM-value code with no VM dependency. The native attribute hook
-    // (native/host-hooks.ts) calls it, so native sanitizes exactly as Glimmer.
-    /packages\/@glimmer\/(?:runtime\/(?!lib\/dom\/(?:sanitized-values|normalize)\.ts$)|(?:opcode-compiler|program|vm|wire-format|encoder|node|global-context|reference|destroyable|manager)\/)/,
+    // Except `@glimmer/runtime/lib/dom/{sanitized-values,normalize,props}`:
+    // Glimmer's URL sanitization of attribute values, the string normalization
+    // it uses and `normalizeProperty`, DOM-value code with no VM dependency. The
+    // native attribute hook (native/host-hooks.ts) calls them, so native
+    // sanitizes and chooses attribute or property exactly as Glimmer.
+    /packages\/@glimmer\/(?:runtime\/(?!lib\/dom\/(?:sanitized-values|normalize|props)\.ts$)|(?:opcode-compiler|program|vm|wire-format|encoder|node|global-context|reference|destroyable|manager)\/)/,
     'Glimmer VM package',
   ],
   [

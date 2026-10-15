@@ -36,7 +36,7 @@ import { warn } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import toBool from '@ember/-internals/glimmer/lib/utils/to-bool';
 import { flushRevalidation } from '@lifeart/gxt';
-import { removesAttribute } from '../utils';
+import { attributeText } from '../utils';
 import { commitModifiers } from './modifier-manager';
 import { commitComponents, updateComponents } from './component-lifecycle';
 import { debug } from './validator';
@@ -163,12 +163,12 @@ export function resetRenderLoop(): void {
 // Ember/Glimmer attribute write semantics at gxt's single attr/prop write seam
 // (`$attr` / `$prop`, initial write AND every reactive re-apply; gxt
 // WITH_EMBER_INTEGRATION builds only): Glimmer's `vm/attributes/dynamic.ts`
-// normalizeValue, with Glimmer's own URL sanitization and value normalization
-// (`@glimmer/runtime/lib/dom/sanitized-values` and `dom/normalize`, imported
-// above: DOM-value code with no VM dependency, the two `@glimmer/runtime`
+// attribute and property rules, with Glimmer's own URL sanitization and value
+// normalization (`@glimmer/runtime/lib/dom/sanitized-values`, `dom/normalize`
+// and `dom/props`: DOM-value code with no VM dependency, the `@glimmer/runtime`
 // modules scripts/gxt-alias-map.mjs GXT_NATIVE_FORBIDDEN lets the native
 // closure ship). On the attribute side, returning `undefined` makes gxt remove
-// the attribute; which values remove it is `removesAttribute` (../utils), shared
+// the attribute; what an attribute writes is `attributeText` (../utils), shared
 // with the compat build's hook.
 
 // A trusting attribute value (`style={{{value}}}`: gxt `$_trustAttr` → the
@@ -232,9 +232,6 @@ export function normalizeAttrValue(
     // become their HTML).
     return isSafeString(value) ? value.toHTML() : value;
   }
-  if (removesAttribute(value)) {
-    return undefined; // remove the attribute
-  }
-  if (value === true) return '';
-  return isSafeString(value) ? value.toHTML() : String(value);
+  // Glimmer's attribute or property rules, shared with the compat hook.
+  return attributeText(element, name, value);
 }

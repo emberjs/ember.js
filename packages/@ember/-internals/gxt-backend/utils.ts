@@ -3,6 +3,7 @@
  */
 import type { SimpleElement } from '@glimmer/interfaces';
 import { normalizeStringValue } from '@glimmer/runtime/lib/dom/normalize';
+import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
 import {
   requiresSanitization,
   sanitizeAttributeValue,
@@ -46,6 +47,54 @@ export function removesAttribute(value: unknown): boolean {
     typeof value === 'function' ||
     typeof (value as { toString?: unknown }).toString !== 'function'
   );
+}
+
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+/**
+ * The property through which Glimmer sets a bound attribute `name` of
+ * `element`, or `null` when Glimmer sets it as an attribute
+ * (`dynamicAttribute`, `@glimmer/runtime/lib/vm/attributes/dynamic.ts`): an
+ * attribute of an HTML element that `normalizeProperty` maps to a property of
+ * the element (`name` of a `<button>`, `id`, `title`, `selected` of an
+ * `<option>`), except `style` and the attributes the DOM properties of which
+ * cannot be set (`form`, `list`). Every attribute of an SVG element is an
+ * attribute.
+ */
+export function boundAttributeProperty(element: Element, name: string): string | null {
+  if (element.namespaceURI === SVG_NAMESPACE) return null;
+  const { normalized, type } = normalizeProperty(element as unknown as SimpleElement, name);
+  return type === 'prop' ? normalized : null;
+}
+
+/**
+ * The text gxt writes for the attribute `name` of `element` at its attribute
+ * write seam (the attribute side of both builds' `normalizeAttrValue` host
+ * hooks, for the first write and every update), or `undefined` to remove the
+ * attribute, by Glimmer's rules:
+ * - `null` and `undefined` remove it;
+ * - text is the attribute's text. A static attribute is text, which Glimmer
+ *   sets as it is, and so is the text of a bound attribute that gxt writes as
+ *   an attribute when Glimmer sets a property reflecting it (`id`, `title`);
+ * - any other value of an attribute Glimmer sets through a property
+ *   (`boundAttributeProperty`) is assigned to the property, as Glimmer's
+ *   DefaultDynamicProperty assigns it, and the attribute is what the property
+ *   reflects: `name={{false}}` on a `<button>` is `name="false"`;
+ * - any other value of an attribute is Glimmer's `normalizeValue`: a value
+ *   that removes the attribute (`removesAttribute`: `false`, a function, an
+ *   object without `toString`) removes it, `true` is `""`, and anything else is
+ *   its string (the HTML of a SafeString).
+ */
+export function attributeText(element: Element, name: string, value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string') return value;
+  const property = boundAttributeProperty(element, name);
+  if (property !== null) {
+    (element as unknown as Record<string, unknown>)[property] = value;
+    return element.getAttribute(name) ?? undefined;
+  }
+  if (removesAttribute(value)) return undefined;
+  return value === true ? '' : String(value);
 }
 
 /**

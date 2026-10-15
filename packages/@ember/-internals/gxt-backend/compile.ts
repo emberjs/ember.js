@@ -18,7 +18,8 @@ import {
   isPlainHtmlTagFastPath,
   createFnHelperValue,
   MUT_CELL_SOURCE,
-  removesAttribute,
+  attributeText,
+  boundAttributeProperty,
   sanitizedAttrValue,
   trustedStyleValue,
 } from './utils';
@@ -1787,13 +1788,11 @@ if (DEBUG) {
 // it too. There is no DEBUG-only fallback: development and production builds
 // sanitize the same writes.
 // HTML boolean attributes — when the template writes `<option selected>` the
-// GXT compiler emits `["selected", true]` (literal boolean). Browser DOM
-// accepts `setAttribute("selected", "true")` which serializes as
-// `selected="true"`, but tests and HTML semantics expect a bare `selected`
-// (i.e. `setAttribute("selected", "")`). Same for `checked`, `disabled`,
-// `multiple`, `readonly`, `autofocus`, etc. Normalize `value === true` to
-// empty string for known boolean attrs so the round-tripped innerHTML
-// matches Ember/Glimmer semantics.
+// GXT compiler emits `["selected", true]` (literal boolean) as a property.
+// The `$_tag_ember` post-apply pass writes such a static attribute bare
+// (`setAttribute("selected", "")`), as Glimmer sets a static attribute, so the
+// innerHTML reads `<option selected>`, not `<option selected="true">`. Same for
+// `checked`, `disabled`, `multiple`, `readonly`, `autofocus`, etc.
 const _HTML_BOOLEAN_ATTRS = new Set([
   'allowfullscreen',
   'async',
@@ -1834,33 +1833,10 @@ _gxtRegisterHostHooks({
       value = sanitizedAttrValue(element, name, value);
     }
     if (isProp) return value;
-    if (removesAttribute(value)) {
-      // Glimmer's normalizeValue: false, null, undefined (and a function or a
-      // value without toString) remove the attribute, when it is first set and
-      // on every update. A quoted attribute whose parts are all null or
-      // undefined arrives here as null too (gxt `$_qStr`, Glimmer's concat).
-      return undefined; // gxt remove sentinel
-    }
-    if (value === true && name === 'class') {
-      // `class` is always an attribute in Glimmer (`classAsAttribute`,
-      // utils.ts), so `true` is a bare `class=""` (normalizeValue).
-      return '';
-    }
-    if (value === true && typeof name === 'string' && _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())) {
-      // HTML boolean attribute — write bare (empty string value) so the
-      // serialized innerHTML reads `<option selected>` instead of
-      // `<option selected="true">`. Non-boolean attrs with `true` still go
-      // through the normal path (becoming the literal string "true"), which
-      // preserves current behavior for attributes that legitimately carry
-      // stringified booleans (e.g. `aria-pressed="true"`).
-      return '';
-    }
-    if (typeof value === 'symbol') {
-      // A Symbol throws on the implicit string coercion inside setAttribute;
-      // Glimmer's normalizeValue writes `String(value)`: "Symbol(debug)".
-      return _normalizeStringValue(value);
-    }
-    return value;
+    // Glimmer's attribute or property rules (utils.ts, shared with the native
+    // hook). A quoted attribute whose parts are all null or undefined arrives
+    // here as null (gxt `$_qStr`, Glimmer's concat), which removes it.
+    return attributeText(element, name, value);
   },
 });
 
@@ -11630,6 +11606,18 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Skip entries GXT may have already applied — specifically
           // class/id/style are set via element properties by upstream code.
           if (result.hasAttribute(key)) continue;
+          // A bound value of a property of the element (`selected` of an
+          // `<option>`, `value` of an `<input>`) is set through the property,
+          // as gxt set it and as Glimmer sets it: no attribute. A name that is
+          // no property of the element became an own expando property when gxt
+          // assigned it, and is written as the attribute below.
+          if (
+            typeof value === 'function' &&
+            !Object.prototype.hasOwnProperty.call(result, key) &&
+            boundAttributeProperty(result, key) === key
+          ) {
+            continue;
+          }
           // A bound URL attribute is sanitized, as Glimmer sanitizes a dynamic
           // attribute; a static value is written as authored.
           const resolved =

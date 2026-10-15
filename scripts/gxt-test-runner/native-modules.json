@@ -67,6 +67,7 @@
     "packages/@ember/-internals/glimmer/tests/integration/render-settled-test.gjs",
     "packages/@ember/-internals/glimmer/tests/integration/svg-test.gjs",
     "packages/@ember/-internals/glimmer/tests/integration/template-tag-content-test.gjs",
+    "packages/@ember/-internals/glimmer/tests/integration/template-tag-attribute-test.gjs",
     "packages/@ember/-internals/glimmer/tests/utils/string-test.js",
     "packages/@ember/-internals/meta/tests/listeners_test.js",
     "packages/@ember/-internals/meta/tests/meta_test.js",
