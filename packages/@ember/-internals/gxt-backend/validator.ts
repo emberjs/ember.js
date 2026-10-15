@@ -539,6 +539,47 @@ export function endBacktrackingFrame() {
   _backtrackingFrame = null;
 }
 
+// The tracked cells a render pass read (DEV): Glimmer's render tracking
+// transaction. A tracked value the render read and then writes later in the
+// same render asserts (`assertTrackedCellBacktrack`); a value it did not read
+// does not. manager.ts opens and closes it with the render pass.
+let _renderPassReads: WeakSet<object> | null = null;
+
+export function beginRenderPassReads(): void {
+  if (DEBUG) _renderPassReads = new WeakSet();
+}
+
+export function endRenderPassReads(): void {
+  _renderPassReads = null;
+}
+
+// `fn()` outside the render pass's reads: what Glimmer runs after the render
+// transaction, at commit (a modifier's install), neither consumes for the
+// render nor asserts when it writes a value the render read.
+export function outsideRenderPassReads<T>(fn: () => T): T {
+  const reads = _renderPassReads;
+  _renderPassReads = null;
+  try {
+    return fn();
+  } finally {
+    _renderPassReads = reads;
+  }
+}
+
+// `fn()` untracked for the render pass: what Glimmer runs in an untrack frame
+// inside the render (its curly manager creates a classic component and runs
+// its lifecycle hooks untracked) consumes nothing, while a write of a value
+// the render read still asserts.
+let _renderPassUntrackDepth = 0;
+export function untrackedForRenderPass<T>(fn: () => T): T {
+  _renderPassUntrackDepth++;
+  try {
+    return fn();
+  } finally {
+    _renderPassUntrackDepth--;
+  }
+}
+
 // beginBacktrackingFrame / endBacktrackingFrame are installed on the typed
 // gxt-bridge by manager.ts. Readers in helper-manager.ts and
 // ember-gxt-wrappers.ts go through
@@ -567,6 +608,23 @@ export function recordTrackedCellRead(cell: any, key: string | symbol, obj: obje
   if (_backtrackingFrame !== null) {
     _backtrackingFrame.set(cell, { key, obj });
   }
+  // The render pass: as in Glimmer, a read consumes only inside a tracking
+  // frame (a binding computing its value, a `track()` or cache frame), not in
+  // `untrack` nor outside any frame. Glimmer's curly manager creates a classic
+  // component and runs its lifecycle hooks untracked.
+  if (
+    DEBUG &&
+    _renderPassReads !== null &&
+    _localUntrackDepth === 0 &&
+    _renderPassUntrackDepth === 0 &&
+    cell !== null &&
+    typeof cell === 'object' &&
+    (_gxtGetTracker() !== null ||
+      (_trackingTagStack !== null && _trackingTagStack.length > 0) ||
+      _cacheTagTracker.length > 0)
+  ) {
+    _renderPassReads.add(cell);
+  }
   // Debug tracking transaction: record the cell as consumed so a subsequent
   // setter call in the same transaction can detect the backtracking update.
   if (_debugTransactionConsumed !== null) {
@@ -578,28 +636,41 @@ export function recordTrackedCellRead(cell: any, key: string | symbol, obj: obje
   }
 }
 
+// The backtracking assertion's text for a write of `key` on `obj`, first used
+// by `firstUse` (a line of the render tree).
+function backtrackingMessage(key: string | symbol, obj: any, firstUse: string): string {
+  // Try to get a useful name: class name, toString, or fallback
+  const objName =
+    obj?.constructor?.name && obj.constructor.name !== 'Object'
+      ? obj.constructor.name
+      : obj?.toString?.() !== '[object Object]'
+        ? obj?.toString?.()
+        : '<unknown>';
+  return `You attempted to update \`${String(key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(key)}\` was first used:\n\n- While rendering:\n  -top-level\n    ${firstUse}\n\nStack trace for the update:`;
+}
+
 export function assertTrackedCellBacktrack(cell: any, key: string | symbol, obj: object): void {
   // Backtracking detection: if this cell was read in the current render/helper
   // frame, writing it is backtracking.
   if (_backtrackingFrame !== null && _backtrackingFrame.has(cell)) {
     const info = _backtrackingFrame.get(cell)!;
-    // Try to get a useful name: class name, toString, or fallback
-    const rawObj = (info.obj ?? obj) as any;
-    const objName =
-      rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
-        ? rawObj.constructor.name
-        : rawObj?.toString?.() !== '[object Object]'
-          ? rawObj?.toString?.()
-          : '<unknown>';
     // Clear the frame before calling assert to prevent recursion
     _backtrackingFrame = null;
     const renderTree = _backtrackingDebugName
       ? `(result of a \`${_backtrackingDebugName}\` helper)`
       : '(unknown)';
-    const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  -top-level\n    ${renderTree}\n\nStack trace for the update:`;
+    const msg = backtrackingMessage(info.key, info.obj ?? obj, renderTree);
     const assertDirect = getEmberAssertDirect();
     if (typeof assertDirect === 'function') {
       assertDirect(msg, false);
+    }
+  }
+  // The render pass: the render read this cell earlier (a parent component's
+  // template rendered it before a child's constructor writes it).
+  if (DEBUG && _renderPassReads !== null && _renderPassReads.has(cell)) {
+    const assertDirect = getEmberAssertDirect();
+    if (typeof assertDirect === 'function') {
+      assertDirect(backtrackingMessage(key, obj, '(unknown)'), false);
     }
   }
   // Debug tracking transaction: if this cell was read earlier in the current

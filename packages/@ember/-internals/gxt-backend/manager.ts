@@ -69,6 +69,10 @@ import { createUpdatableTag as _gxtCreateUpdatableTag } from '@glimmer/validator
 import {
   beginBacktrackingFrame,
   endBacktrackingFrame,
+  beginRenderPassReads,
+  endRenderPassReads,
+  outsideRenderPassReads,
+  untrackedForRenderPass,
   touchClassicBridge as _gxtTouchClassicBridge,
   registerClassicReactor as _gxtRegisterClassicReactor,
   consumeTag as _classicConsumeTagHook,
@@ -1401,8 +1405,11 @@ function getCachedOrCreateInstance(
     }
   }
 
-  // No matching instance - create a new one
-  const instance = createComponentInstance(factory, args, currentParentView, owner);
+  // No matching instance - create a new one. Glimmer's curly manager creates
+  // a classic component untracked (`untrackedForRenderPass`).
+  const instance = DEBUG
+    ? untrackedForRenderPass(() => createComponentInstance(factory, args, currentParentView, owner))
+    : createComponentInstance(factory, args, currentParentView, owner);
   // Tag the instance with the current sync cycle id when created during
   // `_gxtSyncDomNow`. `_gxtDestroyUnclaimedPoolEntries` (phase 3) uses it to
   // decide whether to fire willDestroy synchronously — instances created
@@ -2829,11 +2836,15 @@ export function beginRenderPass(): void {
   }
   _isInRenderPass = true;
   _templateRenderedInstances.clear();
+  // DEV: the tracked values this render reads, for the per-value backtracking
+  // check (`assertTrackedCellBacktrack`), as Glimmer's render transaction.
+  if (DEBUG) beginRenderPassReads();
 }
 
 export function endRenderPass(): void {
   _isInRenderPass = false;
   _templateRenderedInstances.clear();
+  if (DEBUG) endRenderPassReads();
 }
 
 /**
@@ -3168,7 +3179,10 @@ function triggerLifecycleHook(instance: any, hookName: string, opts?: { rethrow?
     // Use Ember's event trigger - this is the canonical way to invoke
     // lifecycle hooks in Ember components
     if (typeof instance.trigger === 'function') {
-      instance.trigger(hookName);
+      // Glimmer's curly manager runs a classic component's hooks untracked:
+      // their reads are no reads of the render (`untrackedForRenderPass`).
+      if (DEBUG) untrackedForRenderPass(() => instance.trigger(hookName));
+      else instance.trigger(hookName);
     }
   } catch (e) {
     // Re-throw non-Error values (e.g., expectAssertion's BREAK sentinel)
@@ -9138,7 +9152,10 @@ const $_MANAGERS = {
 
         const capturedArgs = buildCapturedArgs();
         const state = manager.create(owner, element, ModifierClass, capturedArgs);
-        manager.install(state);
+        // Glimmer installs a modifier at commit, after the render's tracking
+        // transaction (see `outsideRenderPassReads`).
+        if (DEBUG) outsideRenderPassReads(() => manager.install(state));
+        else manager.install(state);
 
         // Cache the state for subsequent update calls
         let cache = self._cache.get(element);
@@ -9320,7 +9337,15 @@ const $_MANAGERS = {
             });
           }
           try {
-            manager.installModifier(instance, element, trackedInstallArgs);
+            // Glimmer installs a modifier at commit, after the render's
+            // tracking transaction (see `outsideRenderPassReads`).
+            if (DEBUG) {
+              outsideRenderPassReads(() =>
+                manager.installModifier(instance, element, trackedInstallArgs)
+              );
+            } else {
+              manager.installModifier(instance, element, trackedInstallArgs);
+            }
           } finally {
             if (instance) installWatchers.delete(instance);
           }
@@ -9334,7 +9359,8 @@ const $_MANAGERS = {
           if (_selfSetDuringInstall && instance && typeof manager.updateModifier === 'function') {
             try {
               const lazyArgs = buildLazyArgs(installArgSource);
-              manager.updateModifier(instance, lazyArgs);
+              if (DEBUG) outsideRenderPassReads(() => manager.updateModifier(instance, lazyArgs));
+              else manager.updateModifier(instance, lazyArgs);
             } catch (err) {
               // Surface the error through the render-error channel so it is
               // visible to tests and users, but do NOT rethrow — the install
