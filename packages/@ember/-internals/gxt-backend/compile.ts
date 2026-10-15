@@ -7547,15 +7547,24 @@ function _gxtClearTagHelperCache(): void {
 // globalThis.$_maybeModifier via the Function() constructor) use Ember's modifier
 // manager for string-based modifier resolution.
 // Protect with Object.defineProperty to prevent setupGlobalScope from overwriting.
+//
+// A modifier resolves in the owner of the render that created its element,
+// recorded the first time one of the element's modifiers is evaluated.
+// Glimmer resolves a template's modifiers once, in the owner it renders with;
+// the compat build resolves a modifier by name each time its formula runs, and
+// an update runs it outside of any render, where the ambient owner is another
+// render's, or none: the update found no modifier by that name, and the
+// installed modifier was never updated.
 {
   const origMaybeModifier = (globalThis as any).$_maybeModifier;
   if (origMaybeModifier) {
-    const emberMaybeModifier = function (
-      modifier: any,
-      element: HTMLElement,
-      props: any[],
-      hashArgs: any
-    ) {
+    const elementOwners = new WeakMap<Element, object>();
+    const isLiveOwner = (owner: any): boolean =>
+      owner !== null &&
+      typeof owner === 'object' &&
+      owner.isDestroyed !== true &&
+      owner.isDestroying !== true;
+    const dispatch = (modifier: any, element: HTMLElement, props: any[], hashArgs: any) => {
       // Always try our manager first
       const mgrs = (globalThis as any).$_MANAGERS;
       if (mgrs?.modifier?.canHandle?.(modifier)) {
@@ -7563,6 +7572,28 @@ function _gxtClearTagHelperCache(): void {
       }
       // Fall back to GXT's original
       return origMaybeModifier(modifier, element, props, hashArgs);
+    };
+    const emberMaybeModifier = function (
+      modifier: any,
+      element: HTMLElement,
+      props: any[],
+      hashArgs: any
+    ) {
+      const ambient = getAmbientOwner();
+      let owner: object | undefined = element ? elementOwners.get(element) : undefined;
+      if (owner === undefined || !isLiveOwner(owner)) {
+        owner = isLiveOwner(ambient) ? ambient : undefined;
+        if (owner !== undefined && element) elementOwners.set(element, owner);
+      }
+      if (owner === undefined || owner === ambient) {
+        return dispatch(modifier, element, props, hashArgs);
+      }
+      setAmbientOwner(owner);
+      try {
+        return dispatch(modifier, element, props, hashArgs);
+      } finally {
+        setAmbientOwner(ambient);
+      }
     };
     protectGlobal('$_maybeModifier', emberMaybeModifier);
   }
