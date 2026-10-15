@@ -1037,12 +1037,53 @@ const _GXT_RAWTEXT_TAGS: ReadonlySet<string> = new Set(['title', 'script', 'styl
  * `{{(foo bar)}}` (the path wrapped as a SubExpression). The string version
  * keyed this off "inner contains whitespace"; on the AST it keys off the parsed
  * params/hash, which is the exact same distinction for every realistic input.
+ * A helper called without arguments (`helperCall`, see `_gxtTripleIsHelperCall`)
+ * is a SubExpression too: `{{{foo-bar}}}` becomes `{{(foo-bar)}}`.
  */
-function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unknown {
-  if (node.params.length === 0 && node.hash.pairs.length === 0) {
+function _gxtTripleValueExpr(
+  b: GxtAstEnv['syntax']['builders'],
+  node: any,
+  helperCall = false
+): unknown {
+  if (node.params.length === 0 && node.hash.pairs.length === 0 && !helperCall) {
     return b.mustache(node.path);
   }
   return b.mustache(b.sexpr(node.path, node.params, node.hash));
+}
+
+/**
+ * Whether a triple-mustache without arguments, `{{{name}}}`, calls a helper:
+ * its path is a free name (not `this.x`, `@x` or a path with members) that is
+ * not a keyword, a scope value or a block param in scope. Glimmer appends the
+ * result of the call as trusted content; as the `@value` of `<EmberHtmlRaw>`
+ * the bare name would be a helper passed by reference (the named-argument
+ * position, where a resolved helper is an error), so it is written as a call,
+ * `(name)`.
+ */
+function _gxtTripleIsHelperCall(
+  node: any,
+  path: any,
+  scopeValues: Record<string, unknown> | undefined
+): boolean {
+  if (node.params.length !== 0 || node.hash.pairs.length !== 0) return false;
+  const p = node.path;
+  if (!p || p.type !== 'PathExpression') return false;
+  if (!p.head || p.head.type !== 'VarHead' || p.tail.length !== 0) return false;
+  const name: string = p.head.name;
+  if (!_GXT_ATTR_BARE_IDENT_RE.test(name)) return false;
+  if (_GXT_ATTR_QUOTED_HELPER_BUILTINS.has(name)) return false;
+  if (scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, name)) {
+    return false;
+  }
+  // A block param of an enclosing block or element (the mustache is content
+  // here, so an element's params cover it).
+  for (let a = path && path.parent; a; a = a.parent) {
+    const binder = a.node;
+    if (binder && Array.isArray(binder.blockParams) && binder.blockParams.includes(name)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -1082,7 +1123,11 @@ function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unk
  * Attribute position: `attr={{{expr}}}` → `attr={{expr}}`, and an unquoted
  * `style={{{expr}}}` → `style={{(__gxtTrustedStyle expr)}}` (see the visitor).
  */
-function gxtTripleMustacheTransform(env: GxtAstEnv) {
+function gxtTripleMustacheTransform(scopeValues?: Record<string, unknown>) {
+  return (env: GxtAstEnv) => gxtTripleMustacheVisitor(env, scopeValues);
+}
+
+function gxtTripleMustacheVisitor(env: GxtAstEnv, scopeValues?: Record<string, unknown>) {
   const b = env.syntax.builders;
   return {
     name: 'ember-gxt-triple-mustache',
@@ -1125,8 +1170,9 @@ function gxtTripleMustacheTransform(env: GxtAstEnv) {
           p = p.parent;
         }
         if (inRawtext) return _gxtTripleValueExpr(b, node);
+        const helperCall = _gxtTripleIsHelperCall(node, path, scopeValues);
         const el: any = b.element('EmberHtmlRaw', {
-          attrs: [b.attr('@value', _gxtTripleValueExpr(b, node))],
+          attrs: [b.attr('@value', _gxtTripleValueExpr(b, node, helperCall))],
           children: [],
           selfClosing: true,
         });
@@ -1715,7 +1761,7 @@ export function buildGxtDialectTransforms(
       assertGxtAstEnvShape(env);
       return gxtTableTbodyTransform(env);
     }) as unknown as GxtAstTransform,
-    gxtTripleMustacheTransform as unknown as GxtAstTransform,
+    gxtTripleMustacheTransform(scopeValues) as unknown as GxtAstTransform,
     gxtHtmlCommentTransform as unknown as GxtAstTransform,
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
