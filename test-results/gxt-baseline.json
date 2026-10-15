@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T19:59:05.973Z",
+    "capturedAt": "2026-10-15T21:59:00.862Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "94e7de8766",
-    "totalTests": 10139,
+    "emberCommit": "528cf966aa",
+    "totalTests": 10140,
     "totalModules": 993,
     "quarantinedTests": 0,
-    "totalAssertions": 60545,
-    "totalAssertionsPassing": 59945,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after pinning @lifeart/gxt 0.0.83 and consuming it: the compiler imports the decorator runtime itself, no EMBER_PROPERTY_TAGS flag, build-time ...attributes precedence, no {{component}} value-position rewrite, <@comp as |v|> block params, and the nearest template of a class chain wins; written by runner.mjs in the GitHub Actions GXT full workflow (run 38798093021, on the code of 94e7de8766). 9713/10139 green (was 9637/10133), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 6 new tests, all green. refinements-test.gjs compiles: its compile-error row is gone and syntax refinements passes 1/1. 69 tests turned green: yielded primitives read through paths (14), keyword-named block params (20), the range input value/min and form/list tests (18), attribute form/list (3), inner ...attributes (2), web component fallback (2), static-style warnings (2), {{#each}} @identity primitives (2), the each helper with empty string items, nested-argument modifiers (3), weird paths, and the {{on}} static spellcheck test."
+    "totalAssertions": 60550,
+    "totalAssertionsPassing": 59972,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after Glimmer component arguments read (mut)/(readonly) values and (mut @arg) writes through the argument's reference, a dependent key through a component argument follows what the argument reads, and createCache re-computes when a gxt cell its function read changes; written by runner.mjs in the GitHub Actions GXT full workflow (run 38813755980, on the code of 528cf966aa). 9727/10140 green (was 9713/10139), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 1 new test, green: a @cached getter over a Glimmer component argument re-computes when the argument changes. 13 tests turned green: the Glimmer-component {{readonly}} tests (4), {{mut}} tests (3) and contextual-component mutable params (2), the invokeHelper tests over a component argument (3), and {{hash}} works with computeds."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1530,19 +1530,10 @@
     },
     "Components test: contextual components -- mutable params": {
       "total": 2,
-      "passing": 0,
+      "passing": 2,
       "assertionsTotal": 8,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": " parameters in a contextual component are mutable when value is a hash value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " parameters in a contextual component are mutable when value is a nested hash value",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 8,
+      "failingTests": []
     },
     "Components test: contextual components -- mutable params (classic component)": {
       "total": 2,
@@ -2500,10 +2491,10 @@
       "failingTests": []
     },
     "GXT @glimmer/tracking: DOM after writes": {
-      "total": 13,
-      "passing": 13,
-      "assertionsTotal": 69,
-      "assertionsPassing": 69,
+      "total": 14,
+      "passing": 14,
+      "assertionsTotal": 73,
+      "assertionsPassing": 73,
       "failingTests": []
     },
     "GXT @glimmer/tracking: Helper Tracked Properties (port)": {
@@ -2796,31 +2787,17 @@
     },
     "Helpers test: invokeHelper": {
       "total": 13,
-      "passing": 11,
+      "passing": 13,
       "assertionsTotal": 56,
-      "assertionsPassing": 54,
-      "failingTests": [
-        {
-          "name": " it works with a component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " it works with simple helpers",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 56,
+      "failingTests": []
     },
     "Helpers test: invokeHelper with custom helper managers": {
       "total": 4,
-      "passing": 3,
+      "passing": 4,
       "assertionsTotal": 16,
-      "assertionsPassing": 15,
-      "failingTests": [
-        {
-          "name": " it works with custom helper managers",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 16,
+      "failingTests": []
     },
     "Helpers test: mutation triggers errors - class based helper": {
       "total": 4,
@@ -2963,9 +2940,9 @@
     },
     "Helpers test: {{hash}}": {
       "total": 10,
-      "passing": 5,
+      "passing": 6,
       "assertionsTotal": 32,
-      "assertionsPassing": 20,
+      "assertionsPassing": 21,
       "failingTests": [
         {
           "name": "can have more than one key-value",
@@ -2981,10 +2958,6 @@
         },
         {
           "name": "should yield hash of internal and external properties",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "works with computeds",
           "category": "gxt:triage"
         }
       ]
@@ -3019,23 +2992,10 @@
     },
     "Helpers test: {{mut}}": {
       "total": 6,
-      "passing": 3,
+      "passing": 6,
       "assertionsTotal": 29,
-      "assertionsPassing": 22,
-      "failingTests": [
-        {
-          "name": " a simple mutable binding using `mut` propagates properly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " a simple mutable binding using `mut` inserts into the DOM",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " mutable bindings work inside of yielded content",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 29,
+      "failingTests": []
     },
     "Helpers test: {{mut}} (classic component)": {
       "total": 9,
@@ -3046,27 +3006,10 @@
     },
     "Helpers test: {{readonly}}": {
       "total": 4,
-      "passing": 0,
-      "assertionsTotal": 14,
-      "assertionsPassing": 5,
-      "failingTests": [
-        {
-          "name": " updating a {{readonly}} property from above works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " updating a nested path of a {{readonly}}",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " {{readonly}} of a string renders correctly",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " {{mut}} of a {{readonly}} argument is not allowed",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 4,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "Helpers test: {{readonly}} (classic component)": {
       "total": 5,
@@ -8932,6 +8875,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 426
+    "gxt:triage": 413
   }
 }
