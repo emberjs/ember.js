@@ -21,6 +21,7 @@
 // before glimmer-next codegen.
 // @ts-ignore - type-only; some published versions lack this export (see compile.ts footer note)
 import { type AstTransform as GxtAstTransform } from '@lifeart/gxt/runtime-compiler';
+import { DEBUG } from '@glimmer/env';
 
 // The `{{on}}` → `{{on-ext}}` rewrite contract: `gxtOnModifierTransform` (below)
 // rewrites `{{on …}}` to this modifier name, and compile.ts registers the same
@@ -1248,6 +1249,9 @@ export interface GxtAssertFindings {
   // The message of the first `-with-dynamic-vars` / `-get-dynamic-var` use of
   // a key other than `outletState` (recorded by `gxtDynamicVarsTransform`).
   dynamicScope: string | null;
+  // Every `this.attrs.<name>` path, as written (development builds only): each
+  // gets the `attrs-arg-access` deprecation.
+  thisAttrs: string[];
 }
 
 /**
@@ -1265,6 +1269,26 @@ function gxtTextAreaTypoAssert(findings: GxtAssertFindings) {
       visitor: {
         ElementNode(node: any): void {
           if (node.tag === 'TextArea') findings.textArea = true;
+        },
+      },
+    };
+  };
+}
+
+/**
+ * `{{this.attrs.foo}}`: a deprecated way to read the named argument `@foo`.
+ * Read-only visitor; records each such path (as Ember's `assert-against-attrs`
+ * plugin deprecates each one) and `precompileTemplate` fires the deprecation.
+ */
+function gxtThisAttrsDeprecation(findings: GxtAssertFindings) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-deprecate-this-attrs',
+      visitor: {
+        PathExpression(node: any): void {
+          if (node.head?.type === 'ThisHead' && node.tail?.[0] === 'attrs') {
+            findings.thisAttrs.push(String(node.original));
+          }
         },
       },
     };
@@ -1505,8 +1529,8 @@ export function buildGxtDialectTransforms(
   // intentionally NOT ported — its tested "requires whitespace after the tail"
   // quirk can't be reproduced from the normalized AST without re-inspecting
   // source, so it stays a pre-compile string assert in `precompileTemplate`.
-  // The `{{attrs.x}}` / `{{this.attrs.x}}` checks come from Ember's own AST
-  // plugin, run by the development-time template validation.
+  // `{{attrs.x}}` is caught by the dotted-mustache visitor (`attrs` is not in
+  // scope); `{{this.attrs.x}}` is deprecated, in development builds.
   const scopeValueNames = scopeValues ? new Set(Object.keys(scopeValues)) : null;
   const bpNames = blockParamNames || new Set<string>();
   const findings: GxtAssertFindings = assertFindings || {
@@ -1515,12 +1539,14 @@ export function buildGxtDialectTransforms(
     dynamicModifier: false,
     dottedMustache: null,
     dynamicScope: null,
+    thisAttrs: [],
   };
   const transforms: GxtAstTransform[] = [
     gxtTextAreaTypoAssert(findings) as unknown as GxtAstTransform,
     gxtDottedMustacheAssert(findings, scopeValueNames, bpNames) as unknown as GxtAstTransform,
     gxtDynamicHelperAssert(findings) as unknown as GxtAstTransform,
     gxtDynamicModifierAssert(findings) as unknown as GxtAstTransform,
+    ...(DEBUG ? [gxtThisAttrsDeprecation(findings) as unknown as GxtAstTransform] : []),
     // The tbody builder is wrapped with the once-per-process env-shape guard
     // (see assertGxtAstEnvShape). It is the FIRST builder-using transform (the
     // assert-detection visitors above are read-only and touch no builders), and

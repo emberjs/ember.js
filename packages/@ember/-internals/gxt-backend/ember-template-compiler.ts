@@ -28,7 +28,7 @@ export interface EmberPrecompileOptions {
  * Delegates to compile.ts which uses the GXT runtime compiler for proper
  * component invocation (e.g., <XBlah /> -> $_c('x-blah', ...)).
  */
-import { precompileValidatedTemplate, validateTemplateSource } from './compile';
+import { compileTemplate } from './compile';
 import { templateCacheCounters } from '@glimmer/opcode-compiler';
 import { ENV } from '@ember/-internals/environment';
 import VERSION from 'ember/version';
@@ -190,10 +190,6 @@ function _normalizeHyphenBlockParams(template: string): { source: string; change
 }
 
 export function compile(templateString: string, options?: any) {
-  // Glimmer's compile-time checks (and Ember's template assertions) run on the
-  // source as the caller wrote it, before the rewrites below.
-  validateTemplateSource(templateString, options);
-
   const originalScopeValues: Record<string, unknown> | undefined =
     options?.scopeValues && typeof options.scopeValues === 'object'
       ? options.scopeValues
@@ -242,7 +238,7 @@ export function compile(templateString: string, options?: any) {
   }
 
   if (rewritten === templateString) {
-    return _instrumentFactory(precompileValidatedTemplate(templateString, options), options);
+    return _instrumentFactory(compileTemplate(templateString, options), options);
   }
 
   const patchedOptions = {
@@ -250,7 +246,7 @@ export function compile(templateString: string, options?: any) {
     ...(scopePatch ? { scopeValues: scopePatch } : {}),
     ...(localsPatch ? { locals: localsPatch } : {}),
   };
-  return _instrumentFactory(precompileValidatedTemplate(rewritten, patchedOptions), patchedOptions);
+  return _instrumentFactory(compileTemplate(rewritten, patchedOptions), patchedOptions);
 }
 
 // Wrap a GXT template factory so that `factory(owner)` participates in the

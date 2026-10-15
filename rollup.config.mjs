@@ -304,13 +304,6 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
         // classic dist after the `__GXT_MODE__` gating. In GXT builds the
         // bridge's exports ARE used, so it is retained normally.
         if (id.includes('gxt-backend/gxt-bridge')) return false;
-        // The GXT compile pipeline runs Glimmer's compile-time template checks
-        // (gxt-backend/template-validation.ts) in development builds only: its
-        // one use in compile.ts sits behind `if (DEBUG)`. In the production
-        // dist nothing uses the module; declaring it side-effect-free lets
-        // rollup drop it together with the @glimmer/syntax parser and the
-        // @glimmer/compiler normalization pass it imports.
-        if (!debugMacrosMode && id.includes('gxt-backend/template-validation')) return false;
 
         /**
          * our own side-effects are not for us to decide when to remove

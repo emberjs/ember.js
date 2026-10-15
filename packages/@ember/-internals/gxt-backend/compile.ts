@@ -7,6 +7,7 @@
  */
 
 import { assert as emberAssert } from '@ember/debug';
+import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 import {
   pascalToKebab,
@@ -26,7 +27,6 @@ import {
   getElementView as _emberGetElementView,
 } from '@ember/-internals/views/lib/system/utils';
 import { DEBUG } from '@glimmer/env';
-import { validateTemplate } from './template-validation';
 
 // Utility functions (regex-free)
 
@@ -11641,12 +11641,6 @@ interface GxtPrecompileOptions {
   scope?: () => Record<string, unknown>;
   moduleName?: string;
   scopeValues?: Record<string, unknown>;
-  // Ember's `locals`: the names a strict-mode template's scope provides (the
-  // `ember-template-compiler` option).
-  locals?: string[];
-  // A lexical-scope predicate in addition to the names above: `template()`'s
-  // implicit (`eval`) form passes the one `compileOptions` builds from `eval`.
-  lexicalScope?: (name: string) => boolean;
   // Ember's `plugins.ast`: AST plugins (`ASTPluginBuilder`s). They run in the
   // gxt compiler's `transforms` hook, before the Ember-dialect transforms, as
   // classic Ember runs user plugins before its built-in ones.
@@ -11654,78 +11648,12 @@ interface GxtPrecompileOptions {
 }
 
 /**
- * Glimmer's compile-time checks on a template source, in development builds
- * (see template-validation.ts). `scope` is the result of the caller's `scope()`
- * thunk; its names, the scope values' names and `locals` are the template's
- * lexical scope.
- */
-function _gxtValidateTemplateSource(
-  templateString: string,
-  options: (GxtPrecompileOptions & { meta?: { moduleName?: string } }) | undefined,
-  scope: Record<string, unknown> | undefined
-): void {
-  const scopeNames = new Set<string>(scope ? Object.keys(scope) : []);
-  if (options?.scopeValues) {
-    for (const name of Object.keys(options.scopeValues)) scopeNames.add(name);
-  }
-  validateTemplate(templateString, {
-    strictMode: options?.strictMode,
-    moduleName: options?.moduleName,
-    meta: options?.meta,
-    locals: Array.isArray(options?.locals) ? options.locals : undefined,
-    scopeNames,
-    lexicalScope: options?.lexicalScope,
-    plugins: options?.plugins,
-  });
-}
-
-/**
- * Runs Glimmer's compile-time checks on a template source as the caller wrote
- * it (development builds only). For `ember-template-compiler`'s `compile`,
- * which rewrites some sources before compiling them with
- * `precompileValidatedTemplate`.
- */
-export function validateTemplateSource(
-  templateString: string,
-  options?: GxtPrecompileOptions & { meta?: { moduleName?: string } }
-): void {
-  if (DEBUG) {
-    _gxtValidateTemplateSource(
-      templateString,
-      options,
-      typeof options?.scope === 'function' ? options.scope() : undefined
-    );
-  }
-}
-
-/**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  *
- * In development builds the template first goes through Glimmer's compile-time
- * checks, which throw the classic `SyntaxError` / assertion for an invalid
- * template.
+ * A template the GXT compiler cannot compile throws the compiler's error.
  */
 export function precompileTemplate(templateString: string, options?: GxtPrecompileOptions) {
-  return _gxtPrecompileTemplate(templateString, options, true);
-}
-
-/**
- * `precompileTemplate` for a source whose original the caller already checked
- * with `validateTemplateSource`.
- */
-export function precompileValidatedTemplate(
-  templateString: string,
-  options?: GxtPrecompileOptions
-) {
-  return _gxtPrecompileTemplate(templateString, options, false);
-}
-
-function _gxtPrecompileTemplate(
-  templateString: string,
-  options: GxtPrecompileOptions | undefined,
-  validate: boolean
-) {
   // Strict-mode `precompileTemplate(..., { scope: () => ({ Foo, bar }) })`
   // threading: the test-only / RFC strict-mode form passes a `scope`
   // callback that returns the locally-visible bindings. The downstream
@@ -11748,8 +11676,8 @@ function _gxtPrecompileTemplate(
   //     template is a single `<input ... />` with `{{on "..."}}` modifiers
   //     and `@`-args, so `_templateMayNeedScopeThreading` returns false
   //     for it and the pass is skipped.
-  let extra: Record<string, unknown> | undefined;
   if (typeof options?.scope === 'function') {
+    let extra: Record<string, unknown> | undefined;
     try {
       const scopeResult = options.scope();
       if (scopeResult && typeof scopeResult === 'object') {
@@ -11772,12 +11700,6 @@ function _gxtPrecompileTemplate(
         options = { ...options, scopeValues: mergedScope };
       }
     }
-  }
-
-  // Glimmer's compile-time checks, on the source as the caller wrote it: the
-  // rewrites below (and the GXT compile) only ever see a valid template.
-  if (DEBUG && validate) {
-    _gxtValidateTemplateSource(templateString, options, extra);
   }
 
   // Pre-transform shadowed block keywords. When `scopeValues` provides a
@@ -11977,6 +11899,7 @@ function _gxtPrecompileTemplate(
     dynamicModifier: false,
     dottedMustache: null,
     dynamicScope: null,
+    thisAttrs: [],
   };
 
   // Compile using GXT runtime compiler
@@ -12062,7 +11985,8 @@ function _gxtPrecompileTemplate(
   // transform is caught into compilationResult.errors by the GXT compiler, which
   // keeps only a message. See GxtAssertFindings).
   // Order: textarea → dotted-mustache → dynamic-helper → dynamic-modifier →
-  // dynamic scope (the source assert for dotted tags already ran above).
+  // dynamic scope → `this.attrs` deprecations (the source assert for dotted
+  // tags already ran above).
   if (_gxtDialectFindings.textArea) {
     // Use getDebugFunction('assert') so expectAssertion's stub is the one called.
     const _assert = getDebugFunction('assert');
@@ -12084,14 +12008,28 @@ function _gxtPrecompileTemplate(
   if (_gxtDialectFindings.dynamicScope !== null) {
     emberAssert(_gxtDialectFindings.dynamicScope, false);
   }
+  if (DEBUG) {
+    for (const path of _gxtDialectFindings.thisAttrs) {
+      emberDeprecate(
+        `Using {{this.attrs}} to reference named arguments has been deprecated. {{${path}}} should be updated to {{@${path.slice(11)}}}.`,
+        false,
+        {
+          id: 'attrs-arg-access',
+          url: 'https://deprecations.emberjs.com/v3.x/#toc_attrs-arg-access',
+          until: '6.0.0',
+          for: 'ember-source',
+          since: { available: '3.26.0', enabled: '3.26.0' },
+        }
+      );
+    }
+  }
 
   // The GXT compiler's own errors (a parse error, an error thrown by an AST
   // plugin or transform): the compiler produced no template, so compiling it
-  // fails, as it does in classic Ember. In development builds Glimmer's checks
-  // above have already rejected an invalid template with its classic error.
-  // `RUNTIME_EVAL_ERROR` is different: the compiler produced the template code
-  // but could not evaluate its own template function from it; the template
-  // function assembled below from the same code decides.
+  // fails, as it does in classic Ember (with the GXT compiler's message, not
+  // Glimmer's). `RUNTIME_EVAL_ERROR` is different: the compiler produced the
+  // template code but could not evaluate its own template function from it;
+  // the template function assembled below from the same code decides.
   const compileErrors = (compilationResult.errors ?? []).filter(
     (e: { code?: string }) => e.code !== 'RUNTIME_EVAL_ERROR'
   );

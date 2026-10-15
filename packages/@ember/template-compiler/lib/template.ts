@@ -463,11 +463,6 @@ export function template(
       // template's rendering context — so we must not rewrite `{{this.X}}` for
       // implicit-form templates.
       let explicitlyProvidedThis = false;
-      // The implicit form's lexical scope as `compileOptions` builds it from
-      // `eval` (which also admits RFC 1070's allowed globals). The GXT
-      // pipeline's development-time template checks resolve free names
-      // through it, as the Glimmer compiler does.
-      let lexicalScope: ((name: string) => boolean) | undefined;
 
       if ('scope' in gxtOptions && typeof (gxtOptions as any).scope === 'function') {
         // Explicit form: scope: () => ({ Foo, bar })
@@ -486,10 +481,6 @@ export function template(
           templateString,
           (gxtOptions as any).eval as (v: string) => unknown
         );
-        lexicalScope = compileOptions({
-          strictMode: true,
-          eval: (gxtOptions as any).eval,
-        }).lexicalScope;
         // Defensive: even if `_extractScopeFromEval` somehow returns `this`,
         // strip it. The implicit form must never override the rendering
         // context — see the explicit-form branch above for the intended way
@@ -533,7 +524,6 @@ export function template(
         // the Glimmer path below does.
         strictMode: gxtOptions.strictMode,
         scopeValues,
-        lexicalScope,
       });
 
       setComponentTemplate(gxtTemplate as Parameters<typeof setComponentTemplate>[0], gxtComponent);

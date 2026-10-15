@@ -13,9 +13,7 @@ import * as templateCompiler from 'ember-template-compiler';
 import { CustomComponentManager, componentCapabilities } from '../manager';
 import { destroy } from '../destroyable';
 import { getGxtRenderer } from '../gxt-bridge';
-import { precompileValidatedTemplate } from '../compile';
 import { createCache, getValue, isConst } from '@glimmer/tracking/primitives/cache';
-import { DEBUG } from '@glimmer/env';
 
 declare const QUnit: any;
 
@@ -107,33 +105,6 @@ QUnit.module('GXT correctness: @glimmer/tracking/primitives/cache', function () 
   });
 });
 
-QUnit.module('GXT correctness: compile-time template checks', function () {
-  // Glimmer's checks run in development builds, as in classic Ember.
-  const test = DEBUG ? QUnit.test : QUnit.skip;
-
-  test('precompileTemplate throws the Glimmer SyntaxError of a misused keyword', function (assert: any) {
-    assert.throws(
-      () =>
-        precompileTemplate('<p>\n  {{#if}}{{/if}}</p>', { moduleName: 'my-app/templates/x.hbs' }),
-      (error: Error) =>
-        error.name === 'SyntaxError' &&
-        error.message ===
-          '{{#if}} requires a condition as its first positional parameter, did not receive any parameters: \n\n|\n|  {{#if}}{{/if}}\n|\n\n' +
-            "(error occurred in 'my-app/templates/x.hbs' @ line 2 : column 2)"
-    );
-  });
-
-  test('a strict-mode precompileTemplate resolves free names through scope()', function (assert: any) {
-    const Foo = precompileTemplate('foo');
-    precompileTemplate('<Foo />', { strictMode: true, scope: () => ({ Foo }) });
-
-    assert.throws(
-      () => precompileTemplate('<Bar />', { strictMode: true, scope: () => ({ Foo }) }),
-      /Attempted to invoke a component that was not in scope in a strict mode template, `<Bar>`/
-    );
-  });
-});
-
 QUnit.module('GXT correctness: compile pipeline errors', function () {
   function compile(source: string, options: object = {}) {
     return getGxtRenderer()!.compilePipeline.compileTemplate!(source, options);
@@ -156,19 +127,21 @@ QUnit.module('GXT correctness: compile pipeline errors', function () {
     assert.throws(() => compile('<p></p>', { plugins: { ast: [failingPlugin] } }), /plugin failed/);
   });
 
-  // Without the development-time Glimmer checks (as in a production build),
-  // the errors come from the GXT compiler.
-  QUnit.test('the GXT compiler throws a parse error', function (assert: any) {
+  QUnit.test('precompileTemplate throws a parse error', function (assert: any) {
+    assert.throws(() => precompileTemplate('<div>{{#if this.x}}</div>'), /Parse error on line 1/);
+  });
+
+  QUnit.test('precompileTemplate throws the error of an AST plugin', function (assert: any) {
     assert.throws(
-      () => precompileValidatedTemplate('<div>{{#if this.x}}</div>'),
-      /Parse error on line 1/
+      () => precompileTemplate('<p></p>', { plugins: { ast: [failingPlugin] } }),
+      /plugin failed/
     );
   });
 
-  QUnit.test('the GXT compiler throws the error of an AST plugin', function (assert: any) {
+  QUnit.test('the template compiler throws a parse error', function (assert: any) {
     assert.throws(
-      () => precompileValidatedTemplate('<p></p>', { plugins: { ast: [failingPlugin] } }),
-      /plugin failed/
+      () => templateCompiler.compile('<p>{{#each this.list as |item|}}</p>'),
+      /Parse error on line 1/
     );
   });
 });
