@@ -3452,10 +3452,15 @@ interface _GxtDynamicContentOptions {
 // the replaced content. A function value is called (a plain function is a
 // helper), a component definition is not. Creating the binding evaluates it
 // once.
+//
+// The returned fragment holds the content until it is inserted; its
+// `RENDERED_NODES_PROPERTY` is the content's current nodes, so a gxt block
+// that registers the fragment as one of its nodes removes what the content
+// renders then. `destroy` stops the binding.
 function _gxtDynamicContent(
   read: () => unknown,
   options: _GxtDynamicContentOptions
-): DocumentFragment {
+): { fragment: DocumentFragment; destroy: () => void } {
   const fragment = document.createDocumentFragment();
   const blockOwner = getAmbientOwner();
   const renderComponent = options.renderComponent ?? _gxtComponentContentNodes;
@@ -3506,11 +3511,13 @@ function _gxtDynamicContent(
     kind = next;
     rendered = identity;
     nodes = replacement;
+    (fragment as any)[RENDERED_NODES_PROPERTY] = replacement;
   };
 
   const initial = options.initial;
   if (initial === undefined) {
-    gxtEffect(() => show(_gxtContentText(_gxtContentValue(read))), options.owner);
+    const destroy = gxtEffect(() => show(_gxtContentText(_gxtContentValue(read))), options.owner);
+    return { fragment, destroy };
   } else {
     // The text of the value read by the caller's evaluation is taken in that
     // evaluation's tracking frame.
@@ -3524,7 +3531,7 @@ function _gxtDynamicContent(
     }
     show(value);
     let replay = true;
-    gxtEffect(() => {
+    const destroy = gxtEffect(() => {
       if (replay) {
         replay = false;
         const cells = _gxtGetTracker();
@@ -3533,8 +3540,8 @@ function _gxtDynamicContent(
       }
       show(_gxtContentText(_gxtContentValue(read)));
     }, options.owner);
+    return { fragment, destroy };
   }
-  return fragment;
 }
 
 // A content value whose kind is text as its text (`_gxtCoerceText`), any other
@@ -3591,7 +3598,15 @@ function _gxtContentChild(
     owner: owner !== null && typeof owner === 'object' ? owner : _gxtTemplateOwner(),
     context,
     initial: { value, cells },
-  });
+  }).fragment;
+}
+
+// The parse context of content rendered while an SVG or MathML namespace is
+// active (`_gxtNamespace`), until the content is in its element.
+function _gxtNamespaceContext(): _GxtContentContext | null {
+  return _gxtNamespace === 'svg' || _gxtNamespace === 'mathml'
+    ? { tag: '', namespace: _gxtNamespace }
+    : null;
 }
 
 // The children of an HTML element gxt renders, with each function child (a
@@ -10006,47 +10021,38 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               return undefined;
             };
 
-            // Create a reactive text node. The gxtEffect tracks cell reads
-            // inside helperGetter and updates the text node when deps change.
-            // We must avoid double-calling compute: the effect fires immediately
-            // on creation (first evaluation), so we let it set the initial value.
-            const textNode = document.createTextNode('');
+            // The helper's result renders as dynamic content
+            // (`_gxtDynamicContent`): text, the HTML of a SafeString, a DOM
+            // node or a component, rendered again when what the helper read
+            // changes. The binding's first run evaluates the helper (once).
             try {
-              const disposeEffect = gxtEffect(() => {
-                const v = helperGetter();
-                textNode.textContent = v == null ? '' : String(v);
+              const content = _gxtDynamicContent(helperGetter, {
+                owner: undefined,
+                context: _gxtNamespaceContext(),
               });
-              // The effect is created without an owner (gxtEffect's second
-              // argument), so nothing ever disposes it — it merely goes
-              // quiescent when its deps stop changing. Inside an {{#if}}
-              // branch that is a live bug: after the branch collapses (the
-              // helper instance destroyed, caches evicted), any later dep
-              // bump — including the destroy cascade itself — re-fires the
-              // stale effect, which re-creates the helper (extra init/compute
-              // in the class-based lifecycle test, eager evaluation in the
-              // "evaluation should be lazy" trio). Register the disposer with
-              // the enclosing branch scope so destroyScope tears the effect
-              // down with the branch.
+              // The binding is created without an owner, so nothing ever
+              // disposes it — it merely goes quiescent when its deps stop
+              // changing. Inside an {{#if}} branch that is a live bug: after
+              // the branch collapses (the helper instance destroyed, caches
+              // evicted), any later dep bump — including the destroy cascade
+              // itself — re-fires the stale binding, which re-creates the
+              // helper (extra init/compute in the class-based lifecycle test,
+              // eager evaluation in the "evaluation should be lazy" trio).
+              // Register its destroy with the enclosing branch scope so
+              // destroyScope tears it down with the branch.
               const ifScopeTag = _gxtCurrentHelperScope;
-              if (
-                ifScopeTag &&
-                typeof ifScopeTag.add === 'function' &&
-                typeof disposeEffect === 'function'
-              ) {
-                try {
-                  ifScopeTag.add({
-                    destroy: disposeEffect,
-                    isDestroyed: false,
-                    isDestroying: false,
-                  });
-                } catch {
-                  /* ignore */
-                }
+              if (ifScopeTag && typeof ifScopeTag.add === 'function') {
+                ifScopeTag.add({
+                  destroy: content.destroy,
+                  isDestroyed: false,
+                  isDestroying: false,
+                });
               }
+              return content.fragment;
             } catch (e) {
               if (_isAssertionLike(e)) throw e; /* effect setup may fail */
+              return document.createTextNode('');
             }
-            return textNode;
           }
         }
 
@@ -13088,10 +13094,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         const dynamicContent = (): DocumentFragment =>
           _gxtDynamicContent(item, {
             owner: _gxtTemplateOwner(),
-            context: null,
+            context: _gxtNamespaceContext(),
             renderComponent: renderComponentNodes,
             initial: { value: finalResult, cells: _capturedDeps },
-          });
+          }).fragment;
 
         // A SafeString renders its HTML, as dynamic content.
         if (

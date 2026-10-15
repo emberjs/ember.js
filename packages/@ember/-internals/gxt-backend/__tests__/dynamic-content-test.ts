@@ -10,12 +10,14 @@
  *   the namespace of the element it is rendered in;
  * - a DOM node, or the nodes of a DocumentFragment, inserted as they are.
  *
- * A `{{{value}}}` renders a DOM node value as that node too.
+ * The result of a helper invocation (`{{format this.value}}`) renders the
+ * same way, and a `{{{value}}}` renders a DOM node value as that node too.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
+import { helper } from '@ember/component/helper';
 import { htmlSafe } from '@ember/template';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -83,6 +85,23 @@ moduleFor(
 
     ['@test content inside an SVG foreignObject renders what its value is']() {
       this.assertContentKinds('<svg><foreignObject>', '</foreignObject></svg>');
+    }
+
+    ['@test the result of a helper renders what it is']() {
+      this.owner.register(
+        'helper:same-value',
+        helper(([value]: unknown[]) => value)
+      );
+      this.render('<p>{{same-value this.value}}</p>[{{same-value this.value}}]', {
+        value: 'text',
+      });
+      this.assertHTML('<p>text</p>[text]');
+
+      runTask(() => set(this.context, 'value', htmlSafe('<b>bold</b>')));
+      this.assertHTML('<p><b>bold</b></p>[<b>bold</b>]');
+
+      runTask(() => set(this.context, 'value', '<i>text</i>'));
+      this.assertHTML('<p>&lt;i&gt;text&lt;/i&gt;</p>[&lt;i&gt;text&lt;/i&gt;]');
     }
 
     ['@test text content inside an SVG element updates']() {
