@@ -2684,6 +2684,12 @@ function createEmberModifierHelper(original: Function) {
         : rawFirst;
     const boundParams = params.slice(1);
 
+    // A missing definition curries nothing: Glimmer's curry reference is
+    // `null` for it, and an element modifier of that value installs nothing.
+    // (gxt's own helper would return a new function on every read, which an
+    // argument holding it would see as a change on every sync.)
+    if (resolved === null || resolved === undefined) return undefined;
+
     // Dynamic string detection: if the resolved value is a dynamic binding
     // (came from a this.xxx getter), throw an assertion.
     // We detect this by checking if the raw first param was a getter function

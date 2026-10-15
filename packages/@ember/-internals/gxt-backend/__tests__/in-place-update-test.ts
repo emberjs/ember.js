@@ -17,7 +17,7 @@
  *   current arguments when the modifier updates;
  * - a curried `(modifier …)` passed as an argument stays the same value while
  *   its definition is the same, so the modifier updates only when an argument
- *   changes;
+ *   changes, and a `(modifier)` of a missing definition is no modifier;
  * - the text of an element whose content is one mustache updates in its text
  *   node.
  *
@@ -237,6 +237,31 @@ moduleFor(
 
       runTask(() => (state.greeting = 'hi'));
       this.assert.deepEqual(calls, ['install hello', 'update hi'], 'an argument change updates');
+    }
+
+    ['@test a (modifier) of a missing definition is no modifier']() {
+      let calls: string[] = [];
+      class State {
+        @tracked definition: object | undefined = undefined;
+      }
+      let greet = recordingModifier(calls);
+      this.owner.register(
+        'component:apply-if-value',
+        setComponentTemplate(
+          precompileTemplate('{{#if @value}}<div {{@value}}></div>{{else}}none{{/if}}'),
+          templateOnly()
+        )
+      );
+      let state = new State();
+      this.render('<ApplyIfValue @value={{modifier this.state.definition "x"}} />', { state });
+      this.assertText('none');
+
+      runTask(() => (state.definition = greet));
+      this.assert.deepEqual(calls, ['install x']);
+
+      runTask(() => (state.definition = undefined));
+      this.assertText('none');
+      this.assert.deepEqual(calls, ['install x', 'destroy']);
     }
 
     ['@test the text of an element whose content is one mustache updates in its text node']() {
