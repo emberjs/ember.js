@@ -7,7 +7,9 @@
  *   is in Ember's renderer list while it has roots, and `captureRenderTree`
  *   (Ember Inspector) lists one `{ROOT}` node per render, with the render's
  *   arguments and bounds, until the render is destroyed;
- * - the bounds of a root follow its render as it updates.
+ * - the bounds of a root follow its render as it updates;
+ * - a render into a cursor (`{ element, nextSibling }`) is inserted before the
+ *   cursor's `nextSibling`, and leaves the element's other nodes in place.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -130,6 +132,36 @@ moduleFor(
         'the first node after a first node was added'
       );
       assert.strictEqual(this.rootBounds()?.lastNode, element.lastChild, 'the last node');
+    }
+  }
+);
+
+moduleFor(
+  'GXT renderComponent into a cursor',
+  class extends RenderComponentRootTestCase {
+    async ["@test a render goes before the cursor's nextSibling"](assert: QUnit['assert']) {
+      let Root = setComponentTemplate(precompileTemplate('<p>{{@name}}</p>'), templateOnly());
+      let element = this.container('<b>before</b><!--marker--><i>after</i>');
+      let marker = element.childNodes[1]!;
+
+      let result = renderComponent(Root, {
+        owner: this.owner,
+        into: { element, nextSibling: marker } as unknown as Element,
+        args: { name: 'hello' },
+      });
+      assert.strictEqual(
+        element.innerHTML,
+        '<b>before</b><p>hello</p><!--marker--><i>after</i>',
+        'the render is before the marker, and the nodes around it stay'
+      );
+
+      result.destroy();
+      await renderSettled();
+      assert.strictEqual(
+        element.innerHTML,
+        '<b>before</b><!--marker--><i>after</i>',
+        'destroying the render removes only its nodes'
+      );
     }
   }
 );

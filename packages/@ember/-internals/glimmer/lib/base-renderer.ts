@@ -1206,6 +1206,14 @@ function _renderComponentGxt(
   const targetElement =
     into instanceof Element ? into : 'element' in into ? (into as any).element : into;
 
+  // A render into a cursor goes before the cursor's `nextSibling`, as the
+  // Glimmer element builder inserts there. A `nextSibling` that is no longer a
+  // child of the element makes the insertion throw (a DOM `NotFoundError`).
+  const cursorNextSibling: Node | null =
+    !(into instanceof Element) && isCursor(into)
+      ? (into.nextSibling as unknown as Node | null)
+      : null;
+
   // Multi-render scoping: each renderComponent call into a target gets its
   // own (firstNode, lastNode) DOM range. Multiple renders coexist as
   // siblings (per the renderComponent RFC's "subsequent renders to the
@@ -1290,8 +1298,10 @@ function _renderComponentGxt(
     }
     // Initial render into a target that has not yet been claimed by
     // renderComponent: clear any pre-existing contents of the target element.
+    // A cursor with a `nextSibling` renders at that position among the
+    // element's other nodes, which stay.
     if (!targetState.cleared) {
-      targetElement.innerHTML = '';
+      if (cursorNextSibling === null) targetElement.innerHTML = '';
       targetState.cleared = true;
     }
   }
@@ -1414,12 +1424,12 @@ function _renderComponentGxt(
   // Render the template into the target. The "direct" path renders into
   // the target (zero DOM movement, letting GXT's processNodes wire
   // effects against the actual ancestor chain) and is used whenever the
-  // parent has no foreign live content from OTHER entries. The
-  // "sibling/prepend" path renders into a temporary host of the same
-  // tag-name, then moves the resulting children to the FRONT of the
-  // actual parent — this gives the documented "subsequent renders are
-  // prepended" behavior while preserving live sibling content from prior
-  // render entries on the same target.
+  // parent has no foreign live content from OTHER entries and the render goes
+  // at its end. The "insert" path renders into a temporary host of the same
+  // tag, then moves the resulting children before the cursor's `nextSibling`,
+  // or to the FRONT of the actual parent — this gives the documented
+  // "subsequent renders are prepended" behavior while preserving live sibling
+  // content from prior render entries on the same target.
   const renderTemplate = (template: any, ctx: any, parent: Element) => {
     if (renderRoot === null) {
       const lib = _gxtLib();
@@ -1446,7 +1456,7 @@ function _renderComponentGxt(
         }
       }
     }
-    if (!hasForeignLiveContent) {
+    if (!hasForeignLiveContent && cursorNextSibling === null) {
       const lastBefore = parent.lastChild;
       renderTemplate(template, ctx, parent);
       entry.firstNode = parent.firstChild;
@@ -1465,13 +1475,13 @@ function _renderComponentGxt(
       }
       return;
     }
-    // Sibling render: render into a temporary host of the same tag-name
+    // Insert render: render into a temporary host of the same tag-name
     // (so any tag-sensitive child construction inside <table>, <select>,
-    // etc. keeps the same parent context), then move the children to the
-    // FRONT of the actual parent.
+    // etc. keeps the same parent context), then move the children before the
+    // cursor's `nextSibling`, or to the FRONT of the actual parent.
     const host = document.createElement(parent.tagName);
     renderTemplate(template, ctx, host);
-    const insertBefore = parent.firstChild;
+    const insertBefore = cursorNextSibling ?? parent.firstChild;
     const previous = insertBefore === null ? parent.lastChild : insertBefore.previousSibling;
     const firstCollected: Node | null = host.firstChild;
     const lastCollected: Node | null = host.lastChild;
@@ -1627,10 +1637,11 @@ function _renderComponentGxt(
         }
         if (nodes instanceof Node) {
           if (targetElement instanceof Element) {
-            // Prepend (matches the documented "subsequent renders are
-            // prepended" semantic) and capture the inserted node as both
-            // firstNode and lastNode of this entry so destroy can scope.
-            const insertBefore = targetElement.firstChild;
+            // Insert before the cursor's `nextSibling`, or prepend (matches
+            // the documented "subsequent renders are prepended" semantic) and
+            // capture the inserted node as both firstNode and lastNode of
+            // this entry so destroy can scope.
+            const insertBefore = cursorNextSibling ?? targetElement.firstChild;
             entry.boundsParent = targetElement;
             entry.boundsBefore =
               insertBefore === null ? targetElement.lastChild : insertBefore.previousSibling;
