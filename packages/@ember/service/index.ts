@@ -6,6 +6,7 @@ import type {
 } from '@ember/-internals/metal/lib/decorator';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
 import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
  @module @ember/service
@@ -144,3 +145,5 @@ export default class Service extends FrameworkObject {
 // registered services which have no base class.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, object | undefined> {}
+
+setFrameworkClass(Service);
