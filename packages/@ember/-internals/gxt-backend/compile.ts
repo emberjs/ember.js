@@ -2855,11 +2855,10 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
 
   // Replace $__if on globalThis with Ember-aware version.
   // Use a persistent property trap so GXT's setupGlobalScope cannot overwrite.
-  const _ember$__if = function $__if_ember(
-    condition: unknown,
-    ifTrue: unknown,
-    ifFalse: unknown = ''
-  ) {
+  // `(if cond "x")` with no else value is undefined when the condition is
+  // false, as Glimmer's inline `if` is: a helper receiving it gets undefined,
+  // and an attribute or class bound to it is removed.
+  const _ember$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse?: unknown) {
     const rawCond =
       typeof condition === 'function' && !(condition as any).prototype
         ? (condition as any)()
