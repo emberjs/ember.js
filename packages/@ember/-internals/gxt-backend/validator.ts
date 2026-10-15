@@ -1469,10 +1469,15 @@ export function endTrackFrame() {
   // Also pop from the tracking tag stack
   if (_trackingTagStack && _trackingTagStack.length > 0) _trackingTagStack.pop();
   if (_trackingTagStack && _trackingTagStack.length === 0) _trackingTagStack = null;
-  // Return a "combined"-like tag that tracks only the specific tags that
-  // were consumed within this frame, so validateTag only invalidates when
-  // one of those tags changes — not on any global counter bump.
+  // The frame's tag, as Glimmer's `Tracker.combine` makes it: CONSTANT_TAG
+  // when the frame consumed no tag, the tag itself when it consumed one (any
+  // number of times), else a "combined"-like tag that tracks only the tags
+  // consumed within this frame, so validateTag only invalidates when one of
+  // those tags changes — not on any global counter bump.
+  consumed.delete(CONSTANT_TAG);
+  if (consumed.size === 0) return CONSTANT_TAG;
   const deps = Array.from(consumed);
+  if (deps.length === 1) return deps[0];
   const tag: any = { _isCombinedTag: true };
   Object.defineProperty(tag, 'value', {
     get() {
