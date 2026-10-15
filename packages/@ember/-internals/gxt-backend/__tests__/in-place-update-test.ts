@@ -12,7 +12,9 @@
  *   component of the current value;
  * - an `{{#in-element}}` whose destination changes renders its block into the
  *   new destination and leaves the old one empty, and its content leaves the
- *   destination when its block is destroyed.
+ *   destination when its block is destroyed;
+ * - the args object a modifier manager gets from `createModifier` reads the
+ *   current arguments when the modifier updates.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -20,7 +22,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
-import { setComponentTemplate } from '@glimmer/manager';
+import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { tracked } from '@glimmer/tracking';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -152,6 +154,38 @@ moduleFor(
 
       runTask(() => (state.show = true));
       this.assert.strictEqual(destination.textContent, '[in]', 'the block renders again');
+    }
+
+    ['@test the args object a modifier manager keeps reads the current arguments']() {
+      let seen: unknown[] = [];
+      class State {
+        @tracked value = 'one';
+      }
+      // A manager that keeps the args object `createModifier` gets, as
+      // Glimmer's args proxy reads the current argument values.
+      class KeepArgsManager {
+        capabilities = modifierCapabilities('3.22');
+        createModifier(_definition: object, args: { positional: unknown[] }) {
+          return { args };
+        }
+        installModifier(state: { args: { positional: unknown[] } }) {
+          seen.push(state.args.positional[0]);
+        }
+        updateModifier(state: { args: { positional: unknown[] } }) {
+          seen.push(state.args.positional[0]);
+        }
+        destroyModifier() {}
+      }
+      this.registerModifier(
+        'keep-args',
+        setModifierManager(() => new KeepArgsManager(), class {})
+      );
+      let state = new State();
+      this.render('<div {{keep-args this.state.value}}></div>', { state });
+      this.assert.deepEqual(seen, ['one']);
+
+      runTask(() => (state.value = 'two'));
+      this.assert.deepEqual(seen, ['one', 'two'], 'the update reads the new argument');
     }
   }
 );

@@ -7655,6 +7655,13 @@ function _modifierSlot(
   return { key: freeKey!, cached: undefined };
 }
 
+// The arguments of one evaluation of a modifier invocation, which the args
+// object of the installed modifier reads (see `buildLazyArgs`).
+interface _ModifierArgSource {
+  props: any[];
+  hash: Record<string, any>;
+}
+
 const $_MANAGERS = {
   component: {
     canHandle(komp: any): boolean {
@@ -8603,13 +8610,28 @@ const $_MANAGERS = {
         return { positional, named };
       };
 
+      // The arguments of one evaluation of the invocation: its positional
+      // values and its hash (the evaluated `hashArgs`).
+      const argSourceOf = (currentProps: any[], currentHashArgs: any): _ModifierArgSource => ({
+        props: currentProps || [],
+        hash: currentHashArgs
+          ? typeof currentHashArgs === 'function'
+            ? currentHashArgs()
+            : currentHashArgs
+          : {},
+      });
+
       // Build LAZY args object — only resolves GXT getters when actually accessed.
       // This is crucial for per-arg tracking: GXT's formula only tracks cells that
       // are read, so non-consumed args won't trigger formula re-evaluation.
-      const buildLazyArgs = (currentProps: any[], currentHashArgs: any) => {
-        const rawPositional = currentProps || [];
+      // The members read `source` when they are accessed: the update path
+      // points an installed modifier's source at each evaluation's arguments,
+      // so the args object a manager kept from `createModifier` reads the
+      // current arguments, as Glimmer's args proxy reads its references.
+      const buildLazyArgs = (source: _ModifierArgSource) => {
         const positionalProxy = new Proxy([] as any[], {
           get(target, prop, receiver) {
+            const rawPositional = source.props;
             if (typeof prop === 'string' && isAllDigits(prop)) {
               const idx = Number(prop);
               if (idx < rawPositional.length) {
@@ -8629,18 +8651,12 @@ const $_MANAGERS = {
           },
         });
 
-        const rawHash = currentHashArgs
-          ? typeof currentHashArgs === 'function'
-            ? currentHashArgs()
-            : currentHashArgs
-          : {};
-        const namedKeys = Object.keys(rawHash).filter(
-          (k: string) => !k.startsWith('$_') && k !== 'hash'
-        );
+        const namedKeys = () =>
+          Object.keys(source.hash).filter((k: string) => !k.startsWith('$_') && k !== 'hash');
         const namedProxy = new Proxy({} as Record<string, any>, {
           get(target, prop, receiver) {
-            if (typeof prop === 'string' && namedKeys.includes(prop)) {
-              const val = rawHash[prop];
+            if (typeof prop === 'string' && namedKeys().includes(prop)) {
+              const val = source.hash[prop];
               return typeof val === 'function' && !(val as any).__isCurriedComponent
                 ? (val as any)()
                 : val;
@@ -8648,16 +8664,16 @@ const $_MANAGERS = {
             return Reflect.get(target, prop, receiver);
           },
           ownKeys() {
-            return namedKeys;
+            return namedKeys();
           },
           getOwnPropertyDescriptor(target, prop) {
-            if (typeof prop === 'string' && namedKeys.includes(prop)) {
+            if (typeof prop === 'string' && namedKeys().includes(prop)) {
               return { configurable: true, enumerable: true, writable: true, value: undefined };
             }
             return Object.getOwnPropertyDescriptor(target, prop);
           },
           has(target, prop) {
-            if (typeof prop === 'string') return namedKeys.includes(prop);
+            if (typeof prop === 'string') return namedKeys().includes(prop);
             return Reflect.has(target, prop);
           },
         });
@@ -8748,6 +8764,11 @@ const $_MANAGERS = {
             }
           } else {
             // Custom modifier manager update path.
+            // The installed modifier's args read this evaluation's arguments.
+            const current = argSourceOf(props, hashArgs);
+            const argSource: _ModifierArgSource = cached.argSource ?? current;
+            argSource.props = current.props;
+            argSource.hash = current.hash;
             // Per-arg tracking: only call updateModifier when consumed args changed
             // OR when external tracked values changed (autotracking).
             // We eagerly read ALL args UNTRACKED to get fresh values for comparison.
@@ -8819,7 +8840,7 @@ const $_MANAGERS = {
             if (shouldUpdate && cached.manager.updateModifier) {
               self._updatedInstances.add(cached.instance);
               // Use lazy args for the actual update call so GXT tracks per-consumed-arg
-              const lazyArgs = buildLazyArgs(props, hashArgs);
+              const lazyArgs = buildLazyArgs(argSource);
               cached.manager.updateModifier(cached.instance, lazyArgs);
             }
             // Snapshot for next comparison
@@ -9026,7 +9047,8 @@ const $_MANAGERS = {
       // the modifier reads. Only consumed args trigger future updates.
       const _consumedPositional = new Set<number>();
       const _consumedNamed = new Set<string>();
-      const lazyInstallArgs = buildLazyArgs(props, hashArgs);
+      const installArgSource = argSourceOf(props, hashArgs);
+      const lazyInstallArgs = buildLazyArgs(installArgSource);
       // Wrap with consumption-tracking proxies.
       // Must handle both numeric indexing AND destructuring (Symbol.iterator).
       const trackedInstallArgs = {
@@ -9160,7 +9182,7 @@ const $_MANAGERS = {
           // shape.
           if (_selfSetDuringInstall && instance && typeof manager.updateModifier === 'function') {
             try {
-              const lazyArgs = buildLazyArgs(props, hashArgs);
+              const lazyArgs = buildLazyArgs(installArgSource);
               manager.updateModifier(instance, lazyArgs);
             } catch (err) {
               // Surface the error through the render-error channel so it is
@@ -9196,6 +9218,14 @@ const $_MANAGERS = {
         // per-arg diffing.
         cached = migratedCached;
         cached.pendingDestroy = false;
+        // The migrated instance keeps the args object it was created with:
+        // point its source at this evaluation's arguments.
+        if (cached.argSource) {
+          cached.argSource.props = installArgSource.props;
+          cached.argSource.hash = installArgSource.hash;
+        } else {
+          cached.argSource = installArgSource;
+        }
         cached._consumedPositional = _consumedPositional;
         cached._consumedNamed = _consumedNamed;
         cached._lastPositional = [...initialArgs.positional];
@@ -9209,6 +9239,7 @@ const $_MANAGERS = {
           manager,
           ModifierClass,
           pendingDestroy: false,
+          argSource: installArgSource,
           _consumedPositional,
           _consumedNamed,
           _lastPositional: [...initialArgs.positional],
