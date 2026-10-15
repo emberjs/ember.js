@@ -36,10 +36,6 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 // the exact barrel key to the gxt-backend shim, while deep lib/* paths would
 // resolve to the real vendored VM source and fork the reactive runtime in GXT
 // builds. Do not convert it to a deep import.
-// Namespace import MUST stay on the barrel: touchClassicBridge exists only in
-// the GXT-aliased validator shim.
-// eslint-disable-next-line ember-local/no-barrel-imports
-import * as _glimmerValidator from '@glimmer/validator';
 // eslint-disable-next-line ember-local/no-barrel-imports
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
@@ -48,13 +44,6 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import { renderers } from './renderers';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
-
-// touchClassicBridge exists only in the GXT-aliased validator; fall back to a
-// no-op in classic builds so this import never breaks the classic bundle.
-const touchClassicBridge: () => void =
-  typeof (_glimmerValidator as any).touchClassicBridge === 'function'
-    ? (_glimmerValidator as any).touchClassicBridge
-    : () => {};
 
 // Lazy accessor for @lifeart/gxt symbols through the bridge. Every call site
 // below is reached only from GXT-mode code paths. Avoiding a static
@@ -1115,6 +1104,19 @@ function gxtSubOwnerComponentManager(definition: object): any {
  * GXT-specific renderComponent implementation.
  * Bypasses Glimmer VM bytecode compilation entirely.
  */
+// A getter for the root argument `key` of a `renderComponent` render: it reads
+// `args[key]` as Glimmer reads a root argument (`childRefFor` of the args'
+// const reference, the environment's `getProp`), through gxt-backend's
+// `gxtLib.readProperty`: read once, consuming the key's property tag, so a
+// binding that reads it depends on that argument only (its tag, and what
+// reading it consumes, e.g. a `trackedObject`'s key). It used to read the
+// classic-validator bridge cell too, which every classic tag change bumps: a
+// binding that read `@foo` ran again on any change anywhere, such as a write
+// to another argument.
+function rootArgGetter(args: Record<string, unknown>, key: string): () => unknown {
+  return () => _gxtLib().readProperty(args, key);
+}
+
 function _renderComponentGxt(
   component: object,
   into: IntoTarget,
@@ -1420,31 +1422,15 @@ function _renderComponentGxt(
       // No template found — try using the manager system directly
       const managers = (globalThis as any).$_MANAGERS;
       if (managers?.component?.canHandle?.(component)) {
-        // Build args with reactive getters so GXT tracks dependencies.
+        // The root arguments, read as Glimmer reads them (see `rootArgGetter`).
         const gxtArgs: any = {};
         if (args) {
           for (const key of Object.keys(args)) {
-            const desc = Object.getOwnPropertyDescriptor(args, key);
-            const innerGet = desc?.get;
-            if (innerGet) {
-              Object.defineProperty(gxtArgs, key, {
-                get: function () {
-                  touchClassicBridge();
-                  return innerGet.call(this);
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            } else {
-              Object.defineProperty(gxtArgs, key, {
-                get: () => {
-                  touchClassicBridge();
-                  return (args as any)[key];
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            }
+            Object.defineProperty(gxtArgs, key, {
+              get: rootArgGetter(args, key),
+              enumerable: true,
+              configurable: true,
+            });
           }
         }
         const handleResult = managers.component.handle(component, gxtArgs, null, { owner });
@@ -1535,10 +1521,7 @@ function _renderComponentGxt(
             if (args) {
               for (const key of Object.keys(args)) {
                 Object.defineProperty(namedArgs, key, {
-                  get: () => {
-                    touchClassicBridge();
-                    return (args as any)[key];
-                  },
+                  get: rootArgGetter(args, key),
                   enumerable: true,
                   configurable: true,
                 });
@@ -1581,27 +1564,11 @@ function _renderComponentGxt(
           // eagerly evaluating arg getters. Arg getters may have side effects
           // (e.g., tracking steps in tests) and should only be called lazily.
           for (const key of Object.keys(args)) {
-            const desc = Object.getOwnPropertyDescriptor(args, key);
-            const innerGet = desc?.get;
-            if (innerGet) {
-              Object.defineProperty(instance.args, key, {
-                get: function () {
-                  touchClassicBridge();
-                  return innerGet.call(this);
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            } else {
-              Object.defineProperty(instance.args, key, {
-                get: () => {
-                  touchClassicBridge();
-                  return (args as any)[key];
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            }
+            Object.defineProperty(instance.args, key, {
+              get: rootArgGetter(args, key),
+              enumerable: true,
+              configurable: true,
+            });
           }
         }
       }
@@ -1620,28 +1587,17 @@ function _renderComponentGxt(
       if (!instance) {
         for (const key of Object.keys(args)) {
           Object.defineProperty(renderContext, key, {
-            get: () => {
-              touchClassicBridge();
-              return (args as any)[key];
-            },
+            get: rootArgGetter(args, key),
             enumerable: true,
             configurable: true,
           });
         }
       }
-      // Set up args object with reactive getters. Reads touch the
-      // classic-validator bridge so any enclosing GXT effect (e.g. the
-      // text-node formula for `{{@foo}}`) that reads through this proxy
-      // subscribes to the classic-tag bridge cell and re-fires on any
-      // classic @glimmer/validator tag mutation. This is the same pattern
-      // used by renderLinkToElement in gxt-backend/manager.ts.
+      // The args object the template reads `@foo` from (see `rootArgGetter`).
       const argsObj: any = {};
       for (const key of Object.keys(args)) {
         Object.defineProperty(argsObj, key, {
-          get: () => {
-            touchClassicBridge();
-            return (args as any)[key];
-          },
+          get: rootArgGetter(args, key),
           enumerable: true,
           configurable: true,
         });

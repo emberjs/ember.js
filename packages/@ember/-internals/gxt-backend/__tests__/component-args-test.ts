@@ -9,13 +9,29 @@
  *   (`<this.Apply @value={{this.greet}} />`), with `{{component}}` or curried:
  *   a modifier argument is installed where it is used in modifier position
  *   (`<div {{@value "x"}}>`), a helper argument is called (`{{@value "x"}}`)
- *   and an `{{on}}` handler argument is called.
+ *   and an `{{on}}` handler argument is called;
+ * - a `renderComponent` root argument is read as Glimmer's `getProp` reads it:
+ *   a binding that reads `@a` runs again when `@a` changes (a `trackedObject`
+ *   write, or `set()` on a plain args object), and not when another argument
+ *   changes.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  AbstractStrictTestCase,
+  assertHTML,
+  buildOwner,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
+import { set } from '@ember/object';
+import type Owner from '@ember/owner';
+import { trackedObject } from '@ember/reactive/collections';
+import { renderComponent, renderSettled } from '@ember/renderer';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
+import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 
 // A modifier definition whose manager records each install, with the first
@@ -111,6 +127,75 @@ moduleFor(
       });
       runTask(() => this.element.querySelector('button')!.click());
       this.assert.strictEqual(clicks, 1);
+    }
+  }
+);
+
+// Renders a template-only root reading `@a` and `@b` through `renderComponent`
+// into the fixture, with an owner of its own; the render is destroyed after
+// each test.
+class RenderComponentTestCase extends AbstractStrictTestCase {
+  owner: Owner;
+
+  constructor(assert: QUnit['assert']) {
+    super(assert);
+    this.owner = buildOwner({});
+    associateDestroyableChild(this, this.owner);
+  }
+
+  get element(): Element {
+    return document.querySelector('#qunit-fixture')!;
+  }
+
+  async afterEach() {
+    destroy(this);
+    await renderSettled();
+  }
+
+  render(args: Record<string, unknown>): void {
+    let Root = setComponentTemplate(
+      precompileTemplate('<p>{{@a}}</p><p>{{@b}}</p>'),
+      templateOnly()
+    );
+    let result = renderComponent(Root, { owner: this.owner, into: this.element, args });
+    registerDestructor(this, () => result.destroy());
+  }
+}
+
+moduleFor(
+  'GXT renderComponent root arguments',
+  class extends RenderComponentTestCase {
+    async ['@test a binding that reads a root argument does not run when another one changes'](
+      assert: QUnit['assert']
+    ) {
+      let reads = 0;
+      let args = trackedObject({
+        get a() {
+          reads++;
+          return 'a';
+        },
+        b: 1,
+      });
+      this.render(args);
+      await renderSettled();
+      assertHTML('<p>a</p><p>1</p>');
+      let readsAfterRender = reads;
+
+      args.b = 2;
+      await renderSettled();
+      assertHTML('<p>a</p><p>2</p>');
+      assert.strictEqual(reads, readsAfterRender, '@a is not read again');
+    }
+
+    async ['@test a root argument set on a plain args object updates']() {
+      let args = { a: 1, b: 1 };
+      this.render(args);
+      await renderSettled();
+      assertHTML('<p>1</p><p>1</p>');
+
+      runTask(() => set(args, 'a', 2));
+      await renderSettled();
+      assertHTML('<p>2</p><p>1</p>');
     }
   }
 );

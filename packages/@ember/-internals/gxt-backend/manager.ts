@@ -85,6 +85,9 @@ import {
   cellFor as _gxtCellFor,
   setTracker as _gxtSetTracker,
   getTracker as _gxtGetTracker,
+  // gxt's property tag (a tag that holds no value, so creating it reads
+  // nothing; a classic dirtyTagFor invalidates it).
+  tagFor as _gxtPropertyTag,
   cached as _gxtCached,
   setOpcodeErrorReporter as _gxtSetOpcodeErrorReporter,
   setComponentRenderErrorReporter as _gxtSetComponentRenderErrorReporter,
@@ -132,6 +135,18 @@ import {
   Component as _gxtLibComponent,
   RENDERED_NODES_PROPERTY as _gxtLibRenderedNodesProperty,
 } from '@lifeart/gxt';
+// A property read as Glimmer's getProp reads it, as gxt's `$__tag` does (the
+// bridge's `gxtLib.readProperty`): `obj[key]`, read once, and the reading frame
+// consumes the property's tag, so it depends on that property (a classic
+// `set()` / `notifyPropertyChange()` dirties the tag) and on what the read
+// itself consumes (a tracked getter, a `trackedObject` key). The validator
+// shim's `tagFor` would create a formula over the property instead, which reads
+// it again.
+function _gxtReadProperty(obj: object, key: string): unknown {
+  const tracker = _gxtGetTracker();
+  if (tracker !== null) tracker.add(_gxtPropertyTag(obj, key));
+  return (obj as Record<string, unknown>)[key];
+}
 // The DOM api of the compat renderers (the bridge's `gxtLib.HTMLBrowserDOMApi`).
 // A text-content update of an element whose content is one text node changes
 // that node's value, as Glimmer updates a text node in place: gxt's api sets
@@ -13761,6 +13776,7 @@ setGxtRenderer({
     setParentContext: _gxtLibSetParentContext,
     captureRenderTree: _gxtLibCaptureRenderTree,
     renderComponent: _gxtLibRenderComponent,
+    readProperty: _gxtReadProperty,
     cellFor: _gxtCellFor,
     Component: _gxtLibComponent,
     RENDERED_NODES_PROPERTY: _gxtLibRenderedNodesProperty,
