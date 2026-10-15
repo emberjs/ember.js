@@ -1232,11 +1232,54 @@ function _afterFlushAfterInsertQueue(): void {
 // 4. Defers the body render when the destination resolves to null during
 //    an active render pass (render-order timing fix — the outer fragment
 //    hasn't been committed yet, so document.getElementById returns null).
+// 5. Renders the block into its new destination when the destination
+//    changes, and removes its content from the destination when the block is
+//    destroyed.
 {
-  // Track in-element rendered nodes for cleanup. WeakMap<Element, Node[]>
-  const _inElementRenderedNodes = new Map<Element, Node[]>();
+  // One render of an in-element block into a destination: the nodes it put
+  // there, the effects that keep its text current, and the block it belongs
+  // to (null for a deferred render).
+  interface InElementRender {
+    destination: Element;
+    nodes: Node[];
+    stops: Array<() => void>;
+    block: InElementBlock | null;
+  }
+  // One `{{#in-element}}` block (one `$_inElement` call): the destination it
+  // renders into, its current render there, and the effect that follows its
+  // destination.
+  interface InElementBlock {
+    destination: unknown;
+    current: InElementRender | null;
+    stopFollowing: (() => void) | null;
+  }
+  // The render each destination holds.
+  const _inElementRenders = new Map<Element, InElementRender>();
   // Track which elements are in append mode (insertBefore=null)
   const _inElementAppendModeElements = new WeakSet<Element>();
+
+  // Remove a render from its destination: its nodes leave it and its text
+  // effects stop. `retire` (the destination is being rendered into by
+  // another `$_inElement` call, which replaces this render) also stops the
+  // render's block from following its destination: the newer call owns it.
+  const _inElementRemoveRender = (render: InElementRender, retire: boolean): void => {
+    if (_inElementRenders.get(render.destination) === render) {
+      _inElementRenders.delete(render.destination);
+    }
+    const owner = render.block;
+    if (owner !== null) {
+      if (owner.current === render) owner.current = null;
+      if (retire && owner.stopFollowing !== null) {
+        owner.stopFollowing();
+        owner.stopFollowing = null;
+      }
+    }
+    for (const stop of render.stops) stop();
+    render.stops.length = 0;
+    for (const node of render.nodes) {
+      if (node.parentNode) node.parentNode.removeChild(node);
+    }
+  };
 
   (globalThis as any).$_inElement = function _emberInElement(
     elementRef: any,
@@ -1244,20 +1287,31 @@ function _afterFlushAfterInsertQueue(): void {
     ctx: any,
     insertBeforeRef?: any
   ) {
-    // Resolve the target element
-    let appendRef: HTMLElement | null = null;
-    if (typeof elementRef === 'function') {
-      let result = elementRef();
-      if (typeof result === 'function') result = result();
-      if (result && typeof result === 'object' && 'value' in result) {
-        appendRef = result.value;
-      } else {
-        appendRef = result;
+    // Resolve the target element. The first read runs in a tracking frame of
+    // its own: the effect that follows the destination (below) subscribes to
+    // the cells it consumed, and the read does not subscribe the formula
+    // rendering the enclosing block.
+    const resolveDestination = (): any => {
+      if (typeof elementRef === 'function') {
+        let result = elementRef();
+        if (typeof result === 'function') result = result();
+        return result && typeof result === 'object' && 'value' in result ? result.value : result;
       }
-    } else if (elementRef && typeof elementRef === 'object' && 'value' in elementRef) {
-      appendRef = elementRef.value;
-    } else {
-      appendRef = elementRef;
+      if (elementRef && typeof elementRef === 'object' && 'value' in elementRef) {
+        return elementRef.value;
+      }
+      return elementRef;
+    };
+    const destinationCells: _GxtTrackerFrame = new Set();
+    let appendRef: HTMLElement | null;
+    {
+      const outerTracker = _gxtGetTracker();
+      _gxtSetTracker(destinationCells);
+      try {
+        appendRef = resolveDestination();
+      } finally {
+        _gxtSetTracker(outerTracker);
+      }
     }
 
     // Resolve insertBefore
@@ -1343,18 +1397,9 @@ function _afterFlushAfterInsertQueue(): void {
           );
         }
 
-        // Remove previously rendered in-element nodes for this target.
-        const prevNodes = _inElementRenderedNodes.get(retryRef);
-        if (prevNodes) {
-          for (const n of prevNodes) {
-            try {
-              if (n.parentNode) n.parentNode.removeChild(n);
-            } catch {
-              /* ignore */
-            }
-          }
-          _inElementRenderedNodes.delete(retryRef);
-        }
+        // Remove the render this destination holds.
+        const prevRender = _inElementRenders.get(retryRef);
+        if (prevRender) _inElementRemoveRender(prevRender, true);
 
         const deferredRenderedNodes: Node[] = [];
         if (_deferredInsertBefore === null) {
@@ -1409,7 +1454,12 @@ function _afterFlushAfterInsertQueue(): void {
         }
 
         retryRef.appendChild(deferredFragment);
-        _inElementRenderedNodes.set(retryRef, deferredRenderedNodes);
+        _inElementRenders.set(retryRef, {
+          destination: retryRef,
+          nodes: deferredRenderedNodes,
+          stops: [],
+          block: null,
+        });
       };
 
       // Enqueue into the module-local queue declared adjacent to the drain
@@ -1427,234 +1477,255 @@ function _afterFlushAfterInsertQueue(): void {
       appendRef !== null && appendRef !== undefined
     );
 
-    if (!appendRef || !(appendRef instanceof Element)) {
-      // No target element or invalid — just return the placeholder
-      return placeholder;
-    }
-
-    // Remove previously rendered in-element nodes for this target.
-    //
-    // Self-target re-render detection: a previously-issued in-element
-    // placeholder marker living as a direct child of `appendRef` proves
-    // that `appendRef` IS the render-pass parent element (the outer
-    // template commits into it). When we're inside an active render pass
-    // and that marker is present, the outer commit is about to replace
-    // `appendRef`'s contents — direct insertion below would be lost.
-    // Signal the self-insert path further down to re-emit
-    // [content, placeholder] as a wrapper fragment so the parent commit
-    // re-seats them alongside the surrounding literal siblings (e.g. the
-    // "Before" / "After" text in the `appending to the root element`
-    // public-in-element test).
-    //
-    // For an EXTERNAL target (e.g. `document.createElement('div')` outside
-    // the render flow), no placeholder marker exists in `appendRef` (the
-    // prior render placed it in the render-pass parent, not the external
-    // div), so the direct-insert path is preserved.
-    let __outerRerenderInFlight = false;
-    const prevNodes = _inElementRenderedNodes.get(appendRef);
-    if (prevNodes && prevNodes.length > 0 && _gxtIsRendering()) {
-      const hasPrevMarker = Array.from(appendRef.childNodes).some(
-        (n: any) => (n as any).__gxtInElementMarkerFor === appendRef
-      );
-      if (hasPrevMarker) {
-        __outerRerenderInFlight = true;
-      }
-    }
-    if (prevNodes) {
-      for (const node of prevNodes) {
-        try {
-          if (node.parentNode) node.parentNode.removeChild(node);
-        } catch {
-          /* ignore */
-        }
-      }
-      _inElementRenderedNodes.delete(appendRef);
-    }
-    // Also remove the prior placeholder marker so future lookups don't
-    // mis-attach to a stale comment (the wrapper-fragment path emits a
-    // fresh placeholder each call).
-    if (__outerRerenderInFlight) {
-      const stale = Array.from(appendRef.childNodes).filter(
-        (n: any) => (n as any).__gxtInElementMarkerFor === appendRef
-      );
-      for (const n of stale) {
-        try {
-          (n as ChildNode).remove();
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-
-    // Track rendered nodes so they can be cleaned up when the in-element is destroyed
-    const renderedNodes: Node[] = [];
-
-    // Mark the in-element destination as a "live host". The destination may be
-    // a DETACHED element (e.g. `document.createElement('div')` that's never
-    // appended to the document), in which case components rendered inside it
-    // report `el.isConnected === false`. The manager's after-insert flush and
-    // unclaimed-pool sweep treat that as "never inserted / dead" and skip
-    // didInsertElement / fire spurious willDestroyElement. Tag the host so
-    // those checks recognize the element as live. See the `getRootNode()`
-    // host check in manager.ts (renderClassicComponent after-insert callback).
-    try {
-      (appendRef as any).__gxtIsInElementHost = true;
-    } catch {
-      /* read-only host — ignore */
-    }
-
-    // Mark element for append mode tracking
-    if (insertBefore === null) {
-      _inElementAppendModeElements.add(appendRef);
-    }
-
-    // Clear existing content if insertBefore is undefined (replace mode)
-    if (insertBefore === undefined) {
-      appendRef.innerHTML = '';
-    }
-
-    // Render block content into the external element.
-    //
-    // Stable component-pool parent: components rendered inside the
-    // `{{#in-element}}` block (e.g. `{{modal-display}}`) must pool under a
-    // parent identity that is STABLE across re-renders. Without this, the
-    // initial render pools the block's components under the ambient parent
-    // (often ROOT) while later re-renders push a fresh re-render context, so
-    // the pool lookup misses, a brand-new instance is created, and the prior
-    // one is swept as unclaimed — firing willDestroyElement on every reactive
-    // change and never firing didInsertElement. The target element
-    // (`appendRef`) is stable across renders, so use it as the block's
-    // pool-parent key.
-    const _ieRenderRoots = () => {
-      const _push = getGxtRenderer()?.viewUtils?.pushParentView;
-      const _pop = getGxtRenderer()?.viewUtils?.popParentView;
-      if (typeof _push === 'function' && typeof _pop === 'function') {
-        _push(appendRef as any);
-        try {
-          return roots(ctx);
-        } finally {
-          _pop();
-        }
-      }
-      return roots(ctx);
+    const block: InElementBlock = {
+      destination: appendRef,
+      current: null,
+      stopFollowing: null,
     };
-    const nodes = _ieRenderRoots();
-    const fragment = document.createDocumentFragment();
-    for (const node of nodes) {
-      if (node instanceof Node) {
-        renderedNodes.push(node);
-        fragment.appendChild(node);
-      } else if (typeof node === 'function') {
-        // Dynamic content — create a reactive text node
-        const textNode = document.createTextNode('');
-        const getValue = () => {
-          let v = node();
-          if (typeof v === 'function') v = v();
-          return v == null ? '' : String(v);
-        };
-        textNode.textContent = getValue();
-        // Set up reactive tracking
-        try {
-          gxtEffect(() => {
-            textNode.textContent = getValue();
-          });
-        } catch {
-          /* effect setup may fail */
+
+    // Render the block into `target` and make it the block's current render.
+    // `initial` is the render of the `$_inElement` call itself, which may
+    // return its content with the placeholder (the self-insert path below);
+    // a later render, into a new destination, inserts it into `target`.
+    const renderInto = (target: Element, initial: boolean): Node => {
+      // The insertBefore mode, also null once the element was used in append mode.
+      const targetInsertBefore =
+        insertBefore === null || _inElementAppendModeElements.has(target) ? null : undefined;
+
+      // Remove the render this destination holds (from an earlier call).
+      //
+      // Self-target re-render detection: a previously-issued in-element
+      // placeholder marker living as a direct child of `target` proves
+      // that `target` IS the render-pass parent element (the outer
+      // template commits into it). When we're inside an active render pass
+      // and that marker is present, the outer commit is about to replace
+      // `target`'s contents — direct insertion below would be lost.
+      // Signal the self-insert path further down to re-emit
+      // [content, placeholder] as a wrapper fragment so the parent commit
+      // re-seats them alongside the surrounding literal siblings (e.g. the
+      // "Before" / "After" text in the `appending to the root element`
+      // public-in-element test).
+      //
+      // For an EXTERNAL target (e.g. `document.createElement('div')` outside
+      // the render flow), no placeholder marker exists in `target` (the
+      // prior render placed it in the render-pass parent, not the external
+      // div), so the direct-insert path is preserved.
+      let __outerRerenderInFlight = false;
+      const prevRender = _inElementRenders.get(target);
+      if (prevRender && prevRender.nodes.length > 0 && _gxtIsRendering()) {
+        const hasPrevMarker = Array.from(target.childNodes).some(
+          (n: any) => (n as any).__gxtInElementMarkerFor === target
+        );
+        if (hasPrevMarker) {
+          __outerRerenderInFlight = true;
         }
-        renderedNodes.push(textNode);
-        fragment.appendChild(textNode);
-      } else if (typeof node === 'string') {
-        const tn = document.createTextNode(node);
-        renderedNodes.push(tn);
-        fragment.appendChild(tn);
-      } else if (typeof node === 'number' || typeof node === 'boolean') {
-        const tn = document.createTextNode(String(node));
-        renderedNodes.push(tn);
-        fragment.appendChild(tn);
       }
+      if (prevRender) {
+        _inElementRemoveRender(prevRender, prevRender.block !== block);
+      }
+      // Also remove the prior placeholder marker so future lookups don't
+      // mis-attach to a stale comment (the wrapper-fragment path emits a
+      // fresh placeholder each call).
+      if (__outerRerenderInFlight) {
+        const stale = Array.from(target.childNodes).filter(
+          (n: any) => (n as any).__gxtInElementMarkerFor === target
+        );
+        for (const n of stale) (n as ChildNode).remove();
+      }
+
+      const render: InElementRender = { destination: target, nodes: [], stops: [], block };
+
+      // Mark the in-element destination as a "live host". The destination may be
+      // a DETACHED element (e.g. `document.createElement('div')` that's never
+      // appended to the document), in which case components rendered inside it
+      // report `el.isConnected === false`. The manager's after-insert flush and
+      // unclaimed-pool sweep treat that as "never inserted / dead" and skip
+      // didInsertElement / fire spurious willDestroyElement. Tag the host so
+      // those checks recognize the element as live. See the `getRootNode()`
+      // host check in manager.ts (renderClassicComponent after-insert callback).
+      (target as any).__gxtIsInElementHost = true;
+
+      // Mark element for append mode tracking
+      if (targetInsertBefore === null) {
+        _inElementAppendModeElements.add(target);
+      }
+
+      // Clear existing content if insertBefore is undefined (replace mode)
+      if (targetInsertBefore === undefined) {
+        target.innerHTML = '';
+      }
+
+      // Render block content into the external element.
+      //
+      // Stable component-pool parent: components rendered inside the
+      // `{{#in-element}}` block (e.g. `{{modal-display}}`) must pool under a
+      // parent identity that is STABLE across re-renders. Without this, the
+      // initial render pools the block's components under the ambient parent
+      // (often ROOT) while later re-renders push a fresh re-render context, so
+      // the pool lookup misses, a brand-new instance is created, and the prior
+      // one is swept as unclaimed — firing willDestroyElement on every reactive
+      // change and never firing didInsertElement. The target element is
+      // stable across renders, so use it as the block's pool-parent key.
+      const _ieRenderRoots = () => {
+        const _push = getGxtRenderer()?.viewUtils?.pushParentView;
+        const _pop = getGxtRenderer()?.viewUtils?.popParentView;
+        if (typeof _push === 'function' && typeof _pop === 'function') {
+          _push(target as any);
+          try {
+            return roots(ctx);
+          } finally {
+            _pop();
+          }
+        }
+        return roots(ctx);
+      };
+      const nodes = _ieRenderRoots();
+      const fragment = document.createDocumentFragment();
+      for (const node of nodes) {
+        if (node instanceof Node) {
+          render.nodes.push(node);
+          fragment.appendChild(node);
+        } else if (typeof node === 'function') {
+          // Dynamic content — a text node its effect keeps current, stopped
+          // when this render is removed.
+          const textNode = document.createTextNode('');
+          const getValue = () => {
+            let v = node();
+            if (typeof v === 'function') v = v();
+            return v == null ? '' : String(v);
+          };
+          textNode.textContent = getValue();
+          render.stops.push(
+            gxtEffect(() => {
+              textNode.textContent = getValue();
+            })
+          );
+          render.nodes.push(textNode);
+          fragment.appendChild(textNode);
+        } else if (typeof node === 'string') {
+          const tn = document.createTextNode(node);
+          render.nodes.push(tn);
+          fragment.appendChild(tn);
+        } else if (typeof node === 'number' || typeof node === 'boolean') {
+          const tn = document.createTextNode(String(node));
+          render.nodes.push(tn);
+          fragment.appendChild(tn);
+        }
+      }
+      _inElementRenders.set(target, render);
+      block.current = render;
+
+      // Self-insertion detection: when the target is the element currently
+      // being rendered (empty, not yet connected OR not yet flushed), the
+      // block's placeholder will be appended to it AS PART OF the
+      // surrounding template's fragment commit. In that case, naïvely
+      // appending our content to the target lands it BEFORE the surrounding
+      // siblings (e.g. "Before"/"After" literal text), producing
+      // "Whoop!BeforeAfter" instead of "BeforeWhoop!After".
+      //
+      // Solution: wrap our content together with the placeholder comment in
+      // a DocumentFragment and return that fragment. GXT will insert the
+      // whole fragment wherever `{{#in-element}}` appears in the parent
+      // template, keeping the content and placeholder co-located at the
+      // block's tree position — matching Glimmer VM's "appending to the
+      // root element should not cause double clearing" semantics.
+      //
+      // Self-insert applies, on the `$_inElement` call's own render, in two
+      // cases:
+      //   (a) the target is empty AND we're inside an active render pass —
+      //       classic first-render of a self-targeted in-element block. We
+      //       return [content, placeholder] so the outer commit lands them
+      //       together at the block's tree position (rather than at the head
+      //       of the target, which would produce "Whoop!BeforeAfter").
+      //   (b) The previously-rendered in-element nodes for this target were
+      //       just detected as fully detached (parent re-render wiped the
+      //       outer DOM via `parentElement.innerHTML = ''`). In that case
+      //       direct-insertion into the target is futile — the parent's
+      //       fragment commit follows our call and replaces everything.
+      //       Returning [content, placeholder] lets the outer commit re-seat
+      //       our content alongside the surrounding literal siblings.
+      const isSelfInsert =
+        initial &&
+        targetInsertBefore === null &&
+        _gxtIsRendering() &&
+        (target.childNodes.length === 0 || __outerRerenderInFlight);
+      if (isSelfInsert) {
+        const wrapperFragment = document.createDocumentFragment();
+        wrapperFragment.appendChild(fragment);
+        wrapperFragment.appendChild(placeholder);
+        // Tag the placeholder so future `insertBefore=null` updates know where
+        // to insert — see the matching lookup in the non-self-insert path.
+        (placeholder as any).__gxtInElementMarkerFor = target;
+        return wrapperFragment;
+      }
+      // For subsequent updates to a self-inserted block (same target, block
+      // placeholder already in the DOM tree), insert new content BEFORE the
+      // existing placeholder so the content lands at the block's position
+      // rather than at the end of the target. This preserves the semantics
+      // established by the initial self-insert path above and keeps the
+      // surrounding literal siblings (e.g. "Before"/"After") intact.
+      const placeholderInTarget = Array.from(target.childNodes).find(
+        (n: any) => (n as any).__gxtInElementMarkerFor === target
+      ) as ChildNode | undefined;
+      if (targetInsertBefore === null && placeholderInTarget) {
+        target.insertBefore(fragment, placeholderInTarget);
+      } else {
+        // Always append (for both append mode and replace mode — already cleared)
+        target.appendChild(fragment);
+      }
+
+      // Back-link the host → its current block placeholder. The placeholder is
+      // inserted into the LIVE template tree at the `{{#in-element}}` position
+      // (by the enclosing {{#if}} branch / outer commit). When the enclosing
+      // `{{#if}}` collapses, that placeholder is torn out of the live DOM —
+      // giving the unclaimed-pool sweep a reliable "is this in-element block
+      // still active?" signal that the host DOM (which lingers until the
+      // component is actually destroyed) does not provide.
+      (target as any).__gxtInElementPlaceholder = placeholder;
+      return placeholder;
+    };
+
+    const result =
+      appendRef instanceof Element ? renderInto(appendRef, true) : (placeholder as Node);
+
+    if (ctx !== null && (typeof ctx === 'object' || typeof ctx === 'function')) {
+      // A change of the destination renders the block into the new one, as
+      // Glimmer's in-element asserts its destination reference and renders
+      // the block again when it changes: the render in the old destination
+      // is removed and the block renders into the new one. The effect's
+      // first run subscribes to the cells the destination's first read
+      // consumed (a destination that read none is constant).
+      if (destinationCells.size > 0) {
+        let firstRun = true;
+        block.stopFollowing = gxtEffect(() => {
+          if (firstRun) {
+            firstRun = false;
+            const tracker = _gxtGetTracker();
+            if (tracker) destinationCells.forEach((cell) => tracker.add(cell));
+            return;
+          }
+          const next = resolveDestination();
+          if (next === block.destination) return;
+          block.destination = next;
+          if (block.current !== null) _inElementRemoveRender(block.current, false);
+          emberAssert(
+            'You cannot pass a null or undefined destination element to in-element',
+            next !== null && next !== undefined
+          );
+          if (next instanceof Element) renderInto(next, false);
+        }, ctx);
+      }
+      // The block's content leaves its destination when the block is
+      // destroyed (its `{{#if}}` branch goes, its render is destroyed), as
+      // Glimmer clears a remote block's bounds when it destroys the block.
+      _gxtRegisterDestructor(ctx, () => {
+        if (block.stopFollowing !== null) block.stopFollowing();
+        block.stopFollowing = null;
+        if (block.current !== null) _inElementRemoveRender(block.current, false);
+      });
     }
 
-    // Self-insertion detection: when appendRef is the element currently
-    // being rendered (empty, not yet connected OR not yet flushed), the
-    // block's placeholder will be appended to `appendRef` AS PART OF the
-    // surrounding template's fragment commit. In that case, naïvely
-    // appending our content to appendRef lands it BEFORE the surrounding
-    // siblings (e.g. "Before"/"After" literal text), producing
-    // "Whoop!BeforeAfter" instead of "BeforeWhoop!After".
-    //
-    // Solution: wrap our content together with the placeholder comment in
-    // a DocumentFragment and return that fragment. GXT will insert the
-    // whole fragment wherever `{{#in-element}}` appears in the parent
-    // template, keeping the content and placeholder co-located at the
-    // block's tree position — matching Glimmer VM's "appending to the
-    // root element should not cause double clearing" semantics.
-    //
-    // We detect self-insertion heuristically: the target is empty AND we
-    // are currently inside a render pass. Standard `{{#in-element
-    // externalTarget}}` into a non-rendering target is unaffected.
-    // Self-insert applies in two cases:
-    //   (a) appendRef is empty AND we're inside an active render pass —
-    //       classic first-render of a self-targeted in-element block. We
-    //       return [content, placeholder] so the outer commit lands them
-    //       together at the block's tree position (rather than at the head
-    //       of appendRef, which would produce "Whoop!BeforeAfter").
-    //   (b) The previously-rendered in-element nodes for this target were
-    //       just detected as fully detached (parent re-render wiped the
-    //       outer DOM via `parentElement.innerHTML = ''`). In that case
-    //       direct-insertion into appendRef is futile — the parent's
-    //       fragment commit follows our call and replaces everything.
-    //       Returning [content, placeholder] lets the outer commit re-seat
-    //       our content alongside the surrounding literal siblings.
-    const isSelfInsert =
-      insertBefore === null &&
-      _gxtIsRendering() &&
-      (appendRef.childNodes.length === 0 || __outerRerenderInFlight);
-    if (isSelfInsert) {
-      // Return a fragment containing [content..., placeholder]. GXT's
-      // outer-template commit will insert this whole fragment at the
-      // `{{#in-element}}` position in the parent tree, landing content
-      // adjacent to the placeholder rather than at the head of appendRef.
-      const wrapperFragment = document.createDocumentFragment();
-      wrapperFragment.appendChild(fragment);
-      wrapperFragment.appendChild(placeholder);
-      _inElementRenderedNodes.set(appendRef, renderedNodes);
-      // Tag the placeholder so future `insertBefore=null` updates know where
-      // to insert — see the matching lookup in the non-self-insert path.
-      (placeholder as any).__gxtInElementMarkerFor = appendRef;
-      return wrapperFragment;
-    }
-    // For subsequent updates to a self-inserted block (same target, block
-    // placeholder already in the DOM tree), insert new content BEFORE the
-    // existing placeholder so the content lands at the block's position
-    // rather than at the end of appendRef. This preserves the semantics
-    // established by the initial self-insert path above and keeps the
-    // surrounding literal siblings (e.g. "Before"/"After") intact.
-    const placeholderInAppendRef = Array.from(appendRef.childNodes).find(
-      (n: any) => (n as any).__gxtInElementMarkerFor === appendRef
-    ) as ChildNode | undefined;
-    if (insertBefore === null && placeholderInAppendRef) {
-      appendRef.insertBefore(fragment, placeholderInAppendRef);
-    } else {
-      // Always append (for both append mode and replace mode — already cleared)
-      appendRef.appendChild(fragment);
-    }
-
-    // Store rendered nodes for cleanup
-    _inElementRenderedNodes.set(appendRef, renderedNodes);
-    // Back-link the host → its current block placeholder. The placeholder is
-    // inserted into the LIVE template tree at the `{{#in-element}}` position
-    // (by the enclosing {{#if}} branch / outer commit). When the enclosing
-    // `{{#if}}` collapses, that placeholder is torn out of the live DOM —
-    // giving the unclaimed-pool sweep a reliable "is this in-element block
-    // still active?" signal that the host DOM (which lingers until the
-    // component is actually destroyed) does not provide.
-    try {
-      (appendRef as any).__gxtInElementPlaceholder = placeholder;
-    } catch {
-      /* read-only host — ignore */
-    }
-
-    return placeholder;
+    return result;
   };
   const _emberInElement = (globalThis as any).$_inElement;
   // Protect from setupGlobalScope overwrite using a non-writable getter

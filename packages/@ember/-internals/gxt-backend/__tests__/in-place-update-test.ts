@@ -9,7 +9,10 @@
  * - a block inside `<svg>` (`{{#if}}`) that renders again creates its elements
  *   in the SVG namespace, and a text child of an SVG element updates;
  * - a content mustache whose value is a component definition renders the
- *   component of the current value.
+ *   component of the current value;
+ * - an `{{#in-element}}` whose destination changes renders its block into the
+ *   new destination and leaves the old one empty, and its content leaves the
+ *   destination when its block is destroyed.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -18,6 +21,7 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import { setComponentTemplate } from '@glimmer/manager';
+import { tracked } from '@glimmer/tracking';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -81,6 +85,73 @@ moduleFor(
 
       runTask(() => set(this.context, 'isOk', true));
       this.assertText('[Ok]');
+    }
+
+    ['@test an {{#in-element}} renders into its new destination when the destination changes']() {
+      class State {
+        @tracked destination: Element;
+        @tracked label = 'one';
+        constructor(destination: Element) {
+          this.destination = destination;
+        }
+      }
+      let first = document.createElement('div');
+      let second = document.createElement('div');
+      let state = new State(first);
+      this.render('{{#in-element this.state.destination}}[{{this.state.label}}]{{/in-element}}', {
+        state,
+      });
+      this.assert.strictEqual(first.textContent, '[one]');
+      this.assert.strictEqual(second.textContent, '');
+
+      runTask(() => (state.destination = second));
+      this.assert.strictEqual(first.textContent, '', 'the old destination is empty');
+      this.assert.strictEqual(second.textContent, '[one]', 'the block renders in the new one');
+
+      runTask(() => (state.label = 'two'));
+      this.assert.strictEqual(first.textContent, '');
+      this.assert.strictEqual(second.textContent, '[two]', 'the moved block updates');
+
+      runTask(() => (state.destination = first));
+      this.assert.strictEqual(first.textContent, '[two]');
+      this.assert.strictEqual(second.textContent, '');
+    }
+
+    ['@test an {{#in-element}} set to a new destination renders there once']() {
+      let first = document.createElement('div');
+      let second = document.createElement('div');
+      this.render('{{#in-element this.destination}}[{{this.label}}]{{/in-element}}', {
+        destination: first,
+        label: 'one',
+      });
+      this.assert.strictEqual(first.textContent, '[one]');
+
+      runTask(() => set(this.context, 'destination', second));
+      this.assert.strictEqual(first.textContent, '', 'the old destination is empty');
+      this.assert.strictEqual(second.textContent, '[one]', 'the block renders once in the new one');
+
+      runTask(() => set(this.context, 'label', 'two'));
+      this.assert.strictEqual(first.textContent, '');
+      this.assert.strictEqual(second.textContent, '[two]');
+    }
+
+    ['@test the content of an {{#in-element}} leaves its destination with its block']() {
+      class State {
+        @tracked show = true;
+      }
+      let destination = document.createElement('div');
+      let state = new State();
+      this.render(
+        '{{#if this.state.show}}{{#in-element this.destination}}[in]{{/in-element}}{{/if}}',
+        { state, destination }
+      );
+      this.assert.strictEqual(destination.textContent, '[in]');
+
+      runTask(() => (state.show = false));
+      this.assert.strictEqual(destination.textContent, '', 'the block is gone');
+
+      runTask(() => (state.show = true));
+      this.assert.strictEqual(destination.textContent, '[in]', 'the block renders again');
     }
   }
 );
