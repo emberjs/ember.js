@@ -619,6 +619,7 @@ import { dirtyTagFor as _gxtDirtyTagFor } from '@glimmer/validator';
 import {
   GXT_STRICT_TEMPLATE_KEY,
   installEmberWrappers,
+  isComponentInvocation,
   stringDefinitionError,
 } from './ember-gxt-wrappers';
 import { defineEmberMountElement } from './mount-element';
@@ -13109,8 +13110,14 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
 
         // Check if the result is a CurriedComponent — render it as a component
         // Use marker-based reactive rendering so that when curried args change
-        // (e.g., set('model.greeting', 'Hola')), the DOM is replaced.
-        if (finalResult && finalResult.__isCurriedComponent) {
+        // (e.g., set('model.greeting', 'Hola')), the DOM is replaced. A
+        // component definition called with arguments (`isComponentInvocation`)
+        // renders as dynamic content below instead.
+        if (
+          finalResult &&
+          finalResult.__isCurriedComponent &&
+          !isComponentInvocation(finalResult)
+        ) {
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(finalResult)) {
             // Capture owner at template evaluation time for reactive updates

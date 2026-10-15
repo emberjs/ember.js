@@ -458,6 +458,36 @@ function _isRenderContext(value: object): boolean {
   );
 }
 
+// The named arguments of a `$_maybeHelper` call's hash as the call passes them
+// (values and thunks): every key but gxt's internal ones (`$_…`, `hash`).
+function callNamedArgs(hash: unknown): Record<string, any> {
+  const named: Record<string, any> = {};
+  if (hash !== null && typeof hash === 'object') {
+    for (const key of Object.keys(hash)) {
+      if (!key.startsWith('$_') && key !== 'hash') named[key] = (hash as any)[key];
+    }
+  }
+  return named;
+}
+
+// The curried components `$_maybeHelper_ember` returns for a component
+// definition called with arguments (`{{this.Foo value=1}}`). A content
+// binding renders one as dynamic content (compile.ts `itemToNode`): bounded by
+// the component's own nodes, as Glimmer appends a component.
+const componentInvocations = new WeakSet<object>();
+
+export function isComponentInvocation(value: unknown): boolean {
+  return typeof value === 'function' && componentInvocations.has(value);
+}
+
+// Whether a `$_maybeHelper` call passes an argument: a positional one, or a
+// named one (`callNamedArgs`).
+function hasCallArguments(args: unknown, hash: unknown): boolean {
+  if (Array.isArray(args) && args.length > 0) return true;
+  if (hash === null || typeof hash !== 'object') return false;
+  return Object.keys(hash).some((key) => !key.startsWith('$_') && key !== 'hash');
+}
+
 /**
  * Wraps GXT's $_maybeHelper to support:
  * - Function arguments (e.g. values yielded as block params)
@@ -538,14 +568,7 @@ function createEmberMaybeHelper(original: Function) {
     // Handle CurriedComponent — when a curried component is used as {{curried ...}} or {{object.comp ...}}
     if (nameOrFn && nameOrFn.__isCurriedComponent) {
       // Merge the invocation args into the curried component
-      const namedArgs: Record<string, any> = {};
-      if (hash && typeof hash === 'object') {
-        for (const key of Object.keys(hash)) {
-          if (!key.startsWith('$_') && key !== 'hash') {
-            namedArgs[key] = hash[key];
-          }
-        }
-      }
+      const namedArgs = callNamedArgs(hash);
       const positionals = Array.isArray(args) ? args : [];
 
       // Create a new curried component with merged args
@@ -573,6 +596,32 @@ function createEmberMaybeHelper(original: Function) {
         return handleResult;
       }
       return merged;
+    }
+
+    // A component definition called with arguments (`{{this.Foo value=1}}`,
+    // `{{@foo "a"}}`, a strict-mode scope value): as Glimmer appends a dynamic
+    // value that is a component (`toDynamicContentType`), the call invokes the
+    // component with its arguments. Its value is the component curried with
+    // them, which the content binding renders, and renders again when the
+    // definition changes. Without arguments the value is the definition
+    // itself (gxt's `$_maybeHelper` returns it), which renders the same way.
+    if (
+      nameOrFn !== null &&
+      (typeof nameOrFn === 'object' || typeof nameOrFn === 'function') &&
+      hasCallArguments(args, hash) &&
+      findHelperManager(nameOrFn) === null &&
+      getGxtRenderer()?.compilePipeline.getManagers?.()?.component?.canHandle?.(nameOrFn) === true
+    ) {
+      const createCurried = getCreateCurriedComponent();
+      if (createCurried) {
+        const invocation = createCurried(
+          nameOrFn,
+          callNamedArgs(hash),
+          Array.isArray(args) ? args : []
+        );
+        componentInvocations.add(invocation);
+        return invocation;
+      }
     }
 
     // Function/class arguments — check for a registered helper manager first.
