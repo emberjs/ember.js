@@ -394,7 +394,7 @@ export function isPlainHtmlTagFastPath(tag: unknown, tagProps: any, edp: unknown
  * A value records the callback it binds (`FN_HELPER_TARGET`) and calls through
  * a replaceable implementation (`FN_HELPER_CALL`). A reference that holds a
  * value keeps it when a later evaluation binds the same callback, and takes
- * that evaluation's implementation (`keepFnHelperValue`): the function stays
+ * that evaluation's implementation (`keepArgValue`): the function stays
  * the same while the callback is the same, and a call still reads the current
  * callback and arguments of the latest evaluation.
  */
@@ -445,13 +445,82 @@ function sameFnCallback(a: unknown, b: unknown): boolean {
 }
 
 /**
- * The value a reference holds after reading `next` when it held `prev`: `prev`
- * when both are `(fn …)` values binding the same callback (`prev` then calls
- * through `next`'s implementation), otherwise `next`.
+ * Curried modifier values (`(modifier …)`, ember-gxt-wrappers.ts
+ * `$_modifierHelper_ember`).
+ *
+ * Glimmer's curry reference (`createCurryRef`) returns the same curried value
+ * while the definition it curries stays the same, and the curried arguments are
+ * references that the modifier reads when it installs or updates. The compat
+ * compiler re-evaluates the call on every read, so each read curried a new
+ * modifier, and an argument holding one changed on every read: the sync wrote
+ * it back to the component, the modifier on the element updated, and the next
+ * sync read a new value again, so the renderer never settled.
+ *
+ * A value records the definition it curries (`CURRIED_MODIFIER_DEFINITION`)
+ * and installs through a replaceable implementation
+ * (`CURRIED_MODIFIER_INSTALL`). A reference that holds a value keeps it when a
+ * later evaluation curries the same definition, and takes that evaluation's
+ * implementation (`keepArgValue`): the curried modifier stays the same while
+ * its definition is the same, and an install reads the arguments of the latest
+ * evaluation.
  */
-export function keepFnHelperValue(prev: unknown, next: unknown): unknown {
-  if (prev === next || !isFnHelperValue(prev) || !isFnHelperValue(next)) return next;
-  if (!sameFnCallback(prev[FN_HELPER_TARGET], next[FN_HELPER_TARGET])) return next;
-  prev[FN_HELPER_CALL] = next[FN_HELPER_CALL];
-  return prev;
+export const CURRIED_MODIFIER_DEFINITION: unique symbol = Symbol('gxt curried modifier definition');
+export const CURRIED_MODIFIER_INSTALL: unique symbol = Symbol('gxt curried modifier install');
+
+type CurriedModifierInstall = (
+  element: HTMLElement,
+  params: unknown[],
+  hash: Record<string, unknown>
+) => unknown;
+
+export interface CurriedModifierValue {
+  (element: HTMLElement, params: unknown[], hash: Record<string, unknown>): unknown;
+  __isCurriedModifier: true;
+  [CURRIED_MODIFIER_DEFINITION]: unknown;
+  [CURRIED_MODIFIER_INSTALL]: CurriedModifierInstall;
+}
+
+export function createCurriedModifierValue(
+  definition: unknown,
+  install: CurriedModifierInstall
+): CurriedModifierValue {
+  const value = function curriedModifier(
+    element: HTMLElement,
+    params: unknown[],
+    hash: Record<string, unknown>
+  ): unknown {
+    return value[CURRIED_MODIFIER_INSTALL](element, params, hash);
+  } as CurriedModifierValue;
+  value.__isCurriedModifier = true;
+  value[CURRIED_MODIFIER_DEFINITION] = definition;
+  value[CURRIED_MODIFIER_INSTALL] = install;
+  return value;
+}
+
+function isCurriedModifierValue(value: unknown): value is CurriedModifierValue {
+  return typeof value === 'function' && CURRIED_MODIFIER_INSTALL in value;
+}
+
+/**
+ * The value a reference holds after reading `next` when it held `prev`: `prev`
+ * when both are values of one call site that stand for the same thing (two
+ * `(fn …)` values binding the same callback, or two curried modifiers of the
+ * same definition), and `prev` then runs `next`'s implementation; otherwise
+ * `next`.
+ */
+export function keepArgValue(prev: unknown, next: unknown): unknown {
+  if (prev === next) return next;
+  if (isFnHelperValue(prev) && isFnHelperValue(next)) {
+    if (!sameFnCallback(prev[FN_HELPER_TARGET], next[FN_HELPER_TARGET])) return next;
+    prev[FN_HELPER_CALL] = next[FN_HELPER_CALL];
+    return prev;
+  }
+  if (isCurriedModifierValue(prev) && isCurriedModifierValue(next)) {
+    if (!Object.is(prev[CURRIED_MODIFIER_DEFINITION], next[CURRIED_MODIFIER_DEFINITION])) {
+      return next;
+    }
+    prev[CURRIED_MODIFIER_INSTALL] = next[CURRIED_MODIFIER_INSTALL];
+    return prev;
+  }
+  return next;
 }

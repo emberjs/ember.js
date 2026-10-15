@@ -30,6 +30,7 @@ import { createComputeRef, valueForRef } from '@glimmer/reference';
 import {
   capabilitiesErrorPrefix,
   classAsAttribute,
+  createCurriedModifierValue,
   isPlainHtmlTagFastPath,
   sanitizedAttrValue,
 } from './utils';
@@ -2706,10 +2707,11 @@ function createEmberModifierHelper(original: Function) {
     if (typeof resolved === 'string') {
       const owner = getAmbientOwner();
 
-      // Create a curried modifier function that, when invoked in modifier position
+      // Create a curried modifier that, when invoked in modifier position
       // (by $_maybeModifier), merges the curried args with invocation args and
-      // delegates to the Ember modifier manager.
-      function curriedModifier(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
+      // delegates to the Ember modifier manager. It curries the name: an
+      // argument that holds it keeps it while the name stays the same.
+      function installNamed(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
         // Merge curried params with invocation params
         const allParams = [...boundParams, ..._params].map((a: any) =>
           typeof a === 'function' && !a.prototype ? a() : a
@@ -2771,8 +2773,8 @@ function createEmberModifierHelper(original: Function) {
         };
       }
 
-      // Mark as curried modifier so $_maybeModifier and canHandle recognize it
-      (curriedModifier as any).__isCurriedModifier = true;
+      // Marked as a curried modifier, so $_maybeModifier and canHandle recognize it
+      const curriedModifier = createCurriedModifierValue(resolved, installNamed);
 
       // Register with INTERNAL_MODIFIER_MANAGERS so canHandle() finds it
       if (getGxtRenderer()?.registries.internalModifierManagers) {
@@ -2809,12 +2811,10 @@ function createEmberModifierHelper(original: Function) {
       }
 
       if (hasModifierManager) {
-        // Create a curried modifier that wraps the modifier reference with bound args
-        function curriedManagedModifier(
-          node: HTMLElement,
-          _params: any[],
-          _hash: Record<string, unknown>
-        ) {
+        // Create a curried modifier that wraps the modifier reference with bound
+        // args. It curries the reference: an argument that holds it keeps it
+        // while the reference stays the same.
+        function installManaged(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
           const allParams = [...boundParams, ..._params];
           const mergedHash = { ...hash, ..._hash };
 
@@ -2823,7 +2823,7 @@ function createEmberModifierHelper(original: Function) {
         }
 
         // Mark and register so canHandle() works
-        (curriedManagedModifier as any).__isCurriedModifier = true;
+        const curriedManagedModifier = createCurriedModifierValue(resolved, installManaged);
         if (getGxtRenderer()?.registries.internalModifierManagers) {
           getGxtRenderer()?.registries.internalModifierManagers.set(curriedManagedModifier, {
             createModifier: () => ({}),

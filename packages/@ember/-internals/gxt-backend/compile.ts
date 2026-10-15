@@ -1868,7 +1868,7 @@ _gxtRegisterHostHooks({
 // compat layer can tell fn-helper results from GXT reactive getters, which are
 // arrow fns too). It records the callback it binds, so a component argument
 // holding an `(fn …)` keeps one function while the callback stays the same
-// (`keepFnHelperValue`, manager.ts arg slots): Glimmer's `fn` is one function
+// (`keepArgValue`, manager.ts arg slots): Glimmer's `fn` is one function
 // per call site, while the compiler re-evaluates the call on every read.
 //
 // The callback must run with stock fn's `this` contract: an access-asserting

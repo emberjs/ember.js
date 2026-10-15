@@ -15,6 +15,9 @@
  *   destination when its block is destroyed;
  * - the args object a modifier manager gets from `createModifier` reads the
  *   current arguments when the modifier updates;
+ * - a curried `(modifier …)` passed as an argument stays the same value while
+ *   its definition is the same, so the modifier updates only when an argument
+ *   changes;
  * - the text of an element whose content is one mustache updates in its text
  *   node.
  *
@@ -28,6 +31,27 @@ import { modifierCapabilities, setComponentTemplate, setModifierManager } from '
 import { tracked } from '@glimmer/tracking';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+// A modifier definition whose manager records each install, update and
+// destroy, with the first positional argument, in `calls`.
+function recordingModifier(calls: string[]): object {
+  class RecordingManager {
+    capabilities = modifierCapabilities('3.22');
+    createModifier() {
+      return {};
+    }
+    installModifier(_state: object, _element: Element, args: { positional: unknown[] }) {
+      calls.push(`install ${args.positional[0]}`);
+    }
+    updateModifier(_state: object, args: { positional: unknown[] }) {
+      calls.push(`update ${args.positional[0]}`);
+    }
+    destroyModifier() {
+      calls.push('destroy');
+    }
+  }
+  return setModifierManager(() => new RecordingManager(), class {});
+}
 
 moduleFor(
   'GXT in-place updates',
@@ -188,6 +212,31 @@ moduleFor(
 
       runTask(() => (state.value = 'two'));
       this.assert.deepEqual(seen, ['one', 'two'], 'the update reads the new argument');
+    }
+
+    ['@test a curried modifier passed as an argument updates only when its arguments change']() {
+      let calls: string[] = [];
+      class State {
+        @tracked greeting = 'hello';
+      }
+      let greet = recordingModifier(calls);
+      this.owner.register(
+        'component:apply-value',
+        setComponentTemplate(precompileTemplate('<div {{@value}}></div>'), templateOnly())
+      );
+      let state = new State();
+      this.render('<ApplyValue @value={{modifier this.greet this.state.greeting}} />', {
+        greet,
+        state,
+      });
+      this.assert.deepEqual(calls, ['install hello']);
+
+      runTask(() => this.rerender());
+      runTask(() => this.rerender());
+      this.assert.deepEqual(calls, ['install hello'], 'a rerender without a change does nothing');
+
+      runTask(() => (state.greeting = 'hi'));
+      this.assert.deepEqual(calls, ['install hello', 'update hi'], 'an argument change updates');
     }
 
     ['@test the text of an element whose content is one mustache updates in its text node']() {

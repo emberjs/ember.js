@@ -22,7 +22,7 @@ import {
   isAssertionLike as _isAssertionLike,
   protectGlobal,
   capabilitiesErrorPrefix,
-  keepFnHelperValue,
+  keepArgValue,
   sanitizedAttrValue,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
@@ -2504,12 +2504,14 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
 // component and argument name, shared by every getter the manager builds for
 // that argument (the instance's arg getter, the args proxy's, the new getter
 // of a re-render that reuses the instance). Reading through the slot keeps an
-// `(fn …)` value while each new evaluation binds the same callback (utils.ts
-// `keepFnHelperValue`): Glimmer's `fn` is one function per call site, while the
-// compat compiler re-evaluates the call on every read. Without the slot every
-// read of `@f={{fn this.greet "x"}}` was a new argument value, so each sync
-// wrote it back to the component and dirtied the argument, which scheduled the
-// next sync, and the renderer never settled.
+// `(fn …)` value while each new evaluation binds the same callback, and a
+// curried `(modifier …)` while each new evaluation curries the same definition
+// (utils.ts `keepArgValue`): Glimmer's `fn` is one function per call site, and
+// its curry reference keeps one curried value per definition, while the compat
+// compiler re-evaluates the call on every read. Without the slot every read of
+// `@f={{fn this.greet "x"}}` or `@m={{modifier this.foo "x"}}` was a new
+// argument value, so each sync wrote it back to the component and dirtied the
+// argument, which scheduled the next sync, and the renderer never settled.
 //
 // The slot owner is the instance's `__argGetters` record (kept across
 // re-renders), or a template-only component's args proxy.
@@ -2535,7 +2537,7 @@ function _argValueSlot(owner: object, key: string): ArgValueSlot {
 
 // The value an argument holds after reading `value` through `slot`.
 function _readArgValue(slot: ArgValueSlot, value: unknown): unknown {
-  const held = slot.held ? keepFnHelperValue(slot.value, value) : value;
+  const held = slot.held ? keepArgValue(slot.value, value) : value;
   slot.value = held;
   slot.held = true;
   return held;
