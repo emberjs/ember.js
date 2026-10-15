@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T14:46:01.487Z",
+    "capturedAt": "2026-10-15T16:34:26.063Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "83810390af",
-    "totalTests": 10125,
-    "totalModules": 989,
+    "emberCommit": "39d74cd176",
+    "totalTests": 10129,
+    "totalModules": 992,
     "quarantinedTests": 0,
-    "totalAssertions": 60310,
-    "totalAssertionsPassing": 59506,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a component's else block is one block, yielded to \"else\" or \"inverse\" (a {{#component}} block passes its {{else}} block too), a tag naming a block param invokes the yielded component, and a block param in a quoted attribute is its value, written by runner.mjs in the GitHub Actions GXT full workflow (run 38754092358, on the code of 83810390af). 9584/10125 green (was 9556/10118), 989 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 11 tests turned green (21 entries with the aggregate modules): curly components: yield to else; yield Curly/Dynamic: yield to \"else\", Dynamic: yield to \"inverse\"; has-block Dynamic: parameterized has-block (concatted attr|attr|prop|content|subexpr, else) when else supplied; has-block Glimmer: has-block works within a yielded curried component invoked with angle bracket invocation (truthy|falsy). 7 new tests, all green: GXT else blocks (4) and GXT block params (3)."
+    "totalAssertions": 60363,
+    "totalAssertionsPassing": 59641,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a renderComponent render is a root of its owner's renderer (the renderer list, captureRenderTree {ROOT} nodes, live root bounds), renderComponent into a cursor renders before its nextSibling, a <template> value passed to renderComponent renders as a template-only component, a render into an <svg> creates SVG elements and <foreignObject> children are HTML, an empty string in a modifier position installs no modifier, and an error thrown while a renderComponent root updates reaches the rerender() caller; written by runner.mjs in the GitHub Actions GXT full workflow (run 38769968403, on the code of 39d74cd176). 9600/10129 green (was 9584/10125), 992 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 12 tests turned green: renderComponent: destroying the result removes its root from a shared renderer; Updating: top-level bounds are correct when swapping order / toggling conditionals / changing innerHTML, {{each}} items destroy correctly when destroying the whole list (new and updated items) / if they were added after initial render; Updating SVG: context.root <foreignObject> tag is SVG namespaced, elements nested inside <foreignObject> have an XHTML namespace; Components Glimmer (and its TemplateOnly variant): throwing an error during component construction does not put result into a bad state; [components] teardown: components that are \"destroyed twice\" are destroyed once; render error cleanup: a render error whose cleanup throws still resets tracking. 4 new tests, all green: GXT renderComponent roots (2), into a cursor (1), root errors (1)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2729,11 +2729,32 @@
       "assertionsPassing": 39,
       "failingTests": []
     },
+    "GXT renderComponent into a cursor": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
     "GXT renderComponent root arguments": {
       "total": 2,
       "passing": 2,
       "assertionsTotal": 5,
       "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "GXT renderComponent root errors": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 1,
+      "assertionsPassing": 1,
+      "failingTests": []
+    },
+    "GXT renderComponent roots": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "GXT renderComponent: a hasSubOwner component manager's owner": {
@@ -4669,14 +4690,10 @@
     },
     "Strict Mode - renderComponent": {
       "total": 29,
-      "passing": 27,
-      "assertionsTotal": 146,
-      "assertionsPassing": 143,
+      "passing": 28,
+      "assertionsTotal": 147,
+      "assertionsPassing": 146,
       "failingTests": [
-        {
-          "name": " destroying the result removes its root from a shared renderer",
-          "category": "gxt:triage"
-        },
         {
           "name": " renderComponent is eager, so it tracks with its parent",
           "category": "gxt:triage"
@@ -5642,8 +5659,8 @@
     "[integration] jit :: Application test: debug render tree": {
       "total": 13,
       "passing": 1,
-      "assertionsTotal": 141,
-      "assertionsPassing": 39,
+      "assertionsTotal": 140,
+      "assertionsPassing": 96,
       "failingTests": [
         {
           "name": "strict-mode components",
@@ -5881,9 +5898,9 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 36,
+      "passing": 37,
       "assertionsTotal": 199,
-      "assertionsPassing": 188,
+      "assertionsPassing": 192,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
@@ -5903,10 +5920,6 @@
         },
         {
           "name": "throwing an error during component construction does not put result into a bad state with multiple prior nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state",
           "category": "gxt:triage"
         }
       ]
@@ -5929,9 +5942,9 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] TemplateOnly": {
       "total": 4,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 21,
-      "assertionsPassing": 13,
+      "assertionsPassing": 17,
       "failingTests": [
         {
           "name": "throwing an error during rendering gives a readable error stack",
@@ -5943,10 +5956,6 @@
         },
         {
           "name": "throwing an error during component construction does not put result into a bad state with multiple prior nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state",
           "category": "gxt:triage"
         }
       ]
@@ -6263,9 +6272,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 50,
-      "assertionsTotal": 787,
-      "assertionsPassing": 750,
+      "passing": 55,
+      "assertionsTotal": 823,
+      "assertionsPassing": 792,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6300,18 +6309,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "top-level bounds are correct when swapping order",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "top-level bounds are correct when toggling conditionals",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "top-level bounds are correct when changing innerHTML",
-          "category": "gxt:triage"
-        },
-        {
           "name": "The each helper with empty string items",
           "category": "gxt:triage"
         },
@@ -6321,14 +6318,6 @@
         },
         {
           "name": "The each helper yields the index of the current item when using a non-@index key",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{each}} items destroy correctly when destroying the whole list (new and updated items)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{each}} items destroy correctly if they were added after initial render",
           "category": "gxt:triage"
         }
       ]
@@ -6349,18 +6338,10 @@
     },
     "[integration] jit :: Updating SVG": {
       "total": 11,
-      "passing": 7,
-      "assertionsTotal": 275,
-      "assertionsPassing": 260,
+      "passing": 9,
+      "assertionsTotal": 277,
+      "assertionsPassing": 268,
       "failingTests": [
-        {
-          "name": "context.root <foreignObject> tag is SVG namespaced",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "elements nested inside <foreignObject> have an XHTML namespace",
-          "category": "gxt:triage"
-        },
         {
           "name": "<svg> tag and unsafe expression as sibling",
           "category": "gxt:triage"
@@ -6434,9 +6415,9 @@
     },
     "[integration] jit :: [components] teardown": {
       "total": 5,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 42,
-      "assertionsPassing": 32,
+      "assertionsPassing": 33,
       "failingTests": [
         {
           "name": "components inside a list are destroyed",
@@ -6444,10 +6425,6 @@
         },
         {
           "name": "components inside a list are destroyed (when key is @identity)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "components that are \"destroyed twice\" are destroyed once",
           "category": "gxt:triage"
         },
         {
@@ -9002,15 +8979,10 @@
     },
     "render error cleanup": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 2,
-      "assertionsPassing": 1,
-      "failingTests": [
-        {
-          "name": "a render error whose cleanup throws still resets tracking [GH#21681]",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 2,
+      "failingTests": []
     },
     "renderSettled": {
       "total": 5,
@@ -9375,6 +9347,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 541
+    "gxt:triage": 529
   }
 }
