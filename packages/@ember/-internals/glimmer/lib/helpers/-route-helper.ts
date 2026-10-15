@@ -1,0 +1,183 @@
+import type Route from '@ember/routing/route';
+import type { RouterState, RoutingService } from '@ember/routing/-internals';
+import { getOwner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
+import { getEngineParent } from '@ember/engine/parent';
+import type EngineInstance from '@ember/engine/instance';
+import { service } from '@ember/service';
+import type { Maybe } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
+import Helper from '../helper';
+import { isMissing } from '../utils/is-missing';
+
+/**
+  The value of one dynamic segment of a route.
+
+  A model object is not a valid value. A helper cannot compare an object
+  with the state of the router before a route serializes the object.
+*/
+export type RouteSegment = string | number;
+
+export interface RouteHelperSignature<Return> {
+  Args: {
+    Positional: [route?: Maybe<string>, ...models: Maybe<RouteSegment>[]];
+    Named: {
+      models?: Maybe<RouteSegment> | Maybe<RouteSegment>[];
+      queryParams?: Maybe<Record<string, unknown>>;
+    };
+  };
+  Return: Return;
+}
+
+export type RoutePositional = RouteHelperSignature<unknown>['Args']['Positional'];
+export type RouteNamed = RouteHelperSignature<unknown>['Args']['Named'];
+
+export interface RouteArgs {
+  route: Maybe<string>;
+  models: RouteSegment[];
+  queryParams: Record<string, unknown> | undefined;
+}
+
+/**
+  The base class of the router helpers of RFC 391.
+
+  It reads the arguments in the same way for each helper,
+  and it holds the route state logic of `<LinkTo>`.
+
+  The route state logic needs `currentState` and `targetState`,
+  which the public router service does not have.
+
+  @private
+*/
+export default abstract class RouteHelper<Return> extends Helper<RouteHelperSignature<Return>> {
+  @service('-routing') protected routing!: RoutingService<Route>;
+
+  /**
+    The name of the helper in assertion messages.
+  */
+  protected abstract helperName: string;
+
+  /**
+    Converts the arguments of a helper to the arguments of a router method.
+
+    A helper gets `(positional, named)`.
+    A router method gets `(routeName, ...models, { queryParams })`.
+    So a helper cannot be a plain alias of a router method.
+
+    The conversion also does these things, which each helper needs:
+
+    - It reads the `models` named argument of RFC 391.
+      The value is one model or an array of models.
+    - It asserts that the route name is a string.
+    - It asserts that `models` and positional models are not used together.
+    - It asserts that each model is the value of a dynamic segment.
+    - It asserts that `queryParams` is an object.
+  */
+  protected routeArgs(positional: RoutePositional, named: RouteNamed): RouteArgs {
+    let [route, ...models] = positional;
+
+    assert(
+      `The route name of the \`${this.helperName}\` helper must be a string.`,
+      isMissing(route) || typeof route === 'string'
+    );
+
+    if ('models' in named) {
+      assert(
+        `You cannot provide both positional models and the \`models\` argument to the \`${this.helperName}\` helper.`,
+        models.length === 0
+      );
+
+      let { models: namedModels } = named;
+
+      models = Array.isArray(namedModels) ? namedModels : [namedModels];
+    }
+
+    assert(
+      `The models of the \`${this.helperName}\` helper must be strings or numbers. Pass the value of the dynamic segment, not a model object.`,
+      models.every(
+        (model) => isMissing(model) || typeof model === 'string' || typeof model === 'number'
+      )
+    );
+
+    let { queryParams } = named;
+
+    assert(
+      `The \`queryParams\` argument to the \`${this.helperName}\` helper must be an object.`,
+      isMissing(queryParams) || typeof queryParams === 'object'
+    );
+
+    return {
+      route,
+      models: models as RouteSegment[],
+      queryParams: isMissing(queryParams) ? undefined : { ...queryParams },
+    };
+  }
+
+  /**
+    The arguments of a helper that reads the state of the router.
+
+    In an engine, route names are relative to the mount point of the engine.
+  */
+  protected routeStateArgs(positional: RoutePositional, named: RouteNamed): RouteArgs {
+    let args = this.routeArgs(positional, named);
+
+    if (!isMissing(args.route)) {
+      args.route = this.namespaceRoute(args.route);
+    }
+
+    return args;
+  }
+
+  /**
+    With a missing route name or model,
+    a helper cannot compare its arguments with the state of the router.
+  */
+  protected hasMissingModels({ route, models }: RouteArgs): boolean {
+    return isMissing(route) || models.some(isMissing);
+  }
+
+  protected isActive(args: RouteArgs): boolean {
+    return this.isActiveForState(args, this.routing.currentState);
+  }
+
+  /**
+    The result is `null` when no transition is in progress.
+  */
+  protected willBeActive(args: RouteArgs): Nullable<boolean> {
+    let { currentState, targetState } = this.routing;
+
+    if (currentState === targetState) {
+      return null;
+    }
+
+    return this.isActiveForState(args, targetState);
+  }
+
+  private isActiveForState(args: RouteArgs, state: Maybe<RouterState>): boolean {
+    if (isMissing(state) || this.hasMissingModels(args)) {
+      return false;
+    }
+
+    let { route, models, queryParams } = args;
+
+    return this.routing.isActiveForRoute(models, queryParams, route as string, state);
+  }
+
+  private namespaceRoute(route: string): string {
+    let owner = getOwner(this) as EngineInstance;
+    let { mountPoint } = owner;
+
+    assert(
+      `You attempted to use the \`${this.helperName}\` helper within a routeless engine, this is not supported.`,
+      mountPoint !== undefined || getEngineParent(owner) === undefined
+    );
+
+    if (mountPoint === undefined) {
+      return route;
+    } else if (route === 'application') {
+      return mountPoint;
+    } else {
+      return `${mountPoint}.${route}`;
+    }
+  }
+}

@@ -17,6 +17,7 @@ import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 import { type Opaque } from '@ember/-internals/utility-types';
+import { isMissing } from '../utils/is-missing';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 const EMPTY_ARRAY: {}[] = [];
@@ -24,10 +25,6 @@ const EMPTY_QUERY_PARAMS = {};
 
 debugFreeze(EMPTY_ARRAY);
 debugFreeze(EMPTY_QUERY_PARAMS);
-
-function isMissing<T>(value: Maybe<T>): value is null | undefined {
-  return value === null || value === undefined;
-}
 
 function isPresent<T>(value: Maybe<T>): value is T {
   return !isMissing(value);
@@ -56,7 +53,7 @@ function isQueryParams(value: unknown): value is QueryParams {
 
   ```gjs
   import { LinkTo } from '@ember/routing';
-    
+
   <template>
     <LinkTo @route='photoGallery'>
       Great Hamster Photos
