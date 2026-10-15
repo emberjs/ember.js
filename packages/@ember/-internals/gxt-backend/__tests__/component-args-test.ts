@@ -4,6 +4,9 @@
  * Glimmer semantics: a component argument is a reference that the component
  * reads where it uses it, whatever invoked the component:
  *
+ * - a template-only component's argument updates when what it reads changes,
+ *   for every template-only component rendered (each `{{#each}}` row), not
+ *   only the last one;
  * - a template-only component reads `@value` as the argument's value in every
  *   position, also when it is invoked through a path
  *   (`<this.Apply @value={{this.greet}} />`), with `{{component}}` or curried:
@@ -33,6 +36,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
+import { tracked } from '@glimmer/tracking';
 
 // A modifier definition whose manager records each install, with the first
 // positional argument, in `calls`.
@@ -54,6 +58,56 @@ function recordingModifier(calls: string[]): object {
 moduleFor(
   'GXT component arguments',
   class extends RenderingTestCase {
+    ['@test an argument of a template-only component in an {{#each}} row updates']() {
+      class Row {
+        @tracked value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('<p>{{@value}}</p>'), templateOnly())
+      );
+      let rows = [new Row('foo'), new Row('bar')];
+      this.render('{{#each this.rows as |root|}}<FooBar @value={{root.value}} />{{/each}}', {
+        rows,
+      });
+      this.assertText('foobar');
+
+      runTask(() => (rows[0]!.value = 'qux'));
+      this.assertText('quxbar', 'the first row updates');
+
+      runTask(() => (rows[1]!.value = 'derp'));
+      this.assertText('quxderp', 'the second row updates');
+    }
+
+    ['@test an argument of each of two template-only components updates']() {
+      class Item {
+        @tracked value: string;
+        constructor(value: string) {
+          this.value = value;
+        }
+      }
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('[{{@value}}]'), templateOnly())
+      );
+      let first = new Item('a');
+      let second = new Item('b');
+      this.render('<FooBar @value={{this.first.value}} /><FooBar @value={{this.second.value}} />', {
+        first,
+        second,
+      });
+      this.assertText('[a][b]');
+
+      runTask(() => (first.value = 'c'));
+      this.assertText('[c][b]', 'the first component updates');
+
+      runTask(() => (second.value = 'd'));
+      this.assertText('[c][d]', 'the second component updates');
+    }
+
     ['@test a modifier argument of a component invoked through a path is installed']() {
       let calls: string[] = [];
       let Apply = setComponentTemplate(

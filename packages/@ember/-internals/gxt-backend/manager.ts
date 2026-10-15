@@ -5849,7 +5849,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           })
         : undefined;
 
-      if (getter) {
+      if (getter && instance) {
         // Create a cell for this arg so GXT's formula tracking picks up the dependency.
         // When the parent context changes, we update this cell which triggers re-evaluation.
         const cell = _gxtCellFor(attrsProxy, key, /* skipDefine */ false);
@@ -5893,6 +5893,20 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             /* ignore — owner registration is best-effort */
           }
         }
+      } else if (getter) {
+        // A component without an instance (template-only) reads the argument
+        // where its template uses it, as Glimmer reads an argument reference:
+        // the reading binding depends on what the argument's expression reads.
+        // An argument cell is kept up to date only by the sync's arg-cell pass,
+        // which keys its entries by instance: the arg cells of every
+        // instance-less component shared one entry, each render replacing the
+        // last one's, so only the last template-only component rendered (the
+        // last `{{#each}}` row) saw its arguments change.
+        Object.defineProperty(attrsProxy, key, {
+          get: unwrappingGetter,
+          enumerable: true,
+          configurable: true,
+        });
       } else {
         Object.defineProperty(attrsProxy, key, {
           get() {
