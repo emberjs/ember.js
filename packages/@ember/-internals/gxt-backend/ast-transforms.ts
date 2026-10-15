@@ -186,6 +186,41 @@ function gxtBlockAtArgTransform(env: GxtAstEnv) {
   };
 }
 
+// The internal argument `gxtAngleBracketDynamicTransform` gives an angle-bracket
+// invocation through a path; its value is the path. `$_dc_ember`
+// (ember-gxt-wrappers.ts) reads it and drops it from the component's arguments
+// (an `_`-prefixed key).
+export const GXT_ANGLE_BRACKET_KEY = '__gxtAngleBracket__';
+
+/**
+ * `<this.Foo …>`, `<@foo.Bar …>`, `<foo.Bar …>` (an angle-bracket invocation of
+ * a component value read through a path) gain the internal argument
+ * `@__gxtAngleBracket__="<path>"`.
+ *
+ * Glimmer resolves a string to the component of that name only for the
+ * `{{component}}` keyword in a loose-mode template. An angle-bracket invocation
+ * takes a component definition or a curried component, and a string there is an
+ * error ("Expected a component definition, but received …"). The GXT compiler
+ * lowers `<this.foo />` and `{{component this.foo}}` to the same `$_dc` call, so
+ * at render time the invocation tells which syntax it came from by this
+ * argument. A named block (`<:name>`) is not an invocation.
+ */
+function gxtAngleBracketDynamicTransform(env: GxtAstEnv) {
+  const b = env.syntax.builders;
+  const argName = `@${GXT_ANGLE_BRACKET_KEY}`;
+  return {
+    name: 'ember-gxt-angle-bracket-dynamic',
+    visitor: {
+      ElementNode(node: any): void {
+        const tag = node.tag;
+        if (typeof tag !== 'string' || !tag.includes('.') || tag.startsWith(':')) return;
+        if (node.attributes.some((attr: any) => attr.name === argName)) return;
+        node.attributes.push(b.attr(argName, b.text(tag)));
+      },
+    },
+  };
+}
+
 /**
  * A component's `{{else}}` block, `<:else>` and `<:inverse>` are one block,
  * named `inverse` here.
@@ -1684,6 +1719,7 @@ export function buildGxtDialectTransforms(
     gxtHtmlCommentTransform as unknown as GxtAstTransform,
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
+    gxtAngleBracketDynamicTransform as unknown as GxtAstTransform,
     gxtElseBlockTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
     gxtAttrComponentCurryTransform(scopeValues, bpNames) as unknown as GxtAstTransform,

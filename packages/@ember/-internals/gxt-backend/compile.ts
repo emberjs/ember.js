@@ -616,7 +616,11 @@ import '@glimmer/validator';
 import { dirtyTagFor as _gxtDirtyTagFor } from '@glimmer/validator';
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
-import { installEmberWrappers } from './ember-gxt-wrappers';
+import {
+  GXT_STRICT_TEMPLATE_KEY,
+  installEmberWrappers,
+  stringDefinitionError,
+} from './ember-gxt-wrappers';
 import { defineEmberMountElement } from './mount-element';
 // Also installs the route-outlet hooks route.ts / router.ts call (gxt-bridge).
 import { defineEmberOutletElement } from './outlet';
@@ -2603,9 +2607,12 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
     // destroyed owners.
     const _seenNames = new Set<string>();
 
+    // `strict`: the call is in a strict-mode template (its `$_componentHelper`
+    // passes `true`, see the strict-mode injection in `precompileTemplate`).
     g.$_componentHelper = function $_componentHelper_ember(
       params: any[],
-      hash: Record<string, any>
+      hash: Record<string, any>,
+      strict?: boolean
     ) {
       const createCurried = getCreateCurriedComponent();
       if (!createCurried) {
@@ -2632,6 +2639,13 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           __isEmpty: true,
         };
         return emptyMarker;
+      }
+
+      // A strict-mode template resolves no string definition (Glimmer's
+      // `createCurryRef`), whether or not a component has that name.
+      if (typeof first === 'string') {
+        const stringError = stringDefinitionError(first, undefined, strict === true);
+        if (stringError !== null) throw stringError;
       }
 
       // Track the owner — prefer the ambient owner, fall back to cached.
@@ -12731,6 +12745,21 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // Forward the call's own arguments: `$_maybeHelper_ember` reads the
           // context's position from their number.
           `return $_maybeHelper_orig.apply(this, arguments);` +
+          `};` +
+          // A strict-mode template resolves no string as a component
+          // definition. Its dynamic invocations (`$_dc`) mark their arguments
+          // and its curries (`$_componentHelper`) say so, and the Ember
+          // wrappers throw for a string (`stringDefinitionError`).
+          `var $_dc_orig = $_dc;` +
+          `var $_dc = function (getter, args) {` +
+          `if (args !== null && typeof args === 'object') {` +
+          `Object.defineProperty(args, '${GXT_STRICT_TEMPLATE_KEY}', { value: true, configurable: true });` +
+          `}` +
+          `return $_dc_orig.apply(this, arguments);` +
+          `};` +
+          `var $_componentHelper_orig = $_componentHelper;` +
+          `var $_componentHelper = function (params, hash) {` +
+          `return $_componentHelper_orig(params, hash, true);` +
           `};`
         : '';
       // Rewrite emitted `globalThis.__gxtUnboundEval(__ubCache,` → local

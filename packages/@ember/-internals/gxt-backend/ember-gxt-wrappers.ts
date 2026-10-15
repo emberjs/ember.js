@@ -34,7 +34,7 @@ import {
   isPlainHtmlTagFastPath,
   sanitizedAttrValue,
 } from './utils';
-import { GXT_HELPER_SITE_KEY } from './ast-transforms';
+import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
 import {
   destroy as destroyDestroyable,
   isDestroying as isDestroyingDestroyable,
@@ -1888,6 +1888,50 @@ function createEmberTag(original: Function) {
 
 // $_dc wrapper (dynamic component)
 
+// The non-enumerable mark a strict-mode template's `$_dc` puts on the
+// arguments of each of its dynamic invocations (see the strict-mode injection
+// in compile.ts's `precompileTemplate`), and the third argument its
+// `$_componentHelper` passes.
+export const GXT_STRICT_TEMPLATE_KEY = '__gxtStrictTemplate__';
+
+// The error for a string used as a component definition where Glimmer resolves
+// no name, or `null` where it does. Glimmer resolves a string to the component
+// of that name only for the `{{component}}` keyword (`{{component this.name}}`,
+// `(component this.name)`) in a loose-mode template:
+// - an angle-bracket invocation through a path (`<this.foo />`, its path in the
+//   argument `gxtAngleBracketDynamicTransform` adds) takes a component
+//   definition (`ResolveCurriedComponent`);
+// - in a strict-mode template no string is resolved (`ResolveDynamicComponent`,
+//   `createCurryRef`).
+export function stringDefinitionError(
+  name: string,
+  angleBracketPath: unknown,
+  strict: boolean
+): Error | null {
+  if (angleBracketPath !== undefined) {
+    const path = String(angleBracketPath);
+    return new Error(
+      `Expected a component definition, but received ${name}. You may have accidentally done <${path}>, where "${path}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
+    );
+  }
+  if (strict) {
+    return new Error(
+      `Attempted to resolve a dynamic component with a string definition, \`${name}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
+    );
+  }
+  return null;
+}
+
+// `stringDefinitionError` for a `$_dc` invocation's arguments.
+function dcStringDefinitionError(name: string, gxtArgs: any): Error | null {
+  if (gxtArgs === null || typeof gxtArgs !== 'object') return null;
+  return stringDefinitionError(
+    name,
+    gxtArgs[GXT_ANGLE_BRACKET_KEY],
+    gxtArgs[GXT_STRICT_TEMPLATE_KEY] === true
+  );
+}
+
 /**
  * Wraps GXT's $_dc to support Ember's CurriedComponent.
  * $_dc is called when GXT encounters a dynamic component invocation like
@@ -2042,6 +2086,10 @@ function createEmberDc(original: Function) {
     ctx: any,
     allowPositionalParams = false
   ): any {
+    if (typeof componentValue === 'string') {
+      const stringError = dcStringDefinitionError(componentValue, gxtArgs);
+      if (stringError !== null) throw stringError;
+    }
     const managers = g.$_MANAGERS;
     if (!managers?.component?.canHandle?.(componentValue)) return null;
 
@@ -2349,6 +2397,14 @@ function createEmberDc(original: Function) {
     // in G() (undefined push crash). Instead we manage the DOM ourselves using
     // the same direct-render + performSwap pattern as the curried path above.
     if (typeof componentValue === 'string') {
+      // A string where Glimmer resolves no name (an angle-bracket invocation, a
+      // strict-mode template) is an error, whether or not a component has that
+      // name.
+      const stringError = dcStringDefinitionError(componentValue, gxtArgs);
+      if (stringError !== null) {
+        getGxtRenderer()?.compilePipeline.captureRenderError(stringError);
+        throw stringError;
+      }
       // Eagerly check if the component exists. If it doesn't, throw immediately
       // so assert.throws() in tests can catch it (matching Ember behavior).
       const managers = g.$_MANAGERS;
