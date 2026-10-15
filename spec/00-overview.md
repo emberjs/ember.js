@@ -166,12 +166,16 @@ proposed API. Existing behavior never depends on a **[Proposed]** API.
 ### 0.5.1 Where the current implementation is out of spec
 
 Each entry is a ruling by the plan's author. The owning section states the rule and the current
-behavior.
+behavior. The first five follow from parsing HTML-first, with the HTML tokenizer deciding where
+mustache syntax begins (§02-1.1); §02-1.4 gives each one's corpus impact.
 
 | Input | The spec | The current implementation | Marker | Owner |
 |---|---|---|---|---|
 | `{{` inside an HTML comment (`<!-- {{"-->"}} -->`, `<!-- \{{x}} -->`, `<!-- a {{~x}} -->`) | Comment text: `{{` begins no construct in an HTML comment, and the comment ends at the first `-->` | Lexes and parses Handlebars inside the comment: a `-->` inside a construct does not end it, escapes and whitespace control apply, a block opened in the comment runs to its closer, and an outer block's `{{else}}` or closer inside the comment ends that block's program | [Out of spec] | §02-6.7 |
 | A block's `{{else}}` or closer inside a tag or attribute value (`{{#if x}}<div class="{{/if}}"></div>`) | Syntax error (E49, E50) | Accepted; the half-built tag lands in the next program or after the block | [Out of spec] | §02-6.11 |
+| A tilde next to whitespace inside a tag (`<div a=b {{~x}}>`, `<div a={{x~}} b>`) | Accepted: whitespace inside a tag is never deleted | The whitespace is deleted, giving E31 or E20 | [Out of spec] | §02-5 |
+| An escape in content (`a\{{b}} c`) | One text node | Two text nodes (same rendered text) | [Out of spec] | §02-2.2 |
+| A newline after a construct inside `<pre>` or `<textarea>` (`<pre>{{a}}\n{{b}}</pre>`) | Kept; only the newline right after the start tag is dropped | Dropped, until the first nested tag | [Out of spec] | §02-6.8 |
 | A literal mustache with arguments (`{{"foo" bar}}`) | Syntax error (E48) | Accepted; the arguments are dropped | [Out of spec] | §02-3.7 |
 | `{{&foo}}`, `{{^}}`, `{{^foo}}…{{else}}…{{/foo}}`, raw blocks | A new implementation SHOULD reject them as syntax errors | Accepted, under deprecation until 8.0.0 | [Deprecated] | §02-2.7, §02-3.2, §02-3.3 |
 
@@ -251,7 +255,8 @@ choice breaks someone.
    implementation is **[Out of spec]** (§0.5.1). (§02-11 items 4, 17)
 6. `this/foo` becomes the free variable `foo`, not `this.foo`. (`{{"foo" bar}}`, which drops its
    arguments, is now an error in the spec, §0.5.1.) (§02-11 items 1, 2; §03-10 item 8)
-7. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
+7. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache (now
+   **[Out of spec]**, §0.5.1; it also fires for a `<Textarea>` component). `<title>`,
    `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
    case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
    `foo`) and `<É />` (compiled to nothing), and segments containing `.`

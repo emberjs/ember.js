@@ -26,7 +26,8 @@ This is not a todo list for agents to work on, this is a todo list for human rev
 **5. Smaller rulings**
 
 - §08-14 Q16: in loose mode, should a free name used as an argument be a compile-time error? Today it fails at runtime with a message about strict mode.
-- §02-11 item 19: your ruling that mustache syntax is recognized only in HTML states where it belongs is applied to HTML comments only. Mustaches in `<!DOCTYPE …>` and other markup declarations stay errors, and `<script>`, `<style>` and `<title>` text keeps recognizing them. Is that the reach you meant?
+- §02-11 item 19: HTML-first parsing, state by state. `{{` is a construct in text (including `<script>`, `<style>`, `<title>`) and in a start tag's attribute list, comment text inside comments, and an error in tag names, end tags, markup declarations and doctypes. That keeps today's behavior everywhere but comments. OK, or should `<script>` text or markup declarations go the other way?
+- §02-1.4 item 5: the `<pre>`/`<textarea>` newline fix changes rendered whitespace in 7 corpus templates (in each case to what the source says). Also, the rule matches `<Textarea>` and `<Pre>` components without regard to case. Should it apply only to the lowercase HTML elements?
 - `{{outlet}}` inside a component stopped rendering after the route manager merge (#21640). Is the behavior from before the merge the normative one?
 
 Most of what's left is approving known work rather than open design, except item 3 and the bug rulings in item 2.

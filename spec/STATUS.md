@@ -72,8 +72,8 @@ continue the work. Last updated: 2026-10-15.
     render (§05-13, §09-9.4.2; was §09-9.8 Q8).
 - **Author rulings of 2026-10-13** (on §02-11, feedback commits `8dd43f4d83`, `1871c6cf4a`):
   - *Error priority is not specified.* For a template with several errors, an implementation may
-    report any of them (§02-9.1). §02-1.1 then had three HTML-blind properties, not four (two
-    since 2026-10-15).
+    report any of them (§02-9.1). §02-1.1 then had three HTML-blind properties, not four (none
+    since T25: parsing is HTML-first).
   - *Inverse section with `{{else}}`* (`{{^foo}}a{{else}}b{{/foo}}`) is outside the spec: the
     existing implementation keeps it, a new one SHOULD NOT accept it (§02-3.3). Superseded by the
     deprecation of 2026-10-14 below.
@@ -95,12 +95,16 @@ continue the work. Last updated: 2026-10-15.
     of scope for the spec, so the spec is never blocked on it. **[Out of spec]** now means the
     spec states the required behavior and the current implementation does not conform
     (CONVENTIONS, §0.5). Every such place is listed in §00-0.5.1; keep that table current.
-  - *HTML comments.* The HTML parse takes precedence: inside an HTML comment, `{{` starts no
-    construct, and everything up to the comment's `-->` is comment text (§02-1.1 property 1,
-    §02-6.7). An outer block's `{{else}}` or closer inside a comment is comment text too.
-    Applied to the comment states only; markup declarations and `<script>`/`<style>`/`<title>`
-    text are unchanged (§02-11 item 19). Corpus: no template has mustache syntax in a comment
-    (`tools/comment-mustaches.mjs`).
+  - *HTML-first parsing* (T25; clarified by the author in conversation after T24: not a comment
+    exception but an architecture change). The HTML tokenizer has priority everywhere: its state
+    decides whether `{{` begins a construct (§02-1.1 table: construct in text states and a start
+    tag's attribute list, comment text in comments, error elsewhere). The old "HTML-blind
+    Handlebars side" is gone. Every compatibility issue is listed and resolved in §02-1.4, with
+    corpus impact from `tools/html-first-impact.mjs` (28,786 templates): comments (0), straddling
+    blocks (0), whitespace control in tags (errors only), escapes splitting text nodes (41, DOM
+    text-node count only), `<pre>`/`<textarea>` newline after constructs (7, whitespace the
+    author wrote reappears). All five are **[Out of spec]** for the current implementation
+    (§00-0.5.1). The state-by-state choices are §02-11 item 19, for the author to confirm.
   - *Blocks that straddle markup* in a tag or attribute value are errors E49/E50 (§02-1.1
     property 3, §02-6.11). *Literal mustache with arguments* is error E48 (§02-3.7). Both
     **[Out of spec]** for the current implementation.
@@ -167,7 +171,7 @@ repo).
 |---|---|---|---|
 | 00 overview | ~350 | Drafted. §0.1 and §0.2 were updated for the wire-format decision and the non-goals (T6). §0.6 matches this table. §0.7 (consolidated open questions) written by T2b; pruned to 31 open items by T12. | — |
 | 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. T9a ran the babel plugin (`wire`, `hbs`) and the runtime `template()` against §01-1.11 items 1–3, §01-1.4 and §01-1.5.6 (all confirmed; `.work/T9a-compile-paths.md`). |
-| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24: mustache syntax in HTML comments is comment text, straddling blocks and literal mustaches with arguments are errors, all **[Out of spec]** for the current implementation. | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
+| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24/T25: parsing is HTML-first (§02-1.1); its compatibility issues and their resolutions are §02-1.4, all **[Out of spec]** for the current implementation, as is the literal-mustache error E48. | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1, 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 14. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. T9b ran throwaway browser tests for the public-manager component ordering across a tree, component-hook vs modifier-install order, update ordering, deferred destructors and modifier destruction: all confirmed except modifier destruction order, which is creation order (not child-first) when the debug render tree is on (Ember DEBUG default) (§05-11.3; since fixed, #21639). None of these have upstream tests. |
@@ -216,6 +220,7 @@ Run these in order, one at a time.
 | T22 | Upstream PR: blocks whose `{{else}}` or closer is inside a tag or HTML comment become parse errors, with tests and the no-sane-template-breaks argument (§02-11 item 17) | Opus | `.work/T22-straddling-blocks-errors.md` | code done on local branch `fix/blocks-straddling-markup` (worktree `../ember.js-t22`, `1fc261a10e`) with option (b) for `{{else}}` (author, `036d98ba70`); complexity and its limit in the checklist; full suite green; corpus of 28,770 templates, none changed; PR description drafted. **Parked** (author, 2026-10-14): not landing now; probably a longer deprecation cycle. Since T24 the spec makes these errors in tags and comment text in comments, **[Out of spec]** for the current implementation (§02-6.11); the deprecation id, `until` and timing are outside the spec |
 | T23 | Rendering tests for `{{else …}}` chains (split from T21; no rendering test exists) | Sonnet | `.work/T23-else-chain-rendering.md` | planned; seed tests from T21 in the checklist |
 | T24 | Author feedback `03c77f86b4`: the current implementation can be out of spec; mustache syntax in HTML comments is comment text; T20 and T22 rules stated as errors; T21 timing out of scope | Opus | `.work/T24-out-of-spec-feedback.md` | done; [Out of spec] redefined, §00-0.5.1 lists every place, §02-1.1/1.4/6.7/6.11/3.7, E48–E50, §02-11 items 1, 17, 19 |
+| T25 | Author follow-up to T24: HTML-first parsing everywhere, compatibility issues enumerated and resolved | Opus | `.work/T25-html-first.md` | done; §02-1.1 rewritten (state table), §02-1.4 is the issue list with corpus impact, §02-2.2, §02-5, §02-6.1, §02-6.2, §02-6.8, §02-11 items 7, 19; §00-0.5.1 rows |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
