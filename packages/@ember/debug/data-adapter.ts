@@ -3,6 +3,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { dasherize } from '@ember/-internals/string';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import Namespace from '@ember/application/namespace';
 import EmberObject from '@ember/object';
 import type { Cache } from '@glimmer/validator/lib/tracking';
@@ -178,6 +179,54 @@ class TypeWatcher {
   }
 }
 
+function reportReleaseMethodsEmberArrayUse(name: string) {
+  deprecateUntil(
+    `\`releaseMethods.${name}\` was used on a \`DataAdapter\`. \`releaseMethods\` is a native array. Use native array methods, or upgrade the library that gives your data adapter (for example, WarpDrive or ember-m3).`,
+    DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A
+  );
+}
+
+/*
+  `releaseMethods` was an Ember array. Subclasses in published versions of
+  WarpDrive (ember-data) and ember-m3 call `pushObject` and `removeObject` on it.
+  RFC 1114 deprecates Ember arrays, so `releaseMethods` is a native array that
+  has only these two Ember array methods. They report the deprecation, and
+  they go away in 8.0.0 with `A()`.
+*/
+function makeReleaseMethods(): Array<() => void> {
+  let releaseMethods: Array<() => void> = [];
+
+  if (DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved) {
+    return releaseMethods;
+  }
+
+  Object.defineProperties(releaseMethods, {
+    pushObject: {
+      configurable: true,
+      writable: true,
+      value(fn: () => void) {
+        reportReleaseMethodsEmberArrayUse('pushObject');
+        releaseMethods.push(fn);
+        return fn;
+      },
+    },
+    removeObject: {
+      configurable: true,
+      writable: true,
+      value(fn: () => void) {
+        reportReleaseMethodsEmberArrayUse('removeObject');
+        let index = releaseMethods.indexOf(fn);
+        if (index !== -1) {
+          releaseMethods.splice(index, 1);
+        }
+        return releaseMethods;
+      },
+    },
+  });
+
+  return releaseMethods;
+}
+
 /**
   The `DataAdapter` helps a data persistence library
   interface with tools that debug Ember such
@@ -219,7 +268,7 @@ class TypeWatcher {
   @public
 */
 export default class DataAdapter<T> extends EmberObject {
-  releaseMethods: Array<() => void> = [];
+  releaseMethods: Array<() => void> = makeReleaseMethods();
   recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   flushWatchers: (() => void) | null = null;
