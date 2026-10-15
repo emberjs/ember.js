@@ -12,10 +12,16 @@
  * An error thrown while a content mustache is evaluated is an error of the
  * render.
  *
+ * A definition invoked as another kind (a component as a helper, a function
+ * as a modifier) has no manager of that kind: the render throws, as Glimmer's
+ * manager lookups do, instead of rendering nothing or calling the function.
+ *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { DEBUG } from '@glimmer/env';
 import { set } from '@ember/object';
+import templateOnly from '@ember/component/template-only';
 import { setOwner } from '@ember/-internals/owner';
 import { helperCapabilities, setComponentTemplate, setHelperManager } from '@glimmer/manager';
 import GlimmerComponent from '@glimmer/component';
@@ -107,6 +113,29 @@ moduleFor(
           },
         });
       }, /the content exploded/);
+    }
+  }
+);
+
+moduleFor(
+  'GXT a definition invoked as another kind',
+  class extends RenderingTestCase {
+    ['@test a component definition invoked as a helper throws'](assert: QUnit['assert']) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+      let Hello = setComponentTemplate(this.compile('Hello, world!'), templateOnly());
+
+      assert.throws(() => {
+        this.render('{{#if (this.value)}}yes{{/if}}', { value: Hello });
+      }, /helper manager associated with/);
+    }
+
+    ['@test a function in modifier position is not a modifier'](assert: QUnit['assert']) {
+      assert.throws(() => {
+        this.render('<div {{this.value}}></div>', { value: () => 'Hello, world!' });
+      }, /modifier manager associated with/);
     }
   }
 );
