@@ -313,6 +313,24 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
   }
 }
 
+// The component manager factory (`setComponentManager`) a component class has
+// or inherits from a base class, as @glimmer/component's subclasses do; none
+// for a component with an internal manager (classic, template-only).
+function customComponentManagerFactory(definition: object): Function | undefined {
+  const registries = getGxtRenderer()?.registries;
+  if (!registries) return undefined;
+  for (
+    let pointer: any = definition;
+    pointer && pointer !== Function.prototype && pointer !== Object.prototype;
+    pointer = Object.getPrototypeOf(pointer)
+  ) {
+    if (registries.internalManagers.has(pointer)) return undefined;
+    const factory = registries.componentManagers.get(pointer);
+    if (factory !== undefined) return typeof factory === 'function' ? factory : undefined;
+  }
+  return undefined;
+}
+
 // Helper to get component's template
 function getTemplateForComponent(component: any, owner: any): any {
   // Try getComponentTemplate from @glimmer/manager
@@ -545,6 +563,13 @@ function createRootTemplate(_owner: any) {
         outletOwner = nestedOutlet.render.owner || outletOwner;
       }
 
+      // Build the render context's `args`: @model and @controller.
+      const argsObj: any = {
+        model: model,
+        controller: controller,
+        outletState: outletState,
+      };
+
       // Check if routeTemplate is a component (e.g., from template('First'))
       // rather than a regular template factory. Components have templates
       // set via setComponentTemplate and retrievable here.
@@ -555,17 +580,29 @@ function createRootTemplate(_owner: any) {
           getComponentTemplate(routeTemplate?.constructor) ||
           (typeof routeTemplate === 'function' && getComponentTemplate(routeTemplate.prototype));
         if (componentTpl) {
-          // The route template is a Component class. Instantiate it so that
-          // `this.message` in the template reads from the component, not the
-          // controller. Pass @model and @controller through args.
-          try {
-            const ComponentClass =
-              typeof routeTemplate === 'function' ? routeTemplate : routeTemplate?.constructor;
-            if (ComponentClass && typeof ComponentClass === 'function') {
-              componentInstance = new ComponentClass();
-            }
-          } catch {
-            /* ignore instantiation errors */
+          // The route template is a component, so that `this.message` in the
+          // template reads from the component, not the controller.
+          const ComponentClass =
+            typeof routeTemplate === 'function' ? routeTemplate : routeTemplate?.constructor;
+          const managerFactory =
+            typeof ComponentClass === 'function'
+              ? customComponentManagerFactory(ComponentClass)
+              : undefined;
+          if (managerFactory !== undefined) {
+            // A component with a component manager (a Glimmer component) is
+            // created by its manager, with @model and @controller as its
+            // arguments, as the route manager invokes a component route
+            // template (`buildInvokable`); its template renders with the
+            // manager's context as `this`.
+            const manager = managerFactory(outletOwner);
+            const component = manager.createComponent(ComponentClass, {
+              named: argsObj,
+              positional: [],
+            });
+            componentInstance =
+              typeof manager.getContext === 'function' ? manager.getContext(component) : component;
+          } else if (typeof ComponentClass === 'function') {
+            componentInstance = new ComponentClass();
           }
 
           // Instantiate the template factory with the owner
@@ -577,12 +614,7 @@ function createRootTemplate(_owner: any) {
         }
       }
 
-      // Build the render context; `args` carries @model and @controller.
-      const argsObj: any = {
-        model: model,
-        controller: controller,
-        outletState: outletState,
-      };
+      // Build the render context; `args` (above) carries @model and @controller.
       let renderContext: any;
       if (componentInstance) {
         // When a Component class is the route template, use the component
