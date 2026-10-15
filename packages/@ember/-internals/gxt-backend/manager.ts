@@ -25,6 +25,9 @@ import {
   keepArgValue,
   sanitizedAttrValue,
   nearestTemplateKind,
+  argumentValue,
+  isReadingArgumentReference,
+  setMutArgumentSources,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -5854,8 +5857,21 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
       if (getter && instance) {
         // Create a cell for this arg so GXT's formula tracking picks up the dependency.
         // When the parent context changes, we update this cell which triggers re-evaluation.
-        const cell = _gxtCellFor(attrsProxy, key, /* skipDefine */ false);
+        // `@key` reads the cell; a read of the argument's reference
+        // (`readArgumentReference`, for `(mut @key)`) reads what the
+        // invocation passed.
+        const cell = _gxtCellFor(attrsProxy, key, /* skipDefine */ true);
         cell.update(initialVal);
+        Object.defineProperty(attrsProxy, key, {
+          get() {
+            return isReadingArgumentReference() ? getter() : cell.value;
+          },
+          set(value: unknown) {
+            cell.update(value);
+          },
+          enumerable: true,
+          configurable: true,
+        });
         argCells[key] = { cell, getter: unwrappingGetter || getter };
         // When the arg VALUE is an object, register it as an
         // object-value-owner of this arg cell. A nested property change on that
@@ -5905,7 +5921,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // last one's, so only the last template-only component rendered (the
         // last `{{#each}}` row) saw its arguments change.
         Object.defineProperty(attrsProxy, key, {
-          get: unwrappingGetter,
+          get() {
+            return isReadingArgumentReference() ? getter() : unwrappingGetter!();
+          },
           enumerable: true,
           configurable: true,
         });
@@ -5923,6 +5941,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               !val.prototype
                 ? val()
                 : val;
+            if (isReadingArgumentReference()) return resolved;
             if (resolved && resolved.__isMutCell) resolved = resolved.value;
             else if (resolved && resolved.__isReadonly) resolved = resolved.__readonlyValue;
             return _readArgValue(argSlot, resolved);
@@ -6199,9 +6218,15 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           }
         }
       }
-      // A getter taken from the args object reads through the argument's slot,
-      // as the instance's arg getters do.
-      if (getter) getter = _argValueGetter(_argValueSlot(argSlotOwner, key), getter);
+      // A getter taken from the args object reads the argument's value
+      // (`argumentValue`: a `(mut x)` cell or a `(readonly x)` marker stands for
+      // its value) through the argument's slot, as the instance's arg getters
+      // do: the sync writes what it reads to `this.<key>` and to the `@key`
+      // cell.
+      if (getter) {
+        const read = getter;
+        getter = _argValueGetter(_argValueSlot(argSlotOwner, key), () => argumentValue(read()));
+      }
     }
 
     // Skip installing the arg cell if the instance already has a @tracked
@@ -9442,11 +9467,15 @@ function _gxtFwTuple(args: any, fw: any): any[] {
 // An invocation's arguments as gxt's component args object: its own named
 // arguments, read from the invocation when the component reads them (so they
 // stay current), its blocks, and the forwarded attributes `fw`.
+// An argument reads as its value (`argumentValue`: a `(mut x)` cell or a
+// `(readonly x)` marker stands for its value), and as what the invocation
+// passed in a read of the argument's reference (`readArgumentReference`).
 function _gxtInvocationArgs(invocation: any, fw: any): any {
   const named: Record<string, () => unknown> = {};
   for (const key of Object.keys(invocation || {})) {
     if (key.startsWith('__') || key.startsWith('$') || key === 'args') continue;
-    named[key] = () => invocation[key];
+    named[key] = () =>
+      isReadingArgumentReference() ? invocation[key] : argumentValue(invocation[key]);
   }
   const slots = _gxtInvocationSlots(invocation?.[$SLOTS_SYMBOL] || invocation?.$slots);
   return _gxtArgs(named, slots, fw);
@@ -10312,6 +10341,10 @@ function handleCustomManagedComponent(
 
     const container = document.createDocumentFragment();
     const renderContext = createRenderContext(context, args, fw, owner);
+    // The sources `(mut @x)` writes for the arguments a curried component
+    // (`(component "x" val=this.model.val)`) passes (classic instances carry
+    // them as `__mutArgSources`).
+    setMutArgumentSources(renderContext, args?.__mutArgSources);
 
     // Augment renderContext.args with named/positional sub-objects (non-enumerable).
     //
@@ -10891,6 +10924,12 @@ function _installCustomManagedYieldEffect(o: {
 
 /**
  * Build named/positional args from GXT args object for custom-managed components.
+ *
+ * The component reads its arguments' values (Glimmer's args proxy reads each
+ * reference through `valueForRef`): a `(mut x)` cell or a `(readonly x)`
+ * marker passed as an argument is read as the value it stands for
+ * (`argumentValue`). `(mut @x)` in the component's template writes through
+ * the argument's reference instead (the `mut` helper, compile.ts).
  */
 function buildCustomManagedArgs(args: any) {
   const namedArgs: Record<string, any> = {};
@@ -10907,16 +10946,20 @@ function buildCustomManagedArgs(args: any) {
       const desc = Object.getOwnPropertyDescriptor(args, posKey);
       const getter = desc?.get;
       const value = getter ? getter() : args[posKey];
-      positionalArgs.push(typeof value === 'function' && !value.prototype ? value() : value);
+      positionalArgs.push(
+        argumentValue(typeof value === 'function' && !value.prototype ? value() : value)
+      );
       if (getter) {
         posGetters.push(() => {
           const v = getter();
-          return typeof v === 'function' && !v.prototype ? v() : v;
+          return argumentValue(typeof v === 'function' && !v.prototype ? v() : v);
         });
       } else {
         const argRef = args[posKey];
         posGetters.push(
-          typeof argRef === 'function' && !argRef.prototype ? () => argRef() : () => argRef
+          typeof argRef === 'function' && !argRef.prototype
+            ? () => argumentValue(argRef())
+            : () => argumentValue(argRef)
         );
       }
     }
@@ -10932,14 +10975,14 @@ function buildCustomManagedArgs(args: any) {
         !value.__isCurriedComponent &&
         !value.__isMutCell
       ) {
-        namedArgs[key] = value();
-        argGetters[key] = value;
+        namedArgs[key] = argumentValue(value());
+        argGetters[key] = () => argumentValue(value());
       } else {
-        namedArgs[key] = value;
+        namedArgs[key] = argumentValue(value);
         if (getter) {
           argGetters[key] = () => {
             const v = getter();
-            return typeof v === 'function' && !v.prototype ? v() : v;
+            return argumentValue(typeof v === 'function' && !v.prototype ? v() : v);
           };
         }
       }

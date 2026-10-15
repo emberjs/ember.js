@@ -18,6 +18,8 @@ import {
   isPlainHtmlTagFastPath,
   createFnHelperValue,
   MUT_CELL_SOURCE,
+  readArgumentReference,
+  mutArgumentSources,
   attributeText,
   boundAttributeProperty,
   sanitizedAttrValue,
@@ -8185,7 +8187,14 @@ const _emberBuiltinHelpers: Record<string, any> = {
   // by the time this helper body actually runs (template render time, well past
   // compile.ts module init), the bridge slot is populated and the optional chain
   // resolves.
-  mut: (value: any, path?: string) => {
+  //
+  // `readValue` is the getter of `value`. For `(mut @name)` it reads the
+  // argument's reference (`readArgumentReference`): what the invocation passed
+  // for `name`, through the components that pass it on. As Glimmer's `mut`
+  // asserts that the reference is updatable, a `(readonly x)` argument
+  // asserts; a `(mut x)` cell passed in is updatable, and a write goes through
+  // it.
+  mut: (value: any, path?: string, readValue?: () => unknown) => {
     // Capture context at creation time (set by $_maybeHelper wrapper)
     const capturedCtx = getGxtRenderer()?.compilePipeline.getMutContext?.() as any;
     // Assert that mut only receives a path, not a literal or helper result.
@@ -8205,13 +8214,35 @@ const _emberBuiltinHelpers: Record<string, any> = {
       : path.startsWith('@')
         ? path.slice(1)
         : path;
-    // Look up the source getter for two-way binding (from curried component positional args)
-    const sourceGetter = capturedCtx?.__mutArgSources?.[propName];
+    const readArgument =
+      path.startsWith('@') && !path.includes('.') && typeof readValue === 'function'
+        ? () => readArgumentReference(readValue)
+        : null;
+    if (DEBUG && readArgument !== null) {
+      const reference: any = readArgument();
+      if (reference !== null && typeof reference === 'object' && reference.__isReadonly === true) {
+        const _assert = getDebugFunction('assert');
+        if (_assert) _assert('You can only pass a path to mut', false);
+      }
+    }
+    // Look up the source getter for two-way binding (from curried component
+    // arguments): a classic instance's `__mutArgSources`, else those of the
+    // render context of another component (`mutArgumentSources`).
+    const sourceGetter = (capturedCtx?.__mutArgSources ?? mutArgumentSources(capturedCtx))?.[
+      propName
+    ] as any;
     // Create a "mut cell" function: calling it with a value sets the property
     const mutCell = function mutCell(newValue?: any) {
       if (arguments.length === 0) {
         // Read mode: return current value
         return typeof value === 'function' ? value() : value;
+      }
+      // An argument passed as a `(mut x)` cell: write through it.
+      if (readArgument !== null) {
+        const reference: any = readArgument();
+        if (typeof reference === 'function' && reference.__isMutCell === true) {
+          return reference(newValue);
+        }
       }
       // Write mode: set the property through the binding chain
       if (sourceGetter) {

@@ -901,9 +901,11 @@ function createEmberMaybeHelper(original: Function) {
         const prevCtx = _gxtGetMutContext();
         _gxtSetMutContext(ctx);
         try {
-          // Pass the unwrapped value + path to the mut helper
-          const unwrappedValue = isGxtGetter(rawGetter) ? rawGetter() : rawGetter;
-          return helper(unwrappedValue, pathArg);
+          // Pass the unwrapped value + path to the mut helper, and the getter:
+          // `(mut @x)` reads the argument's reference through it.
+          const isGetter = isGxtGetter(rawGetter);
+          const unwrappedValue = isGetter ? rawGetter() : rawGetter;
+          return helper(unwrappedValue, pathArg, isGetter ? rawGetter : undefined);
         } finally {
           _gxtSetMutContext(prevCtx);
         }

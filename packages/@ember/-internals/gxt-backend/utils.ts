@@ -596,6 +596,66 @@ export const FN_HELPER_CALL: unique symbol = Symbol('gxt fn helper call');
  */
 export const MUT_CELL_SOURCE: unique symbol = Symbol('gxt mut cell source');
 
+/**
+ * The value a component argument holds: a `(mut x)` cell or a `(readonly x)`
+ * marker passed as an argument stands for its value, as Glimmer's args proxy
+ * reads an argument reference through `valueForRef`.
+ */
+export function argumentValue(value: unknown): unknown {
+  if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+    const marked = value as { __isMutCell?: unknown; __isReadonly?: unknown };
+    if (marked.__isMutCell === true) return (value as { value: unknown }).value;
+    if (marked.__isReadonly === true) {
+      return (value as { __readonlyValue: unknown }).__readonlyValue;
+    }
+  }
+  return value;
+}
+
+// Depth of the argument-reference reads in progress (`readArgumentReference`).
+let argumentReferenceReads = 0;
+
+/**
+ * Runs `read`, an `@name` read of a template, so that it returns the
+ * argument's reference instead of its value: what the invocation passed for
+ * the argument (a `(mut x)` cell or a `(readonly x)` marker as it is), read
+ * through the components that pass it on (`@other={{@name}}`), as a Glimmer
+ * argument is the invocation's reference. `(mut @name)` writes through it.
+ */
+export function readArgumentReference<T>(read: () => T): T {
+  argumentReferenceReads++;
+  try {
+    return read();
+  } finally {
+    argumentReferenceReads--;
+  }
+}
+
+/** Whether an argument read is a `readArgumentReference` read. */
+export function isReadingArgumentReference(): boolean {
+  return argumentReferenceReads > 0;
+}
+
+// The mutable sources of the arguments of the component a render context
+// renders (`__mutArgSources` of a curried component's invocation), by render
+// context, for the contexts that are not classic component instances (those
+// carry them as `__mutArgSources`).
+const mutArgumentSourcesByContext = new WeakMap<object, Record<string, unknown>>();
+
+export function setMutArgumentSources(context: object, sources: unknown): void {
+  if (sources !== null && typeof sources === 'object') {
+    mutArgumentSourcesByContext.set(context, sources as Record<string, unknown>);
+  } else {
+    mutArgumentSourcesByContext.delete(context);
+  }
+}
+
+export function mutArgumentSources(context: unknown): Record<string, unknown> | undefined {
+  return context !== null && typeof context === 'object'
+    ? mutArgumentSourcesByContext.get(context)
+    : undefined;
+}
+
 export interface FnHelperValue {
   (...args: unknown[]): unknown;
   __isFnHelper: true;
