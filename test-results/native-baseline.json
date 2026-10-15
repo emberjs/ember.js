@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-14T14:10:27.573Z",
+    "capturedAt": "2026-10-15T11:14:49.795Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "6f5611dab1",
-    "totalTests": 7176,
-    "totalModules": 681,
+    "emberCommit": "7dd8ea2d25",
+    "totalTests": 7185,
+    "totalModules": 683,
     "quarantinedTests": 0,
-    "totalAssertions": 35764,
-    "totalAssertionsPassing": 35681
+    "totalAssertions": 35829,
+    "totalAssertionsPassing": 35746
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2371,6 +2371,20 @@
       "passing": 16,
       "assertionsTotal": 62,
       "assertionsPassing": 62,
+      "failingTests": []
+    },
+    "Integration | <template> | bound attributes": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
+      "failingTests": []
+    },
+    "Integration | <template> | content mustache": {
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 56,
+      "assertionsPassing": 56,
       "failingTests": []
     },
     "Intermediate transitions (Async Get Handler)": {

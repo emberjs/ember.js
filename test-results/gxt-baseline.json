@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T09:40:44.091Z",
+    "capturedAt": "2026-10-15T11:28:28.803Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "c0b147aa14",
-    "totalTests": 10097,
-    "totalModules": 983,
+    "emberCommit": "2e4812f25c",
+    "totalTests": 10108,
+    "totalModules": 985,
     "quarantinedTests": 0,
-    "totalAssertions": 60227,
-    "totalAssertionsPassing": 59319,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after content mustaches render what their value is, written by runner.mjs. 9495/10097 green (was 9461/10085), 983 modules, no timeouts, no harness errors, no green->red. 22 tests turned green: a content mustache renders Glimmer's dynamic content (text updated in its text node, the HTML of a SafeString parsed in the namespace of its element, a DOM node or the nodes of a fragment) in an element, in SVG and foreignObject, and a DOM node in triple curlies is inserted as it is (the 18 Updating - Content matrix tests, double and triple curlies in the HTML, SVG foreignObject and SVG contexts; Updating: updating a curly with a safe and unsafe string); the result of a helper invoked by name renders what it is (Updating: double curlies with const SafeString, double curlies with const Node); a component invoked by name with positional arguments as the only content of an element renders the nodes it returns (Components test: curly components: static arbitrary number of positional parameters). 12 new tests in GXT dynamic content, all green. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60279,
+    "totalAssertionsPassing": 59412,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a content mustache in a build-time template renders what its value is and a bound attribute that is a property of its element is set through the property, written by runner.mjs. 9545/10108 green (was 9495/10097), 985 modules, no timeouts, no harness errors, no green->red. 39 tests turned green: a bound attribute that names a property of its element is set through the property, so <button name={{has-block}}> renders name=\"false\" (the parameterized has-block and has-block-params (prop, ...) tests of the Curly, Glimmer and Dynamic suites and their parent modules), and a bound selected of an option is its selectedness, with no attribute (Updating: <option selected> is normalized and updated correctly; initial render (client): Dynamic selected options, Dynamic multi-select). 11 new tests, green or skipped: Integration | <template> | content mustache (7; the 2 tests of a content mustache outside an element are skipped under GXT_MODE, where gxt renders it with its own text binding in a build-time template), Integration | <template> | bound attributes (2), and 2 yielded block parameter tests in GXT dynamic content. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 90 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2664,10 +2664,10 @@
       "failingTests": []
     },
     "GXT dynamic content": {
-      "total": 12,
-      "passing": 12,
-      "assertionsTotal": 66,
-      "assertionsPassing": 66,
+      "total": 14,
+      "passing": 14,
+      "assertionsTotal": 73,
+      "assertionsPassing": 73,
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
@@ -3191,6 +3191,24 @@
       "assertionsTotal": 62,
       "assertionsPassing": 62,
       "failingTests": []
+    },
+    "Integration | <template> | bound attributes": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
+      "failingTests": []
+    },
+    "Integration | <template> | content mustache": {
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 36,
+      "assertionsPassing": 36,
+      "failingTests": [],
+      "skippedTests": [
+        "content at the top level of a template renders what its value is",
+        "a yielded block param at the top level of the block renders what its value is"
+      ]
     },
     "Intermediate transitions (Async Get Handler)": {
       "total": 17,
@@ -6036,9 +6054,9 @@
     },
     "[integration] jit :: Components :: has-block": {
       "total": 69,
-      "passing": 55,
+      "passing": 61,
       "assertionsTotal": 539,
-      "assertionsPassing": 521,
+      "assertionsPassing": 527,
       "failingTests": [
         {
           "name": "has-block works within a yielded curried component invoked with angle bracket invocation (truthy)",
@@ -6053,35 +6071,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
           "name": "parameterized has-block (concatted attr, else) when else supplied",
           "category": "gxt:triage"
         },
         {
           "name": "parameterized has-block (attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6100,25 +6094,16 @@
     },
     "[integration] jit :: Components :: has-block > [integration] Curly": {
       "total": 21,
-      "passing": 19,
+      "passing": 21,
       "assertionsTotal": 168,
-      "assertionsPassing": 166,
-      "failingTests": [
-        {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 168,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block > [integration] Dynamic": {
       "total": 21,
-      "passing": 14,
+      "passing": 16,
       "assertionsTotal": 168,
-      "assertionsPassing": 161,
+      "assertionsPassing": 163,
       "failingTests": [
         {
           "name": "parameterized has-block (concatted attr, else) when else supplied",
@@ -6126,14 +6111,6 @@
         },
         {
           "name": "parameterized has-block (attr, else) when else supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
           "category": "gxt:triage"
         },
         {
@@ -6152,9 +6129,9 @@
     },
     "[integration] jit :: Components :: has-block > [integration] Glimmer": {
       "total": 27,
-      "passing": 22,
+      "passing": 24,
       "assertionsTotal": 203,
-      "assertionsPassing": 194,
+      "assertionsPassing": 196,
       "failingTests": [
         {
           "name": "has-block works within a yielded curried component invoked with angle bracket invocation (truthy)",
@@ -6167,147 +6144,41 @@
         {
           "name": "has-block works within a yielded curried component invoked within mustaches",
           "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block (prop, else) when else not supplied",
-          "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: has-block-params": {
       "total": 76,
-      "passing": 63,
+      "passing": 75,
       "assertionsTotal": 604,
-      "assertionsPassing": 591,
+      "assertionsPassing": 603,
       "failingTests": [
         {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
           "name": "has-block-params from within a yielded + invoked curried component",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: Components :: has-block-params > [integration] Curly": {
       "total": 25,
-      "passing": 21,
+      "passing": 25,
       "assertionsTotal": 200,
-      "assertionsPassing": 196,
-      "failingTests": [
-        {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 200,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block-params > [integration] Dynamic": {
       "total": 25,
-      "passing": 21,
+      "passing": 25,
       "assertionsTotal": 200,
-      "assertionsPassing": 196,
-      "failingTests": [
-        {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 200,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block-params > [integration] Glimmer": {
       "total": 26,
-      "passing": 21,
+      "passing": 25,
       "assertionsTotal": 204,
-      "assertionsPassing": 199,
+      "assertionsPassing": 203,
       "failingTests": [
-        {
-          "name": "parameterized has-block-params (prop, default) when block not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, default) when block supplied without block params",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else not supplied",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "parameterized has-block-params (prop, else) when else supplied without block params",
-          "category": "gxt:triage"
-        },
         {
           "name": "has-block-params from within a yielded + invoked curried component",
           "category": "gxt:triage"
@@ -6456,9 +6327,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 49,
+      "passing": 50,
       "assertionsTotal": 787,
-      "assertionsPassing": 718,
+      "assertionsPassing": 719,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6490,10 +6361,6 @@
         },
         {
           "name": "block helpers whose template has a morph at the edge",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "<option selected> is normalized and updated correctly",
           "category": "gxt:triage"
         },
         {
@@ -7409,19 +7276,10 @@
     },
     "[integration] jit :: initial render (client)": {
       "total": 88,
-      "passing": 86,
+      "passing": 88,
       "assertionsTotal": 680,
-      "assertionsPassing": 676,
-      "failingTests": [
-        {
-          "name": "Dynamic selected options",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Dynamic multi-select",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 680,
+      "failingTests": []
     },
     "[integration] jit :: input[formaction] attribute": {
       "total": 6,
@@ -9581,6 +9439,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 602
+    "gxt:triage": 563
   }
 }
