@@ -8551,6 +8551,11 @@ const $_MANAGERS = {
     _builtinModifiers: {} as Record<string, any>,
 
     canHandle(modifier: any): boolean {
+      // An empty string names no modifier. It is the value of a dynamic
+      // modifier position whose value is not a modifier (the compat `(if)`
+      // evaluates to `''` when its condition is false), where Glimmer's dynamic
+      // modifier installs nothing for a value that is not an object.
+      if (modifier === '') return false;
       if (typeof modifier === 'string') {
         // Flush any pending builtin modifier registrations
         if (_pendingBuiltinModifiers.length > 0) {
