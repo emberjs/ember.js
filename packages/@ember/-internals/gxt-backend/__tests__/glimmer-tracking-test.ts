@@ -8,7 +8,8 @@
  * component, a Glimmer component, a template-only component reading an object's
  * tracked property, helpers reading tracked state, `{{#each}}` rows, a property
  * passed as an argument, a write during render (the backtracking assertion), a
- * write in an action / `next()` / a microtask, a `@cached` getter, an inherited
+ * write in an action / `next()` / a microtask, a `@cached` getter (over tracked
+ * state and over a Glimmer component's argument), an inherited
  * tracked property and `@tracked` on objects that are not components. Each
  * property is written more than once: a gxt cell accessor defined over a
  * tracked accessor used to let only the first write render.
@@ -499,6 +500,38 @@ moduleFor(
       runTask(() => this.rerender());
       this.assertText('Kenneth Larsen|Kenneth Larsen|(JEN)');
       assert.strictEqual(person.calls, 3, 'not re-computed without a write');
+    }
+
+    '@test a @cached getter over a Glimmer component argument re-computes when the argument changes'() {
+      let parent: any;
+      class Parent extends GlimmerComponent {
+        @tracked value = 1;
+
+        constructor(owner: any, args: any) {
+          super(owner, args);
+          parent = this;
+        }
+      }
+      class Child extends GlimmerComponent<any> {
+        @cached
+        get doubled() {
+          return this.args.value * 2;
+        }
+      }
+      this.register('parent', '<Child @value={{this.value}} />', Parent);
+      this.register('child', '{{@value}}:{{this.doubled}}', Child);
+
+      this.render('<Parent />');
+      this.assertText('1:2');
+
+      runTask(() => (parent.value = 2));
+      this.assertText('2:4');
+
+      runTask(() => (parent.value = 3));
+      this.assertText('3:6');
+
+      runTask(() => (parent.value = 1));
+      this.assertText('1:2');
     }
 
     '@test an inherited tracked property re-renders'() {
