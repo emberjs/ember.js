@@ -402,6 +402,8 @@ function findDottedTags(str: string): Array<[string, string]> {
 
 import { buildUntouchableThis } from '@glimmer/debug-util';
 import { isProxy } from '@ember/-internals/utils';
+// An Ember array (`EmberArray` mixin), which `{{#each}}` iterates by index.
+import { isEmberArray } from '@ember/array/-internals';
 // The key of a classic `Helper` instance's recompute tag.
 import { RECOMPUTE_TAG } from '@ember/-internals/glimmer/lib/helper';
 // The class of `templateOnly()` component definitions.
@@ -5877,6 +5879,19 @@ function _gxtSubscribeBackingArray(raw: any): void {
   }
 }
 
+// A `{{#each}}` source that Glimmer iterates as a native iterable
+// (`toEachIterator`, glimmer/lib/utils/iterator.ts): an object with
+// `[Symbol.iterator]` that is neither an Array nor an Ember array.
+function _isNativeEachIterable(raw: unknown): boolean {
+  return (
+    raw !== null &&
+    typeof raw === 'object' &&
+    !Array.isArray(raw) &&
+    !isEmberArray(raw) &&
+    typeof (raw as { [Symbol.iterator]?: unknown })[Symbol.iterator] === 'function'
+  );
+}
+
 // `normalizeEachCollection` materializes a non-Array iterable into a real
 // Array. gxt's `$_eachSync` normalizes every iterable shape for ITERATION
 // (plain arrays, Symbol.iterator iterables, ArrayProxy via `.content`,
@@ -6993,7 +7008,14 @@ function patchGlobalEachSync() {
         }
         // `as |item index|`: gxt's index path calls `.indexOf(item)` on this
         // cell value, so materialize non-Array iterables here (Arrays no-op).
-        return hasIndex ? normalizeEachCollection(raw) : raw;
+        if (hasIndex) return normalizeEachCollection(raw);
+        // A native iterable (a Set, a Map, an object with `[Symbol.iterator]`)
+        // is iterated here, in the source formula, as Glimmer creates the
+        // iterator inside the list reference's tracking frame: what the
+        // iteration reads (a tracked value read in `[Symbol.iterator]()`) is a
+        // dependency of the list, which re-iterates when it changes. gxt would
+        // iterate it later, in the list sync, outside of any formula.
+        return _isNativeEachIterable(raw) ? Array.from(raw as Iterable<unknown>) : raw;
       });
       return origEachSync(wrappedCell, fn, key, ctx, inverseFn, hasIndex);
     } else if (items && typeof items === 'object' && 'value' in items) {
