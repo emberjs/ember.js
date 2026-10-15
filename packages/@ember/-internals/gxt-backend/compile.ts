@@ -11019,18 +11019,36 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // GXT order: tag, tagProps, ctx, children
     // The content of an element that is one mustache (`<p>{{x}}</p>`) is gxt's
     // TEXT_CONTENT event entry (key "1"), which writes the value as the
-    // element's text. It is rendered as the element's child instead, as
-    // dynamic content like a mustache among other children (see
-    // `_gxtContentChildren`): its value can be a SafeString or a DOM node too.
+    // element's text. It is rendered as dynamic content instead, like a
+    // mustache among other children (see `_gxtContentChildren`): its value can
+    // be a SafeString or a DOM node too. It becomes the element's children;
+    // when the element has modifiers, which gxt installs while it creates the
+    // element (before its children), the content is rendered into the element
+    // by an entry ahead of them instead, so a modifier sees the element's
+    // content when it is installed.
     if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
       const events: any[] = tagProps[2];
       let content: any[] | null = null;
+      let hasModifier = false;
       for (const entry of events) {
-        if (Array.isArray(entry) && entry[0] === '1') (content ??= []).push(entry[1]);
+        if (!Array.isArray(entry)) continue;
+        if (entry[0] === '1') (content ??= []).push(entry[1]);
+        else if (entry[0] === '0') hasModifier = true;
       }
       if (content !== null) {
-        tagProps[2] = events.filter((entry) => !(Array.isArray(entry) && entry[0] === '1'));
-        children = Array.isArray(children) ? [...content, ...children] : content;
+        const rest = events.filter((entry) => !(Array.isArray(entry) && entry[0] === '1'));
+        if (hasModifier && !_gxtNamespace) {
+          const elementContent = content;
+          const renderContent = (element: Element): void => {
+            for (const value of elementContent) {
+              _appendChildValue(element, value, _gxtAppendRenderedObject, ctx);
+            }
+          };
+          tagProps[2] = [['0', renderContent], ...rest];
+        } else {
+          tagProps[2] = rest;
+          children = Array.isArray(children) ? [...content, ...children] : content;
+        }
       }
     }
     // Fix: GXT uses element.style = value (prop assignment) which sets

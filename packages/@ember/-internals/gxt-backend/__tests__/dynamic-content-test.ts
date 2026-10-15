@@ -11,11 +11,12 @@
  * - a DOM node, or the nodes of a DocumentFragment, inserted as they are.
  *
  * The result of a helper invocation (`{{format this.value}}`) renders the
- * same way, and a `{{{value}}}` renders a DOM node value as that node too.
+ * same way, and a `{{{value}}}` renders a DOM node value as that node too. A
+ * modifier of an element sees the element's content when it is installed.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { defineSimpleModifier, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
 import { helper } from '@ember/component/helper';
 import { htmlSafe } from '@ember/template';
@@ -149,6 +150,21 @@ moduleFor(
 
       runTask(() => set(this.context, 'value', '<i>html</i>'));
       this.assertHTML('<div><i>html</i></div>');
+    }
+
+    ['@test a modifier of the element sees its content when it is installed'](
+      assert: QUnit['assert']
+    ) {
+      let seen: string[] = [];
+      this.owner.register(
+        'modifier:peek',
+        defineSimpleModifier((element: Element) => seen.push(element.innerHTML))
+      );
+      this.render('<p {{peek}}>{{this.value}}</p><p {{peek}}>static</p>', {
+        value: htmlSafe('<b>bold</b>'),
+      });
+      this.assertHTML('<p><b>bold</b></p><p>static</p>');
+      assert.deepEqual(seen, ['<b>bold</b>', 'static']);
     }
 
     ['@test text content keeps its text node while the value stays text']() {
