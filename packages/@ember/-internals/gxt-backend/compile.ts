@@ -8945,6 +8945,20 @@ function _resolveHasBlockArgs(arg1: any, arg2: any): { slots: any; name: string 
 // Save/restore tolerates `undefined`, so no lazy-init is needed.
 let _gxtNamespace: string | undefined;
 
+// The namespace a render into `parent` starts in: the SVG namespace inside an
+// SVG element other than an HTML integration point (`<foreignObject>`,
+// `<desc>`, `<title>`), as Glimmer's `DOMOperations.createElement` decides from
+// the parent element; otherwise none (HTML).
+function _gxtRootNamespace(parent: Element | null): string | undefined {
+  return parent !== null &&
+    parent.namespaceURI === 'http://www.w3.org/2000/svg' &&
+    parent.localName !== 'foreignObject' &&
+    parent.localName !== 'desc' &&
+    parent.localName !== 'title'
+    ? 'svg'
+    : undefined;
+}
+
 // Override $_c to handle CurriedComponent — when a GXT binding (e.g., from {{#let}})
 // resolves to a CurriedComponent, we need to render it through the Ember component manager
 // instead of GXT's normal component constructor path.
@@ -8959,13 +8973,17 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     // deep context setup), we handle them directly by executing their default slot
     // with the appropriate namespace flag set for $_tag to use.
     if (comp === _gxtSVGProvider || comp === _gxtHTMLProvider || comp === _gxtMathMLProvider) {
-      const ns = comp === _gxtSVGProvider ? 'svg' : comp === _gxtMathMLProvider ? 'mathml' : null;
+      // The HTML provider wraps the children of an HTML integration point
+      // (`<foreignObject>`): they are HTML elements, whatever namespace the
+      // integration point itself is in.
+      const ns =
+        comp === _gxtSVGProvider ? 'svg' : comp === _gxtMathMLProvider ? 'mathml' : undefined;
       const $SLOTS = $SLOTS_SYMBOL;
       const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
       const defaultSlot = slots?.default;
       if (typeof defaultSlot === 'function') {
         const prevNs = _gxtNamespace;
-        if (ns) _gxtNamespace = ns;
+        _gxtNamespace = ns;
         try {
           const result = defaultSlot(ctx);
           return result;
@@ -13436,14 +13454,20 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         // contexts it creates are its nodes in gxt's render tree, so destroying
         // the render destroys exactly its tree. Other renders share the ambient
         // root.
+        // Such a render starts in the namespace of the element it renders into
+        // (`_gxtRootNamespace`), as Glimmer's element builder creates elements
+        // in the namespace of their parent.
         if (renderRoot !== undefined) {
           const prevRootContext = _gxtRootContext;
           const prevParentContext = _gxtGetParentContext();
+          const prevNamespace = _gxtNamespace;
           _gxtRootContext = renderRoot;
+          _gxtNamespace = _gxtRootNamespace(parentElement);
           try {
             return this.render(context, parentElement);
           } finally {
             _gxtRootContext = prevRootContext;
+            _gxtNamespace = prevNamespace;
             gxtSetParentContext(prevParentContext);
           }
         }

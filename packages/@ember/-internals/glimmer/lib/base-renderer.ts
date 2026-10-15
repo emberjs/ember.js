@@ -1475,11 +1475,13 @@ function _renderComponentGxt(
       }
       return;
     }
-    // Insert render: render into a temporary host of the same tag-name
-    // (so any tag-sensitive child construction inside <table>, <select>,
+    // Insert render: render into a temporary host of the same tag and namespace
+    // (so any tag-sensitive child construction inside <table>, <select>, <svg>,
     // etc. keeps the same parent context), then move the children before the
     // cursor's `nextSibling`, or to the FRONT of the actual parent.
-    const host = document.createElement(parent.tagName);
+    const host = parent.namespaceURI
+      ? document.createElementNS(parent.namespaceURI, parent.localName)
+      : document.createElement(parent.localName);
     renderTemplate(template, ctx, host);
     const insertBefore = cursorNextSibling ?? parent.firstChild;
     const previous = insertBefore === null ? parent.lastChild : insertBefore.previousSibling;
