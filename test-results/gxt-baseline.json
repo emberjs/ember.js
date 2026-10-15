@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T04:28:15.499Z",
+    "capturedAt": "2026-10-15T06:04:47.809Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "82bff4dd8a",
-    "totalTests": 10078,
+    "emberCommit": "ac92f3aa7a",
+    "totalTests": 10083,
     "totalModules": 982,
     "quarantinedTests": 0,
-    "totalAssertions": 60122,
-    "totalAssertionsPassing": 59067,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after dropping the development-only Glimmer template checks (a template the GXT compiler cannot compile still throws, with the GXT compiler's message; {{this.attrs.x}} keeps its deprecation), written by runner.mjs. 9440/10078 green (was 9567/10079). 126 known reds, all tests that expect an invalid template to be rejected at compile time with Glimmer's error: 25 still throw, with a different message (message-only difference: [integration] compile errors and general syntax errors, {{component.foo}}, {{attrs.x}}); 100 are invalid templates the GXT compiler accepts (keyword misuse, if/unless arity, named-block rules, yield/has-block arguments, strict-mode references that are not in scope, argument-less helper and dynamic modifier lookups, `action` in strict mode); 1, 'Strict Mode <-> Loose Mode - renderComponent :: rendering multiple times to adjacent elements', fails with the render-time 'not in scope' error of the previous test's template. The 2 tests of the removed 'GXT correctness: compile-time template checks' module are gone; 1 new GXT correctness test, green. No timeouts, no harness errors. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60154,
+    "totalAssertionsPassing": 59128,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after in-place update fixes for {{#in-element}} and modifiers, written by runner.mjs. 9453/10083 green (was 9440/10078), 982 modules, no timeouts, no harness errors, no green->red. 8 tests turned green: an {{#in-element}} renders into its new destination and leaves the old one (Updating remote element, Inside an {{if}}, helpers passed as arguments to {{#in-element}}); a modifier resolved by name updates on re-render (Updating a element modifier); an {{#if}} branch rendered again resolves its modifiers (Destructor is triggered on element modifiers); a modifier whose definition changes on a live element is destroyed (Can use a dynamic modifier with a changing definition, and its curried form); a single-mustache element keeps its text node on update (a simple implementation of a dirtying rerender). 5 new tests in GXT in-place updates, all green. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2703,10 +2703,10 @@
       "failingTests": []
     },
     "GXT in-place updates": {
-      "total": 4,
-      "passing": 4,
-      "assertionsTotal": 11,
-      "assertionsPassing": 11,
+      "total": 9,
+      "passing": 9,
+      "assertionsTotal": 32,
+      "assertionsPassing": 32,
       "failingTests": []
     },
     "GXT renderComponent: a hasSubOwner component manager's owner": {
@@ -5571,18 +5571,10 @@
     },
     "[integration] jit :: #in-element": {
       "total": 9,
-      "passing": 6,
+      "passing": 8,
       "assertionsTotal": 318,
-      "assertionsPassing": 302,
+      "assertionsPassing": 315,
       "failingTests": [
-        {
-          "name": "Updating remote element",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Inside an '{{if}}'",
-          "category": "gxt:triage"
-        },
         {
           "name": "Inside a loop",
           "category": "gxt:triage"
@@ -5851,7 +5843,7 @@
       "total": 42,
       "passing": 36,
       "assertionsTotal": 199,
-      "assertionsPassing": 187,
+      "assertionsPassing": 188,
       "failingTests": [
         {
           "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
@@ -5899,7 +5891,7 @@
       "total": 4,
       "passing": 0,
       "assertionsTotal": 21,
-      "assertionsPassing": 12,
+      "assertionsPassing": 13,
       "failingTests": [
         {
           "name": "throwing an error during rendering gives a readable error stack",
@@ -5922,8 +5914,8 @@
     "[integration] jit :: Components :: Invocation": {
       "total": 19,
       "passing": 16,
-      "assertionsTotal": 168,
-      "assertionsPassing": 165,
+      "assertionsTotal": 169,
+      "assertionsPassing": 166,
       "failingTests": [
         {
           "name": "inverse named block",
@@ -5956,8 +5948,8 @@
     "[integration] jit :: Components :: Invocation > [integration] Glimmer": {
       "total": 9,
       "passing": 6,
-      "assertionsTotal": 68,
-      "assertionsPassing": 65,
+      "assertionsTotal": 69,
+      "assertionsPassing": 66,
       "failingTests": [
         {
           "name": "inverse named block",
@@ -6461,9 +6453,9 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 44,
+      "passing": 46,
       "assertionsTotal": 787,
-      "assertionsPassing": 710,
+      "assertionsPassing": 715,
       "failingTests": [
         {
           "name": "weird paths",
@@ -6491,14 +6483,6 @@
         },
         {
           "name": "helpers passed as arguments to {{component}} are not torn down when switching between blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a simple implementation of a dirtying rerender",
           "category": "gxt:triage"
         },
         {
@@ -6637,19 +6621,10 @@
     },
     "[integration] jit :: Updating Element Modifier": {
       "total": 3,
-      "passing": 1,
+      "passing": 3,
       "assertionsTotal": 27,
-      "assertionsPassing": 23,
-      "failingTests": [
-        {
-          "name": "Updating a element modifier",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Destructor is triggered on element modifiers",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 27,
+      "failingTests": []
     },
     "[integration] jit :: Updating SVG": {
       "total": 11,
@@ -7851,8 +7826,8 @@
     "[integration] jit :: modifiers": {
       "total": 11,
       "passing": 10,
-      "assertionsTotal": 49,
-      "assertionsPassing": 48,
+      "assertionsTotal": 54,
+      "assertionsPassing": 53,
       "failingTests": [
         {
           "name": "Element modifier with hooks",
@@ -7910,9 +7885,9 @@
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
-      "passing": 31,
-      "assertionsTotal": 290,
-      "assertionsPassing": 265,
+      "passing": 33,
+      "assertionsTotal": 294,
+      "assertionsPassing": 274,
       "failingTests": [
         {
           "name": "Can use a dynamic component in append position (with args)",
@@ -7940,14 +7915,6 @@
         },
         {
           "name": "Can use a nested argument as a modifier",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can use a dynamic modifier with a changing definition",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can use a dynamic modifier with a changing definition (curried)",
           "category": "gxt:triage"
         },
         {
@@ -9720,6 +9687,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 638
+    "gxt:triage": 630
   }
 }
