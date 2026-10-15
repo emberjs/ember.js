@@ -77,6 +77,10 @@ moduleFor(
       this.assertContentKinds('<div><b>before</b>', '<b>after</b></div>');
     }
 
+    ['@test content at the top level of a template renders what its value is']() {
+      this.assertContentKinds('[', ']');
+    }
+
     ['@test content inside an SVG foreignObject renders what its value is']() {
       this.assertContentKinds('<svg><foreignObject>', '</foreignObject></svg>');
     }

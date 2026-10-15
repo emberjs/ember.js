@@ -3466,7 +3466,7 @@ function _gxtDynamicContent(
   const render = (next: _GxtContentKind, value: any, html: string, parent: ParentNode): Node[] => {
     let content: Node[];
     if (next === 'text') {
-      content = [document.createTextNode(_gxtCoerceText(value))];
+      content = [document.createTextNode(value)];
     } else if (next === 'node') {
       content = value.nodeType === 11 ? Array.from(value.childNodes as NodeList) : [value];
     } else if (next === 'html') {
@@ -3481,7 +3481,7 @@ function _gxtDynamicContent(
   const show = (value: unknown): void => {
     const next = _gxtContentKind(value);
     if (next === 'text' && kind === 'text') {
-      const text = _gxtCoerceText(value);
+      const text = value as string;
       const node = nodes[0]!;
       if (node.nodeValue !== text) node.nodeValue = text;
       return;
@@ -3510,9 +3510,19 @@ function _gxtDynamicContent(
 
   const initial = options.initial;
   if (initial === undefined) {
-    gxtEffect(() => show(_gxtContentValue(read)), options.owner);
+    gxtEffect(() => show(_gxtContentText(_gxtContentValue(read))), options.owner);
   } else {
-    show(initial.value);
+    // The text of the value read by the caller's evaluation is taken in that
+    // evaluation's tracking frame.
+    const outer = _gxtGetTracker();
+    _gxtSetTracker(initial.cells);
+    let value: unknown;
+    try {
+      value = _gxtContentText(initial.value);
+    } finally {
+      _gxtSetTracker(outer);
+    }
+    show(value);
     let replay = true;
     gxtEffect(() => {
       if (replay) {
@@ -3521,16 +3531,26 @@ function _gxtDynamicContent(
         if (cells) initial.cells.forEach((cell) => cells.add(cell));
         return;
       }
-      show(_gxtContentValue(read));
+      show(_gxtContentText(_gxtContentValue(read)));
     }, options.owner);
   }
   return fragment;
 }
 
+// A content value whose kind is text as its text (`_gxtCoerceText`), any other
+// value as it is. Taking the text of an object reads what its `toString` /
+// `Symbol.toPrimitive` reads (a gxt cell's value): it is done in the tracking
+// frame of the binding's evaluation, so the binding depends on it.
+function _gxtContentText(value: unknown): unknown {
+  return _gxtContentKind(value) === 'text' ? _gxtCoerceText(value) : value;
+}
+
 // The value of a content binding: what `read` returns, with a function value
 // called (a plain function is a helper) unless it is a component definition.
 // The objects the cells it read hold become their value-owners
-// (`_gxtRegisterLeafOwners`).
+// (`_gxtRegisterLeafOwners`) on every evaluation, so after
+// `set(context, 'page', newPage)` a change of `newPage.title` updates
+// `{{this.page.title}}`.
 function _gxtContentValue(read: () => unknown): unknown {
   let value = read();
   while (typeof value === 'function' && !_gxtIsComponentDefinition(value)) {
@@ -3560,11 +3580,12 @@ function _gxtContentChild(
   let value: unknown;
   try {
     value = _gxtContentValue(read);
+    if (value !== null && typeof value === 'object' && RENDERED_NODES_PROPERTY in value) {
+      return value;
+    }
+    value = _gxtContentText(value);
   } finally {
     _gxtSetTracker(outer);
-  }
-  if (value !== null && typeof value === 'object' && RENDERED_NODES_PROPERTY in value) {
-    return value;
   }
   return _gxtDynamicContent(read, {
     owner: owner !== null && typeof owner === 'object' ? owner : _gxtTemplateOwner(),
@@ -13051,13 +13072,39 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           }
         }
 
-        // Check if the result is a raw HTML value (from triple-stache {{{expr}}})
-        // These have __htmlRaw or toHTML marker and need innerHTML rendering
+        // The dynamic content of the binding (`_gxtDynamicContent`): it shows
+        // the value of the evaluation above and subscribes to the cells that
+        // evaluation read. A component definition renders through the
+        // component manager, its result through `itemToNode`.
+        const renderComponentNodes = (definition: object): Node[] => {
+          const _gMgrs = (globalThis as any).$_MANAGERS;
+          const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
+          const _compRes = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
+          const _compNode =
+            _compRes instanceof Node ? _compRes : _compRes ? itemToNode(_compRes, depth + 1) : null;
+          if (_compNode === null) return [];
+          return _compNode.nodeType === 11 ? Array.from(_compNode.childNodes) : [_compNode];
+        };
+        const dynamicContent = (): DocumentFragment =>
+          _gxtDynamicContent(item, {
+            owner: _gxtTemplateOwner(),
+            context: null,
+            renderComponent: renderComponentNodes,
+            initial: { value: finalResult, cells: _capturedDeps },
+          });
+
+        // A SafeString renders its HTML, as dynamic content.
         if (
           finalResult &&
           typeof finalResult === 'object' &&
-          (finalResult.__htmlRaw || typeof finalResult.toHTML === 'function')
+          typeof finalResult.toHTML === 'function'
         ) {
+          return dynamicContent();
+        }
+
+        // A raw HTML value (`__htmlRaw`, from triple-stache markup) renders as
+        // HTML.
+        if (finalResult && typeof finalResult === 'object' && finalResult.__htmlRaw) {
           const getHtml = () => {
             const v = item();
             const fv = typeof v === 'function' ? v() : v;
@@ -13107,220 +13154,18 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
             // Empty rendered nodes — return a placeholder comment
             return document.createComment('');
           }
-          if (isGxtArray || typeof finalResult.toHTML === 'function') {
+          if (isGxtArray) {
             return itemToNode(finalResult, depth + 1);
           }
-          // Check if this is a component definition (from {{this.Foo}} where Foo is a component).
-          // In Ember, curly syntax {{value}} renders components when the value is a
-          // component definition. Detect by checking COMPONENT_TEMPLATES or manager.
-          const _gMgrs = (globalThis as any).$_MANAGERS;
-          if (_gMgrs?.component?.canHandle?.(finalResult)) {
-            return _gxtDynamicContent(item, {
-              owner: _gxtTemplateOwner(),
-              context: null,
-              renderComponent: (definition: object): Node[] => {
-                const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
-                const _compRes = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
-                const _compNode =
-                  _compRes instanceof Node
-                    ? _compRes
-                    : _compRes
-                      ? itemToNode(_compRes, depth + 1)
-                      : null;
-                if (_compNode === null) return [];
-                return _compNode.nodeType === 11 ? Array.from(_compNode.childNodes) : [_compNode];
-              },
-              initial: { value: finalResult, cells: _capturedDeps },
-            });
-          }
-          // Plain object (Date, {foo:'bar'}, etc.) — stringify for text rendering.
-          // Ember's Glimmer VM stringifies all values in text positions.
-          // Handle Object.create(null) which has no toString — render as empty.
-          let textVal: string;
-          try {
-            textVal = String(finalResult);
-          } catch {
-            textVal = '';
-          }
-          const objTextNode = document.createTextNode(textVal);
-          try {
-            _gxtTemplateEffect(() => {
-              const v = item();
-              const fv = typeof v === 'function' ? v() : v;
-              objTextNode.textContent = _gxtCoerceText(fv);
-            });
-          } catch {
-            /* effect setup may fail */
-          }
-          return objTextNode;
+          // Any other object renders as dynamic content: a component definition
+          // (`{{this.Foo}}`) its component, any other object (a Date,
+          // `{ toString() {…} }`) its text.
+          return dynamicContent();
         }
 
-        // Handle symbol values — stringify for text rendering
-        if (typeof finalResult === 'symbol') {
-          const symTextNode = document.createTextNode(String(finalResult));
-          try {
-            _gxtTemplateEffect(() => {
-              const v = item();
-              const fv = typeof v === 'function' ? v() : v;
-              symTextNode.textContent = _gxtCoerceText(fv);
-            });
-          } catch {
-            /* effect setup may fail */
-          }
-          return symTextNode;
-        }
-
-        // Create a text node with the initial value.
-        // If the initial value is a DOM Node, use a marker-based approach
-        // that can swap between text and node content reactively.
-        if (finalResult instanceof Node) {
-          // DOM node in content position — insert it directly with
-          // start/end markers for reactive replacement.
-          const startMarker = document.createComment('');
-          const endMarker = document.createComment('');
-          const fragment = document.createDocumentFragment();
-          fragment.appendChild(startMarker);
-          fragment.appendChild(finalResult);
-          fragment.appendChild(endMarker);
-          try {
-            _gxtTemplateEffect(() => {
-              const v = item();
-              const fv = typeof v === 'function' ? v() : v;
-              const parent = startMarker.parentNode;
-              if (!parent) return;
-              // Remove existing content between markers
-              let node = startMarker.nextSibling;
-              while (node && node !== endMarker) {
-                const next = node.nextSibling;
-                parent.removeChild(node);
-                node = next;
-              }
-              // Insert new content
-              if (fv instanceof Node) {
-                parent.insertBefore(fv, endMarker);
-              } else if (fv != null && fv !== '') {
-                parent.insertBefore(document.createTextNode(String(fv)), endMarker);
-              }
-            });
-          } catch {
-            /* effect setup may fail */
-          }
-          return fragment;
-        }
-
-        // Set up reactive text binding via GXT effect().
-        // Cell-backed getters on the instance make property reads trackable.
-        // effect() tracks those cell reads. When set() updates the value,
-        // the cell is dirtied, gxtSyncDom() runs the effect, and the
-        // text node content is updated.
-        //
-        // When a value transitions to a DOM Node (e.g., {{this.attached}}
-        // changing from undefined to an Element), we replace the text node
-        // with the actual DOM node. We track the current content node so we
-        // can swap it reactively without leaving comment markers in the DOM.
-        const textValue = finalResult == null ? '' : String(finalResult);
-        const textNode = document.createTextNode(textValue);
-        let _currentContentNode: Node = textNode;
-        let _isNodeContent = finalResult instanceof Node;
-        try {
-          // The outer `item()` call above has already been issued — it
-          // produced `finalResult` and we've synchronously written it into
-          // the text node above. If the underlying helper has user-observable
-          // side effects (e.g. `{{capture (hash …)}}` records each call into
-          // the test's step list), the gxtEffect's first synchronous run
-          // calling `item()` AGAIN would dispatch the helper a second time
-          // before any state has changed. Skip the first effect invocation's
-          // re-call by reusing the cached `finalResult`; dependency tracking
-          // is still established through the cell reads that happened during
-          // the outer `item()` call because gxtEffect captures the same
-          // tracking frame (no second helper invocation needed to register
-          // deps — they were registered when finalResult was first computed).
-          let _firstRun = true;
-          _gxtTemplateEffect(() => {
-            let fv: any;
-            if (_firstRun) {
-              _firstRun = false;
-              // Capture-replay: the effect's formula is capturing deps inside
-              // this run. Replay the cells the outer `item()` read (captured
-              // above into `_capturedDeps`) into the active tracker so this
-              // effect SUBSCRIBES to them — without re-calling `item()` (which
-              // would double-dispatch a side-effecting helper).
-              const _effectTracker = _gxtGetTracker();
-              if (_effectTracker) {
-                _capturedDeps.forEach((c) => _effectTracker.add(c));
-              }
-              fv = finalResult;
-            } else {
-              const v = item();
-              fv = typeof v === 'function' ? v() : v;
-              // Leaf-owner RE-registration on re-run (GH#14332). The first-run
-              // capture frame registered the held leaf object as a value-owner of
-              // each captured cell (so a nested
-              // `set(leaf,'prop',…)` reverse-looks-up and dirties the cell). But
-              // when a parent ref-swaps the held object — `set(context,'page',
-              // newPage)` then `set(newPage,'title',…)` — the effect re-runs and
-              // re-tracks `cellFor(context,'page')`, yet `newPage` was never
-              // registered as that cell's value-owner (registration only ran on
-              // first render with the OLD page). So `set(newPage,'title',…)`
-              // reverse-looks-up nothing and the bound text stays stale. Re-walk
-              // the live tracker (the cells THIS run read, with their refreshed
-              // `_value` = newPage) and re-register owners. Idempotent
-              // (registerObjectValueOwner dedupes by (obj,key)).
-              try {
-                const _tr = _gxtGetTracker();
-                if (_tr) {
-                  _tr.forEach((c: any) => {
-                    try {
-                      const _v = c._value;
-                      const _ro = c._relatedObj;
-                      const _rk = c._relatedKey;
-                      if (
-                        _v &&
-                        typeof _v === 'object' &&
-                        _ro &&
-                        typeof _ro === 'object' &&
-                        typeof _rk === 'string'
-                      ) {
-                        registerObjectValueOwner(_v, _ro, _rk);
-                      }
-                    } catch {
-                      /* per-cell best-effort */
-                    }
-                  });
-                }
-              } catch {
-                /* leaf-owner re-registration is best-effort */
-              }
-            }
-            if (fv instanceof Node) {
-              // Transition to or update DOM Node content
-              const parent = _currentContentNode.parentNode;
-              if (!parent) return;
-              if (_currentContentNode !== fv) {
-                parent.replaceChild(fv, _currentContentNode);
-                _currentContentNode = fv;
-              }
-              _isNodeContent = true;
-              return;
-            }
-
-            if (_isNodeContent) {
-              // Was Node, now primitive — replace with text node
-              const parent = _currentContentNode.parentNode;
-              if (!parent) return;
-              const newText = document.createTextNode(_gxtCoerceText(fv));
-              parent.replaceChild(newText, _currentContentNode);
-              _currentContentNode = newText;
-              _isNodeContent = false;
-            } else {
-              (textNode as Text).textContent = _gxtCoerceText(fv);
-            }
-          });
-        } catch {
-          // Effect setup failed — text node stays static
-        }
-
-        return textNode;
+        // Any other value (a primitive, a symbol) renders as text, as dynamic
+        // content: it renders what the value is after every change.
+        return dynamicContent();
       } catch (e) {
         // Re-throw assertion errors (e.g., "Could not find component named ...")
         // so they propagate to the test harness
