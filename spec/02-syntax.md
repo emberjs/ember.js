@@ -1020,22 +1020,45 @@ consumeCharRef():
   j = index of the next ';' at or after the current position in the current chunk
   if none: return nothing                       (* the '&' is literal *)
   entity = text between '&' and that ';'
-  if entity matches /^#[xX]([A-Fa-f0-9]+)$/: chars = String.fromCharCode(parseInt(hex, 16))
-  elif entity matches /^#([0-9]+)$/:          chars = String.fromCharCode(parseInt(dec, 10))
+  if entity matches /^#[xX]([A-Fa-f0-9]+)$/: chars = numericCharRef(parseInt(hex, 16))
+  elif entity matches /^#([0-9]+)$/:          chars = numericCharRef(parseInt(dec, 10))
   elif entity matches /^([A-Za-z0-9]+)$/:      chars = HTML5NamedCharRefs[entity]
   if chars is a non-empty string: consume entity and ';', return chars
   else: return nothing                          (* the '&' is literal, rest re-scanned *)
+
+numericCharRef(n):                              (* WHATWG numeric character reference end state *)
+  if n = 0, or n > 0x10FFFF, or 0xD800 <= n <= 0xDFFF: return U+FFFD
+  if n is in the Windows-1252 table below:             return that table's code point
+  return the code point n                       (* astral code points as a surrogate pair *)
 ```
+
+The Windows-1252 table is the one in the WHATWG
+[numeric character reference end state](https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state):
+0x80 → U+20AC, 0x82 → U+201A, 0x83 → U+0192, 0x84 → U+201E, 0x85 → U+2026, 0x86 → U+2020,
+0x87 → U+2021, 0x88 → U+02C6, 0x89 → U+2030, 0x8A → U+0160, 0x8B → U+2039, 0x8C → U+0152,
+0x8E → U+017D, 0x91 → U+2018, 0x92 → U+2019, 0x93 → U+201C, 0x94 → U+201D, 0x95 → U+2022,
+0x96 → U+2013, 0x97 → U+2014, 0x98 → U+02DC, 0x99 → U+2122, 0x9A → U+0161, 0x9B → U+203A,
+0x9C → U+0153, 0x9E → U+017E, 0x9F → U+0178. The other C1 code points (0x81, 0x8D, 0x8F, 0x90,
+0x9D) and every other control or noncharacter are kept as they are; HTML calls these parse
+errors but still decodes them, and so does a template.
 
 Normative consequences (all reproduced by tests or directly observable):
 
 - The terminating `;` is required: `&amp` and `&not c` are literal. Unknown names
-  (`&bogus;`, `&NotANamedRef;`) are literal. `&#;`, `&#x;`, `&#65` are literal.
+  (`&bogus;`, `&NotANamedRef;`) are literal. `&#;`, `&#x;`, `&#65` are literal. HTML differs
+  here (§02-11 item 6).
 - Named references use the WHATWG `entities.json` table (the names *with* semicolons, e.g.
   `amp`, `AMP`, `nbsp`, `notin`, `excl`), and are case-sensitive.
-- Numeric references use `String.fromCharCode`, **not** `String.fromCodePoint`, and apply no
-  WHATWG replacement: code points above U+FFFF are truncated modulo 2^16 (`&#128512;` →
-  U+F600), `&#0;` → U+0000, `&#xD800;` → a lone surrogate. See Open questions.
+- A numeric reference MUST decode as it does in HTML (`numericCharRef` above): `&#128512;` and
+  `&#x1F600;` are U+1F600, `&#146;` is U+2019 and `&#150;` is U+2013, and `&#0;`, `&#xD800;`
+  and `&#x110000;` are U+FFFD. **[Out of spec]** (author, 2026-10-15; §00-0.5.1): the current
+  implementation decodes with `String.fromCharCode` and applies no replacement
+  (`simple-html-tokenizer/dist/es6/index.js:22,26`). Code points above U+FFFF are truncated
+  modulo 2^16 (`&#128512;` → U+F600, `&#x110041;` → `A`), 0x80–0x9F stay C1 controls,
+  `&#0;` → U+0000, and `&#xD800;` → a lone surrogate. No template in the corpus changes
+  meaning (`tools/char-ref-impact.mjs`: 28,786 templates, 61 with a numeric reference, none
+  affected). Fixes are open as emberjs/ember.js#21728 and emberjs/simple-html-tokenizer#115
+  (T26).
 - The `;` search stops at the next construct (§02-1.1); a reference cannot span a mustache.
 - References are **not** decoded when the most recent tag name is exactly `script` or `style`
   (data state only; attribute values are always decoded). They *are* decoded in `<textarea>`
@@ -1688,8 +1711,14 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
    block there errors with E21.
 6. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
-   replacement of 0, surrogates, or C1 controls). `&#128512;` yields U+F600. Likely a bug that
-   templates might nonetheless depend on.
+   replacement of 0, surrogates, or C1 controls). `&#128512;` yields U+F600. *Decided* (author,
+   2026-10-15): this is a bug. A numeric reference decodes as in HTML (§02-6.3), and the current
+   implementation is **[Out of spec]**. No corpus template depends on the old behavior. Fixes
+   are open as emberjs/ember.js#21728 (`@glimmer/syntax` supplies its own `EntityParser`) and
+   emberjs/simple-html-tokenizer#115 (asks for a new major); when they land is outside the spec
+   (T26). Still open: HTML also decodes a reference with no `;` (`&#65`, and the legacy names
+   such as `&amp` and `&lt`), which a template keeps literal (§02-6.3). Should that follow HTML
+   too?
 7. **`<pre>`/`<textarea>` newline** is keyed off the most recent start-tag name (compared
    case-insensitively, cleared by any end tag) and is re-applied at every content chunk starting in `beforeData`
    (e.g. after a mustache inside `<pre>`), which does not match HTML parsing (only the newline

@@ -177,6 +177,7 @@ mustache syntax begins (§02-1.1); §02-1.4 gives each one's corpus impact.
 | An escape in content (`a\{{b}} c`) | One text node | Two text nodes (same rendered text) | [Out of spec] | §02-2.2 |
 | A newline after a construct inside `<pre>` or `<textarea>` (`<pre>{{a}}\n{{b}}</pre>`) | Kept; only the newline right after the start tag is dropped | Dropped, until the first nested tag | [Out of spec] | §02-6.8 |
 | A literal mustache with arguments (`{{"foo" bar}}`) | Syntax error (E48) | Accepted; the arguments are dropped | [Out of spec] | §02-3.7 |
+| A numeric character reference (`&#128512;`, `&#146;`, `&#0;`, `&#xD800;`) | Decoded as in HTML: U+1F600, U+2019 (Windows-1252 remap), U+FFFD, U+FFFD | `String.fromCharCode`: U+F600 (truncated to 16 bits), U+0092, U+0000, a lone surrogate | [Out of spec] | §02-6.3 |
 | `{{&foo}}`, `{{^}}`, `{{^foo}}…{{else}}…{{/foo}}`, raw blocks | A new implementation SHOULD reject them as syntax errors | Accepted, under deprecation until 8.0.0 | [Deprecated] | §02-2.7, §02-3.2, §02-3.3 |
 
 ## 0.6 Status and verification
@@ -243,8 +244,9 @@ choice breaks someone.
    A proposal to make them errors is open as emberjs/ember.js#21718. (§05-14 item 13)
 3. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
    `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 12)
-4. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
-   this. (§02-11 item 6)
+4. `&#128512;` decodes through `String.fromCharCode` to U+F600. *Decided* (author,
+   2026-10-15): a bug. Numeric references decode as in HTML, and the current implementation is
+   **[Out of spec]** (§0.5.1). No corpus template depends on the old behavior. (§02-11 item 6)
 
 ### 0.7.2 Parser robustness
 

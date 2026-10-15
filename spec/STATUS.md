@@ -109,6 +109,12 @@ continue the work. Last updated: 2026-10-15.
     property 3, §02-6.11). *Literal mustache with arguments* is error E48 (§02-3.7). Both
     **[Out of spec]** for the current implementation.
   - *T21 timing* (pushing the RFC and the guides) is out of scope.
+  - *Numeric character references* (T26) decode as in HTML: astral code points are kept whole,
+    0x80–0x9F are remapped through the Windows-1252 table, and NUL, surrogates and values above
+    U+10FFFF become U+FFFD (§02-6.3). The current `String.fromCharCode` decoding is a bug and
+    **[Out of spec]** (§00-0.5.1, §02-11 item 6). Corpus impact, from `tools/char-ref-impact.mjs`
+    over the same 28,786 templates: 61 use a numeric reference, and none changes meaning. Still
+    open for the author: whether a reference with no `;` should also follow HTML.
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
   revalidation without reverse edges: the core may schedule effects that are not stale, and
   filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
@@ -157,6 +163,8 @@ review are based on `9bec1cb2a8`.
 | §02-11 item 15 | deprecation-app, rfcs | `deprecate-legacy-handlebars-syntax` | Local, not pushed (T21) | Four deprecation guides (`46ae444`) and the deprecation RFC (`66fbfd71`). |
 | §02-11 item 17 | ember.js | `fix/blocks-straddling-markup` | **Parked** (T22, author 2026-10-14) | `{{else}}`/closer inside a tag is an error; `{{else}}` inside an HTML comment from the block is comment text; a closer there is an error. Not landing now: a longer deprecation cycle comes first. The spec differs for a closer in a comment (comment text, so the block is unclosed) and goes further: all mustache syntax in a comment is comment text (§02-6.7). |
 | §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | **PR open**: emberjs/ember.js#21718 | Duplicate attributes and named arguments become compile errors; the PR description is the full explainer. |
+| §02-11 item 6 | ember.js | `fix-numeric-char-refs` | **PR open**: emberjs/ember.js#21728 (T26) | `@glimmer/syntax` supplies its own `EntityParser` that decodes numeric references as HTML does (§02-6.3). |
+| §02-11 item 6 | simple-html-tokenizer | `fix-numeric-char-refs` | **PR open**: emberjs/simple-html-tokenizer#115 (T26) | The same fix upstream, using native `String.fromCodePoint`; labelled `breaking`, to be released as a new major so Ember apps pick it up only through an Ember release. |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
 that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
@@ -171,7 +179,7 @@ repo).
 |---|---|---|---|
 | 00 overview | ~350 | Drafted. §0.1 and §0.2 were updated for the wire-format decision and the non-goals (T6). §0.6 matches this table. §0.7 (consolidated open questions) written by T2b; pruned to 31 open items by T12. | — |
 | 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. T9a ran the babel plugin (`wire`, `hbs`) and the runtime `template()` against §01-1.11 items 1–3, §01-1.4 and §01-1.5.6 (all confirmed; `.work/T9a-compile-paths.md`). |
-| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24/T25: parsing is HTML-first (§02-1.1); its compatibility issues and their resolutions are §02-1.4, all **[Out of spec]** for the current implementation, as is the literal-mustache error E48. | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
+| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24/T25: parsing is HTML-first (§02-1.1); its compatibility issues and their resolutions are §02-1.4, all **[Out of spec]** for the current implementation, as is the literal-mustache error E48. T26: numeric character references decode as in HTML (§02-6.3), **[Out of spec]** as well. | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1, 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 14. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. T9b ran throwaway browser tests for the public-manager component ordering across a tree, component-hook vs modifier-install order, update ordering, deferred destructors and modifier destruction: all confirmed except modifier destruction order, which is creation order (not child-first) when the debug render tree is on (Ember DEBUG default) (§05-11.3; since fixed, #21639). None of these have upstream tests. |
@@ -221,6 +229,7 @@ Run these in order, one at a time.
 | T23 | Rendering tests for `{{else …}}` chains (split from T21; no rendering test exists) | Sonnet | `.work/T23-else-chain-rendering.md` | planned; seed tests from T21 in the checklist |
 | T24 | Author feedback `03c77f86b4`: the current implementation can be out of spec; mustache syntax in HTML comments is comment text; T20 and T22 rules stated as errors; T21 timing out of scope | Opus | `.work/T24-out-of-spec-feedback.md` | done; [Out of spec] redefined, §00-0.5.1 lists every place, §02-1.1/1.4/6.7/6.11/3.7, E48–E50, §02-11 items 1, 17, 19 |
 | T25 | Author follow-up to T24: HTML-first parsing everywhere, compatibility issues enumerated and resolved | Opus | `.work/T25-html-first.md` | done; §02-1.1 rewritten (state table), §02-1.4 is the issue list with corpus impact, §02-2.2, §02-5, §02-6.1, §02-6.2, §02-6.8, §02-11 items 7, 19; §00-0.5.1 rows |
+| T26 | Author ruling: numeric character references that decode differently from HTML are a bug; the spec follows HTML (§02-11 item 6) | Opus | none (done in one session) | done; §02-6.3 states the HTML rule with the current behavior **[Out of spec]**, §02-11 item 6, §00-0.5.1 row, §00-0.7.1 item 4; corpus impact none (`tools/char-ref-impact.mjs`); fixes open as emberjs/ember.js#21728 and emberjs/simple-html-tokenizer#115 |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
