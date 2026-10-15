@@ -894,18 +894,20 @@ function gxtBlockParamsTransform(env: GxtAstEnv) {
     }
     return null;
   };
-  // Rewrite a yielded contextual-component tag `<param.Foo …>` → `<this.$_bp0.Foo …>`
-  // (only when `param` is an in-scope ELEMENT binder). Resolved against the
-  // ENCLOSING scope (called before this element pushes its own params).
+  // Rewrite a yielded contextual-component tag `<param.Foo …>` → `<this.$_bp0.Foo …>`,
+  // and a tag that is the param itself, `<param …>` → `<this.$_bp0 …>` (only
+  // when `param` is an in-scope ELEMENT binder): as in Glimmer, a tag naming a
+  // block param in scope invokes the param's value as a component, whatever its
+  // case. Resolved against the ENCLOSING scope (called before this element
+  // pushes its own params).
   const rewriteTag = (node: any): void => {
     const tag: string = node.tag;
     if (!tag) return;
     const dot = tag.indexOf('.');
-    if (dot === -1) return;
-    const head = tag.slice(0, dot);
+    const head = dot === -1 ? tag : tag.slice(0, dot);
     const hit = resolve(head);
     if (!hit || hit.bp === undefined) return;
-    node.tag = `this.${hit.bp}.${tag.slice(dot + 1)}`;
+    node.tag = dot === -1 ? `this.${hit.bp}` : `this.${hit.bp}.${tag.slice(dot + 1)}`;
   };
   return {
     name: 'ember-gxt-block-params',

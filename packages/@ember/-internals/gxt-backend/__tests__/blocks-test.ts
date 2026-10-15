@@ -1,10 +1,13 @@
 /**
- * Blocks (compat, GXT_MODE).
+ * Blocks and block params (compat, GXT_MODE).
  *
- * Glimmer semantics: a component's `{{else}}` block, `<:else>` and `<:inverse>`
- * are one block: `{{yield to="else"}}` and `{{yield to="inverse"}}` render it
- * and `(has-block "else")` / `(has-block "inverse")` see it, whatever invoked
- * the component (curly, a `{{#component}}` block, angle brackets).
+ * Glimmer semantics:
+ * - a component's `{{else}}` block, `<:else>` and `<:inverse>` are one block:
+ *   `{{yield to="else"}}` and `{{yield to="inverse"}}` render it and
+ *   `(has-block "else")` / `(has-block "inverse")` see it, whatever invoked the
+ *   component (curly, a `{{#component}}` block, angle brackets);
+ * - a tag naming a block param in scope invokes the param's value as a
+ *   component, whatever its case (`<Yielder as |greet|><greet /></Yielder>`).
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -82,6 +85,33 @@ moduleFor(
         { ToElse, ToInverse, on: false }
       );
       this.assertText('[No:B][No:D]');
+    }
+  }
+);
+
+moduleFor(
+  'GXT block params',
+  class extends RenderingTestCase {
+    ['@test a tag naming a block param invokes the yielded component']() {
+      this.owner.register(
+        'component:greeting',
+        setComponentTemplate(
+          precompileTemplate('<p>hi {{@name}}</p>'),
+          class extends GlimmerComponent {}
+        )
+      );
+      this.owner.register(
+        'component:yielder',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component "greeting" name="x")}}'),
+          class extends GlimmerComponent {}
+        )
+      );
+      this.render(
+        '<Yielder as |greet|><greet /></Yielder>|<Yielder as |greet|><greet @name="y"></greet></Yielder>'
+      );
+      this.assertText('hi x|hi y');
+      this.assert.strictEqual(this.element.querySelector('greet'), null, 'no <greet> element');
     }
   }
 );
