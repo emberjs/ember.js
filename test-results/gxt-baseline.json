@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T11:28:28.803Z",
+    "capturedAt": "2026-10-15T13:51:45.439Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "2e4812f25c",
-    "totalTests": 10108,
-    "totalModules": 985,
+    "emberCommit": "0f77b1e682",
+    "totalTests": 10118,
+    "totalModules": 987,
     "quarantinedTests": 0,
-    "totalAssertions": 60279,
-    "totalAssertionsPassing": 59412,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after a content mustache in a build-time template renders what its value is and a bound attribute that is a property of its element is set through the property, written by runner.mjs. 9545/10108 green (was 9495/10097), 985 modules, no timeouts, no harness errors, no green->red. 39 tests turned green: a bound attribute that names a property of its element is set through the property, so <button name={{has-block}}> renders name=\"false\" (the parameterized has-block and has-block-params (prop, ...) tests of the Curly, Glimmer and Dynamic suites and their parent modules), and a bound selected of an option is its selectedness, with no attribute (Updating: <option selected> is normalized and updated correctly; initial render (client): Dynamic selected options, Dynamic multi-select). 11 new tests, green or skipped: Integration | <template> | content mustache (7; the 2 tests of a content mustache outside an element are skipped under GXT_MODE, where gxt renders it with its own text binding in a build-time template), Integration | <template> | bound attributes (2), and 2 yielded block parameter tests in GXT dynamic content. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 90 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60296,
+    "totalAssertionsPassing": 59432,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after a template-only component reads its arguments' values whatever invoked it, every template-only component's argument updates when what it reads changes, and a renderComponent root argument is read as Glimmer reads it, written by runner.mjs in the GitHub Actions GXT full workflow (run 38746129567, on the code of 0f77b1e682). 9556/10118 green (was 9545/10108), 987 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 1 test turned green: [integration] #in-element: Inside a loop (an argument of a template-only component in an {{#each}} row updates). 10 new tests, all green: GXT component arguments (8) and GXT renderComponent root arguments (2)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2614,6 +2614,13 @@
       "assertionsPassing": 6,
       "failingTests": []
     },
+    "GXT component arguments": {
+      "total": 8,
+      "passing": 8,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
+      "failingTests": []
+    },
     "GXT correctness: @glimmer/tracking/primitives/cache": {
       "total": 1,
       "passing": 1,
@@ -2710,6 +2717,13 @@
       "passing": 11,
       "assertionsTotal": 39,
       "assertionsPassing": 39,
+      "failingTests": []
+    },
+    "GXT renderComponent root arguments": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
       "failingTests": []
     },
     "GXT renderComponent: a hasSubOwner component manager's owner": {
@@ -5592,15 +5606,10 @@
     },
     "[integration] jit :: #in-element": {
       "total": 9,
-      "passing": 8,
+      "passing": 9,
       "assertionsTotal": 318,
-      "assertionsPassing": 315,
-      "failingTests": [
-        {
-          "name": "Inside a loop",
-          "category": "gxt:triage"
-        }
-      ],
+      "assertionsPassing": 318,
+      "failingTests": [],
       "skippedTests": [
         "Changing to falsey",
         "With pre-existing content"
@@ -9439,6 +9448,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 563
+    "gxt:triage": 562
   }
 }
