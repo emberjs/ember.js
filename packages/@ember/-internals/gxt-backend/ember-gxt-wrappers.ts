@@ -1963,7 +1963,9 @@ function createEmberDc(original: Function) {
   // owner captured at the first render (when none is ambient) and with the
   // component getter as the current dc getter; a string path also stashes its
   // instance-capture callback on the args for the render (see `__gxtDcCapture`).
-  // A render error leaves the slot empty.
+  // A render error leaves the slot empty, and is the update's error: it is
+  // queued in the render-error queue, which the code that asked for the update
+  // throws from (the renderer's `revalidate`).
   function renderSwappedValue(
     newVal: any,
     componentGetter: any,
@@ -1994,8 +1996,8 @@ function createEmberDc(original: Function) {
       } else {
         newResult = renderComponent(newVal, gxtArgs, ctx, true);
       }
-    } catch {
-      // Component not found or render error — leave empty
+    } catch (renderError) {
+      getGxtRenderer()!.compilePipeline.captureRenderError(renderError);
     } finally {
       setDcComponentGetter(prevDcGetter);
       if (captureInstance) {

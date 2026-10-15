@@ -593,8 +593,29 @@ export class RendererState {
     // But explicit .rerender() calls (which mark the component through
     // `compilePipeline.forceRerender`) still need a sync pass to flush the
     // hooks.
+    //
+    // The sync runs here, in the run loop's render queue, as Glimmer's
+    // revalidation renders the roots there: an error an update throws (one
+    // the sync queued, see gxt-backend's `_gxtCaptureUpdateError`) is thrown
+    // to the code that ran the run loop. Inside `runTask` / `runAppend` (the
+    // test helpers), the helper syncs after its run loop instead.
     if (__GXT_MODE__) {
-      getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
+      const pipeline = getGxtRenderer()?.compilePipeline;
+      pipeline?.setPendingSync?.(true);
+      const syncDomNow = pipeline?.syncDomNow;
+      if (pipeline?.getRunTaskActive?.() || typeof syncDomNow !== 'function') return;
+      const renderPass = gxtRenderPass();
+      const mark = renderPass.renderErrorMark();
+      let synced = false;
+      try {
+        syncDomNow();
+        synced = true;
+      } finally {
+        // An error the sync throws itself reaches the caller as it is, and the
+        // copies of it the sync queued are dropped.
+        if (!synced) renderPass.dropRenderErrors(mark);
+      }
+      renderPass.flushRenderErrors(mark);
       return;
     }
     if (this.isValid()) {

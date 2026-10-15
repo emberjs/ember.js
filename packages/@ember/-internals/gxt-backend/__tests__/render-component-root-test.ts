@@ -9,7 +9,9 @@
  *   arguments and bounds, until the render is destroyed;
  * - the bounds of a root follow its render as it updates;
  * - a render into a cursor (`{ element, nextSibling }`) is inserted before the
- *   cursor's `nextSibling`, and leaves the element's other nodes in place.
+ *   cursor's `nextSibling`, and leaves the element's other nodes in place;
+ * - an error thrown while a root updates reaches the code that asked for the
+ *   update (`renderer.rerender()` in a run loop).
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -21,6 +23,9 @@ import { renderComponent, renderSettled } from '@ember/renderer';
 import { run } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
+import { setRenderer } from '@ember/-internals/glimmer';
+import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import GlimmerComponent from '@glimmer/component';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -162,6 +167,42 @@ moduleFor(
         '<b>before</b><!--marker--><i>after</i>',
         'destroying the render removes only its nodes'
       );
+    }
+  }
+);
+
+moduleFor(
+  'GXT renderComponent root errors',
+  class extends RenderComponentRootTestCase {
+    ['@test an error thrown while a root updates reaches the caller of rerender()'](
+      assert: QUnit['assert']
+    ) {
+      class Foo extends GlimmerComponent {
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          throw new Error('Foo could not be created');
+        }
+      }
+      setComponentTemplate(precompileTemplate('Hello'), Foo);
+      let state = trackedObject({ showing: false });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{#if state.showing}}<Foo/>{{/if}}', {
+          strictMode: true,
+          scope: () => ({ Foo, state }),
+        }),
+        templateOnly()
+      );
+      let renderer = BaseRenderer.strict(this.owner, document, { isInteractive: true });
+      setRenderer(this.owner, renderer);
+      let result = renderComponent(Root, { owner: this.owner, into: this.container() });
+      registerDestructor(this, () => result.destroy());
+
+      assert.throws(() => {
+        run(() => {
+          state.showing = true;
+          renderer.rerender();
+        });
+      }, /Foo could not be created/);
     }
   }
 );

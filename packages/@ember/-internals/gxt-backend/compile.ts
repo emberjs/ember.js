@@ -7117,6 +7117,16 @@ function _resetTemplateOnlyState() {
 // `_gxtSyncAllWrappers` in manager.ts; `_gxtSyncDomNow` (Phase 1 below) calls it
 // through `getGxtRenderer()?.compilePipeline.syncAllWrappers?.()`.
 
+// An error a binding throws while it updates (it renders a component whose
+// constructor throws, its value cannot render, …) is the update's error. gxt's
+// pass stops at it; the sync queues it in the render-error queue, and the code
+// that asked for the update throws it from there (`renderPass.flushRenderErrors`,
+// see the renderer's `revalidate`), as Glimmer's revalidation throws it to the
+// code that renders.
+function _gxtCaptureUpdateError(error: unknown): void {
+  getGxtRenderer()!.compilePipeline.captureRenderError(error);
+}
+
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 //
@@ -7218,8 +7228,8 @@ function _gxtSyncDomNow(): void {
       if (_gxtGetHadPendingSync()) {
         try {
           gxtSyncDom();
-        } catch {
-          /* ignore */
+        } catch (syncError) {
+          _gxtCaptureUpdateError(syncError);
         }
       } else {
         // Clear tagsToRevalidate to prevent stale formulas from re-evaluating
@@ -7248,8 +7258,8 @@ function _gxtSyncDomNow(): void {
           if (_gxtGetHadPendingSync() || _gxtGetPendingSync()) {
             try {
               gxtSyncDom();
-            } catch {
-              /* ignore */
+            } catch (syncError) {
+              _gxtCaptureUpdateError(syncError);
             }
           }
           // When STRING-path $_dc change listeners are active (using GXT cells),
