@@ -83,7 +83,13 @@ interface GxtAstEnv {
     builders: {
       element(
         tag: string,
-        options?: { attrs?: unknown[]; children?: unknown[]; selfClosing?: boolean }
+        options?: {
+          attrs?: unknown[];
+          children?: unknown[];
+          selfClosing?: boolean;
+          // Names, or the parsed `VarHead` nodes of a block's params.
+          blockParams?: unknown[];
+        }
       ): unknown;
       path(original: string): unknown;
       block(
@@ -177,6 +183,97 @@ function gxtBlockAtArgTransform(env: GxtAstEnv) {
         return undefined;
       },
     },
+  };
+}
+
+/**
+ * A component's `{{else}}` block, `<:else>` and `<:inverse>` are one block,
+ * named `inverse` here.
+ *
+ * Glimmer gives the block one name whatever spells it: a curly invocation's
+ * `{{else}}` block and a `<:inverse>` named block are the block `else`, and
+ * `{{yield to="inverse"}}` and `(has-block "inverse")` look up `else`
+ * (@glimmer/syntax `SymbolTable.allocateBlock`, @glimmer/compiler's named-block
+ * encoding). The GXT compiler names a curly component's `{{else}}` block
+ * `inverse` (a `:inverse` named block), and gxt's `$_slot` finds a block by its
+ * exact name, so the one name here is `inverse`:
+ *
+ *   - `{{yield to="else"}}` → `{{yield to="inverse"}}`;
+ *   - `<:else>…</:else>` → `<:inverse>…</:inverse>`;
+ *   - `{{#component X …}}A{{else}}B{{/component}}` →
+ *     `{{#component X …}}<:default>A</:default><:inverse>B</:inverse>{{/component}}`,
+ *     the default block keeping the main block's params. The GXT compiler
+ *     builds a `{{#component}}` block's component from the main block alone and
+ *     drops its `{{else}}` block; named blocks are what it passes for a
+ *     component invocation. Not for a bare `@arg` component (also
+ *     `{{#@arg}}…{{else}}…{{/@arg}}`, which `gxtBlockAtArgTransform` turns into
+ *     a `{{#component @arg}}` block): its `<@arg>` invocation has no named
+ *     blocks.
+ *
+ * `(has-block "else")` and `(has-block-params "else")` need no rewrite: their
+ * runtime lookup accepts either name (compile.ts `_lookupSlot`). A template
+ * that shadows `component` (a scope value or a block param of that name) keeps
+ * its `{{#component}}` blocks: the GXT compiler then invokes the binding as a
+ * component, `{{else}}` block included.
+ */
+function gxtElseBlockTransform(
+  scopeValues: Record<string, unknown> | undefined,
+  blockParamNames: Set<string>
+) {
+  const componentShadowed =
+    blockParamNames.has('component') ||
+    (scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, 'component'));
+  return (env: GxtAstEnv) => {
+    const b = env.syntax.builders;
+    const isKeyword = (path: any, name: string): boolean =>
+      !!path &&
+      path.type === 'PathExpression' &&
+      !!path.head &&
+      path.head.type === 'VarHead' &&
+      path.head.name === name &&
+      path.tail.length === 0;
+    return {
+      name: 'ember-gxt-else-block',
+      visitor: {
+        MustacheStatement(node: any): void {
+          if (!isKeyword(node.path, 'yield')) return;
+          for (const pair of node.hash.pairs) {
+            const value = pair.value;
+            if (pair.key === 'to' && value?.type === 'StringLiteral' && value.value === 'else') {
+              pair.value = b.string('inverse');
+            }
+          }
+        },
+        ElementNode(node: any): void {
+          if (node.tag === ':else') node.tag = ':inverse';
+        },
+        BlockStatement(node: any): void {
+          if (componentShadowed || !node.inverse || node.params.length === 0) return;
+          if (!isKeyword(node.path, 'component')) return;
+          // A bare `@arg` component is invoked as `<@arg>` (compile.ts
+          // `$_tag_ember`), which takes all block content as the default block
+          // and has no named blocks: its `{{else}}` block stays dropped.
+          const head = node.params[0];
+          if (head.type === 'PathExpression' && head.head?.type === 'AtHead' && !head.tail.length) {
+            return;
+          }
+          const program = node.program;
+          const inverse = node.inverse;
+          // The parsed `VarHead`s keep their source locations.
+          const defaultBlock = b.element(':default', {
+            blockParams: program.params ?? program.blockParams,
+            children: program.body,
+          });
+          const inverseBlock = b.element(':inverse', {
+            blockParams: inverse.params ?? inverse.blockParams,
+            children: inverse.body,
+          });
+          program.body = [defaultBlock, inverseBlock];
+          program.blockParams = [];
+          node.inverse = null;
+        },
+      },
+    };
   };
 }
 
@@ -1150,10 +1247,10 @@ function gxtTableTbodyTransform(env: GxtAstEnv) {
 /**
  * Build the ordered list of Ember dialect AST transforms for one compile.
  *
- * `gxtOutletTransform`, `gxtBlockAtArgTransform`, `gxtAttrQuotedHelperTransform`,
- * `gxtAttrComponentCurryTransform`, `gxtEachInTransform`, `gxtDynamicVarsTransform`,
- * `gxtBlockParamsTransform` and `gxtBodyBareHelperTransform` are always active
- * (they target disjoint node kinds
+ * `gxtOutletTransform`, `gxtBlockAtArgTransform`, `gxtElseBlockTransform`,
+ * `gxtAttrQuotedHelperTransform`, `gxtAttrComponentCurryTransform`,
+ * `gxtEachInTransform`, `gxtDynamicVarsTransform`, `gxtBlockParamsTransform` and
+ * `gxtBodyBareHelperTransform` are always active (they target disjoint node kinds
  * — or, for the `MustacheStatement` visitors, disjoint name/shape predicates — so
  * order between them is irrelevant). The `{{on}}`→`{{on-ext}}` transform is
  * appended only when the strict-mode scope does NOT shadow `on` — mirroring the
@@ -1560,6 +1657,7 @@ export function buildGxtDialectTransforms(
     gxtHtmlCommentTransform as unknown as GxtAstTransform,
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
+    gxtElseBlockTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
     gxtAttrComponentCurryTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
     gxtEachInTransform as unknown as GxtAstTransform,
