@@ -3,12 +3,10 @@ import { asPresentArray, getLast } from '@glimmer/debug-util/lib/present';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { assign } from '@glimmer/util/lib/object-utils';
-import {
-  EntityParser,
-  EventedTokenizer,
-  HTML5NamedCharRefs as namedCharRefs,
-} from 'simple-html-tokenizer';
+import type { EntityParser } from 'simple-html-tokenizer';
+import { EventedTokenizer } from 'simple-html-tokenizer';
 
+import { HTMLEntityParser } from './parser/entity-parser';
 import type * as src from './source/api';
 import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
@@ -63,7 +61,7 @@ export abstract class Parser {
 
   constructor(
     source: src.Source,
-    entityParser = new EntityParser(namedCharRefs),
+    entityParser: EntityParser = new HTMLEntityParser(),
     mode: 'precompile' | 'codemod' = 'precompile'
   ) {
     this.source = source;
