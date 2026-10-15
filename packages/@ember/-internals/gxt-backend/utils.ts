@@ -298,6 +298,83 @@ export function trustedStyleValue(value: unknown): unknown {
   return new TrustedStyleValue(value === true ? '' : String(value));
 }
 
+/**
+ * An entry of a `{{#each-in}}` (`gxtEntriesOf`): the key or property name `k`,
+ * the value `v`, and `key`, the key of its row in the list.
+ */
+export interface EachInEntry {
+  k: unknown;
+  v: unknown;
+  key?: unknown;
+}
+
+// The identity of a `null` value, as Glimmer keys it (`IDENTITY`).
+const EACH_IN_NULL_IDENTITY = {};
+// The row keys of object values, by the occurrence of the value in one pass.
+const EACH_IN_OBJECT_KEYS = new WeakMap<object, object[]>();
+
+/**
+ * Gives each entry of a `{{#each-in}}` the key of its row, as Glimmer keys
+ * an each-in list (`makeKeyFor` of @glimmer/reference iterable.ts over the
+ * each-in iterator, whose memo is the entry's key or property name):
+ * - `@identity` (the default): the value, a `null` value one identity;
+ * - `@key`: the key or property name;
+ * - `@index`: the key or property name as a string (so all the object keys
+ *   of a Map collide);
+ * - a path: the property at that path of the value.
+ * A key that an earlier entry of the pass has is made unique by its
+ * occurrence, as `uniqueKeyFor` does. The list keys its rows by the `key`
+ * property (`key="key"`), which holds an object for an object key and a
+ * string for a primitive one, so the list compares neither by `String()`.
+ */
+export function keyEachInEntries(entries: EachInEntry[], keyOption: unknown): EachInEntry[] {
+  const option =
+    typeof keyOption === 'function' && !keyOption.prototype
+      ? (keyOption as () => unknown)()
+      : keyOption;
+  const path = option === undefined || option === null ? '@identity' : String(option);
+  if (path[0] === '@' && path !== '@identity' && path !== '@key' && path !== '@index') {
+    throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
+  }
+  const occurrences = new Map<unknown, number>();
+  for (const entry of entries) {
+    let raw: unknown;
+    if (path === '@identity') {
+      raw = entry.v === null ? EACH_IN_NULL_IDENTITY : entry.v;
+    } else if (path === '@key') {
+      raw = entry.k;
+    } else if (path === '@index') {
+      raw = String(entry.k);
+    } else {
+      raw = valueAtPath(entry.v, path);
+    }
+    const count = occurrences.get(raw) ?? 0;
+    occurrences.set(raw, count + 1);
+    entry.key = rowKey(raw, count);
+  }
+  return entries;
+}
+
+function valueAtPath(value: unknown, path: string): unknown {
+  let current: any = value;
+  for (const part of path.split('.')) {
+    if (current === null || current === undefined) return current;
+    current = current[part];
+  }
+  return current;
+}
+
+function rowKey(raw: unknown, count: number): unknown {
+  if (raw !== null && (typeof raw === 'object' || typeof raw === 'function')) {
+    let keys = EACH_IN_OBJECT_KEYS.get(raw);
+    if (keys === undefined) EACH_IN_OBJECT_KEYS.set(raw, (keys = []));
+    let key = keys[count];
+    if (key === undefined) keys[count] = key = {};
+    return key;
+  }
+  return `${typeof raw}:${String(raw)}#${count}`;
+}
+
 // Inline the style warning message to avoid importing @ember/-internals/views
 // (which can cause circular dependency issues during module initialization).
 export function constructStyleDeprecationMessage(affectedStyle: string): string {

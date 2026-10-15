@@ -497,14 +497,16 @@ function gxtAttrComponentCurryTransform(
 }
 
 /**
- * `{{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}` →
- * `{{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}
+ * `{{#each-in EXPR key=K as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}` →
+ * `{{#each (gxtEntriesOf EXPR K) key="key" as |__ei__|}}
  *    {{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}
  *  {{else}}ELSE{{/each}}`
  *
- * (and the one-param / zero-param variants). `gxtEntriesOf` returns
- * `[{k, v}, ...]` for objects, Maps, proxies, and custom iterables; the
- * `key="@identity"` keeps row identity stable.
+ * (and the one-param / zero-param variants; K is `"@identity"` when the
+ * each-in has no `key=`). `gxtEntriesOf` returns `[{k, v, key}, ...]` for
+ * objects, Maps, proxies, and custom iterables, `key` being the key of the
+ * entry's row as Glimmer keys an each-in by K (utils.ts `keyEachInEntries`),
+ * so a row is kept, moved or replaced as in Glimmer.
  *
  * Replaces the former `transformEachInBlocks` string scanner. Recursion over
  * the AST handles nesting and `{{else}}`-splitting for free (the string
@@ -535,8 +537,14 @@ function gxtEachInTransform(env: GxtAstEnv) {
         }
         const expr = node.params[0];
         if (!expr) return undefined;
-        const entriesOf = b.sexpr(b.path('gxtEntriesOf'), [expr]);
-        const keyHash = b.hash([b.pair('key', b.string('@identity'))]);
+        // The entries are keyed by the each-in's `key=` option (`@identity` by
+        // default), as Glimmer keys an each-in list: `gxtEntriesOf` gives each
+        // entry the key of its row (utils.ts `keyEachInEntries`) in its `key`
+        // property, which keys the list.
+        const keyPair = node.hash.pairs.find((pair: any) => pair.key === 'key');
+        const keyOption = keyPair ? keyPair.value : b.string('@identity');
+        const entriesOf = b.sexpr(b.path('gxtEntriesOf'), [expr, keyOption]);
+        const keyHash = b.hash([b.pair('key', b.string('key'))]);
         const bp: string[] = node.program.blockParams || [];
         if (bp.length >= 1) {
           const entryVar = '__ei__';

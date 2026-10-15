@@ -32,7 +32,9 @@ import {
   classAsAttribute,
   createCurriedModifierValue,
   isPlainHtmlTagFastPath,
+  keyEachInEntries,
   sanitizedAttrValue,
+  type EachInEntry,
 } from './utils';
 import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
 import {
@@ -3016,7 +3018,7 @@ function _patchGxtEntriesOf(): void {
     return;
   }
   if (BUILTIN.__gxtEntriesOfPatched) return;
-  BUILTIN.gxtEntriesOf = function gxtEntriesOfEmber(obj: any): any[] {
+  const entriesOf = function entriesOf(obj: any): EachInEntry[] {
     // Thunks produced by the GXT compiler are arrow functions with no own
     // prototype. Only invoke in that case; leave regular functions and
     // classes (which have .prototype) untouched so we can iterate their
@@ -3079,6 +3081,12 @@ function _patchGxtEntriesOf(): void {
     // this records the observed keys and subscribes the active source formula.
     gxtModule.entangleObjectKeys(resolved, keys);
     return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
+  };
+  // `{{#each-in X key=K}}` is `{{#each (gxtEntriesOf X K) key="key"}}`
+  // (ast-transforms.ts): the entries of X, each keyed by the `key=` option
+  // (`keyEachInEntries`).
+  BUILTIN.gxtEntriesOf = function gxtEntriesOfEmber(obj: any, key?: unknown): EachInEntry[] {
+    return keyEachInEntries(entriesOf(obj), key);
   };
   Object.defineProperty(BUILTIN, '__gxtEntriesOfPatched', {
     value: true,

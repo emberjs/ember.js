@@ -22,6 +22,7 @@ import {
   boundAttributeProperty,
   sanitizedAttrValue,
   trustedStyleValue,
+  keyEachInEntries,
 } from './utils';
 import {
   initChildViews as _emberInitChildViews,
@@ -6604,14 +6605,15 @@ function patchGlobalEachSync() {
     // Determine whether this list's keying can ever STALE a key and rebind a
     // reused row to a NEW object ref (the `rebindEachItem` host hook).
     // glimmer-next's compiler emits `key` as: `null` (no `key=`), `'@identity'`
-    // (each-in / explicit identity), or `'@index'` (rare; compiler warns +
+    // (explicit identity), or `'@index'` (rare; compiler warns +
     // downgrades to identity) → ALL of these key by object identity (a stable
     // WeakMap), so a given key can NEVER bind to a different ref → rebind is
     // impossible → the per-row `__gxtRev` cell is dead weight. Only an EXPLICIT
     // property/function `key=` (e.g. `key="id"`) can stale a key (in-place
     // mutate the keyed prop, then a ref-swap reuses the row by the stale key) →
-    // rebind possible → KEEP the rev cell. So: rebindPossible = key is
-    // non-null, non-identity, non-index.
+    // rebind possible → KEEP the rev cell. An each-in is keyed by its entries'
+    // `key` (`key="key"`): a kept row is rebound to the new entry object. So:
+    // rebindPossible = key is non-null, non-identity, non-index.
     const _keyIsIdentity =
       key === null || key === undefined || key === '' || key === '@identity' || key === '@index';
     const _rebindPossible = !_keyIsIdentity;
@@ -8084,6 +8086,73 @@ function _comparisonHelper(name: string, compare: (a: any, b: any) => boolean) {
   }[name]!;
 }
 
+// The entries of an `{{#each-in}}` source (the inline fallback of
+// `gxtEntriesOf`, which ember-gxt-wrappers.ts overrides at runtime).
+function _gxtEntriesOf(obj: any): Array<{ k: any; v: any }> {
+  let resolved = typeof obj === 'function' ? obj() : obj;
+  // Functions can have own properties (e.g., function Foo() {}; Foo.bar = 1).
+  // In each-in, these should be iterable. However, we must distinguish between
+  // plain functions (which should have their keys enumerated) and getter functions
+  // (which should be called to get the actual value).
+  // After the first unwrap, if we still have a function, it's a real value —
+  // check if it has own enumerable keys.
+  if (typeof resolved === 'function') {
+    const keys = Object.keys(resolved);
+    if (keys.length > 0) {
+      return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
+    }
+    return [];
+  }
+  if (!resolved || typeof resolved !== 'object') return [];
+  // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
+  // ObjectProxy has unknownProperty/setUnknownProperty and stores data in .content
+  if (
+    typeof resolved.unknownProperty === 'function' &&
+    typeof resolved.setUnknownProperty === 'function'
+  ) {
+    const content = resolved.content;
+    if (!content || typeof content !== 'object') return [];
+    resolved = content;
+  }
+  // Support Map-like objects (ES6 Map, etc.) but NOT arrays.
+  // Arrays have both .entries() and .forEach(), but should use Object.keys()
+  // to iterate like `for (key in obj)` — including non-numeric own properties
+  // and skipping sparse holes.
+  if (
+    !Array.isArray(resolved) &&
+    typeof resolved.entries === 'function' &&
+    typeof resolved.forEach === 'function'
+  ) {
+    return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
+  }
+  // Support custom iterables with Symbol.iterator (but not arrays or strings)
+  if (
+    typeof resolved[Symbol.iterator] === 'function' &&
+    !Array.isArray(resolved) &&
+    typeof resolved !== 'string'
+  ) {
+    const entries: { k: any; v: any }[] = [];
+    for (const entry of resolved) {
+      if (Array.isArray(entry) && entry.length >= 2) {
+        entries.push({ k: entry[0], v: entry[1] });
+      }
+    }
+    return entries;
+  }
+  // For objects and arrays: use Object.keys() which returns own enumerable properties.
+  // This correctly handles:
+  // - Plain objects: all own keys
+  // - Object.create(proto): only own keys (not inherited)
+  // - Arrays: numeric indices + custom properties like arr.foo = 'bar'
+  // - Sparse arrays: only defined indices (skips holes)
+  const keys = Object.keys(resolved);
+  // Subscribe the each-in source to the object's key set so
+  // `set(obj,'NewKey')` re-iterates. (This inline copy is the fallback —
+  // ember-gxt-wrappers.ts overrides `gxtEntriesOf` at runtime.)
+  _gxtEntangleObjectKeys(resolved, keys);
+  return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
+}
+
 // Register built-in keyword helpers for GXT integration
 // These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
 // Module-local; other files (ember-gxt-wrappers' helper resolution + entries-of
@@ -8360,71 +8429,10 @@ const _emberBuiltinHelpers: Record<string, any> = {
   },
   // gxtEntriesOf: Converts an object to [{k, v}, ...] for {{#each-in}}
   // Returns objects with .k and .v properties (not arrays) since GXT
-  // doesn't support numeric property access like entry.0.
-  gxtEntriesOf: (obj: any) => {
-    let resolved = typeof obj === 'function' ? obj() : obj;
-    // Functions can have own properties (e.g., function Foo() {}; Foo.bar = 1).
-    // In each-in, these should be iterable. However, we must distinguish between
-    // plain functions (which should have their keys enumerated) and getter functions
-    // (which should be called to get the actual value).
-    // After the first unwrap, if we still have a function, it's a real value —
-    // check if it has own enumerable keys.
-    if (typeof resolved === 'function') {
-      const keys = Object.keys(resolved);
-      if (keys.length > 0) {
-        return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
-      }
-      return [];
-    }
-    if (!resolved || typeof resolved !== 'object') return [];
-    // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
-    // ObjectProxy has unknownProperty/setUnknownProperty and stores data in .content
-    if (
-      typeof resolved.unknownProperty === 'function' &&
-      typeof resolved.setUnknownProperty === 'function'
-    ) {
-      const content = resolved.content;
-      if (!content || typeof content !== 'object') return [];
-      resolved = content;
-    }
-    // Support Map-like objects (ES6 Map, etc.) but NOT arrays.
-    // Arrays have both .entries() and .forEach(), but should use Object.keys()
-    // to iterate like `for (key in obj)` — including non-numeric own properties
-    // and skipping sparse holes.
-    if (
-      !Array.isArray(resolved) &&
-      typeof resolved.entries === 'function' &&
-      typeof resolved.forEach === 'function'
-    ) {
-      return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
-    }
-    // Support custom iterables with Symbol.iterator (but not arrays or strings)
-    if (
-      typeof resolved[Symbol.iterator] === 'function' &&
-      !Array.isArray(resolved) &&
-      typeof resolved !== 'string'
-    ) {
-      const entries: { k: any; v: any }[] = [];
-      for (const entry of resolved) {
-        if (Array.isArray(entry) && entry.length >= 2) {
-          entries.push({ k: entry[0], v: entry[1] });
-        }
-      }
-      return entries;
-    }
-    // For objects and arrays: use Object.keys() which returns own enumerable properties.
-    // This correctly handles:
-    // - Plain objects: all own keys
-    // - Object.create(proto): only own keys (not inherited)
-    // - Arrays: numeric indices + custom properties like arr.foo = 'bar'
-    // - Sparse arrays: only defined indices (skips holes)
-    const keys = Object.keys(resolved);
-    // Subscribe the each-in source to the object's key set so
-    // `set(obj,'NewKey')` re-iterates. (This inline copy is the fallback —
-    // ember-gxt-wrappers.ts overrides `gxtEntriesOf` at runtime.)
-    _gxtEntangleObjectKeys(resolved, keys);
-    return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
-  },
+  // doesn't support numeric property access like entry.0. Each entry also gets
+  // the key of its row (`keyEachInEntries`) for the `key=` option of the
+  // each-in (`{{#each-in X key=K}}` is `{{#each (gxtEntriesOf X K) key="key"}}`).
+  gxtEntriesOf: (obj: any, key?: unknown) => keyEachInEntries(_gxtEntriesOf(obj), key),
   // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
   get: (obj: any, key: any) => {
     const resolvedObj = typeof obj === 'function' ? obj() : obj;
