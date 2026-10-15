@@ -1613,6 +1613,20 @@ function _renderComponentGxt(
       template = rawGxtTemplate(component as (...args: unknown[]) => unknown, entry);
     }
 
+    // A raw gxt template function that is the component itself, which no
+    // component manager handles: a `<template>` expression
+    // (`renderComponent(<template>…</template>)` in a `.gjs` module) is a
+    // template-only component, and the compat compiler emits it as its
+    // template function alone, with no definition around it. It renders as its
+    // own template.
+    const ownTemplateComponent =
+      !template &&
+      isRawGxtTemplateFn(component) &&
+      (globalThis as any).$_MANAGERS?.component?.canHandle?.(component) !== true;
+    if (ownTemplateComponent) {
+      template = rawGxtTemplate(component as (...args: unknown[]) => unknown, entry);
+    }
+
     if (!template || !template.render) {
       // No template found — try using the manager system directly
       const managers = (globalThis as any).$_MANAGERS;
@@ -1699,6 +1713,7 @@ function _renderComponentGxt(
     const isTemplateOnly =
       subOwnerManager !== undefined ||
       classBodyComponent ||
+      ownTemplateComponent ||
       (!isClass && !customManagerFactory) ||
       (component as any).__templateOnly === true ||
       getGxtRenderer()?.compilePipeline.isTemplateOnlyDefinition?.(component) === true ||
@@ -1857,6 +1872,7 @@ function _renderComponentGxt(
     // its root leaves its renderer. (A classic root whose render failed stops
     // rendering too, see errorLoopTransaction.)
     destroyed = true;
+    entry.teardownRendered?.();
     destroyRenderTree();
     if (root !== null) {
       destroy(root);
