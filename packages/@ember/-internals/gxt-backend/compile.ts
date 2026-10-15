@@ -3286,6 +3286,31 @@ function _gxtTemplateEffect(fn: () => void): () => void {
   return gxtEffect(fn, owner !== null && typeof owner === 'object' ? owner : undefined);
 }
 
+// A block (`{{#if}}`, `{{#each}}`) renders a branch or a row again outside of
+// the render that created it (an update), where the ambient owner is another
+// render's, or none. Glimmer renders a block in the owner of its template; the
+// block keeps the ambient owner it was created in (`owner`) and renders its
+// branches and rows in it while it is alive, so what they resolve by name
+// (modifiers, components, helpers) resolves in the template's owner.
+function _gxtRenderInBlockOwner<T>(owner: any, render: () => T): T {
+  const ambient = getAmbientOwner();
+  if (
+    owner === ambient ||
+    owner === null ||
+    typeof owner !== 'object' ||
+    owner.isDestroyed === true ||
+    owner.isDestroying === true
+  ) {
+    return render();
+  }
+  setAmbientOwner(owner);
+  try {
+    return render();
+  } finally {
+    setAmbientOwner(ambient);
+  }
+}
+
 // A content mustache whose value is a component definition (`{{this.Foo}}`,
 // `{{if @isOk Ok Ko}}`) renders that component; after an update it renders
 // what the value is then: another definition replaces the component, any
@@ -4682,13 +4707,15 @@ function patchGlobalIf() {
     // The namespace (`<svg>`, MathML) the block renders in. A branch renders
     // again when the condition changes, outside of the render that created
     // the block, and its elements must still be created in that namespace.
+    // Likewise the owner it renders in (`_gxtRenderInBlockOwner`).
     const _capturedNamespace = _gxtNamespace;
+    const _capturedOwner = getAmbientOwner();
     const inCapturedNamespace = (render: (...args: any[]) => any) =>
       function renderInCapturedNamespace(this: any, ...renderArgs: any[]) {
         const prevNamespace = _gxtNamespace;
         _gxtNamespace = _capturedNamespace;
         try {
-          return render.apply(this, renderArgs);
+          return _gxtRenderInBlockOwner(_capturedOwner, () => render.apply(this, renderArgs));
         } finally {
           _gxtNamespace = prevNamespace;
         }
@@ -6258,15 +6285,19 @@ function patchGlobalEachSync() {
     // `getCurrentParentView` still returns the same top. On update, the
     // stack is empty and this push makes the parent resolvable.
     const canWrap = isViewInstance && !!viewUtils;
-    const withParent = (cb: any): any => {
-      if (!canWrap) return cb();
-      viewUtils!.pushParentView(capturedParent);
-      try {
-        return cb();
-      } finally {
-        viewUtils!.popParentView();
-      }
-    };
+    // A row created on update renders in the owner the list was created in
+    // (`_gxtRenderInBlockOwner`).
+    const capturedOwner = getAmbientOwner();
+    const withParent = (cb: any): any =>
+      _gxtRenderInBlockOwner(capturedOwner, () => {
+        if (!canWrap) return cb();
+        viewUtils!.pushParentView(capturedParent);
+        try {
+          return cb();
+        } finally {
+          viewUtils!.popParentView();
+        }
+      });
 
     // Wrap the callback fn to ensure `index` is always a cell-like object.
     // GXT's compiled code emits `() => index.value` for block params,
