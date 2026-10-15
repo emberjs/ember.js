@@ -9302,6 +9302,74 @@ function _gxtTagFastPathEligible(tag: unknown, tagProps: any): boolean {
   return !_gxtNamespace && isPlainHtmlTagFastPath(tag, tagProps, g.$_edp);
 }
 
+// The getter of a bound `style` attribute, as Glimmer's style attribute
+// manager sets it: a SafeString is its HTML, no warning needed; null,
+// undefined, false and '' remove the attribute (null, which the post-render
+// step cleans up); any other value is set as it is, with the style-binding XSS
+// warning, once per render pass of the binding.
+function _gxtStyleBindingGuard(origGetter: () => any): () => any {
+  // Track whether we've warned for this style binding in this render pass
+  // to avoid duplicate warnings from reactive re-evaluations.
+  let _styleWarnedPassId = -1;
+  return function _styleEmptyGuard() {
+    const val = origGetter();
+    // SafeString object: convert to plain HTML string, no warning needed
+    if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
+      const html = val.toHTML();
+      return html || null;
+    }
+    if (val == null || val === false || val === '') return null;
+    // Non-safe dynamic value — potentially warn for style binding XSS.
+    // Do not warn during force-rerender (the initial render already warned).
+    if (!_gxtIsForceRerender()) {
+      // Bridge-routed render-pass id read.
+      const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+      if (_styleWarnedPassId !== currentPassId) {
+        // Check if the string value came from a SafeString.toString() conversion.
+        // For quoted attrs like style="{{safeExpr}}", the quoted-attr helper
+        // calls String(safeString) → toString() → sets
+        // `_gxtLastSafeStringResult`. If the final concatenated value matches
+        // the last SafeString result exactly, the entire value came from a
+        // single SafeString — no warning needed. If the value differs (e.g.
+        // static text was mixed in), warn.
+        let isSafeFromConcat = false;
+        if (typeof val === 'string') {
+          const lastSafe = _gxtLastSafeStringResult;
+          if (lastSafe !== undefined && val === lastSafe) {
+            isSafeFromConcat = true;
+          }
+        }
+        // Clear the last-safe-string tracker regardless
+        _gxtLastSafeStringResult = undefined;
+        if (!isSafeFromConcat) {
+          _styleWarnedPassId = currentPassId;
+          const warnFn = getDebugFunction('warn');
+          if (warnFn) {
+            warnFn(_constructStyleDeprecationMessage(String(val)), false, {
+              id: 'ember-htmlbars.style-xss-warning',
+            });
+          }
+        }
+      }
+    }
+    return val;
+  };
+}
+
+// `entries` (a forwarded props or attrs list) with each bound `style` entry's
+// getter wrapped in `_gxtStyleBindingGuard`; the same list when it has none.
+function _gxtGuardForwardedStyles(entries: unknown): unknown {
+  if (!Array.isArray(entries)) return entries;
+  const isBoundStyle = (entry: unknown): boolean =>
+    Array.isArray(entry) && entry[0] === 'style' && typeof entry[1] === 'function';
+  if (!entries.some(isBoundStyle)) return entries;
+  return entries.map((entry) =>
+    isBoundStyle(entry)
+      ? ['style', _gxtEvaluateOncePerCreation(_gxtStyleBindingGuard(entry[1]), null)]
+      : entry
+  );
+}
+
 // Override $_tag to check for Ember components before creating HTML elements
 // GXT compiles PascalCase tags like <FooBar /> to $_tag('FooBar', ...) but
 // these should be handled by the component manager for Ember integration
@@ -11280,63 +11348,35 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
-    // Wrap the style getter: convert SafeString to HTML string, and when
-    // the value is null/undefined/false, use a sentinel that the post-render
-    // step can detect and clean up.
-    // Also emit the style-binding XSS warning when the value is a non-safe string.
+    // Wrap the style getter (`_gxtStyleBindingGuard`). Creating the element
+    // evaluates the getter once (`_gxtEvaluateOncePerCreation`).
     if (hasReactiveStyle && styleEntryRef) {
       const origGetter = styleEntryRef[1];
-      // Track whether we've warned for this style binding in this render pass
-      // to avoid duplicate warnings from reactive re-evaluations.
-      let _styleWarnedPassId = -1;
-      // Creating the element evaluates the getter once
-      // (`_gxtEvaluateOncePerCreation`).
       styleEntryRef[1] = _gxtEvaluateOncePerCreation(
-        function _styleEmptyGuard() {
-          const val = origGetter();
-          // SafeString object: convert to plain HTML string, no warning needed
-          if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
-            const html = val.toHTML();
-            return html || null;
-          }
-          if (val == null || val === false || val === '') return null;
-          // Non-safe dynamic value — potentially warn for style binding XSS.
-          // Do not warn during force-rerender (the initial render already warned).
-          if (!_gxtIsForceRerender()) {
-            // Bridge-routed render-pass id read.
-            const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-            if (_styleWarnedPassId !== currentPassId) {
-              // Check if the string value came from a SafeString.toString() conversion.
-              // For quoted attrs like style="{{safeExpr}}", the quoted-attr helper
-              // calls String(safeString) → toString() → sets
-              // `_gxtLastSafeStringResult`. If the final concatenated value matches
-              // the last SafeString result exactly, the entire value came from a
-              // single SafeString — no warning needed. If the value differs (e.g.
-              // static text was mixed in), warn.
-              let isSafeFromConcat = false;
-              if (typeof val === 'string') {
-                const lastSafe = _gxtLastSafeStringResult;
-                if (lastSafe !== undefined && val === lastSafe) {
-                  isSafeFromConcat = true;
-                }
-              }
-              // Clear the last-safe-string tracker regardless
-              _gxtLastSafeStringResult = undefined;
-              if (!isSafeFromConcat) {
-                _styleWarnedPassId = currentPassId;
-                const warnFn = getDebugFunction('warn');
-                if (warnFn) {
-                  warnFn(_constructStyleDeprecationMessage(String(val)), false, {
-                    id: 'ember-htmlbars.style-xss-warning',
-                  });
-                }
-              }
-            }
-          }
-          return val;
-        },
+        _gxtStyleBindingGuard(origGetter),
         extractThisPath(String(origGetter))
       );
+    }
+    // A bound `style` forwarded through `...attributes` (fw[0] / fw[1]) is a
+    // bound style of this element too, and gets the same guard, as Glimmer
+    // gives the forwarded attribute the element's style attribute manager.
+    // The forwarded getter reads the invoking template's `this`, so it
+    // subscribes to no `this.<path>` of this template. The fw arrays are
+    // shared by every element the invocation forwards to, so this element gets
+    // copies with its own guards.
+    if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[3])) {
+      const fw = tagProps[3] as any;
+      const fwProps = _gxtGuardForwardedStyles(fw[0]);
+      const fwAttrs = _gxtGuardForwardedStyles(fw[1]);
+      if (fwProps !== fw[0] || fwAttrs !== fw[1]) {
+        const guardedFw: any = [fwProps, fwAttrs];
+        for (let i = 2; i < fw.length; i++) guardedFw[i] = fw[i];
+        for (const key of Object.keys(fw)) {
+          if (!/^\d+$/.test(key)) guardedFw[key] = fw[key];
+        }
+        tagProps = [tagProps[0], tagProps[1], tagProps[2], guardedFw];
+        hasReactiveStyle = true;
+      }
     }
 
     // SVG/MathML namespace handling: when _gxtNamespace is set (by $_c_ember
