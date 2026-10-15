@@ -74,6 +74,7 @@ import {
   consumeTag as _classicConsumeTagHook,
   tagFor as _classicTagForHook,
   dirtyTagFor as _validatorDirtyTagFor,
+  argumentTag as _classicArgumentTag,
   withArgPropagation,
 } from './validator';
 import {
@@ -9470,6 +9471,9 @@ function _gxtFwTuple(args: any, fw: any): any[] {
 // An argument reads as its value (`argumentValue`: a `(mut x)` cell or a
 // `(readonly x)` marker stands for its value), and as what the invocation
 // passed in a read of the argument's reference (`readArgumentReference`).
+// As Glimmer's args proxy, the object tags an argument with the tag of what
+// the argument reads (`_gxtNamedArgTag`), so a dependent key through an
+// argument (`@computed('args.hash.firstName')`) follows it.
 function _gxtInvocationArgs(invocation: any, fw: any): any {
   const named: Record<string, () => unknown> = {};
   for (const key of Object.keys(invocation || {})) {
@@ -9478,7 +9482,21 @@ function _gxtInvocationArgs(invocation: any, fw: any): any {
       isReadingArgumentReference() ? invocation[key] : argumentValue(invocation[key]);
   }
   const slots = _gxtInvocationSlots(invocation?.[$SLOTS_SYMBOL] || invocation?.$slots);
-  return _gxtArgs(named, slots, fw);
+  const args = _gxtArgs(named, slots, fw);
+  setCustomTagFor(args, _gxtNamedArgTag);
+  return args;
+}
+
+// The tag of the argument `key` of a component args object: the tag of what
+// reading it consumes (Glimmer's `tagForNamedArg`, `track(() =>
+// valueForRef(ref))`).
+function _gxtNamedArgTag(args: any, key: string): unknown {
+  return _classicArgumentTag(() => {
+    if (key in args) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      args[key];
+    }
+  });
 }
 
 // The component the synthesized template invokes for `fn`: it calls `fn` as

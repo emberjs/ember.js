@@ -163,6 +163,25 @@ export function track(cb: () => void): any {
   return tag;
 }
 
+// The tags `argumentTag` returned.
+const _argumentTags = new WeakSet<object>();
+
+/**
+ * The tag of a component argument: the tag of what `read`, a read of the
+ * argument, consumes (Glimmer's args proxy tags an argument so,
+ * `tagForNamedArg`). A computed property whose dependent key goes through the
+ * argument (`@computed('args.hash.firstName')`) depends on it. gxt re-runs a
+ * formula only when a cell it read changes, and a formula's read of a cached
+ * property does not read the property's dependencies again: so a reader of a
+ * tag that depends on an argument's tag also consumes what the argument's
+ * tag combines (`consumeTag`), and re-runs when the argument would change.
+ */
+export function argumentTag(read: () => void): any {
+  const tag = track(read);
+  if (tag !== null && typeof tag === 'object') _argumentTags.add(tag);
+  return tag;
+}
+
 // Custom isTracking that also returns true when inside the custom track()
 export function isTracking(): boolean {
   if (_localUntrackDepth > 0) return false;
@@ -975,6 +994,22 @@ export function consumeTag(tag: any) {
   // above); it is not a GXT cell, so it is never handed to GXT's tracker.
   if (tag._isHelperArgsTag === true) {
     return;
+  }
+
+  // A tag that depends on an argument's tag (a computed property whose
+  // dependent key goes through a component argument): the reader also
+  // consumes what the argument's tag combines (`argumentTag`).
+  const deps = updatableTagDependencies.get(tag);
+  if (deps !== undefined) {
+    for (let i = 0; i < deps.length; i++) {
+      const dep = deps[i];
+      if (dep !== null && typeof dep === 'object' && _argumentTags.has(dep)) {
+        const constituents = combinedTagConstituents.get(dep);
+        if (constituents !== undefined) {
+          for (let j = 0; j < constituents.length; j++) validator.consumeTag(constituents[j]);
+        }
+      }
+    }
   }
 
   // Our custom updatable tags (from createUpdatableTag) are objects with a
