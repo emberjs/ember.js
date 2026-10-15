@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T07:03:17.841Z",
+    "capturedAt": "2026-10-15T09:40:44.091Z",
     "gxtVersion": "0.0.82",
-    "emberCommit": "82478a3ef4",
-    "totalTests": 10085,
-    "totalModules": 982,
+    "emberCommit": "c0b147aa14",
+    "totalTests": 10097,
+    "totalModules": 983,
     "quarantinedTests": 0,
-    "totalAssertions": 60161,
-    "totalAssertionsPassing": 59141,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after the curried modifier argument fixes, written by runner.mjs. 9461/10085 green (was 9453/10083), 982 modules, no timeouts, no harness errors, no green->red. 6 tests turned green: a curried (modifier ...) passed as an argument keeps its value while its definition is the same, so a rerender without a change leaves the modifier alone (dynamic modifiers in resolution mode: Can pass curried modifier as argument and invoke dynamically, and its with args, multi-layer, named args and named args multi-layer forms); a (modifier) of a missing definition is no modifier, so a finished render's argument no longer changes on every sync (strict mode: dynamic template values: Calling a dynamic modifier using if helper). 2 new tests in GXT in-place updates, both green. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
+    "totalAssertions": 60227,
+    "totalAssertionsPassing": 59319,
+    "note": "Compat full run on #21340 (gxt 0.0.82) after content mustaches render what their value is, written by runner.mjs. 9495/10097 green (was 9461/10085), 983 modules, no timeouts, no harness errors, no green->red. 22 tests turned green: a content mustache renders Glimmer's dynamic content (text updated in its text node, the HTML of a SafeString parsed in the namespace of its element, a DOM node or the nodes of a fragment) in an element, in SVG and foreignObject, and a DOM node in triple curlies is inserted as it is (the 18 Updating - Content matrix tests, double and triple curlies in the HTML, SVG foreignObject and SVG contexts; Updating: updating a curly with a safe and unsafe string); the result of a helper invoked by name renders what it is (Updating: double curlies with const SafeString, double curlies with const Node); a component invoked by name with positional arguments as the only content of an element renders the nodes it returns (Components test: curly components: static arbitrary number of positional parameters). 12 new tests in GXT dynamic content, all green. The 126 known reds of the dropped development-only template checks (message-only differences and invalid templates the GXT compiler accepts) are unchanged. The [integration] suites render through Ember's renderComponent, which under GXT_MODE is GXT; 88 tests are QUnit.skip, 53 of them rehydration tests unsupported under GXT. The known non-bug: ember-template-compiler custom plugins passed to compile (no tests registered)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1592,9 +1592,9 @@
     },
     "Components test: curly components": {
       "total": 60,
-      "passing": 49,
+      "passing": 50,
       "assertionsTotal": 238,
-      "assertionsPassing": 221,
+      "assertionsPassing": 225,
       "failingTests": [
         {
           "name": " the component and its child components are destroyed",
@@ -1606,10 +1606,6 @@
         },
         {
           "name": " block with properties on attrs is asserted against",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " static arbitrary number of positional parameters",
           "category": "gxt:triage"
         },
         {
@@ -2665,6 +2661,13 @@
       "passing": 3,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT dynamic content": {
+      "total": 12,
+      "passing": 12,
+      "assertionsTotal": 66,
+      "assertionsPassing": 66,
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
@@ -6453,24 +6456,12 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 46,
+      "passing": 49,
       "assertionsTotal": 787,
-      "assertionsPassing": 715,
+      "assertionsPassing": 718,
       "failingTests": [
         {
           "name": "weird paths",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating a curly with a safe and unsafe string",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "double curlies with const SafeString",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "double curlies with const Node",
           "category": "gxt:triage"
         },
         {
@@ -6541,83 +6532,10 @@
     },
     "[integration] jit :: Updating - Content": {
       "total": 18,
-      "passing": 0,
+      "passing": 18,
       "assertionsTotal": 630,
-      "assertionsPassing": 525,
-      "failingTests": [
-        {
-          "name": "updating double curlies produces expected result in HTML context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in HTML context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in HTML context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG foreignObject context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG foreignObject context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG foreignObject context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating double curlies produces expected result in SVG context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in HTML context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in HTML context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in HTML context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG foreignObject context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG foreignObject context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG foreignObject context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG context, as the only child",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG context, as a sibling to adjecent text nodes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "updating triple curlies produces expected result in SVG context, as a sibling to adjecent elements",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 630,
+      "failingTests": []
     },
     "[integration] jit :: Updating Element Modifier": {
       "total": 3,
@@ -9663,6 +9581,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 624
+    "gxt:triage": 602
   }
 }
