@@ -13445,7 +13445,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                 : undefined;
             if (!rootRenderingCtx && _GXT_HTMLBrowserDOMApi) {
               const doc = (gxtRoot && (gxtRoot as any).document) || document;
-              rootRenderingCtx = new (_GXT_HTMLBrowserDOMApi as any)(doc);
+              // The compat DOM api (manager.ts `_EmberGxtDOMApi`).
+              const DomApi = getGxtRenderer()?.gxtLib.HTMLBrowserDOMApi ?? _GXT_HTMLBrowserDOMApi;
+              rootRenderingCtx = new (DomApi as any)(doc);
               if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
                 try {
                   (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;

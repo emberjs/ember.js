@@ -14,7 +14,9 @@
  *   new destination and leaves the old one empty, and its content leaves the
  *   destination when its block is destroyed;
  * - the args object a modifier manager gets from `createModifier` reads the
- *   current arguments when the modifier updates.
+ *   current arguments when the modifier updates;
+ * - the text of an element whose content is one mustache updates in its text
+ *   node.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -186,6 +188,20 @@ moduleFor(
 
       runTask(() => (state.value = 'two'));
       this.assert.deepEqual(seen, ['one', 'two'], 'the update reads the new argument');
+    }
+
+    ['@test the text of an element whose content is one mustache updates in its text node']() {
+      this.render('<p>{{this.value}}</p>', { value: 'one' });
+      let text = this.element.querySelector('p')!.firstChild;
+      this.assertText('one');
+
+      runTask(() => set(this.context, 'value', 'two'));
+      this.assertText('two');
+      this.assert.strictEqual(
+        this.element.querySelector('p')!.firstChild,
+        text,
+        'the text node is kept'
+      );
     }
   }
 );

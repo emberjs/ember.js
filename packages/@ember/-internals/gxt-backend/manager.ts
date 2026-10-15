@@ -132,6 +132,21 @@ import {
   Component as _gxtLibComponent,
   RENDERED_NODES_PROPERTY as _gxtLibRenderedNodesProperty,
 } from '@lifeart/gxt';
+// The DOM api of the compat renderers (the bridge's `gxtLib.HTMLBrowserDOMApi`).
+// A text-content update of an element whose content is one text node changes
+// that node's value, as Glimmer updates a text node in place: gxt's api sets
+// `textContent`, which replaces the element's children, so the element's text
+// was a new node after every update.
+class _EmberGxtDOMApi extends _gxtLibHTMLBrowserDOMApi {
+  override textContent(node: Node, text: string): void {
+    const only = node.firstChild;
+    if (only !== null && only === node.lastChild && only.nodeType === 3) {
+      only.nodeValue = text;
+    } else {
+      node.textContent = text;
+    }
+  }
+}
 // Single-instance guard: the GXT reactive graph (cells, trackers, opcode
 // queues) is module-instance state, so two copies of @lifeart/gxt in one
 // page silently fork reactivity — registrations land in one copy's
@@ -13713,7 +13728,7 @@ import {
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts.
   gxtLib: {
-    HTMLBrowserDOMApi: _gxtLibHTMLBrowserDOMApi,
+    HTMLBrowserDOMApi: _EmberGxtDOMApi,
     destroyElementSync: _gxtLibDestroyElementSync,
     createRoot: _gxtLibCreateRoot,
     provideContext: _gxtLibProvideContext,
