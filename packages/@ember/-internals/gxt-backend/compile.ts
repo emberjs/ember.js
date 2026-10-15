@@ -2066,16 +2066,17 @@ function _touchCurriedArgGetters(curried: any): void {
 
 // Append a template child value to `target`, flattening the shapes that the
 // custom-element and namespaced-element `$_tag` fallbacks share: `null`/`false`
-// render nothing, a node is appended, an array is flattened, an argument thunk
-// is called (its errors, and errors appending its result, are ignored), and a
-// primitive becomes a text node. Other objects go to the caller's
-// `appendObject`, which gets the recursive append for nested values.
+// render nothing, a node is appended, an array is flattened, a function (a
+// content mustache) renders its content (`_gxtContentChild`, owned by
+// `owner`), and a primitive becomes a text node. Other objects go to the
+// caller's `appendObject`, which gets the recursive append for nested values.
 function _appendChildValue(
   target: Node,
   value: any,
-  appendObject: (obj: any, append: (v: any) => void) => void
+  appendObject: (obj: any, append: (v: any) => void) => void,
+  owner?: unknown
 ): void {
-  const append = (v: any): void => _appendChildValue(target, v, appendObject);
+  const append = (v: any): void => _appendChildValue(target, v, appendObject, owner);
   if (value == null || value === false) return;
   if (value instanceof Node) {
     target.appendChild(value);
@@ -2086,11 +2087,10 @@ function _appendChildValue(
     return;
   }
   if (typeof value === 'function') {
-    try {
-      append(value());
-    } catch {
-      /* ignore errors in child evaluation */
-    }
+    const context = target instanceof Element ? _gxtContentContextOf(target) : null;
+    const content = _gxtContentChild(value, owner, context);
+    if (content instanceof Node) target.appendChild(content);
+    else append(content);
     return;
   }
   if (typeof value === 'object') {
@@ -2098,6 +2098,26 @@ function _appendChildValue(
     return;
   }
   target.appendChild(document.createTextNode(String(value)));
+}
+
+// The `appendObject` of `_appendChildValue` for rendered content: objects are
+// GXT `$_if`/`$_each` block results, which expose their nodes as `nodes`, as
+// `RENDERED_NODES_PROPERTY` or by iteration; any other object renders nothing
+// (not `[object Object]`).
+function _gxtAppendRenderedObject(value: any, append: (v: any) => void): void {
+  const nodesArray = value.nodes;
+  if (Array.isArray(nodesArray)) {
+    for (const n of nodesArray) append(n);
+    return;
+  }
+  const renderedNodes = RENDERED_NODES_PROPERTY ? value[RENDERED_NODES_PROPERTY as any] : undefined;
+  if (Array.isArray(renderedNodes)) {
+    for (const n of renderedNodes) append(n);
+    return;
+  }
+  if (typeof value[Symbol.iterator] === 'function') {
+    for (const n of value) append(n);
+  }
 }
 
 // Remove the nodes strictly between two sibling markers; returns them in order.
@@ -3225,12 +3245,9 @@ let _gxtCreationEvaluations = 0;
 // path's cells itself, reading a getter again and shadowing it, and evaluate
 // the binding a second time. A first evaluation that still read no cell is a
 // constant and is not kept.
-//
-// `onFirstValue` sees the value of the first evaluation.
 function _gxtEvaluateOncePerCreation<T extends (...args: any[]) => any>(
   getter: T,
-  path: string | null,
-  onFirstValue?: (value: ReturnType<T>) => void
+  path: string | null
 ): T {
   let evaluated = false;
   let creationRead: _GxtCreationRead | null = null;
@@ -3271,7 +3288,6 @@ function _gxtEvaluateOncePerCreation<T extends (...args: any[]) => any>(
         revision: _gxtCurrentRevision(),
       };
     }
-    onFirstValue?.(value);
     return value;
   } as T;
 }
@@ -3282,8 +3298,12 @@ function _gxtEvaluateOncePerCreation<T extends (...args: any[]) => any>(
 // destroying a Glimmer render destroys its references. Without an owner it
 // kept running, and writing to detached nodes, after its render was destroyed.
 function _gxtTemplateEffect(fn: () => void): () => void {
+  return gxtEffect(fn, _gxtTemplateOwner());
+}
+
+function _gxtTemplateOwner(): object | undefined {
   const owner = _gxtCurrentTemplateThis;
-  return gxtEffect(fn, owner !== null && typeof owner === 'object' ? owner : undefined);
+  return owner !== null && typeof owner === 'object' ? owner : undefined;
 }
 
 // A block (`{{#if}}`, `{{#each}}`) renders a branch or a row again outside of
@@ -3311,59 +3331,266 @@ function _gxtRenderInBlockOwner<T>(owner: any, render: () => T): T {
   }
 }
 
-// A content mustache whose value is a component definition (`{{this.Foo}}`,
-// `{{if @isOk Ok Ko}}`) renders that component; after an update it renders
-// what the value is then: another definition replaces the component, any
-// other value renders as text, as Glimmer's dynamic content in append position
-// does. The content is replaced where it is (an empty comment holds the place
-// while it renders nothing), and the replaced content's components are
-// destroyed. The binding is evaluated once on creation: its first run
-// subscribes to the cells the creation's evaluation read (`capturedDeps`).
-function _gxtRenderDynamicContent(
-  item: () => unknown,
-  initial: object,
-  capturedDeps: Set<any>,
-  isDefinition: (value: unknown) => boolean,
-  renderComponent: (definition: object) => Node | null
-): DocumentFragment {
-  const render = (value: unknown): Node[] => {
-    const node =
-      value !== null && typeof value === 'object' && isDefinition(value)
-        ? renderComponent(value)
-        : document.createTextNode(_gxtCoerceText(value));
-    const nodes =
-      node === null ? [] : node instanceof DocumentFragment ? Array.from(node.childNodes) : [node];
-    return nodes.length > 0 ? nodes : [document.createComment('')];
-  };
-  let current: unknown = initial;
-  let nodes = render(initial);
+// Dynamic content: what a content mustache (`{{value}}`) renders, as
+// Glimmer's append opcodes do (@glimmer/runtime's dynamic content types):
+//   - 'component': a component definition, through the Ember component
+//     manager;
+//   - 'node': a DOM node, inserted as it is (a DocumentFragment: its nodes);
+//   - 'html': a SafeString (an object with a `toHTML()` method), its HTML,
+//     parsed in the context of the element it is rendered in;
+//   - 'text': anything else, as text (`_gxtCoerceText`).
+type _GxtContentKind = 'text' | 'html' | 'node' | 'component';
+
+// The parse context of trusted HTML: the tag of the element the content is in
+// and the namespace of that element's children.
+interface _GxtContentContext {
+  tag: string;
+  namespace: 'html' | 'svg' | 'mathml';
+}
+
+const _GXT_SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+const _GXT_MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
+
+function _gxtIsComponentDefinition(value: unknown): boolean {
+  return (globalThis as any).$_MANAGERS?.component?.canHandle?.(value) === true;
+}
+
+function _gxtContentKind(value: unknown): _GxtContentKind {
+  if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+    return 'text';
+  }
+  if (value instanceof Node) return 'node';
+  if (typeof value === 'object' && typeof (value as any).toHTML === 'function') return 'html';
+  return _gxtIsComponentDefinition(value) ? 'component' : 'text';
+}
+
+function _gxtContentContextOf(element: Element): _GxtContentContext {
+  const tag = element.localName;
+  if (element.namespaceURI === _GXT_SVG_NAMESPACE && tag !== 'foreignObject') {
+    return { tag, namespace: 'svg' };
+  }
+  if (element.namespaceURI === _GXT_MATHML_NAMESPACE) return { tag, namespace: 'mathml' };
+  return { tag, namespace: 'html' };
+}
+
+// The nodes of trusted HTML parsed in `context` (Glimmer inserts it with
+// `insertAdjacentHTML` in the element it is rendered in): the elements of
+// HTML in an SVG element are SVG elements, and the table rules of the parser
+// apply in a table-family element.
+function _gxtParseTrustedHtml(html: string, context: _GxtContentContext | null): Node[] {
+  if (html === '') return [];
+  const template = document.createElement('template');
+  if (context !== null && context.namespace !== 'html') {
+    const root = context.namespace === 'svg' ? 'svg' : 'math';
+    template.innerHTML = `<${root}>${html}</${root}>`;
+    const rootElement = template.content.firstChild;
+    return rootElement === null ? [] : Array.from(rootElement.childNodes);
+  }
+  if (context !== null && _GXT_CONTEXTUAL_PARSE_TAGS.has(context.tag)) {
+    const scratch = document.createElement(context.tag);
+    scratch.innerHTML = html;
+    return Array.from(scratch.childNodes);
+  }
+  template.innerHTML = html;
+  return Array.from(template.content.childNodes);
+}
+
+// The nodes a component definition's render through the Ember component
+// manager returned.
+function _gxtComponentContentNodes(definition: object): Node[] {
+  const managers = (globalThis as any).$_MANAGERS;
+  const handled = managers.component.handle(definition, {}, null, null);
   const fragment = document.createDocumentFragment();
-  for (const node of nodes) fragment.appendChild(node);
-  let firstRun = true;
-  _gxtTemplateEffect(() => {
-    if (firstRun) {
-      firstRun = false;
-      const tracker = _gxtGetTracker();
-      if (tracker) capturedDeps.forEach((cell) => tracker.add(cell));
+  _appendChildValue(
+    fragment,
+    typeof handled === 'function' ? handled() : handled,
+    _gxtAppendRenderedObject
+  );
+  return Array.from(fragment.childNodes);
+}
+
+// Registers the object a cell holds as a value-owner of the cell
+// (`registerObjectValueOwner`), so a change of a property of that object
+// (`set(object, 'message', …)` for a `{{this.object.message}}` binding)
+// dirties the cell the binding read.
+function _gxtRegisterLeafOwners(cells: Set<any>): void {
+  cells.forEach((cell) => {
+    const value = cell._value;
+    const owner = cell._relatedObj;
+    const key = cell._relatedKey;
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      owner !== null &&
+      typeof owner === 'object' &&
+      typeof key === 'string'
+    ) {
+      registerObjectValueOwner(value, owner, key);
+    }
+  });
+}
+
+interface _GxtDynamicContentOptions {
+  // The owner of the binding: destroying it (the block or template context
+  // the content is rendered in) stops the binding.
+  owner: object | undefined;
+  // Where trusted HTML is parsed while the content is not in an element yet.
+  context: _GxtContentContext | null;
+  // Renders a component definition; by default through the component manager.
+  renderComponent?: (definition: object) => Node[];
+  // The value of the creation evaluation when the caller did it, and the
+  // cells that evaluation read: the binding subscribes to them and does not
+  // evaluate again.
+  initial?: { value: unknown; cells: Set<any> };
+}
+
+// Renders a content mustache whose binding is `read`, and renders it again
+// after every change of what it read, as Glimmer's dynamic content does. Text
+// stays in its text node. A change of kind, of the node, of the HTML or of the
+// component definition replaces the content where it is (an empty comment
+// holds the place while it renders nothing), and destroys the components of
+// the replaced content. A function value is called (a plain function is a
+// helper), a component definition is not. Creating the binding evaluates it
+// once.
+function _gxtDynamicContent(
+  read: () => unknown,
+  options: _GxtDynamicContentOptions
+): DocumentFragment {
+  const fragment = document.createDocumentFragment();
+  const blockOwner = getAmbientOwner();
+  const renderComponent = options.renderComponent ?? _gxtComponentContentNodes;
+  let kind: _GxtContentKind | null = null;
+  let rendered: unknown;
+  let nodes: Node[] = [];
+
+  const render = (next: _GxtContentKind, value: any, html: string, parent: ParentNode): Node[] => {
+    let content: Node[];
+    if (next === 'text') {
+      content = [document.createTextNode(_gxtCoerceText(value))];
+    } else if (next === 'node') {
+      content = value.nodeType === 11 ? Array.from(value.childNodes as NodeList) : [value];
+    } else if (next === 'html') {
+      const context = parent instanceof Element ? _gxtContentContextOf(parent) : options.context;
+      content = _gxtParseTrustedHtml(html, context);
+    } else {
+      content = _gxtRenderInBlockOwner(blockOwner, () => renderComponent(value));
+    }
+    return content.length > 0 ? content : [document.createComment('')];
+  };
+
+  const show = (value: unknown): void => {
+    const next = _gxtContentKind(value);
+    if (next === 'text' && kind === 'text') {
+      const text = _gxtCoerceText(value);
+      const node = nodes[0]!;
+      if (node.nodeValue !== text) node.nodeValue = text;
       return;
     }
-    const value = item();
-    const next =
-      typeof value === 'function' && !(value as any).__isCurriedComponent
-        ? (value as () => unknown)()
-        : value;
-    if (next === current) return;
-    const parent = nodes[0]!.parentNode;
-    if (!parent) return;
-    current = next;
-    const replacement = render(next);
-    for (const node of replacement) parent.insertBefore(node, nodes[0]!);
-    const removed = nodes;
-    for (const node of removed) parent.removeChild(node);
-    getGxtRenderer()?.destruction.destroyInstancesInNodes(removed);
+    const html = next === 'html' ? _gxtCoerceText((value as any).toHTML()) : '';
+    const identity = next === 'html' ? html : next === 'text' ? undefined : value;
+    if (next === kind && identity === rendered) return;
+    const anchor = nodes.length > 0 ? nodes[0]! : null;
+    const parent = anchor === null ? fragment : anchor.parentNode;
+    if (parent === null) return;
+    const replacement = render(next, value, html, parent);
+    for (const node of replacement) parent.insertBefore(node, anchor);
+    const replaced = nodes;
+    for (const node of replaced) {
+      if (node.parentNode === parent && replacement.indexOf(node) === -1) {
+        parent.removeChild(node);
+      }
+    }
+    if (kind === 'component') {
+      getGxtRenderer()?.destruction.destroyInstancesInNodes(replaced);
+    }
+    kind = next;
+    rendered = identity;
     nodes = replacement;
-  });
+  };
+
+  const initial = options.initial;
+  if (initial === undefined) {
+    gxtEffect(() => show(_gxtContentValue(read)), options.owner);
+  } else {
+    show(initial.value);
+    let replay = true;
+    gxtEffect(() => {
+      if (replay) {
+        replay = false;
+        const cells = _gxtGetTracker();
+        if (cells) initial.cells.forEach((cell) => cells.add(cell));
+        return;
+      }
+      show(_gxtContentValue(read));
+    }, options.owner);
+  }
   return fragment;
+}
+
+// The value of a content binding: what `read` returns, with a function value
+// called (a plain function is a helper) unless it is a component definition.
+// The objects the cells it read hold become their value-owners
+// (`_gxtRegisterLeafOwners`).
+function _gxtContentValue(read: () => unknown): unknown {
+  let value = read();
+  while (typeof value === 'function' && !_gxtIsComponentDefinition(value)) {
+    value = (value as () => unknown)();
+  }
+  const cells = _gxtGetTracker();
+  if (cells) _gxtRegisterLeafOwners(cells);
+  return value;
+}
+
+// What a function child of an element renders: `getter` is the compiled
+// `{{…}}` expression (or a block's render function), `owner` the context the
+// element is rendered in. It is evaluated once, in a tracking frame of its own.
+// A block's render result (an object holding the nodes it rendered, like a
+// `$_slot`) is returned for gxt to render as it is; any other value renders as
+// dynamic content (`_gxtDynamicContent`), which subscribes to the cells the
+// evaluation read.
+function _gxtContentChild(
+  getter: () => unknown,
+  owner: unknown,
+  context: _GxtContentContext | null
+): unknown {
+  const read = _gxtEvaluateOncePerCreation(getter, extractThisPath(String(getter)));
+  const outer = _gxtGetTracker();
+  const cells = new Set<any>();
+  _gxtSetTracker(cells);
+  let value: unknown;
+  try {
+    value = _gxtContentValue(read);
+  } finally {
+    _gxtSetTracker(outer);
+  }
+  if (value !== null && typeof value === 'object' && RENDERED_NODES_PROPERTY in value) {
+    return value;
+  }
+  return _gxtDynamicContent(read, {
+    owner: owner !== null && typeof owner === 'object' ? owner : _gxtTemplateOwner(),
+    context,
+    initial: { value, cells },
+  });
+}
+
+// The children of an HTML element gxt renders, with each function child (a
+// content mustache) rendered by `_gxtContentChild`, owned by `ctx`. gxt calls
+// the child when it renders it, so the children are still evaluated in order,
+// after the element's attributes.
+function _gxtContentChildren(children: any[] | undefined, ctx: unknown, tag: unknown): any {
+  if (!Array.isArray(children)) return children;
+  let contentChildren: any[] | null = null;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (typeof child !== 'function') continue;
+    contentChildren ??= children.slice();
+    const context: _GxtContentContext = {
+      tag: typeof tag === 'string' ? tag.toLowerCase() : '',
+      namespace: 'html',
+    };
+    contentChildren[i] = () => _gxtContentChild(child, ctx, context);
+  }
+  return contentChildren ?? children;
 }
 
 function _gxtIsInTriggerReRender(): boolean {
@@ -8991,7 +9218,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // tree walker) but BEFORE every Ember-semantic scan. Delegates straight to
     // GXT's native originalTag, which already applies props/attrs/events itself.
     if (_gxtTagFastPathEligible(tag, tagProps)) {
-      return originalTag(tag, tagProps, ctx, children);
+      return originalTag(tag, tagProps, ctx, _gxtContentChildren(children, ctx, tag));
     }
 
     // Handle dynamic component patterns: <@foo /> and <this.foo />
@@ -9275,7 +9502,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         /* ignore */
       }
 
-      const getHtml = () => {
+      // The content of `{{{value}}}`: a DOM node renders as that node (Glimmer's
+      // trusting append inserts it), anything else as HTML.
+      const getContent = (): Node | string => {
         let raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
         // Unwrap cell-like wrappers and nested getter functions
         while (typeof raw === 'function') {
@@ -9290,6 +9519,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           raw = (raw as any).value;
         }
         if (raw === null || raw === undefined) return '';
+        if (raw instanceof Node) return raw;
         const toHTML = (raw as any)?.toHTML;
         if (typeof toHTML === 'function') return toHTML.call(raw);
         // Objects with no toString (e.g. Object.create(null)) would throw
@@ -9311,7 +9541,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const endAnchor = document.createComment('/htmlRaw');
       const fragment = document.createDocumentFragment();
       let contentNodes: Node[] = [];
-      let lastHtml = '';
 
       // Helper: parse rawHtml in the context of the given parent element.
       // This mimics the browser's contextual parsing so that `<tr>` inside
@@ -9345,20 +9574,26 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         return result;
       };
 
-      const initialHtml = getHtml();
+      // The nodes of the content: a node's (a fragment's) or the parsed HTML's.
+      const nodesOf = (content: Node | string, parent: Element | null): Node[] => {
+        if (typeof content === 'string') return parseInParentContext(content, parent);
+        return content.nodeType === 11 ? Array.from(content.childNodes) : [content];
+      };
+
+      const initialContent = getContent();
       fragment.appendChild(startAnchor);
       // Use the caller's rendering-context element as the contextual parse
       // parent when available (e.g. `<table>` for
       // `<table>{{{this.title}}}</table>`). Falls back to a div-context
       // parse when we can't determine the parent.
-      const initialChildren = parseInParentContext(initialHtml, callerParent);
+      const initialChildren = nodesOf(initialContent, callerParent);
       for (const child of initialChildren) {
         contentNodes.push(child);
         fragment.appendChild(child);
       }
       fragment.appendChild(endAnchor);
 
-      lastHtml = initialHtml;
+      let lastContent = initialContent;
       let reparsedForParent: Element | null = null;
 
       // Tag the anchors with the raw HTML source so an outer-tag post-
@@ -9366,13 +9601,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // (critical for `<table>{{{tr}}}</table>` and similar).
       (startAnchor as any).__gxtHtmlRawStart = true;
       (startAnchor as any).__gxtHtmlRawReparse = (parent: Element) => {
+        // A node is rendered as it is, not parsed.
+        if (typeof lastContent !== 'string') return;
         // Remove current content between anchors
         for (const n of contentNodes) {
           if (n.parentNode === parent) parent.removeChild(n);
         }
         contentNodes.length = 0;
-        if (lastHtml) {
-          for (const child of parseInParentContext(lastHtml, parent)) {
+        if (lastContent) {
+          for (const child of parseInParentContext(lastContent, parent)) {
             contentNodes.push(child);
             parent.insertBefore(child, endAnchor);
           }
@@ -9390,14 +9627,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (!parent || parent === reparsedForParent) return;
         const contextTag = (parent.tagName || '').toLowerCase();
         const needsReparse = _GXT_CONTEXTUAL_PARSE_TAGS.has(contextTag);
-        if (!needsReparse) return;
+        if (!needsReparse || typeof lastContent !== 'string') return;
         // Remove current content nodes, re-parse contextually, re-insert.
         for (const n of contentNodes) {
           if (n.parentNode === parent) parent.removeChild(n);
         }
         contentNodes = [];
-        if (lastHtml) {
-          for (const child of parseInParentContext(lastHtml, parent)) {
+        if (lastContent) {
+          for (const child of parseInParentContext(lastContent, parent)) {
             contentNodes.push(child);
             parent.insertBefore(child, endAnchor);
           }
@@ -9406,17 +9643,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       };
 
       // Set up reactive update: register a `gxtEffect` that subscribes to the
-      // cells `getHtml()` reads so `{{{...}}}` content stays live as those cells
-      // change.
+      // cells `getContent()` reads so `{{{...}}}` content stays live as those
+      // cells change.
       const _htmlRawUpdate = () => {
-        const html = getHtml();
+        const content = getContent();
         const parent = endAnchor.parentNode as Element | null;
         if (!parent) return;
         // Every effect run: ensure we've reparsed for the current parent
         // context (no-op when already done or not a table-family context).
         reparseIfNeeded();
-        if (html === lastHtml) return;
-        lastHtml = html;
+        if (content === lastContent) return;
+        lastContent = content;
 
         // Remove old content nodes
         for (const n of contentNodes) {
@@ -9424,8 +9661,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
         contentNodes = [];
 
-        if (html) {
-          for (const child of parseInParentContext(html, parent)) {
+        if (content) {
+          for (const child of nodesOf(content, parent)) {
             contentNodes.push(child);
             parent.insertBefore(child, endAnchor);
           }
@@ -9433,9 +9670,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       };
       {
         // Before registering the subscribed effect, run a capture frame over
-        // `getHtml()` so we can (a) register any LEAF object the value resolves
-        // to as a value-owner of its source cell — so
-        // `set(nullObject,'message',...)` dirties the cell `getHtml` reads
+        // `getContent()` so we can (a) register any LEAF object the value
+        // resolves to as a value-owner of its source cell — so
+        // `set(nullObject,'message',...)` dirties the cell `getContent` reads
         // (mirrors the content-position null-object fix at the text effect),
         // and (b) materialize a leaf cell when the bound path resolves off an
         // ABSENT property (initial-undefined `{{{this.name}}}` reads no cell, so
@@ -10557,8 +10794,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             if (Array.isArray(entry)) {
               const [evKey, evVal] = entry;
               if (evKey === '1' || evKey === 1) {
-                const textVal = typeof evVal === 'function' ? evVal() : evVal;
-                if (textVal != null) ceEl.appendChild(document.createTextNode(String(textVal)));
+                // The content mustache of the element (see `_appendChildValue`).
+                _appendChildValue(ceEl, evVal, _gxtAppendRenderedObject, ctx);
               } else if (typeof evVal === 'function') {
                 ceEl.addEventListener(evKey, evVal);
               }
@@ -10641,7 +10878,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               /* ignore */
             }
           };
-          for (const child of children) _appendChildValue(ceEl, child, appendCustomObject);
+          for (const child of children) _appendChildValue(ceEl, child, appendCustomObject, ctx);
         }
         return ceEl;
       }
@@ -10753,67 +10990,20 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       splatLocalSet.delete('__class__');
     }
     // GXT order: tag, tagProps, ctx, children
-    // Wrap TEXT_CONTENT event getters (event key "1") so non-primitive, non-Node values
-    // (Date, Object, Symbol) are stringified before reaching GXT's $ev/resolveRenderable.
-    // GXT's resolveRenderable returns raw objects for non-primitive values, which then
-    // fails in opcodeFor (expects a cell/tag). Ember stringifies all values in text positions.
-    //
-    // Creating the element evaluates each text getter once
-    // (`_gxtEvaluateOncePerCreation`). A text child whose value is a SafeString
-    // (an object with a toHTML() method) is rendered as HTML: Ember renders it
-    // as raw HTML, but GXT would coerce the object via String() to
-    // `[object Object]` and `_normalizeStringValue` strips it to ''. The first
-    // evaluation records its HTML, which is injected into the element after
-    // originalTag (below).
-    const _safeHtmlInjections: Array<{ html: string }> = [];
+    // The content of an element that is one mustache (`<p>{{x}}</p>`) is gxt's
+    // TEXT_CONTENT event entry (key "1"), which writes the value as the
+    // element's text. It is rendered as the element's child instead, as
+    // dynamic content like a mustache among other children (see
+    // `_gxtContentChildren`): its value can be a SafeString or a DOM node too.
     if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-      for (let ei = 0; ei < tagProps[2].length; ei++) {
-        const entry = tagProps[2][ei];
-        if (Array.isArray(entry) && entry[0] === '1' && typeof entry[1] === 'function') {
-          const origGetter = entry[1];
-          const _stringifyTextValue = function _stringifyTextValue(this: any) {
-            const val = origGetter.apply(this, arguments);
-            if (
-              val == null ||
-              typeof val === 'string' ||
-              typeof val === 'number' ||
-              typeof val === 'boolean'
-            )
-              return val;
-            if (typeof val === 'symbol') return String(val);
-            if (typeof val === 'function') return val;
-            if (val instanceof Node) return val;
-            // Non-primitive object — stringify for text position (Ember behavior)
-            if (typeof val === 'object') {
-              if (Array.isArray(val)) return val;
-              if (typeof val.toHTML === 'function') return val;
-              if (val.__isCurriedComponent) return val;
-              try {
-                return String(val);
-              } catch {
-                return '';
-              }
-            }
-            return val;
-          };
-          const _thisPath = extractThisPath(String(origGetter));
-          const _stringifyTextContent = _gxtEvaluateOncePerCreation(
-            _stringifyTextValue,
-            _thisPath,
-            (value: any) => {
-              if (value && typeof value === 'object' && typeof value.toHTML === 'function') {
-                _safeHtmlInjections.push({ html: value.toHTML() ?? '' });
-              }
-            }
-          );
-          // Stamp the wrapper with the raw getter's `this.<path>` so
-          // glimmer-next's const-binding recovery (materializeAbsentPathCell, via
-          // resolveRenderable) can materialize a leaf cell for an
-          // initially-undefined `<p>{{this.name}}</p>` text child whose source
-          // the wrapper's own toString hides.
-          if (_thisPath) (_stringifyTextContent as any).__gxtPath = _thisPath;
-          entry[1] = _stringifyTextContent;
-        }
+      const events: any[] = tagProps[2];
+      let content: any[] | null = null;
+      for (const entry of events) {
+        if (Array.isArray(entry) && entry[0] === '1') (content ??= []).push(entry[1]);
+      }
+      if (content !== null) {
+        tagProps[2] = events.filter((entry) => !(Array.isArray(entry) && entry[0] === '1'));
+        children = Array.isArray(children) ? [...content, ...children] : content;
       }
     }
     // Fix: GXT uses element.style = value (prop assignment) which sets
@@ -11054,9 +11244,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
 
-          // Position 2: events AND text content. Entries use the key "1" for
-          // text children, "0" for modifier bindings, and event-name keys
-          // (e.g. "click") for inline `onclick={{x}}` handlers. Skip entries
+          // Position 2: events. Entries use the key "0" for modifier bindings
+          // and event-name keys (e.g. "click") for inline `onclick={{x}}`
+          // handlers (the content entry "1" is a child by now). Skip entries
           // that look like modifier bindings — SVG namespace elements
           // generally don't support Ember-style modifiers in these tests.
           const pos2 = tagProps[2];
@@ -11064,20 +11254,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             for (const entry of pos2) {
               if (!Array.isArray(entry) || entry.length < 2) continue;
               const [keyStr, valOrFn] = entry;
-              if (keyStr === '1') {
-                // Text child, updated in place when it is bound.
-                const textOf = (val: unknown) =>
-                  val == null || val === false ? '' : _gxtCoerceText(val);
-                const textNode = document.createTextNode('');
-                if (typeof valOrFn === 'function') {
-                  _gxtTemplateEffect(() => {
-                    textNode.textContent = textOf(valOrFn());
-                  });
-                } else {
-                  textNode.textContent = textOf(valOrFn);
-                }
-                el.appendChild(textNode);
-              } else if (keyStr === '0') {
+              if (keyStr === '0') {
                 // Modifier — skip, not supported in this lightweight path
               } else if (typeof valOrFn === 'function') {
                 // Inline event handler (onclick etc.)
@@ -11087,38 +11264,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
         }
 
-        // Render children inside the SVG namespace
+        // Render children inside the SVG namespace (see `_appendChildValue`):
+        // a content mustache renders dynamic content owned by `ctx`.
         if (children && children.length > 0) {
-          // Flatten the children into the element (see `_appendChildValue`).
-          // Objects are GXT `$_if`/`$_each` block results, which expose their
-          // nodes as `nodes`, as `RENDERED_NODES_PROPERTY` or by iteration;
-          // any other object renders nothing (not `[object Object]`).
-          const appendObjectNodes = (v: any, appendChildValue: (v: any) => void): void => {
-            const nodesArray = (v as any).nodes;
-            if (Array.isArray(nodesArray)) {
-              for (const n of nodesArray) appendChildValue(n);
-              return;
-            }
-            if (RENDERED_NODES_PROPERTY && (v as any)[RENDERED_NODES_PROPERTY as any]) {
-              const renderedNodes = (v as any)[RENDERED_NODES_PROPERTY as any];
-              if (Array.isArray(renderedNodes)) {
-                for (const n of renderedNodes) appendChildValue(n);
-                return;
-              }
-            }
-            // Symbol.iterator: iterate and recurse
-            if (typeof (v as any)[Symbol.iterator] === 'function') {
-              try {
-                for (const n of v as any) appendChildValue(n);
-                return;
-              } catch {
-                /* fall through */
-              }
-            }
-          };
-
           for (const child of children) {
-            _appendChildValue(el, child, appendObjectNodes);
+            _appendChildValue(el, child, _gxtAppendRenderedObject, ctx);
           }
         }
 
@@ -11280,47 +11430,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // a static one, and the `normalizeAttrValue` host hook removes a bound one
     // on the first write and on every update.
 
-    // SafeString text children of a plain HTML element are injected as HTML.
-    const _injectSafeHtml = typeof tag === 'string' && !_gxtNamespace;
-
-    const result = originalTag(tag, tagProps, ctx, children);
-
-    // Inject SafeString HTML: replace any text node created from the
-    // `[object Object]` placeholder with the parsed HTML fragment.
-    if (_injectSafeHtml && _safeHtmlInjections.length > 0 && result instanceof Element) {
-      // GXT's originalTag produced text nodes for the getter's String()
-      // coercion. Those nodes have nodeValue `"[object Object]"` or an
-      // empty string; remove them and replace with parsed HTML.
-      // Walk text nodes and remove matching ones.
-      const toRemove: Node[] = [];
-      for (const child of Array.from(result.childNodes)) {
-        if (child.nodeType === 3 /* TEXT_NODE */) {
-          const nv = child.nodeValue ?? '';
-          if (nv === '' || nv === '[object Object]') {
-            toRemove.push(child);
-          }
-        }
-      }
-      for (const node of toRemove) {
-        try {
-          result.removeChild(node);
-        } catch {
-          /* ignore */
-        }
-      }
-      // Append each SafeString's parsed HTML in order.
-      for (const inj of _safeHtmlInjections) {
-        try {
-          const tmpl = document.createElement('template');
-          tmpl.innerHTML = inj.html;
-          while (tmpl.content.firstChild) {
-            result.appendChild(tmpl.content.firstChild);
-          }
-        } catch {
-          /* fallback: append raw text */
-        }
-      }
-    }
+    const result = originalTag(tag, tagProps, ctx, _gxtContentChildren(children, ctx, resolvedTag));
 
     // EmberHtmlRaw contextual reparse: when the result element is a
     // table-family element (table/thead/tbody/tr/select/etc.) and its
@@ -13005,18 +13115,23 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // component definition. Detect by checking COMPONENT_TEMPLATES or manager.
           const _gMgrs = (globalThis as any).$_MANAGERS;
           if (_gMgrs?.component?.canHandle?.(finalResult)) {
-            return _gxtRenderDynamicContent(
-              item,
-              finalResult,
-              _capturedDeps,
-              (value: unknown) => _gMgrs.component.canHandle(value) === true,
-              (definition: object): Node | null => {
+            return _gxtDynamicContent(item, {
+              owner: _gxtTemplateOwner(),
+              context: null,
+              renderComponent: (definition: object): Node[] => {
                 const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
-                const _compNode = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
-                if (_compNode instanceof Node) return _compNode;
-                return _compNode ? itemToNode(_compNode, depth + 1) : null;
-              }
-            );
+                const _compRes = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
+                const _compNode =
+                  _compRes instanceof Node
+                    ? _compRes
+                    : _compRes
+                      ? itemToNode(_compRes, depth + 1)
+                      : null;
+                if (_compNode === null) return [];
+                return _compNode.nodeType === 11 ? Array.from(_compNode.childNodes) : [_compNode];
+              },
+              initial: { value: finalResult, cells: _capturedDeps },
+            });
           }
           // Plain object (Date, {foo:'bar'}, etc.) — stringify for text rendering.
           // Ember's Glimmer VM stringifies all values in text positions.
