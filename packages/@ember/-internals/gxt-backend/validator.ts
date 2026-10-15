@@ -14,6 +14,10 @@ import {
   dirtyCell as _gxtDirtyCell,
   peekTagFor as _gxtPeekTagFor,
   syncDom as _gxtSyncDom,
+  // The tracking frame gxt records the cells a computation reads in
+  // (`createCache` below).
+  getTracker as _gxtGetTracker,
+  setTracker as _gxtSetTracker,
 } from '@lifeart/gxt';
 // Routes the track() reentrancy-guard save-restore through the typed bridge
 // helper. See `withTriggerSuppressed` doc in gxt-bridge.ts.
@@ -248,11 +252,32 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
 //    be intercepted) AND fn() produces a different result (deep equality
 //    check not feasible, so a per-cache revision system is used instead)
 //
+// 4. A gxt cell fn() read has a newer revision. Glimmer's createCache tracks
+//    everything fn() reads; here a read can also be of a gxt cell that is no
+//    Ember tag (a component argument, `this.args.x`, is one), so fn() runs in
+//    its own gxt tracking frame and the cache keeps the cells it read with
+//    their revisions. Every read of the cache adds those cells to the frame
+//    reading it, as a nested read would have. What fn() reads in `untrack`
+//    is not in the frame (see `untrack`).
+//
 // For correctness with the "constant helper" test: if a cache's fn() doesn't
-// consume any tags or nested caches, it's treated as constant and never
-// re-evaluated.
+// consume any tags or nested caches and reads no cell, it's treated as
+// constant and never re-evaluated.
 
 const _cacheEvalStack: Set<any>[] = [];
+
+// The frame each createCache frame (`_evaluate`) runs inside of: the frame
+// that read the cache.
+const _cacheFrameReaders = new WeakMap<object, Set<any> | null>();
+
+// The first frame that is not a createCache frame, from `frame` outward.
+function _outsideCacheFrames(frame: Set<any> | null): Set<any> | null {
+  let outside = frame;
+  while (outside !== null && _cacheFrameReaders.has(outside)) {
+    outside = _cacheFrameReaders.get(outside)!;
+  }
+  return outside;
+}
 
 export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; tag?: any } {
   if (typeof fn !== 'function') {
@@ -270,6 +295,9 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
   // Nested caches read during fn() and their revisions at that time
   let _nestedCaches: any[] = [];
   let _nestedCacheRevisions: number[] = [];
+  // gxt cells read during fn() and their revisions at that time
+  let _cells: any[] = [];
+  let _cellRevisions: unknown[] = [];
   // If the most recent _evaluate() call threw, store the error so that
   // subsequent .value reads observed by validation as "still valid" can
   // re-throw the same error rather than serving the previous successful
@@ -309,7 +337,8 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
         cacheObj._initializedAtLeastOnce = true;
         // A cache is const if its fn() consumed no tags and depended on
         // no nested caches during evaluation.
-        cacheObj._isCacheConst = _consumedTags.length === 0 && _nestedCaches.length === 0;
+        cacheObj._isCacheConst =
+          _consumedTags.length === 0 && _nestedCaches.length === 0 && _cells.length === 0;
         // Bump our revision if the value changed (or first eval)
         if (!wasInitialized || oldValue !== _lastValue) {
           _revision++;
@@ -324,6 +353,11 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       // Register in parent cache's eval stack so it sees this cache as a dependency
       if (_cacheEvalStack.length > 0) {
         _cacheEvalStack[_cacheEvalStack.length - 1]!.add(cacheObj);
+      }
+      // The reading frame depends on the cells fn() read.
+      const readingFrame = _gxtGetTracker();
+      if (readingFrame !== null) {
+        for (let i = 0; i < _cells.length; i++) readingFrame.add(_cells[i]);
       }
       // Forward consumed tags to an enclosing gxt track frame / createCache
       // frame, so that cached reads still expose the underlying dependencies
@@ -361,6 +395,7 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
     destroy() {
       _consumedTags = [];
       _nestedCaches = [];
+      _cells = [];
     },
     get tag() {
       return formula(fn, 'createCache');
@@ -370,13 +405,20 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
   function _evaluate(): T {
     const consumed = new Set<any>();
     const nested = new Set<any>();
+    const cells = new Set<any>();
+    const readingFrame = _gxtGetTracker();
+    _cacheFrameReaders.set(cells, readingFrame);
     _cacheTagTracker.push(consumed);
     _cacheEvalStack.push(nested);
+    _gxtSetTracker(cells);
     try {
       return fn();
     } finally {
+      _gxtSetTracker(readingFrame);
       _cacheEvalStack.pop();
       _cacheTagTracker.pop();
+      _cells = Array.from(cells);
+      _cellRevisions = _cells.map((c) => c._revision);
       // Store consumed tags and snapshots, snapshotting via
       // currentTagRevision() rather than tag.value. For GXT tagFor tags,
       // tag.value returns the underlying cell value (e.g. the number 4),
@@ -415,6 +457,10 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       } catch {
         return false;
       }
+    }
+    // Check the gxt cells fn() read against their revisions then.
+    for (let i = 0; i < _cells.length; i++) {
+      if (_cells[i]._revision !== _cellRevisions[i]) return false;
     }
     // Check nested caches: trigger their re-validation by reading .value
     // This causes them to re-evaluate if their own dependencies changed,
@@ -1438,9 +1484,17 @@ export function updateTag(outer: any, inner: any) {
 let _localUntrackDepth = 0;
 export function untrack<T>(cb: () => T): T {
   _localUntrackDepth++;
+  // A cache does not depend on what `cb` reads: the gxt cells `cb` reads go
+  // to the frame outside the createCache frames, as they did before those
+  // frames existed (a formula that reads a computed property still depends on
+  // what its getter reads).
+  const frame = _gxtGetTracker();
+  const outside = _outsideCacheFrames(frame);
+  if (outside !== frame) _gxtSetTracker(outside);
   try {
     return gxtUntrack(cb);
   } finally {
+    if (outside !== frame) _gxtSetTracker(frame);
     _localUntrackDepth--;
   }
 }
