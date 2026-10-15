@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T11:14:49.795Z",
-    "gxtVersion": "0.0.82",
-    "emberCommit": "7dd8ea2d25",
-    "totalTests": 7185,
+    "capturedAt": "2026-10-15T19:58:48.635Z",
+    "gxtVersion": "0.0.83",
+    "emberCommit": "94e7de8766",
+    "totalTests": 7191,
     "totalModules": 683,
     "quarantinedTests": 0,
-    "totalAssertions": 35829,
-    "totalAssertionsPassing": 35746
+    "totalAssertions": 35847,
+    "totalAssertionsPassing": 35795
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -578,28 +578,16 @@
     },
     "Application test: debug render tree": {
       "total": 12,
-      "passing": 7,
+      "passing": 10,
       "assertionsTotal": 437,
-      "assertionsPassing": 429,
+      "assertionsPassing": 433,
       "failingTests": [
-        {
-          "name": " template-only components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " custom components",
-          "category": "gxt:triage"
-        },
         {
           "name": " components rendered with renderComponent",
           "category": "gxt:triage"
         },
         {
           "name": " components rendered with renderComponent and a different owner",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " <LinkTo> components",
           "category": "gxt:triage"
         }
       ],
@@ -1182,10 +1170,10 @@
       ]
     },
     "Components test: a <template> component invoked by name": {
-      "total": 13,
-      "passing": 13,
-      "assertionsTotal": 42,
-      "assertionsPassing": 42,
+      "total": 17,
+      "passing": 17,
+      "assertionsTotal": 58,
+      "assertionsPassing": 58,
       "failingTests": []
     },
     "Components test: a class-body <template> component": {
@@ -1203,23 +1191,18 @@
       "failingTests": []
     },
     "Components test: a component class with a registered template": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "Components test: contextual components": {
       "total": 43,
-      "passing": 42,
+      "passing": 43,
       "assertionsTotal": 10,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": " a {{component}} mustache passed as an argument is a curried component",
-          "category": "gxt:triage"
-        }
-      ],
+      "assertionsPassing": 10,
+      "failingTests": [],
       "skippedTests": [
         " renders with component helper",
         " renders with component helper with invocation params, hash",
@@ -4147,15 +4130,10 @@
     },
     "Triple curlies in attribute position": {
       "total": 4,
-      "passing": 3,
+      "passing": 4,
       "assertionsTotal": 14,
-      "assertionsPassing": 12,
-      "failingTests": [
-        {
-          "name": " a quoted attribute interpolates the value",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 14,
+      "failingTests": []
     },
     "URL-less routes (Async Get Handler)": {
       "total": 3,
@@ -4829,27 +4807,10 @@
     },
     "gxt-native | {{#if}} block bounds (Glimmer DOM)": {
       "total": 4,
-      "passing": 0,
+      "passing": 4,
       "assertionsTotal": 22,
-      "assertionsPassing": 3,
-      "failingTests": [
-        {
-          "name": "a branch with content has no anchor comment; an empty branch is <!---->",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{else}} and {{else if}}: the next branch renders in place, never with an anchor",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "a branch that is itself an empty block shows one <!---->",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{#each}} rows that start and end with {{#if}}: move, swap, remove, clear",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 22,
+      "failingTests": []
     },
     "gxt-native | {{on}}": {
       "total": 12,
@@ -5434,9 +5395,9 @@
     },
     "{{on}} Modifier": {
       "total": 26,
-      "passing": 23,
+      "passing": 24,
       "assertionsTotal": 75,
-      "assertionsPassing": 71,
+      "assertionsPassing": 73,
       "failingTests": [
         {
           "name": " asserts when callback is a bound undefined value",
@@ -5445,15 +5406,11 @@
         {
           "name": " asserts when callback is a bound null value",
           "category": "gxt:triage"
-        },
-        {
-          "name": " it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)",
-          "category": "gxt:triage"
         }
       ]
     }
   },
   "categories": {
-    "gxt:triage": 44
+    "gxt:triage": 34
   }
 }

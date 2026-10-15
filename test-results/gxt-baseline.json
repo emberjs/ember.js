@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T19:27:47.876Z",
-    "gxtVersion": "0.0.82",
-    "emberCommit": "b608afded1",
-    "totalTests": 10133,
+    "capturedAt": "2026-10-15T19:59:05.973Z",
+    "gxtVersion": "0.0.83",
+    "emberCommit": "94e7de8766",
+    "totalTests": 10139,
     "totalModules": 993,
     "quarantinedTests": 0,
-    "totalAssertions": 60378,
-    "totalAssertionsPassing": 59701,
-    "note": "Compat full run on #21340 (gxt 0.0.82) after an inline if with no else value is undefined when its condition is false, a {{log}} statement logs again when a value its arguments read changes, an {{#each}} over a native iterable re-iterates when a value its iteration read changes, a track frame that consumed one tag ends with that tag, a bound style forwarded through ...attributes warns like the element's own, and {{#each-in}} keys its rows by the key option; written by runner.mjs in the GitHub Actions GXT full workflow (run 38793945908, on the code of b608afded1). 9637/10133 green (was 9620/10133), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 17 tests turned green: validator manual track frames: it returns the tag itself if the frame consumed one tag many times, it keeps a tag that a nested frame consumed between two consumptions, it takes a tag one time if nested frames consume it at the same index, it does not keep the tags of a frame that did not end (each also under the parent tracking module); Inline style tests - warnings: specifying style on a component with ...attributes generates a warning; {{#each-in}} with the key option: all 5 tests; #each: autotracked custom iterable; Updating: if keyword in SubExpression without falsey value returns undefined; {{log}} keyword: correctly logs when values update."
+    "totalAssertions": 60545,
+    "totalAssertionsPassing": 59945,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after pinning @lifeart/gxt 0.0.83 and consuming it: the compiler imports the decorator runtime itself, no EMBER_PROPERTY_TAGS flag, build-time ...attributes precedence, no {{component}} value-position rewrite, <@comp as |v|> block params, and the nearest template of a class chain wins; written by runner.mjs in the GitHub Actions GXT full workflow (run 38798093021, on the code of 94e7de8766). 9713/10139 green (was 9637/10133), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 6 new tests, all green. refinements-test.gjs compiles: its compile-error row is gone and syntax refinements passes 1/1. 69 tests turned green: yielded primitives read through paths (14), keyword-named block params (20), the range input value/min and form/list tests (18), attribute form/list (3), inner ...attributes (2), web component fallback (2), static-style warnings (2), {{#each}} @identity primitives (2), the each helper with empty string items, nested-argument modifiers (3), weird paths, and the {{on}} static spellcheck test."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1475,10 +1475,10 @@
       "failingTests": []
     },
     "Components test: a <template> component invoked by name": {
-      "total": 13,
-      "passing": 13,
-      "assertionsTotal": 42,
-      "assertionsPassing": 42,
+      "total": 17,
+      "passing": 17,
+      "assertionsTotal": 58,
+      "assertionsPassing": 58,
       "failingTests": []
     },
     "Components test: a class-body <template> component": {
@@ -1496,10 +1496,10 @@
       "failingTests": []
     },
     "Components test: a component class with a registered template": {
-      "total": 5,
-      "passing": 5,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 7,
+      "passing": 7,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "Components test: attrs lookup": {
@@ -1727,19 +1727,10 @@
     },
     "Components test: web component fallback": {
       "total": 2,
-      "passing": 0,
+      "passing": 2,
       "assertionsTotal": 8,
-      "assertionsPassing": 4,
-      "failingTests": [
-        {
-          "name": "custom elements are rendered",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "custom elements can have bound attributes",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 8,
+      "failingTests": []
     },
     "Components test: {{input type='checkbox'}}": {
       "total": 2,
@@ -3171,20 +3162,12 @@
     },
     "Inline style tests - warnings (static styles, namespaced elements and element modifiers)": {
       "total": 4,
-      "passing": 1,
+      "passing": 3,
       "assertionsTotal": 10,
-      "assertionsPassing": 7,
+      "assertionsPassing": 9,
       "failingTests": [
         {
-          "name": " a static style and an element modifier do not warn",
-          "category": "gxt:triage"
-        },
-        {
           "name": " a dynamic style and an element modifier warn once",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " a static style on an element does not warn",
           "category": "gxt:triage"
         }
       ]
@@ -4814,18 +4797,10 @@
     },
     "Syntax test: {{#each}} keys and DOM identity": {
       "total": 7,
-      "passing": 4,
+      "passing": 6,
       "assertionsTotal": 19,
-      "assertionsPassing": 16,
+      "assertionsPassing": 18,
       "failingTests": [
-        {
-          "name": " @identity keeps the node of a null item as the list changes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " @identity works with every kind of primitive except null",
-          "category": "gxt:triage"
-        },
         {
           "name": " @key keys items by position",
           "category": "gxt:triage"
@@ -5330,18 +5305,6 @@
       "assertionsPassing": 6,
       "failingTests": []
     },
-    "[gxt] compile error: packages/@ember/-internals/glimmer/tests/integration/refinements-test.gjs": {
-      "total": 1,
-      "passing": 0,
-      "assertionsTotal": 1,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": "the test module compiles",
-          "category": "gxt:triage"
-        }
-      ]
-    },
     "[integration] env": {
       "total": 2,
       "passing": 2,
@@ -5648,24 +5611,12 @@
     },
     "[integration] jit :: Attributes": {
       "total": 33,
-      "passing": 29,
-      "assertionsTotal": 361,
-      "assertionsPassing": 357,
+      "passing": 32,
+      "assertionsTotal": 378,
+      "assertionsPassing": 377,
       "failingTests": [
         {
-          "name": "can read the form attribute",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can set attributes on form properties",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input list attribute updates properly",
           "category": "gxt:triage"
         }
       ]
@@ -5984,27 +5935,17 @@
     },
     "[integration] jit :: Components :: TemplateOnly": {
       "total": 2,
-      "passing": 1,
+      "passing": 2,
       "assertionsTotal": 24,
-      "assertionsPassing": 21,
-      "failingTests": [
-        {
-          "name": "inner ...attributes",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 24,
+      "failingTests": []
     },
     "[integration] jit :: Components :: TemplateOnly > [integration] TemplateOnly": {
       "total": 2,
-      "passing": 1,
+      "passing": 2,
       "assertionsTotal": 24,
-      "assertionsPassing": 21,
-      "failingTests": [
-        {
-          "name": "inner ...attributes",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 24,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block": {
       "total": 69,
@@ -6084,38 +6025,10 @@
     },
     "[integration] jit :: Components :: yield": {
       "total": 45,
-      "passing": 36,
-      "assertionsTotal": 362,
-      "assertionsPassing": 353,
+      "passing": 43,
+      "assertionsTotal": 390,
+      "assertionsPassing": 388,
       "failingTests": [
-        {
-          "name": "yielding strings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding floats",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding integers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding false",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding true",
-          "category": "gxt:triage"
-        },
         {
           "name": "yielding a string and rendering its length",
           "category": "gxt:triage"
@@ -6142,38 +6055,10 @@
     },
     "[integration] jit :: Components :: yield > [integration] Glimmer": {
       "total": 15,
-      "passing": 6,
-      "assertionsTotal": 102,
-      "assertionsPassing": 93,
+      "passing": 13,
+      "assertionsTotal": 130,
+      "assertionsPassing": 128,
       "failingTests": [
-        {
-          "name": "yielding strings",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding floats",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding integers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding null",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding false",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yielding true",
-          "category": "gxt:triage"
-        },
         {
           "name": "yielding a string and rendering its length",
           "category": "gxt:triage"
@@ -6198,14 +6083,10 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 59,
-      "assertionsTotal": 829,
-      "assertionsPassing": 802,
+      "passing": 61,
+      "assertionsTotal": 834,
+      "assertionsPassing": 809,
       "failingTests": [
-        {
-          "name": "weird paths",
-          "category": "gxt:triage"
-        },
         {
           "name": "helpers passed as arguments to {{component}} are not torn down when switching between blocks",
           "category": "gxt:triage"
@@ -6216,10 +6097,6 @@
         },
         {
           "name": "block helpers whose template has a morph at the edge",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The each helper with empty string items",
           "category": "gxt:triage"
         },
         {
@@ -6349,32 +6226,12 @@
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
-      "passing": 32,
-      "assertionsTotal": 376,
-      "assertionsPassing": 370,
+      "passing": 37,
+      "assertionsTotal": 393,
+      "assertionsPassing": 392,
       "failingTests": [
         {
-          "name": "value below default min but above set min is kept",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can read the form attribute",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can set attributes on form properties",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input list attribute updates properly",
           "category": "gxt:triage"
         }
       ]
@@ -6424,9 +6281,9 @@
     },
     "[integration] jit :: `each-in` keyword syntax errors": {
       "total": 14,
-      "passing": 3,
+      "passing": 8,
       "assertionsTotal": 17,
-      "assertionsPassing": 6,
+      "assertionsPassing": 11,
       "failingTests": [
         {
           "name": "keyword can be used as a value in non-strict mode",
@@ -6437,27 +6294,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in strict mode",
-          "category": "gxt:triage"
-        },
-        {
           "name": "keyword can be yielded as a parameter in component named blocks in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
           "category": "gxt:triage"
         },
         {
@@ -6496,30 +6333,10 @@
     },
     "[integration] jit :: `has-block-params` keyword syntax errors": {
       "total": 14,
-      "passing": 7,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 9,
+      "assertionsPassing": 14,
       "failingTests": [
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
-          "category": "gxt:triage"
-        },
         {
           "name": "non-block keywords cannot be used as blocks",
           "category": "gxt:triage"
@@ -6532,30 +6349,10 @@
     },
     "[integration] jit :: `has-block` keyword syntax errors": {
       "total": 14,
-      "passing": 7,
+      "passing": 12,
       "assertionsTotal": 16,
-      "assertionsPassing": 9,
+      "assertionsPassing": 14,
       "failingTests": [
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
-          "category": "gxt:triage"
-        },
         {
           "name": "non-block keywords cannot be used as blocks",
           "category": "gxt:triage"
@@ -6600,32 +6397,12 @@
     },
     "[integration] jit :: `in-element` keyword syntax errors": {
       "total": 14,
-      "passing": 5,
+      "passing": 10,
       "assertionsTotal": 17,
-      "assertionsPassing": 8,
+      "assertionsPassing": 13,
       "failingTests": [
         {
           "name": "keyword can be used as a value in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in other keywords in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in non-strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in curly invocation in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in component named blocks in strict mode",
           "category": "gxt:triage"
         },
         {
@@ -6916,18 +6693,10 @@
     },
     "[integration] jit :: dynamic modifiers in resolution mode": {
       "total": 14,
-      "passing": 10,
+      "passing": 12,
       "assertionsTotal": 77,
-      "assertionsPassing": 73,
+      "assertionsPassing": 75,
       "failingTests": [
-        {
-          "name": "Can use a nested argument as a modifier",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can invoke a yielded nested modifier",
-          "category": "gxt:triage"
-        },
         {
           "name": "Cannot invoke a modifier definition based on this fallback lookup in resolution mode",
           "category": "gxt:triage"
@@ -7113,88 +6882,36 @@
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 32,
-      "assertionsTotal": 376,
-      "assertionsPassing": 370,
+      "passing": 37,
+      "assertionsTotal": 393,
+      "assertionsPassing": 392,
       "failingTests": [
         {
-          "name": "value below default min but above set min is kept",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can read the form attribute",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can set attributes on form properties",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input list attribute updates properly",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 34,
-      "assertionsTotal": 376,
-      "assertionsPassing": 372,
+      "passing": 37,
+      "assertionsTotal": 393,
+      "assertionsPassing": 392,
       "failingTests": [
         {
-          "name": "can read the form attribute",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can set attributes on form properties",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input list attribute updates properly",
           "category": "gxt:triage"
         }
       ]
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
-      "passing": 32,
-      "assertionsTotal": 376,
-      "assertionsPassing": 370,
+      "passing": 37,
+      "assertionsTotal": 393,
+      "assertionsPassing": 392,
       "failingTests": [
         {
-          "name": "value below default min but above set min is kept",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "value below min is reset to min",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can read the form attribute",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "can set attributes on form properties",
-          "category": "gxt:triage"
-        },
-        {
           "name": "handles successive updates to the same value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "input list attribute updates properly",
           "category": "gxt:triage"
         }
       ]
@@ -7464,9 +7181,9 @@
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
-      "passing": 38,
+      "passing": 39,
       "assertionsTotal": 296,
-      "assertionsPassing": 287,
+      "assertionsPassing": 288,
       "failingTests": [
         {
           "name": "Can use a dynamic helper with a changing definition",
@@ -7474,10 +7191,6 @@
         },
         {
           "name": "Can use a dynamic helper with a changing definition (curried)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can use a nested argument as a modifier",
           "category": "gxt:triage"
         },
         {
@@ -8986,6 +8699,13 @@
       "assertionsPassing": 7,
       "failingTests": []
     },
+    "syntax refinements": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
     "system/core_object/reopen": {
       "total": 3,
       "passing": 3,
@@ -9196,9 +8916,9 @@
     },
     "{{on}} Modifier": {
       "total": 26,
-      "passing": 23,
+      "passing": 24,
       "assertionsTotal": 75,
-      "assertionsPassing": 71,
+      "assertionsPassing": 73,
       "failingTests": [
         {
           "name": " asserts when callback is a bound undefined value",
@@ -9207,15 +8927,11 @@
         {
           "name": " asserts when callback is a bound null value",
           "category": "gxt:triage"
-        },
-        {
-          "name": " it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)",
-          "category": "gxt:triage"
         }
       ]
     }
   },
   "categories": {
-    "gxt:triage": 496
+    "gxt:triage": 426
   }
 }
