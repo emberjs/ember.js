@@ -7,8 +7,18 @@ This is not a todo list for agents to work on, this is a todo list for human rev
 **1. Deprecation follow-ups**
 
 - **T22 details:** the deprecation id and `until` version. Also, what Ember should finally do with an `{{else}}` inside an HTML comment that began in the block. It could be an error, which is what the spec now asks of new implementations. Or it could be comment text, which is what the parked branch does. Comment text changes a template's meaning without any error, so the deprecation would need to warn about it first.
+
+> The spec should declare that the parser treats mustaches inside html comments as part of the comments. That is, the HTML parse takes precedence, and mustache states are only recognized in HTML parser states where they belong. This is difference from the current implementation, but we're deciding in this case that that's OK. Bringing the current implementation into spec compliance is out of scope for our spec writing, so we're not blocked on decisions about deprecation.
+
+> Just make sure there's clear documentation in the spec for each of the places where we decided that the old implementation is out-of-spec.
+
 - **T20 for consistency:** you ruled that `{{"foo" bar}}` becomes an error right away, with no deprecation. Now that T21 and T22 both use deprecation cycles, do you want T20 to stay an immediate error? Its corpus check found nothing that would break.
+
+> This decision is not a blocker for the spec. The spec will definitely call this an error. While backward-compatibility is a key requirement for the spec, we can decide, on a case-by-case basis, to decide that it's the old implementation that is actually out of spec. This is an example of the old implementation being out of spec. How/when the old implementation is changed to bring it into conformance is out of scope for our spec-defining work.
+
 - **T21 timing:** when to push the RFC and the deprecation guides.
+
+> Out of scope, for the same reasons as above.
 
 **2. Preserve or change (§0.7.1).** Each of these changes normative text:
 
