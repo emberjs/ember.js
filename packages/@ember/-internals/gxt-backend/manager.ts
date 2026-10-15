@@ -7679,6 +7679,93 @@ interface _ModifierArgSource {
   hash: Record<string, any>;
 }
 
+// The args object a template-only component's template reads as `@name`.
+//
+// gxt's `$_args` hands a component an argument as a thunk value
+// (`{ value: () => this.greet }`). The args proxy of a component rendered by
+// name (`createRenderContext`) reads such a thunk, but a template-only
+// definition rendered here (invoked through a path, `<this.Apply … />` or
+// `{{component this.Apply …}}`, or curried and then invoked) got the object as
+// it was, so `@value` was the thunk instead of the argument's value. A content
+// mustache calls a function and rendered the value, but a modifier
+// (`<div {{@value "x"}}>`), a helper call (`{{@value "x"}}`) or an `{{on}}`
+// handler got the thunk, so the modifier was never installed and the helper
+// never ran. Glimmer reads `@value` from the argument's reference whatever
+// invoked the component.
+//
+// Here such a thunk becomes a getter that reads it, through the argument's
+// value slot (see `_argValueSlot`), as the by-name args proxy reads it. Getters,
+// other values (a `(fn …)`, a mut cell, a curried helper or component, a class),
+// gxt's internal keys and non-enumerable or symbol keys are kept as they are.
+function _templateOnlyArgs(args: any): any {
+  const tplArgs: any = {};
+  for (const key of Reflect.ownKeys(args)) {
+    const desc = Object.getOwnPropertyDescriptor(args, key);
+    if (desc === undefined) continue;
+    const thunk = desc.value;
+    if (
+      typeof key === 'string' &&
+      desc.enumerable === true &&
+      !key.startsWith('$') &&
+      !_isGxtInternalArgKey(key) &&
+      typeof thunk === 'function' &&
+      !thunk.prototype &&
+      !thunk.__isFnHelper &&
+      !thunk.__isMutCell &&
+      !thunk.__isEmberCurriedHelper &&
+      !thunk.__isCurriedComponent
+    ) {
+      Object.defineProperty(tplArgs, key, {
+        get: _argValueGetter(_argValueSlot(tplArgs, key), thunk),
+        enumerable: true,
+        configurable: true,
+      });
+    } else {
+      Object.defineProperty(tplArgs, key, desc);
+    }
+  }
+  return tplArgs;
+}
+
+// Render a template-only component's template (`tpl`, a template or a factory
+// of one for `owner`) with the invocation's `args` and forwarded attributes
+// (`fw`) into a fragment; `null` when there is no template to render.
+function _renderTemplateOnlyComponent(tpl: any, args: any, fw: any, owner: any): any {
+  let resolvedTpl = tpl;
+  if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
+    resolvedTpl = resolvedTpl(owner);
+  }
+  if (!resolvedTpl?.render) return null;
+  const tplArgs = args ? _templateOnlyArgs(args) : {};
+  const renderCtx: any = {};
+  for (const key of Object.keys(tplArgs)) {
+    if (key === 'args' || key.startsWith('$')) continue;
+    const desc = Object.getOwnPropertyDescriptor(tplArgs, key);
+    if (desc) {
+      Object.defineProperty(renderCtx, key, desc);
+    }
+  }
+  renderCtx.args = tplArgs;
+  renderCtx.owner = owner;
+  // Pass through slots for {{yield}} support
+  const slots = args?.[$SLOTS_SYMBOL] || args?.args?.[$SLOTS_SYMBOL];
+  if (slots) {
+    renderCtx.$slots = slots;
+    renderCtx[$SLOTS_SYMBOL] = slots;
+  }
+  // Forward the splat-attrs (parent's tagProps `[props, attrs, events]`) into
+  // `renderCtx.$fw` so the GXT-emitted template body's free `$fw` references
+  // resolve to the invoker's forwarded attrs, e.g. so `<Inner @arg={...}
+  // class="x">` → child template's `<Tag id="y" ...attributes>` inherits the
+  // parent's `class="x"`. Mirrors the `$fw` assignment in `createRenderContext`.
+  const propsFromArgs = args?.[$PROPS_SYMBOL];
+  renderCtx.$fw = (Array.isArray(fw) ? fw : null) ||
+    (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
+  const container = document.createDocumentFragment();
+  renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
+  return container;
+}
+
 const $_MANAGERS = {
   component: {
     canHandle(komp: any): boolean {
@@ -8209,44 +8296,8 @@ const $_MANAGERS = {
           const tpl =
             COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
           if (tpl) {
-            let resolvedTpl = tpl;
-            if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
-              resolvedTpl = resolvedTpl(owner);
-            }
-            if (resolvedTpl?.render) {
-              const renderCtx: any = {};
-              if (args) {
-                for (const key of Object.keys(args)) {
-                  if (key === 'args' || key.startsWith('$')) continue;
-                  const desc = Object.getOwnPropertyDescriptor(args, key);
-                  if (desc) {
-                    Object.defineProperty(renderCtx, key, desc);
-                  }
-                }
-              }
-              renderCtx.args = args || {};
-              renderCtx.owner = owner;
-              // Pass through slots for {{yield}} support
-              const slots = args?.[$SLOTS_SYMBOL] || args?.args?.[$SLOTS_SYMBOL];
-              if (slots) {
-                renderCtx.$slots = slots;
-                renderCtx[$SLOTS_SYMBOL] = slots;
-              }
-              // Forward the splat-attrs (parent's tagProps `[props, attrs,
-              // events]`) into `renderCtx.$fw` so the GXT-emitted template
-              // body's free `$fw` references resolve to the invoker's
-              // forwarded attrs, e.g. so `<Inner @arg={...} class="x">` →
-              // child template's `<Tag id="y" ...attributes>` inherits the
-              // parent's `class="x"`. Mirrors the `$fw` assignment in
-              // `createRenderContext`.
-              const propsFromArgs = args?.[$PROPS_SYMBOL];
-              const fwForRender = (Array.isArray(fw) ? fw : null) ||
-                (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
-              renderCtx.$fw = fwForRender;
-              const container = document.createDocumentFragment();
-              renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
-              return container;
-            }
+            const rendered = _renderTemplateOnlyComponent(tpl, args, fw, owner);
+            if (rendered !== null) return rendered;
           }
           // No template found and no create method — return empty
           return () => document.createComment('template-only (no template)');
@@ -8262,37 +8313,8 @@ const $_MANAGERS = {
         const fallbackTpl =
           COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
         if (fallbackTpl) {
-          let resolvedTpl = fallbackTpl;
-          if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
-            resolvedTpl = resolvedTpl(owner);
-          }
-          if (resolvedTpl?.render) {
-            const renderCtx: any = {};
-            if (args) {
-              for (const key of Object.keys(args)) {
-                if (key === 'args' || key.startsWith('$')) continue;
-                const desc = Object.getOwnPropertyDescriptor(args, key);
-                if (desc) {
-                  Object.defineProperty(renderCtx, key, desc);
-                }
-              }
-            }
-            renderCtx.args = args || {};
-            renderCtx.owner = owner;
-            const slots = args?.[$SLOTS_SYMBOL] || args?.args?.[$SLOTS_SYMBOL];
-            if (slots) {
-              renderCtx.$slots = slots;
-              renderCtx[$SLOTS_SYMBOL] = slots;
-            }
-            // Forward splat-attrs into `$fw` (see the sibling branch above).
-            const propsFromArgs2 = args?.[$PROPS_SYMBOL];
-            const fwForRender2 = (Array.isArray(fw) ? fw : null) ||
-              (Array.isArray(propsFromArgs2) ? propsFromArgs2 : null) || [[], [], []];
-            renderCtx.$fw = fwForRender2;
-            const container = document.createDocumentFragment();
-            renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
-            return container;
-          }
+          const rendered = _renderTemplateOnlyComponent(fallbackTpl, args, fw, owner);
+          if (rendered !== null) return rendered;
         }
       }
 
