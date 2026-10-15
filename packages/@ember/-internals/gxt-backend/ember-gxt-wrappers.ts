@@ -2969,9 +2969,29 @@ function _patchGxtEntriesOf(): void {
   });
 }
 
+// Build-time (.gjs/.gts) templates call this module's `$_tag`, not compile.ts's
+// wrapper, which renders the content of a runtime-compiled template's element.
+// Their plain elements are created through compile.ts's
+// `createElementWithContent`, so a content mustache renders what its value is
+// there too (text, trusted HTML, a DOM node), not always text.
+function _tagWithContent(
+  tag: unknown,
+  tagProps: unknown,
+  ctx: unknown,
+  children: unknown
+): unknown {
+  return getGxtRenderer()!.compilePipeline.createElementWithContent!(
+    gxtModule.$_tag,
+    tag,
+    tagProps,
+    ctx,
+    children
+  );
+}
+
 // Create module-level wrapped exports for ES module consumers
 const _wrappedMH = createEmberMaybeHelper(gxtModule.$_maybeHelper);
-const _wrappedTag = createEmberTag(gxtModule.$_tag);
+const _wrappedTag = createEmberTag(_tagWithContent);
 const _wrappedDc = createEmberDc(gxtModule.$_dc);
 
 // Re-export with original names (using alias to avoid GXT Babel plugin duplicate)

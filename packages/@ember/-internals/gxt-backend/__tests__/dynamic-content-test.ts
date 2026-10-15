@@ -10,8 +10,9 @@
  *   the namespace of the element it is rendered in;
  * - a DOM node, or the nodes of a DocumentFragment, inserted as they are.
  *
- * The result of a helper invocation (`{{format this.value}}`) renders the
- * same way, and a `{{{value}}}` renders a DOM node value as that node too. A
+ * The result of a helper invocation (`{{format this.value}}`) and a yielded
+ * block parameter render the same way, and a `{{{value}}}` renders a DOM node
+ * value as that node too. A
  * modifier of an element sees the element's content when it is installed.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
@@ -20,6 +21,8 @@ import { defineSimpleModifier, moduleFor, RenderingTestCase, runTask } from 'int
 import { set } from '@ember/object';
 import { helper } from '@ember/component/helper';
 import { htmlSafe } from '@ember/template';
+import { setComponentTemplate } from '@ember/component';
+import templateOnly from '@ember/component/template-only';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -66,6 +69,15 @@ moduleFor(
 
       runTask(() => set(this.context, 'value', null));
       this.assertHTML(`${before}${after}`);
+    }
+
+    // `<YieldValue @value={{…}} as |v|>`: a template-only component that yields
+    // `@value`.
+    registerYieldValue() {
+      this.owner.register(
+        'component:yield-value',
+        setComponentTemplate(this.compile('{{yield @value}}'), templateOnly())
+      );
     }
 
     ['@test the only content of an element renders what its value is']() {
@@ -165,6 +177,36 @@ moduleFor(
       });
       this.assertHTML('<p><b>bold</b></p><p>static</p>');
       assert.deepEqual(seen, ['<b>bold</b>', 'static']);
+    }
+
+    ['@test a yielded block param renders what its value is']() {
+      this.registerYieldValue();
+      this.render('<YieldValue @value={{this.value}} as |v|><div>{{v}}</div>[{{v}}]</YieldValue>', {
+        value: 'hello',
+      });
+      this.assertHTML('<div>hello</div>[hello]');
+
+      runTask(() => set(this.context, 'value', htmlSafe('<b>bold</b>')));
+      this.assertHTML('<div><b>bold</b></div>[<b>bold</b>]');
+
+      runTask(() => set(this.context, 'value', '<i>text</i>'));
+      this.assertHTML('<div>&lt;i&gt;text&lt;/i&gt;</div>[&lt;i&gt;text&lt;/i&gt;]');
+    }
+
+    ['@test a yielded block param that becomes a DOM node renders as that node']() {
+      this.registerYieldValue();
+      this.render('<YieldValue @value={{this.value}} as |v|><div>{{v}}</div></YieldValue>', {
+        value: 'text',
+      });
+      this.assertHTML('<div>text</div>');
+
+      let p = paragraph('node');
+      runTask(() => set(this.context, 'value', p));
+      this.assertHTML('<div><p>node</p></div>');
+      this.assert.strictEqual(this.element.querySelector('p'), p, 'the node itself is inserted');
+
+      runTask(() => set(this.context, 'value', 'text again'));
+      this.assertHTML('<div>text again</div>');
     }
 
     ['@test text content keeps its text node while the value stays text']() {

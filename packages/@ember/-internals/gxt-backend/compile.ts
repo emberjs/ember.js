@@ -474,6 +474,9 @@ import {
   peekTagFor as _gxtPeekTagFor,
   tagMetaFor as _gxtTagMetaFor,
   currentRevision as _gxtCurrentRevision,
+  // The value of a gxt cell (a block parameter of a build-time template), read
+  // in the current tracking frame; any other object is returned as it is.
+  $_unwrapHelperArg as _gxtUnwrapCell,
 } from '@lifeart/gxt';
 // Host hooks: the gxt runtime calls the hooks registered here.
 // `registerHostHooks`, the named-block marker predicate and the each-in
@@ -2088,7 +2091,7 @@ function _appendChildValue(
   }
   if (typeof value === 'function') {
     const context = target instanceof Element ? _gxtContentContextOf(target) : null;
-    const content = _gxtContentChild(value, owner, context);
+    const content = _gxtContentChild(value, owner, context, extractThisPath(String(value)));
     if (content instanceof Node) target.appendChild(content);
     else append(content);
     return;
@@ -3553,15 +3556,25 @@ function _gxtContentText(value: unknown): unknown {
 }
 
 // The value of a content binding: what `read` returns, with a function value
-// called (a plain function is a helper) unless it is a component definition.
-// The objects the cells it read hold become their value-owners
-// (`_gxtRegisterLeafOwners`) on every evaluation, so after
+// called (a plain function is a helper) unless it is a component definition,
+// and a gxt cell read: a block parameter of a build-time template is the cell
+// of the yielded value. The objects the cells it read hold become their
+// value-owners (`_gxtRegisterLeafOwners`) on every evaluation, so after
 // `set(context, 'page', newPage)` a change of `newPage.title` updates
 // `{{this.page.title}}`.
 function _gxtContentValue(read: () => unknown): unknown {
   let value = read();
-  while (typeof value === 'function' && !_gxtIsComponentDefinition(value)) {
-    value = (value as () => unknown)();
+  for (;;) {
+    if (typeof value === 'function') {
+      if (_gxtIsComponentDefinition(value)) break;
+      value = (value as () => unknown)();
+    } else if (value !== null && typeof value === 'object') {
+      const cellValue = _gxtUnwrapCell(value);
+      if (cellValue === value) break;
+      value = cellValue;
+    } else {
+      break;
+    }
   }
   const cells = _gxtGetTracker();
   if (cells) _gxtRegisterLeafOwners(cells);
@@ -3574,13 +3587,16 @@ function _gxtContentValue(read: () => unknown): unknown {
 // A block's render result (an object holding the nodes it rendered, like a
 // `$_slot`) is returned for gxt to render as it is; any other value renders as
 // dynamic content (`_gxtDynamicContent`), which subscribes to the cells the
-// evaluation read.
+// evaluation read. `thisPath` is the `this.<path>` a runtime-compiled
+// template's getter reads (`_gxtEvaluateOncePerCreation`); a build-time
+// template reads its properties through their tags and has none.
 function _gxtContentChild(
   getter: () => unknown,
   owner: unknown,
-  context: _GxtContentContext | null
+  context: _GxtContentContext | null,
+  thisPath: string | null
 ): unknown {
-  const read = _gxtEvaluateOncePerCreation(getter, extractThisPath(String(getter)));
+  const read = _gxtEvaluateOncePerCreation(getter, thisPath);
   const outer = _gxtGetTracker();
   const cells = new Set<any>();
   _gxtSetTracker(cells);
@@ -3624,9 +3640,110 @@ function _gxtContentChildren(children: any[] | undefined, ctx: unknown, tag: unk
       tag: typeof tag === 'string' ? tag.toLowerCase() : '',
       namespace: 'html',
     };
-    contentChildren[i] = () => _gxtContentChild(child, ctx, context);
+    contentChildren[i] = () =>
+      _gxtContentChild(child, ctx, context, extractThisPath(String(child)));
   }
   return contentChildren ?? children;
+}
+
+// The content of an element that is one mustache (`<p>{{x}}</p>`) is gxt's
+// TEXT_CONTENT event entry (key "1") of its `tagProps`, which writes the value
+// as the element's text. It is rendered as dynamic content instead, like a
+// mustache among other children: its value can be a SafeString or a DOM node
+// too. It becomes the element's children (the returned children). When the
+// element has modifiers, which gxt installs while it creates the element
+// (before its children), `renderContent` renders the content into the element
+// from an entry ahead of them instead, so a modifier sees the element's content
+// when it is installed; without `renderContent` the content stays children.
+function _gxtTakeTextContent(
+  tagProps: any,
+  children: any,
+  renderContent: ((element: Element, content: unknown[]) => void) | null
+): any {
+  const events = tagProps?.[2];
+  if (!Array.isArray(events)) return children;
+  let content: unknown[] | null = null;
+  let hasModifier = false;
+  for (const entry of events) {
+    if (!Array.isArray(entry)) continue;
+    if (entry[0] === '1') (content ??= []).push(entry[1]);
+    else if (entry[0] === '0') hasModifier = true;
+  }
+  if (content === null) return children;
+  const rest = events.filter((entry) => !(Array.isArray(entry) && entry[0] === '1'));
+  if (hasModifier && renderContent !== null) {
+    const elementContent = content;
+    tagProps[2] = [['0', (element: Element) => renderContent(element, elementContent)], ...rest];
+    return children;
+  }
+  tagProps[2] = rest;
+  return Array.isArray(children) ? [...content, ...children] : content;
+}
+
+// Creates a plain element of a build-time (.gjs/.gts) template with `create`
+// (gxt's `$_tag`), its content mustaches rendering as dynamic content, as
+// `$_tag_ember` renders the content of an element of a runtime-compiled
+// template. gxt creates the element in the namespace its render context
+// provides (an SVG element inside `<svg>`), which the template's `$_tag` call
+// does not know: a content mustache among the element's children holds its
+// place with an empty comment while gxt creates the element, and is rendered
+// in that place once the element exists, so trusted HTML is parsed in the
+// namespace of its element. The content is still rendered after the element's
+// attributes, and in order. An element whose tag is a getter (the `(element)`
+// helper) is created again by gxt with the same children when its tag changes,
+// so gxt renders its children itself.
+function _gxtCreateElementWithContent(
+  create: Function,
+  tag: unknown,
+  tagProps: any,
+  ctx: unknown,
+  children: any
+): unknown {
+  if (typeof tag !== 'string') return create(tag, tagProps, ctx, children);
+  children = _gxtTakeTextContent(tagProps, children, (element, content) => {
+    for (const value of content) _gxtRenderContentChild(element, null, value, ctx);
+  });
+  if (!Array.isArray(children)) return create(tag, tagProps, ctx, children);
+  let places: Array<[Comment, unknown]> | null = null;
+  let elementChildren: unknown[] = children;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (typeof child !== 'function') continue;
+    if (places === null) {
+      places = [];
+      elementChildren = children.slice();
+    }
+    const place = document.createComment('');
+    places.push([place, child]);
+    elementChildren[i] = place;
+  }
+  const element = create(tag, tagProps, ctx, elementChildren);
+  if (places !== null) {
+    for (const [place, child] of places) {
+      const parent = place.parentNode!;
+      _gxtRenderContentChild(parent, place, child, ctx);
+      parent.removeChild(place);
+    }
+  }
+  return element;
+}
+
+// Renders a child of a build-time template's element into `parent`, before
+// `before`: a function (a content mustache) as `_gxtContentChild`, owned by
+// `owner` and parsed in the context of `parent`; a static value as it is.
+function _gxtRenderContentChild(
+  parent: Node,
+  before: Node | null,
+  value: unknown,
+  owner: unknown
+): void {
+  if (typeof value === 'function') {
+    const context = parent instanceof Element ? _gxtContentContextOf(parent) : null;
+    value = _gxtContentChild(value as () => unknown, owner, context, null);
+  }
+  const content = document.createDocumentFragment();
+  _appendChildValue(content, value, _gxtAppendRenderedObject, owner);
+  parent.insertBefore(content, before);
 }
 
 function _gxtIsInTriggerReRender(): boolean {
@@ -11017,40 +11134,20 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       splatLocalSet.delete('__class__');
     }
     // GXT order: tag, tagProps, ctx, children
-    // The content of an element that is one mustache (`<p>{{x}}</p>`) is gxt's
-    // TEXT_CONTENT event entry (key "1"), which writes the value as the
-    // element's text. It is rendered as dynamic content instead, like a
-    // mustache among other children (see `_gxtContentChildren`): its value can
-    // be a SafeString or a DOM node too. It becomes the element's children;
-    // when the element has modifiers, which gxt installs while it creates the
-    // element (before its children), the content is rendered into the element
-    // by an entry ahead of them instead, so a modifier sees the element's
-    // content when it is installed.
-    if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-      const events: any[] = tagProps[2];
-      let content: any[] | null = null;
-      let hasModifier = false;
-      for (const entry of events) {
-        if (!Array.isArray(entry)) continue;
-        if (entry[0] === '1') (content ??= []).push(entry[1]);
-        else if (entry[0] === '0') hasModifier = true;
-      }
-      if (content !== null) {
-        const rest = events.filter((entry) => !(Array.isArray(entry) && entry[0] === '1'));
-        if (hasModifier && !_gxtNamespace) {
-          const elementContent = content;
-          const renderContent = (element: Element): void => {
-            for (const value of elementContent) {
+    // An element whose content is one mustache renders it as dynamic content
+    // (see `_gxtTakeTextContent`), like a mustache among other children (see
+    // `_gxtContentChildren`).
+    children = _gxtTakeTextContent(
+      tagProps,
+      children,
+      _gxtNamespace
+        ? null
+        : (element, content) => {
+            for (const value of content) {
               _appendChildValue(element, value, _gxtAppendRenderedObject, ctx);
             }
-          };
-          tagProps[2] = [['0', renderContent], ...rest];
-        } else {
-          tagProps[2] = rest;
-          children = Array.isArray(children) ? [...content, ...children] : content;
-        }
-      }
-    }
+          }
+    );
     // Fix: GXT uses element.style = value (prop assignment) which sets
     // style.cssText. When value is "" or null, this leaves style="" on the element.
     // Ember expects the style attribute to be removed entirely for empty values.
@@ -14152,11 +14249,15 @@ installCompilePipelinePart({
   // the tag and test definitions through here.
   getHelperRecomputeTag: (instance: object) => (instance as any)[RECOMPUTE_TAG],
   isTemplateOnlyDefinition: (value: unknown) => value instanceof TemplateOnlyComponentDefinition,
+  // ember-gxt-wrappers' `$_tag`, which build-time templates call, creates their
+  // plain elements through it.
+  createElementWithContent: _gxtCreateElementWithContent,
 });
-// manager.ts calls these members without a fallback.
+// manager.ts and ember-gxt-wrappers.ts call these members without a fallback.
 assertCompilePipelineInstalled([
   'getHelperRecomputeTag',
   'isTemplateOnlyDefinition',
+  'createElementWithContent',
   'withSyncing',
   'withSuppressDirtyInRcSet',
   'isSyncIsPropertyDriven',

@@ -612,6 +612,21 @@ export interface GxtCompilePipelineCapabilities {
   isTemplateOnlyDefinition?(value: unknown): boolean;
 
   /**
+   * Create a plain element of a build-time (.gjs/.gts) template with `create`
+   * (gxt's `$_tag`, same arguments), its content mustaches rendering what
+   * their values are (text, trusted HTML, a DOM node). Contributed by
+   * compile.ts; ember-gxt-wrappers' `$_tag`, which build-time templates call,
+   * creates its elements through it.
+   */
+  createElementWithContent?(
+    create: Function,
+    tag: unknown,
+    tagProps: unknown,
+    ctx: unknown,
+    children: unknown
+  ): unknown;
+
+  /**
    * Recompute the cached computed properties of `obj` that depend on
    * `changedKey` and return their new values; returns `[]` inside a
    * property-change batch. Contributed by metal's property_events.ts.
