@@ -15,6 +15,7 @@ standard library, and Node probes need the repo built (`pnpm build`).
 | `test-coverage.py [--markdown out.md]` | Per section of the normative chapters, counts test-file citations vs source citations and collects "untested"/"by experiment" markers (§09). |
 | `probe-parser.mjs`, `probe-parser-locs.mjs` | Run the built `@glimmer/syntax` (`packages/@glimmer/syntax/dist/es`) on probe inputs (§02). |
 | `compare-parsers.mjs BEFORE_REPO AFTER_REPO ROOT...` | Parses every `.hbs` file and `<template>` body under the roots with two built `@glimmer/syntax` copies (`pnpm rollup --config` in each checkout) and lists templates that one accepts and the other rejects (T20, T22). |
+| `comment-mustaches.mjs REPO ROOT...` | Lists HTML comments with mustache syntax in every template under the roots, and the ones whose value would change under §02-6.7's rule (comment text up to the first `-->`) (T24). |
 | `probe-precompile.mjs '<template>' ...` | Runs the built `ember-template-compiler` (`dist/dev`) `precompile` on each argument (§03, §04, §08). |
 | `w2-baseline-parse.py` | Parses a testem tap log (with source-chunk suffixes, recipe in its docstring) into `.work/W2-baseline*.tsv` (W2). |
 | `w2-coverage-diff.py RUN.tap [BASELINE.tsv] [LEDGER.md]` | W2 exit check: per-test diff of a full run against `.work/W2-baseline-tests.tsv`; pairs same-name missing/new tests as moves and looks every other name up in `.work/W2-coverage-ledger.md`. Prints unmatched names both ways (exit 1 if any). |

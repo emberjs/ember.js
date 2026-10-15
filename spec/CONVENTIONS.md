@@ -18,13 +18,17 @@ it *is* behavior and must be specified.
 - Mark behaviors that exist only for legacy compatibility with **[Legacy]**, and behaviors
   that only apply in loose (non-strict) mode with **[Loose mode]**.
 - Mark development-only behavior (assertions, deprecations, debug-only checks) with **[Dev]**.
-- Mark current behavior that is outside the spec with **[Out of spec]**: the existing
-  implementation keeps it, but a new implementation SHOULD NOT reproduce it, and the text says
-  what it should do instead. It is documented so the existing behavior stays known.
+- Mark current behavior that is outside the spec with **[Out of spec]**: the spec text states
+  the required behavior (normally with MUST), and the existing implementation does not conform to
+  it. Backward compatibility is the rule, so this is decided case by case by the plan's author,
+  never by a chapter author. How and when the existing implementation is brought into line (a
+  fix, or a deprecation cycle first) is outside the spec. Describe the current behavior next to
+  the marker so it stays known, and list the place in §00-0.5.1.
 - Mark current behavior that Ember is removing through a deprecation cycle with
   **[Deprecated]**: the existing implementation keeps it until the deprecation ends, but a new
   implementation SHOULD NOT include it, and the text says what it does instead (normally the
-  syntax error that replaces it). Give the deprecation id and `until` version once they are known.
+  syntax error that replaces it). Give the deprecation id and `until` version once they are known,
+  and list the place in §00-0.5.1.
 
 ## Abstraction rules
 

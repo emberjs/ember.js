@@ -28,9 +28,11 @@ A conforming implementation MUST, for every input that the current implementatio
 6. provide the same **Ember built-ins**, resolution, classic component behavior, and
    rendering entry points (§08).
 
-The exception is behavior marked **[Deprecated]** or **[Out of spec]** (§0.5). The current
-implementation accepts it, but a new implementation SHOULD NOT. The legacy Handlebars syntax
-(§02-11 item 15) and blocks that straddle markup (§02-11 item 17) are deprecated.
+The exception is behavior marked **[Out of spec]** or **[Deprecated]** (§0.5). Backward
+compatibility is the rule, but in a few places, decided one by one, the spec says that the
+current implementation is the one that is wrong: the spec states what a conforming
+implementation does, and the current implementation does not do it yet. §0.5.1 lists every such
+place. How and when the current implementation is brought into line is outside this spec.
 
 Implementation internals are not part of the contract. That includes the VM, its opcodes,
 references, tags, revisions, the program heap, and the **wire format** (§04).
@@ -159,7 +161,19 @@ proposed API. Existing behavior never depends on a **[Proposed]** API.
 | **[Dev]** | Development-build-only behavior: assertions, deprecations, debug-only checks. A production build MUST NOT depend on it, and a conforming implementation SHOULD provide equivalent diagnostics in development. |
 | **[Proposed]** | New API introduced by this spec; not in the current implementation. |
 | **[Deprecated]** | Being removed from the current implementation through a deprecation cycle. The existing implementation keeps it until then; a new implementation SHOULD NOT include it, and SHOULD do what the text says instead (normally reject it as a syntax error). |
-| **[Out of spec]** | Current behavior outside the spec, with no deprecation planned yet. The existing implementation keeps it; a new implementation SHOULD NOT reproduce it. |
+| **[Out of spec]** | The current implementation does not conform. The text states the required behavior and describes the current one beside it. Bringing the current implementation into line (directly or through a deprecation) is outside the spec. |
+
+### 0.5.1 Where the current implementation is out of spec
+
+Each entry is a ruling by the plan's author. The owning section states the rule and the current
+behavior.
+
+| Input | The spec | The current implementation | Marker | Owner |
+|---|---|---|---|---|
+| `{{` inside an HTML comment (`<!-- {{"-->"}} -->`, `<!-- \{{x}} -->`, `<!-- a {{~x}} -->`) | Comment text: `{{` begins no construct in an HTML comment, and the comment ends at the first `-->` | Lexes and parses Handlebars inside the comment: a `-->` inside a construct does not end it, escapes and whitespace control apply, a block opened in the comment runs to its closer, and an outer block's `{{else}}` or closer inside the comment ends that block's program | [Out of spec] | §02-6.7 |
+| A block's `{{else}}` or closer inside a tag or attribute value (`{{#if x}}<div class="{{/if}}"></div>`) | Syntax error (E49, E50) | Accepted; the half-built tag lands in the next program or after the block | [Out of spec] | §02-6.11 |
+| A literal mustache with arguments (`{{"foo" bar}}`) | Syntax error (E48) | Accepted; the arguments are dropped | [Out of spec] | §02-3.7 |
+| `{{&foo}}`, `{{^}}`, `{{^foo}}…{{else}}…{{/foo}}`, raw blocks | A new implementation SHOULD reject them as syntax errors | Accepted, under deprecation until 8.0.0 | [Deprecated] | §02-2.7, §02-3.2, §02-3.3 |
 
 ## 0.6 Status and verification
 
@@ -232,13 +246,11 @@ choice breaks someone.
 
 5. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
    unterminated tag or comment at EOF. A block's `{{else}}` or closer inside a tag or HTML
-   comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`), an
-   artifact of the two-pass parser. It is **[Deprecated]** (author, 2026-10-14), with a long
-   deprecation cycle before it becomes an error; the deprecation id and the end state for an
-   `{{else}}` inside an HTML comment are open. (§02-11 items 4, 17)
-6. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
-   errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 1, 2;
-   §03-10 item 8)
+   comment is accepted and garbles the tree (`{{#if x}}<div class="{{/if}}"></div>`); the spec
+   makes it an error in a tag and comment text in an HTML comment, and the current
+   implementation is **[Out of spec]** (§0.5.1). (§02-11 items 4, 17)
+6. `this/foo` becomes the free variable `foo`, not `this.foo`. (`{{"foo" bar}}`, which drops its
+   arguments, is now an error in the spec, §0.5.1.) (§02-11 items 1, 2; §03-10 item 8)
 7. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
    `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
    case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as

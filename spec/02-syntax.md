@@ -31,42 +31,51 @@ extended with Handlebars constructs. The scan divides the source text into:
 - **Handlebars constructs**, lexed by §02-2: mustaches (`{{…}}`, `{{{…}}}`), Handlebars
   comments, block openers (`{{#…}}`), `{{else …}}` and `{{^}}`, block closers (`{{/…}}`), and
   raw-block delimiters. Inside a raw block, `{{` starts no construct; only the raw block's own
-  closer does, and nested raw-block delimiters are text (§02-2.7).
-- **Text runs**: the text between constructs. An escaped mustache `\{{` (§02-2.2) also ends the
-  current text run and begins a new one, which ends at the next `{{`, `\{{` or `\\{{`.
+  closer does, and nested raw-block delimiters are text (§02-2.7). Inside an HTML comment, `{{`
+  starts no construct at all: it is comment text, like everything else up to the comment's `-->`
+  (§02-6.7; the current implementation is **[Out of spec]**).
+- **Text runs**: the text between constructs. Outside an HTML comment, an escaped mustache `\{{`
+  (§02-2.2) also ends the current text run and begins a new one, which ends at the next `{{`,
+  `\{{` or `\\{{`.
 
 Each text run, after whitespace control (§02-5), is fed to the HTML tokenizer, which builds
 elements, attributes, text nodes and HTML comments. When the scan reaches a construct, the
 current state of the HTML tokenizer decides what the construct is (§02-6.9–6.11): child content,
-an attribute value, part of an attribute value, an element modifier, an element comment, text of
-an HTML comment, or a syntax error. Put another way, every HTML tokenizer state has one added
+an attribute value, part of an attribute value, an element modifier, an element comment, or a
+syntax error. Put another way, every HTML tokenizer state except the comment states has one added
 transition: on an unescaped `{{`, lex one construct, act on it according to that state, and
 continue in the state the placement rule names (usually the same one).
 
-Three properties of the scan are fixed by compatibility (rationale in §02-1.4). Each says that the
-Handlebars side does not look at HTML state:
+Two properties of the scan are fixed by compatibility (rationale in §02-1.4). Each says that the
+Handlebars side does not look at HTML state, except to know whether it is inside an HTML comment:
 
-1. **Handlebars lexing is HTML-blind.** Constructs and escapes are recognized by the rules of
-   §02-2 in every HTML state: content, tags, attribute names and values, HTML comments, the text
-   of `<script>`, `<style>` and `<title>`, and markup declarations. A construct's extent never
-   depends on HTML state, so a `"` or `-->` inside a construct's string literal ends neither an
-   attribute value nor an HTML comment. A construct that cannot be used in the current state is
-   a syntax error, not text (§02-6.9–6.11). The one exception is the HTML comment, where the
-   construct's source text becomes comment text (§02-6.7).
+1. **Handlebars lexing is HTML-blind outside HTML comments.** Constructs and escapes are
+   recognized by the rules of §02-2 in every HTML state but the comment states: content, tags,
+   attribute names and values, the text of `<script>`, `<style>` and `<title>`, and markup
+   declarations. A construct's extent never depends on HTML state, so a `"` or `>` inside a
+   construct's string literal ends neither an attribute value nor a tag. A construct that cannot
+   be used in the current state is a syntax error, not text (§02-6.9–6.11). In the comment
+   states nothing is lexed (§02-6.7).
 2. **Whitespace control is HTML-blind.** Whitespace control deletes whitespace at the edges of
    text runs. What it deletes is decided from the constructs and the raw text alone, and the
    HTML tokenizer never sees the deleted characters, even when deleting them changes how the
    surrounding text tokenizes. For example, `<div a=b {{x}}>` has an element modifier, but in
    `<div a=b {{~x}}>` the tilde deletes the space, so `b` and the mustache form one unquoted
-   attribute value, which is error E31.
-3. **Block structure is HTML-blind.** Blocks nest by the grammar of §02-3 alone. The parser
-   keeps one stack of open elements and open block programs (§02-6.1). An element must be
-   closed in the block program that opened it (E22, E23), but a partially tokenized tag or HTML
-   comment is not an element. A block's `{{else}}` or closer therefore ends the program in any
-   HTML state, and the partial tag or comment continues into what follows (§02-6.11).
-   **[Deprecated]**: a new implementation SHOULD reject a block's `{{else}}` or closer in any
-   HTML state but `beforeData` and `data` (§02-6.11), so it needs no carry-over of a partial tag
-   or comment across a program boundary.
+   attribute value, which is error E31. A `{{~` inside an HTML comment is comment text and
+   deletes nothing. Whether a `{{` is inside a comment never depends on whitespace control,
+   because whitespace neither begins nor ends an HTML comment.
+
+A third property is a rule of the spec that the current implementation does not follow:
+
+3. **Block delimiters belong to content.** Blocks nest by the grammar of §02-3, and a block's
+   opener, `{{else …}}` and closer are placed in content only. In a tag or attribute state they
+   are syntax errors (E21, E49, E50); inside an HTML comment they are comment text (property 1).
+   A block program therefore begins and ends between HTML tokens, never inside a partial tag or
+   comment, and the parser keeps one stack of open elements and open block programs (§02-6.1):
+   an element must be closed in the block program that opened it (E22, E23).
+   **[Out of spec]** (§00-0.5.1): the current implementation checks only the opener. A block's
+   `{{else}}` or closer ends the program in any HTML state, and a partial tag or HTML comment
+   continues into what follows (§02-6.11, "Blocks that straddle markup").
 
 Which error is reported for a template with more than one error is not specified (§02-9.1,
 "Error priority"). The current parser reports Handlebars lexical and grammar errors before any
@@ -77,7 +86,7 @@ the start and end of every text run that begins with an escape. At a boundary:
 
 - a text node being built in element or template content ends, and any later text starts a new
   `TextNode` (`a\{{b}} c\{{d}}` is three `TextNode`s, `a`, `{{b}} c` and `{{d}}`). Inside a
-  tag, an attribute value or an HTML comment, the partial token continues across the boundary,
+  tag or an attribute value, the partial token continues across the boundary,
   so a quoted attribute value's static text is one part across an escape (§02-2.2);
 - a character reference ends at the boundary: its terminating `;` must be in the same text run
   as its `&` (§02-6.3);
@@ -91,7 +100,8 @@ when the input ends is discarded (§02-6.12).
 
 A conforming implementation MUST accept and reject the same inputs as this scan, report the same
 error for an input with exactly one error, and give every accepted input the structure that the ASTv1 described here records,
-including the quirks recorded in this chapter. It need not build ASTv1 or expose any parse tree
+including the quirks recorded in this chapter, except where they are marked **[Out of spec]** or
+**[Deprecated]** (§00-0.5.1). It need not build ASTv1 or expose any parse tree
 (§00-0.1 "Non-goals"), and it need not scan in one pass: the current implementation uses two
 (§02-1.5).
 
@@ -126,26 +136,38 @@ printed text is later parsed again in precompile mode. See §02-10.
   `\n` line terminators**, in both modes. Mustache string literals are *not* normalized
   (they are not HTML-tokenized).
 
-### 1.4 Rationale: why the Handlebars side is HTML-blind
+### 1.4 Rationale: why the Handlebars side is HTML-blind, except in comments
 
 *Informative.* A single scan raises an obvious design option: let the HTML state steer the
 Handlebars side as well, so that a mustache in a tag, in an attribute value, in an HTML comment
 or in `<script>` text could follow different lexical rules. Compatibility rules this out for
-every input that works today, because the current parser runs Handlebars over the whole template
+most inputs that work today, because the current parser runs Handlebars over the whole template
 before any HTML tokenization (§02-1.5), and templates depend on the result:
 
 - *Lexing.* `<style>.a { color: {{this.color}} }</style>` and `<script>` text with mustaches
   render dynamic text. `<div class="{{t "a\"b>"}}">` is one attribute whose value is one
-  mustache. `<!-- {{"-->"}} -->x` is one comment followed by the text `x`, and
-  `<!-- {{#if x}} --> <b> {{/if}} -->` is one comment.
+  mustache.
 - *Whitespace control.* Standalone lines and tildes delete text that the HTML tokenizer would
   otherwise have seen, inside tags and attribute values as well as in content
   (`<div class="a  {{~x}}">` has the static part `a`). Making the deletion depend on HTML state
   would change rendered whitespace in existing templates.
-- *Block structure.* This property changes only what happens to inputs that are accepted with
-  a garbled tree today (§02-6.11, "Blocks that straddle markup"). It could be relaxed without
-  breaking a working template, and those inputs are **[Deprecated]** (§02-11 item 17). Error priority
-  was in the same position and has been relaxed (§02-9.1).
+
+HTML comments are the exception, by the author's ruling (2026-10-15): the HTML parse takes
+precedence, and mustache syntax is recognized only in HTML states where it belongs, which a
+comment is not. This does change inputs that work today. In the current implementation
+`<!-- {{"-->"}} -->x` is one comment followed by the text `x`, `<!-- {{#if x}} --> <b> {{/if}} -->`
+is one comment, and `<!-- a {{~x~}} b -->` has the value ` a{{~x~}}b `. Under the spec the first
+is the comment ` {{"` followed by the text `"}} -->x`, the second is a comment followed by an
+unclosed `<b>` and a stray closer (an error), and the third keeps its spaces. No template in the
+corpus used for T20 and T22 (28,786 distinct templates under `~/hacking`, including published
+addons in `node_modules`) has mustache syntax inside an HTML comment at all
+(`spec/tools/comment-mustaches.mjs`, 2026-10-15). The current implementation is
+**[Out of spec]** for such templates (§00-0.5.1).
+
+Block structure was never fixed by compatibility: the HTML-blind block structure of the current
+implementation changes only inputs that are accepted with a garbled tree (§02-6.11, "Blocks that
+straddle markup"), so property 3 makes them errors, or comment text inside a comment. Error
+priority was in the same position and has been relaxed (§02-9.1).
 
 The single-scan statement of §02-1.1 removes what is *not* fixed: the Handlebars parse tree, the
 walk over it, and the feeding of text to the HTML tokenizer in chunks are implementation
@@ -176,7 +198,11 @@ inverse program, which the scan has already passed (§02-5.3).
    tokenizer's events build elements, attributes, text nodes and HTML comments. Each mustache,
    comment or block is dispatched on the tokenizer's state when the walk reaches it. A block's
    programs are walked recursively, so the HTML tokenizer is never told where a block begins or
-   ends, which is where property 3 comes from.
+   ends, which is why the current implementation does not follow property 3 and lets blocks
+   straddle markup (§02-6.11). Because Handlebars has already parsed the whole input, a
+   construct inside an HTML comment is still a construct here, and the walk appends its source
+   to the comment (§02-6.7): the current implementation does not follow the comment rule of
+   property 1 either.
 
 The boundaries of §02-1.1 are the `ContentStatement` boundaries: the Handlebars lexer starts a
 new `CONTENT` token at every construct and at every escape (§02-2.2), and `flushData` ends a text
@@ -266,7 +292,9 @@ Consequences that implementations MUST reproduce:
 - `\{{foo}} text \{{bar}} done {{baz}}` → text `"{{foo}} text "`, text `"{{bar}} done "`,
   mustache `baz` (`parser-escape-test.ts:27-32`).
 - Escaping works identically inside HTML content, inside attribute values, and in codemod mode
-  (the backslash is consumed by the lexer in all modes).
+  (the backslash is consumed by the lexer in all modes). Inside an HTML comment there is no
+  escape: `\{{` is comment text, backslash included (§02-6.7; the current implementation is
+  **[Out of spec]**).
 
 ### 2.3 Tokens inside a mustache (`mu` state)
 
@@ -586,10 +614,15 @@ See §02-4.
 `acceptCallNodes` (`handlebars-node-visitors.ts:659-733`) is used for blocks, sub-expressions,
 modifiers and non-literal mustaches:
 
-- A **mustache whose path is a literal** (`{{"foo"}}`, `{{1 a=b}}`) is special-cased
-  (`handlebars-node-visitors.ts:247-255`): the literal becomes the mustache `path`, and any
-  params and hash in the source are **silently discarded** (`{{"foo" bar}}` ≡ `{{"foo"}}`).
-  See Open questions.
+- A **mustache whose path is a literal** (`{{"foo"}}`, `{{1}}`) is special-cased
+  (`handlebars-node-visitors.ts:247-255`): the literal becomes the mustache `path`. If it has
+  params or a hash (`{{"foo" bar}}`, `{{1 a=b}}`), it is a syntax error E48, in content and in
+  attribute values (span: the mustache), worded like E16:
+  `` ${Type} "${text}" cannot be called with arguments, replace {{${value} ...}} with {{${value}}} ``,
+  with `Type`, `text` and `value` as in the next item (`{{"foo" bar}}` →
+  `StringLiteral "foo" cannot be called with arguments, replace {{"foo" ...}} with {{"foo"}}`). In tag and modifier positions the more specific E18 and E19
+  apply first. **[Out of spec]** (author, 2026-10-13 and 2026-10-15; §00-0.5.1): the current
+  implementation silently discards the params and hash (`{{"foo" bar}}` ≡ `{{"foo"}}`).
 - A **block or sub-expression whose callee is a literal** is a syntax error:
   `` `${Type} "${text}" cannot be called as a sub-expression, replace (${value}) with ${value}` ``
   where `Type` is the literal node type, `text` is the string value for strings and the printed
@@ -716,7 +749,8 @@ Applied only in precompile mode. Whitespace control deletes whitespace at the st
 text runs (§02-1.1), and the HTML tokenizer never sees the deleted characters. It is HTML-blind
 (§02-1.1 property 2): all rules below apply to raw template text regardless of HTML context, so
 the text `<div>\n  ` is a single text run, and whitespace inside a tag or an attribute value is
-deleted like any other.
+deleted like any other. Mustache syntax inside an HTML comment is comment text, not a construct,
+so it causes no deletion (§02-6.7; the current implementation is **[Out of spec]**).
 
 The rules are stated over the *statement lists* of the grammar (§02-3): the body of the template
 and of each block program is a list whose items are text runs (`ContentStatement`) and
@@ -893,8 +927,10 @@ parse(source):
   element's start tag) (`handlebars-node-visitors.ts:87-117`). Elements therefore MUST be
   properly nested with respect to blocks: `{{#if}}<div>{{/if}}</div>` →
   ``Unclosed element `div` ``; `<div>{{#if}}</div>{{/if}}` →
-  `Closing tag </div> without an open tag`. A partially tokenized tag or HTML comment is not
-  on `stack` and does not have to nest (§02-6.11, "Blocks that straddle markup").
+  `Closing tag </div> without an open tag`. A block's `{{else}}` and closer are never inside a
+  partially tokenized tag or HTML comment (§02-1.1 property 3), so no partial token is carried
+  across a program boundary. **[Out of spec]**: in the current implementation a partial tag or
+  comment does not have to nest (§02-6.11, "Blocks that straddle markup").
 - The HTML tokenizer is **never** given an end-of-input signal. Any partially tokenized
   construct at end of input is silently discarded (see §02-6.12).
 
@@ -1117,22 +1153,36 @@ Error spans for the other cases begin at the `a` of `as` (tests
 ### 6.7 HTML comments and doctype
 
 `<!-- … -->` produces a `CommentStatement` whose `value` is the text between the delimiters
-(tokenized per §02-6.2; entities are *not* decoded in comments). Mustaches, Handlebars comments
-and blocks that begin inside an HTML comment are still lexed and parsed as Handlebars (§02-1.1
-property 1), but are *not* interpreted: their **original source text** (from the source lines,
-joined with `\n`) is appended to the comment value. For a block, that is the whole block from
-its opener to its closer; the text between is not HTML-tokenized, so a `-->` inside it does not
-end the comment. A `{{else}}` or closer of a block that began *outside* the comment is not
-comment text: it ends that block's program (§02-6.11, "Blocks that straddle markup";
-**[Deprecated]**). This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
-`comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
-because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
-character is not `>` (`handlebars-node-visitors.ts:323-350`;
-`packages/@glimmer/syntax/lib/parser.ts:175-211`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
-` {{#if x}}y{{/if}} `, `<!--{{x}}-->` has value `{{x}}`, and `<!-- a -{{x}}-->` has value
-` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, whitespace control is HTML-blind, so it *has* been
-applied to the content surrounding them (`<!-- a {{~x~}} b -->` → value ` a{{~x~}}b `), and a
-`--}}`-terminated long comment or a `{{!` short comment still ends at its own delimiter.
+(tokenized per §02-6.2; entities are *not* decoded in comments). The comment ends where the
+comment states of §02-6.2 end it, normally at the first `-->` after its `<!--`, whatever lies
+between. In the comment states
+(`commentStart`, `commentStartDash`, `comment`, `commentEndDash`, `commentEnd`), `{{` begins no
+construct (§02-1.1 property 1): mustaches, Handlebars comments, block openers, `{{else}}`,
+closers, escapes and tildes are comment text, character for character, and whitespace control
+deletes nothing inside the comment. So `<!--{{x}}-->` has the value `{{x}}`,
+`<!-- {{#if x}}y{{/if}} -->` has ` {{#if x}}y{{/if}} `, `<!-- a {{~x~}} b -->` has
+` a {{~x~}} b `, and `<!-- \{{x}} -->` has ` \{{x}} `. `<!-- {{"-->"}} -->x` is the comment ` {{"`
+followed by the text `"}} -->x`. A block opened before the comment is still open after it:
+`{{#if x}}<!-- {{else}} -->{{/if}}` is a block with no inverse whose program holds the comment
+` {{else}} `, and `{{#if x}}<!-- {{/if}} -->` is an unclosed block (E1).
+
+**[Out of spec]** (author, 2026-10-15; §00-0.5.1). The current implementation lexes and parses
+Handlebars inside the comment (§02-1.5) and appends each construct's **original source text**
+(from the source lines, joined with `\n`) to the comment value, in every comment state. For a
+block, that is the whole block from its opener to its closer; the text between is not
+HTML-tokenized, so a `-->` inside it does not end the comment, and neither does a `-->` inside a
+construct's string literal. A `{{else}}` or closer of a block that began outside the comment is
+not comment text: it ends that block's program (§02-6.11). A `-` or `--` that the tokenizer is
+still holding, because it might begin `-->`, is appended first, as the tokenizer itself would do
+when the next character is not `>` (`handlebars-node-visitors.ts:323-350`;
+`packages/@glimmer/syntax/lib/parser.ts:175-211`). Escapes are consumed
+(`<!-- \{{x}} -->` has the value ` {{x}} `), whitespace control is applied around the constructs
+(`<!-- a {{~x~}} b -->` has ` a{{~x~}}b `), a `--}}`-terminated long comment or a `{{!` short
+comment ends at its own delimiter, and a construct that is a syntax error (an unclosed mustache,
+a partial) is reported. Where none of these applies, the current value is the one the spec gives:
+`<!--{{x}}-->` has `{{x}}` and `<!-- a -{{x}}-->` has ` a -{{x}}` (tests
+`parser-node-test.ts:789-799`). No template in the corpus of §02-1.4 has mustache syntax inside
+an HTML comment.
 
 The comment's `loc` starts at its `<`. `<!DOCTYPE …>` is consumed and produces no node. Other
 `<!…` markup (e.g. `<![CDATA[`) is discarded character-by-character (the state does not change),
@@ -1165,8 +1215,9 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
 For each mustache (`handlebars-node-visitors.ts:228-321`):
 
 1. Throw a pending block-params error if any (§02-6.6).
-2. If the tokenizer is inside an HTML comment (any comment state): append its source to the
-   comment (§02-6.7); done.
+2. If the tokenizer is inside an HTML comment (any comment state), there is no mustache: its
+   text is comment text (§02-6.7). **[Out of spec]**: the current implementation lexes it and
+   appends its source to the comment.
 3. If the Handlebars path `original` (§02-4.1) is `...attributes` (i.e. `{{...attributes}}`) → syntax error
    `Illegal use of ...attributes` (span: the mustache) in any position — content, attribute
    value, or modifier (tests `parser-node-test.ts:124-152`; see §02-11 item 14 for how this
@@ -1211,7 +1262,7 @@ the parent. Templates that relied on those behaviors now either error or parse a
 
 | Tokenizer state | Meaning |
 |---|---|
-| any comment state | source appended to the HTML comment (§02-6.7) |
+| any comment state | not a construct: comment text (§02-6.7). **[Out of spec]**: the current implementation appends its source to the HTML comment |
 | `beforeData`, `data` | `MustacheCommentStatement` child |
 | `beforeAttributeName`, `afterAttributeName` | pushed on the start tag's `comments` list (`<div {{! c }} class="x">`, `<input foo {{! c }}>`); the pending attribute in `afterAttributeName` is *not* finished by the comment, it is finished by whatever follows. In an **end** tag it is an error `Invalid end tag: closing tag must not contain Handlebars comments` (`</div {{! c}}>`) |
 | anything else | error ``Using a Handlebars comment when in the `STATE` state is not supported`` (span: the comment), e.g. states `attributeName`, `beforeAttributeValue`, `attributeValueDoubleQuoted`, `attributeValueUnquoted`, `tagName` |
@@ -1224,7 +1275,8 @@ the parent. Templates that relied on those behaviors now either error or parse a
 A block opener is placed by the HTML tokenizer's state at the opener
 (`handlebars-node-visitors.ts:119-226`):
 
-- in any comment state: the source of the whole block is appended to the HTML comment (§02-6.7);
+- in any comment state: not a construct, but comment text (§02-6.7). **[Out of spec]**: the
+  current implementation appends the source of the whole block to the HTML comment;
 - in `beforeData` or `data`: a `BlockStatement` child of the current parent, whose programs are
   pushed on the stack in turn (§02-6.1);
 - anywhere else (tag, attribute name/value, etc.): error
@@ -1232,26 +1284,35 @@ A block opener is placed by the HTML tokenizer's state at the opener
   So `<div {{#if x}}{{/if}}>` and `<div class="{{#if x}}y{{/if}}">` are errors (use inline
   `{{if}}` in attributes).
 
-**Blocks that straddle markup.** Only the opener's state is checked. A block's `{{else}}` and
-closer end the current program in any HTML state, because block structure is HTML-blind
-(§02-1.1 property 3). If the HTML tokenizer is in the middle of a tag or an HTML comment at that
-point, the partial token is not on the stack, so the nesting check of §02-6.1 does not see it: it
-continues into the next program, or past the block, and its node is appended to whichever parent
-is current when it is finished. By experiment (no test pins these down):
+A block's `{{else}}` (also `{{^}}` and `{{else …}}`) and its closer are placed the same way as
+its opener (§02-1.1 property 3):
 
-| Source | Result |
-|---|---|
-| `{{#if x}}<div class="{{/if}}"></div>` | an empty block, then `<div class="">` after it |
-| `{{#if x}}<div class="{{else}}"></div>{{/if}}` | an empty default program; `<div class="">` in the inverse |
-| `{{#if x}}<!--{{else}}-->{{/if}}` | an empty default program; an empty HTML comment in the inverse |
-| `{{#if x}}\n<!-- a\n{{/if}}\n-->` | an empty block, then the HTML comment ` a\n` after it |
+- in any comment state: comment text (§02-6.7);
+- in `beforeData` or `data`: they end the current program;
+- anywhere else: a syntax error, with the `{{else}}` or closer as its span. The messages, from the
+  fix proposed in task T22, are E49 and E50 (§02-9.2), where `SRC` is the construct's source
+  text (for example `{{else if y}}` or `{{/if}}`):
+  `` `SRC` cannot be inside an HTML tag or attribute value; a block's `{{else}}` must be in content, like its opening tag ``
+  and `` `SRC` cannot be inside an HTML tag or attribute value; a block's closing tag must be in content, like its opening tag ``.
 
-**[Deprecated]** (author, 2026-10-14; no deprecation id yet). Ember will deprecate these inputs
-before rejecting them. A new implementation SHOULD NOT accept them: a block's `{{else}}` (also
-`{{^}}` and `{{else …}}`) or closer in any HTML state but `beforeData` and `data` SHOULD be a
-syntax error, with the `{{else}}` or closer as its span. That includes an `{{else}}` or closer
-inside an HTML comment that began inside the block. Whether Ember's final behavior makes such an
-`{{else}}` comment text instead is open (§02-11 item 17).
+**Blocks that straddle markup.** **[Out of spec]** (author, 2026-10-15; §00-0.5.1). The current
+implementation checks only the opener's state. A block's `{{else}}` and closer end the current
+program in any HTML state, because its block structure is HTML-blind (§02-1.5). If the HTML
+tokenizer is in the middle of a tag or an HTML comment at that point, the partial token is not on
+the stack, so the nesting check of §02-6.1 does not see it: it continues into the next program,
+or past the block, and its node is appended to whichever parent is current when it is finished.
+By experiment (no test pins these down):
+
+| Source | Current result | The spec |
+|---|---|---|
+| `{{#if x}}<div class="{{/if}}"></div>` | an empty block, then `<div class="">` after it | E50 |
+| `{{#if x}}<div class="{{else}}"></div>{{/if}}` | an empty default program; `<div class="">` in the inverse | E49 |
+| `{{#if x}}<!--{{else}}-->{{/if}}` | an empty default program; an empty HTML comment in the inverse | a block with no inverse; its program holds the comment `{{else}}` |
+| `{{#if x}}\n<!-- a\n{{/if}}\n-->` | an empty block, then the HTML comment ` a\n` after it | the comment ` a\n{{/if}}\n`; the block is unclosed (E1) |
+
+No template in a corpus of 28,770 distinct templates is accepted with such a tree (task T22,
+`spec/.work/T22-straddling-blocks-errors.md`), and none has mustache syntax inside an HTML
+comment (§02-1.4).
 
 Block params on blocks are converted to `VarHead`s with locations found by searching the source
 between the end of the hash and the start of the program for the `|…|` list
@@ -1528,6 +1589,9 @@ the first error it meets and stop.
 | E45 | `Invalid end tag: closing tag must not contain mustaches` | 1 | mustache in an end tag's attribute area (§02-6.9) | `handlebars-node-visitors.ts:352-356` |
 | E46 | `Invalid end tag: closing tag must not contain Handlebars comments` | 1 | `{{! …}}` in an end tag (§02-6.10) | `handlebars-node-visitors.ts:352-356` |
 | E47 | ``Using a Handlebars mustache when in the `S` state is not supported`` | 1 | mustache in a markup declaration or doctype (§02-6.9) | `handlebars-node-visitors.ts:313-317` |
+| E48 | `` ${Type} "${text}" cannot be called with arguments, replace {{${value} ...}} with {{${value}}} `` | 1 | literal mustache with params or hash (§02-3.7). **[Out of spec]**: the current implementation drops the arguments | proposed (T20) |
+| E49 | `` `SRC` cannot be inside an HTML tag or attribute value; a block's `{{else}}` must be in content, like its opening tag `` | 1 | `{{else …}}` or `{{^}}` in a tag or attribute state (§02-6.11). **[Out of spec]**: accepted today | proposed (T22) |
+| E50 | `` `SRC` cannot be inside an HTML tag or attribute value; a block's closing tag must be in content, like its opening tag `` | 1 | block closer in a tag or attribute state (§02-6.11). **[Out of spec]**: accepted today | proposed (T22) |
 
 *Note on E15:* for `{{[]}}` the lexer produces an empty head string, which its `parts` construction
 treats as absent (`lib/helpers.js:82-91`), so Glimmer sees no segments. For `foo..bar` the lexer
@@ -1566,9 +1630,11 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 ## 11. Open questions / inconsistencies
 
 1. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
-   (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
-   should be an error. *Planned* (author ruling, 2026-10-13): fix it in the existing
-   implementation, task T20 (`spec/.work/T20-literal-mustache-params.md`).
+   (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error.
+   *Decided* (author, 2026-10-13 and 2026-10-15): the spec makes it error E48 (§02-3.7), and the
+   current implementation is **[Out of spec]**. A fix for the current implementation is on the
+   local branch `fix/literal-mustache-arguments` (T20, `spec/.work/T20-literal-mustache-params.md`);
+   when it lands is outside the spec.
 
 2. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
    `this` regex is `^this(\..+)?$` while §02-4.1 has already dropped the `this` segment. Loose
@@ -1630,26 +1696,25 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 
 16. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
     runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 13.
-17. **Blocks that straddle markup** (§02-6.11). A block's `{{else}}` or closer inside a tag, an
-    attribute value or an HTML comment ends the block's program, and the half-built tag or
-    comment lands in the next program or after the block (`{{#if x}}<div class="{{/if}}"></div>`
-    is an empty block followed by `<div class="">`). Nothing tested relies on it, and the trees
-    are garbled. Recommend making an `{{else}}` or closer in any state but `beforeData`, `data`
-    and the comment states an error like E21, and treating a closer in a comment state as
-    comment text when its opener is outside the comment, which is what an HTML-aware single-pass
-    parser does naturally. Templates that parse today with a sensible tree would be unaffected.
-    *Decided* (author, 2026-10-14): these inputs are **[Deprecated]**, and Ember will go through
-    a longer deprecation cycle rather than make them errors right away. T22's branch
-    `fix/blocks-straddling-markup` (errors in tags and attribute values, an `{{else}}` inside an
-    HTML comment that began in the block as comment text, a closer there as an error; a corpus of
-    28,770 distinct templates had none) is parked
-    (`spec/.work/T22-straddling-blocks-errors.md`). *Open:* the deprecation id, the `until`
-    version, and Ember's end state for an `{{else}}` inside such a comment: an error (what
-    §02-6.11 asks of a new implementation) or comment text (the T22 branch). Comment text changes
-    a template's meaning without an error, so a deprecation must warn on it first.
+17. **Blocks that straddle markup** (§02-6.11). In the current implementation a block's
+    `{{else}}` or closer inside a tag, an attribute value or an HTML comment ends the block's
+    program, and the half-built tag or comment lands in the next program or after the block
+    (`{{#if x}}<div class="{{/if}}"></div>` is an empty block followed by `<div class="">`).
+    *Decided* (author, 2026-10-14 and 2026-10-15): in the spec, an `{{else}}` or closer in a tag
+    or attribute state is an error (E49, E50), and inside an HTML comment it is comment text, like
+    all mustache syntax there (§02-6.7). The current implementation is **[Out of spec]**; how it
+    is brought into line (T22's parked branch `fix/blocks-straddling-markup`, a deprecation cycle
+    first, or both) is outside the spec (`spec/.work/T22-straddling-blocks-errors.md`).
 
 18. **Standalone closers after `{{else if …}}`** (§02-5.3). Whether a block closer's line is
     standalone is decided by the end of the first chain link's program, not by the text before
     the closer, and the indentation before such a closer is never deleted. This comes from
     upstream Handlebars (`whitespace-control.js:71-94`) and is untested in Glimmer. Changing it
     would change rendered whitespace in templates that use `{{else if}}` chains.
+19. **How far "mustache syntax only where it belongs" reaches.** The author's ruling of
+    2026-10-15 (the HTML parse takes precedence; mustache syntax is recognized only in HTML
+    states where it belongs) is applied to the HTML comment states only (§02-6.7). Two other
+    places could be read the same way, and the spec does not change them: mustaches in a markup
+    declaration or doctype stay error E47 (an HTML-first reading would make them bogus-comment
+    text), and the text of `<script>`, `<style>` and `<title>` keeps recognizing mustaches, which
+    templates use for dynamic styles and titles (§02-1.4, §02-6.8).
