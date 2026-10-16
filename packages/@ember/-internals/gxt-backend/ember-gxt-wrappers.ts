@@ -2065,67 +2065,66 @@ function createEmberDc(original: Function) {
     return { mergedArgs };
   }
 
-  // The swap paths below render the dynamic component's new value with the
-  // owner captured at the first render (when none is ambient) and with the
-  // component getter as the current dc getter; a string path also stashes its
-  // instance-capture callback on the args for the render (see `__gxtDcCapture`).
-  // A render error leaves the slot empty, and is the update's error: it is
-  // queued in the render-error queue, which the code that asked for the update
-  // throws from (the renderer's `revalidate`).
-  function renderSwappedValue(
-    newVal: any,
-    componentGetter: any,
-    gxtArgs: any,
-    ctx: any,
-    capturedOwner: any,
-    captureInstance?: (inst: any) => void
-  ): any {
-    const prevOwner = getAmbientOwner();
-    if (!getAmbientOwner() && capturedOwner && !capturedOwner.isDestroyed) {
-      setAmbientOwner(capturedOwner);
+  // What a dynamic component value is, for rendering it and for telling when
+  // it changes to another definition (Glimmer renders the invocation again
+  // only then):
+  // - 'empty': no definition (a falsy value but `0`, or the empty curried
+  //   value of `(component null)`); renders nothing;
+  // - 'string': a component name, which only `{{component}}` in a loose-mode
+  //   template resolves; the name is its identity;
+  // - 'curried': a curried component; the definition it curries is its
+  //   identity, as its arguments are live (a new curried value of the same
+  //   definition keeps the component, as a curried reference does);
+  // - 'definition': any other value; the value is its identity.
+  type DcKind = 'empty' | 'string' | 'curried' | 'definition';
+
+  function dcKind(value: any): DcKind {
+    if (!value && value !== 0) return 'empty';
+    if (typeof value === 'string') return 'string';
+    if (value.__isCurriedComponent) {
+      return value.__isEmpty || value.__name == null ? 'empty' : 'curried';
     }
-    const prevDcGetter = getDcComponentGetter();
-    setDcComponentGetter(componentGetter);
-    if (captureInstance) {
-      Object.defineProperty(gxtArgs, '__gxtDcCapture', {
-        value: captureInstance,
-        configurable: true,
-        enumerable: false,
-        writable: true,
-      });
-    }
-    let newResult: any = null;
-    try {
-      if (newVal.__isCurriedComponent) {
-        const hasCurriedPositionals = (newVal.__curriedPositionals || []).length > 0;
-        newResult = renderComponent(newVal, gxtArgs, ctx, !hasCurriedPositionals);
-      } else {
-        newResult = renderComponent(newVal, gxtArgs, ctx, true);
-      }
-    } catch (renderError) {
-      getGxtRenderer()!.compilePipeline.captureRenderError(renderError);
-    } finally {
-      setDcComponentGetter(prevDcGetter);
-      if (captureInstance) {
-        try {
-          delete (gxtArgs as any).__gxtDcCapture;
-        } catch {
-          /* configurable: true above ensures delete succeeds for our own writes */
-        }
-      }
-      if (!prevOwner && getAmbientOwner() === capturedOwner) {
-        setAmbientOwner(prevOwner);
-      }
-    }
-    return newResult;
+    return 'definition';
   }
 
-  // Identity of a dynamic component value; a swap happens only when it changes.
-  function dcIdentityKey(val: any): string {
-    if (!val && val !== 0) return '__empty__';
-    if (typeof val === 'string') return '__str:' + val;
-    if (val && val.__isCurriedComponent) return '__curried:' + (val.__name || '');
-    return '__other:' + String(val);
+  function dcIdentity(value: any, kind: DcKind): unknown {
+    if (kind === 'empty') return null;
+    return kind === 'curried' ? value.__name : value;
+  }
+
+  function captureDcError(error: unknown): void {
+    getGxtRenderer()!.compilePipeline.captureRenderError(error);
+  }
+
+  // The gxt cells a read of a dynamic component's value consumed, with their
+  // revisions then.
+  type DcReads = Map<any, number>;
+
+  // Reads the value of a dynamic component invocation in a tracking frame of
+  // its own. The cells it consumes are also consumed by the frame the read
+  // happens in, as when it is read there.
+  function readDcValue(componentGetter: any): { value: any; reads: DcReads } {
+    const outer = gxtModule.getTracker();
+    const cells = new Set<any>();
+    gxtModule.setTracker(cells);
+    let value: any;
+    try {
+      value = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+    } finally {
+      gxtModule.setTracker(outer);
+      if (outer) cells.forEach((cell) => outer.add(cell));
+    }
+    const reads: DcReads = new Map();
+    cells.forEach((cell) => reads.set(cell, cell._revision));
+    return { value, reads };
+  }
+
+  // Whether a cell a read consumed has changed since.
+  function readsChanged(reads: DcReads): boolean {
+    for (const [cell, revision] of reads) {
+      if (cell._revision !== revision) return true;
+    }
+    return false;
   }
 
   // The DOM nodes of a render result: a node, a fragment's children, or a GXT
@@ -2209,6 +2208,244 @@ function createEmberDc(original: Function) {
     return handleResult;
   }
 
+  // Renders a dynamic component value (of `kind`) for the invocation: a
+  // string as the component of that name, which is an error where Glimmer
+  // resolves no name (an angle-bracket invocation, a strict-mode template) or
+  // when no component has the name; a curried component; or a component
+  // definition. The component getter is the current dc getter while it
+  // renders (a curried component's arguments read the latest curried value
+  // through it), and `captureInstance` receives the Ember component instance
+  // the render creates (renderComponent passes `__gxtDcCapture` on to
+  // renderClassicComponent / renderGlimmerComponent). Its lifetime is this
+  // render: it is a non-enumerable property of the arguments only while it
+  // runs.
+  function renderDcValue(
+    value: any,
+    kind: DcKind,
+    componentGetter: any,
+    gxtArgs: any,
+    ctx: any,
+    captureInstance: (instance: any) => void
+  ): any {
+    if (kind === 'empty') return null;
+    if (kind === 'string') {
+      const stringError = dcStringDefinitionError(value, gxtArgs);
+      if (stringError !== null) throw stringError;
+      const managers = g.$_MANAGERS;
+      if (managers?.component && !managers.component.canHandle(value)) {
+        throw new Error(
+          `Attempted to resolve \`${value}\`, which was expected to be a component, but nothing was found. ` +
+            `Could not find component named "${value}" (no component or template with that name was found)`
+        );
+      }
+    }
+    // A name or a curried component maps the invocation's positional
+    // arguments to the component's `positionalParams` (after the curried
+    // ones, see manager.ts `handle`).
+    const allowPositionalParams = kind !== 'definition';
+    const hasArgs = gxtArgs !== null && typeof gxtArgs === 'object';
+    const prevDcGetter = getDcComponentGetter();
+    setDcComponentGetter(componentGetter);
+    if (hasArgs) {
+      Object.defineProperty(gxtArgs, '__gxtDcCapture', {
+        value: captureInstance,
+        configurable: true,
+        enumerable: false,
+        writable: true,
+      });
+    }
+    try {
+      return renderComponent(value, gxtArgs, ctx, allowPositionalParams);
+    } finally {
+      setDcComponentGetter(prevDcGetter);
+      if (hasArgs) delete gxtArgs.__gxtDcCapture;
+    }
+  }
+
+  // The render result of a dynamic component that rendered no nodes, with
+  // `place` (an empty comment, as Glimmer's empty block) holding its place;
+  // null for a result that is not DOM.
+  function withPlace(result: any, place: Comment): any {
+    if (result == null) return place;
+    if (result instanceof DocumentFragment) {
+      result.appendChild(place);
+      return result;
+    }
+    if (Array.isArray(result[gxtModule.RENDERED_NODES_PROPERTY])) {
+      result[gxtModule.RENDERED_NODES_PROPERTY].push(place);
+      return result;
+    }
+    return null;
+  }
+
+  // Renders a dynamic component invocation whose value is `initial` (of
+  // `initialKind`), and renders it again whenever the value changes to
+  // another definition, as Glimmer's dynamic component does: the old content
+  // leaves the DOM, its component is destroyed, and the component of the new
+  // definition renders in its place. An empty comment holds the place while
+  // nothing renders.
+  //
+  // A change is noticed by the dynamic-component listener that
+  // `_gxtSyncAllWrappers` (manager.ts) dispatches after each sync. An error
+  // reading the value or rendering the new one is an error of the update: it
+  // is queued in the render-error queue, which the code that asked for the
+  // update throws from (the renderer's `revalidate`, `rerender()`). The
+  // listener stops when the invocation's context is destroyed, or when its
+  // content, once in the document, is no longer: a render that replaced it
+  // has its own listener.
+  function followDefinition(
+    componentGetter: any,
+    gxtArgs: any,
+    ctx: any,
+    initial: any,
+    initialKind: DcKind,
+    initialReads: DcReads
+  ): any {
+    let kind = initialKind;
+    let identity = dcIdentity(initial, kind);
+    // A component definition is read again only when a cell its last read
+    // consumed changed, as Glimmer revalidates a reference: a getter that
+    // reads no tracked state (one that makes a new definition each time) is
+    // constant. A name or a curried component is read after every sync.
+    let reads = initialReads;
+    // The Ember component instance of the current content, destroyed when the
+    // content is replaced. A component with a custom manager is destroyed
+    // when its nodes leave the document (manager.ts
+    // `_gxtDestroyCustomManagedInstances`).
+    let instance: any = null;
+    const captureInstance = (created: any) => {
+      instance = created;
+    };
+
+    const initialResult = renderDcValue(
+      initial,
+      kind,
+      componentGetter,
+      gxtArgs,
+      ctx,
+      captureInstance
+    );
+    let place: Comment | null = null;
+    let nodes = renderedNodesOf(initialResult);
+    let result = initialResult;
+    if (nodes.length === 0) {
+      const empty = document.createComment('');
+      const placed = withPlace(initialResult, empty);
+      // A result that is not DOM has no place to render another value in.
+      if (placed === null) return initialResult;
+      place = empty;
+      nodes = [place];
+      result = placed;
+    }
+    // gxt removes the nodes of the result it got when the enclosing block
+    // goes; the nodes of a later value are this binding's to remove.
+    const initialNodes = nodes;
+    const capturedOwner = getAmbientOwner();
+    let stopped = false;
+    let wasConnected = false;
+
+    const replace = (value: any, parent: Node, before: Node | null) => {
+      for (const node of nodes) {
+        if (node.parentNode) node.parentNode.removeChild(node);
+      }
+      // The old component is destroyed after its nodes left the document.
+      const old = instance;
+      instance = null;
+      if (old) {
+        try {
+          getGxtRenderer()?.destruction.destroyEmberComponentInstance(old);
+        } catch (error) {
+          captureDcError(error);
+        }
+      }
+
+      let rendered: any = null;
+      const prevOwner = getAmbientOwner();
+      if (!prevOwner && capturedOwner && !capturedOwner.isDestroyed) {
+        setAmbientOwner(capturedOwner);
+      }
+      try {
+        rendered = renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance);
+      } catch (error) {
+        captureDcError(error);
+      } finally {
+        if (!prevOwner && getAmbientOwner() === capturedOwner) {
+          setAmbientOwner(prevOwner);
+        }
+      }
+
+      nodes = renderedNodesOf(rendered);
+      if (nodes.length === 0) {
+        place ??= document.createComment('');
+        nodes = [place];
+        parent.insertBefore(place, before);
+        return;
+      }
+      if (rendered instanceof Node) {
+        parent.insertBefore(rendered, before);
+      } else {
+        for (const node of nodes) parent.insertBefore(node, before);
+      }
+      // The new component's didInsertElement / didRender hooks.
+      try {
+        getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
+      } catch (error) {
+        captureDcError(error);
+      }
+    };
+
+    const listener = (): boolean => {
+      if (stopped) return false;
+      const last = nodes[nodes.length - 1]!;
+      if (last.isConnected) {
+        wasConnected = true;
+      } else if (wasConnected) {
+        stop();
+        return false;
+      }
+      const parent = last.parentNode;
+      // Not inserted yet: the value is read again after the next sync.
+      if (parent === null) return true;
+
+      if (kind === 'definition' && !readsChanged(reads)) return true;
+      let value: any;
+      try {
+        ({ value, reads } = readDcValue(componentGetter));
+      } catch (error) {
+        captureDcError(error);
+        return true;
+      }
+      const nextKind = dcKind(value);
+      const nextIdentity = dcIdentity(value, nextKind);
+      if (nextKind === kind && nextIdentity === identity) return true;
+      kind = nextKind;
+      identity = nextIdentity;
+      replace(value, parent, last.nextSibling);
+      return true;
+    };
+
+    // A name's listener is counted for `hasStringDynamicComponentListeners`
+    // (compile.ts `_gxtSyncDomNow`).
+    const off = getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(listener, {
+      stringPath: initialKind === 'string',
+    });
+    function stop(): void {
+      stopped = true;
+      off?.();
+    }
+    if (ctx !== null && (typeof ctx === 'object' || typeof ctx === 'function')) {
+      gxtModule.registerDestructor(ctx, () => {
+        stop();
+        if (nodes !== initialNodes) {
+          for (const node of nodes) {
+            if (node.parentNode) node.parentNode.removeChild(node);
+          }
+        }
+      });
+    }
+    return result;
+  }
+
   return function $_dc_ember(componentGetter: () => any, gxtArgs: any, ctx: any): any {
     // Inject $PROPS_SYMBOL on args so GXT's $_c (component function) can find them.
     if (gxtArgs && typeof gxtArgs === 'object' && !($PROPS_SYMBOL in gxtArgs)) {
@@ -2226,8 +2463,9 @@ function createEmberDc(original: Function) {
 
     // Try to evaluate the component getter to check what kind of value it returns.
     let componentValue: any;
+    let reads: DcReads;
     try {
-      componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+      ({ value: componentValue, reads } = readDcValue(componentGetter));
     } catch {
       // Getter failed — likely block params not set yet.
       // Return a lazy thunk that evaluates when GXT processes the children.
@@ -2252,444 +2490,34 @@ function createEmberDc(original: Function) {
       return lazyThunk;
     }
 
-    // Handle null/undefined — the value may become a CurriedComponent later.
-    // Use a placeholder comment node that stays in the DOM, and listen for the
-    // value transitioning to a CurriedComponent to perform a manual DOM swap.
-    if (componentValue == null) {
-      const nullPlaceholder = document.createComment('dc-null');
-      let _nullDestroyed = false;
-      let _nullLastKey = '__empty__';
-      const _dcCapturedOwner = getAmbientOwner();
-      // Track nodes inserted by _nullSwap so they can be removed on teardown
-      let _insertedNodes: Node[] = [];
+    const kind = dcKind(componentValue);
 
-      const _nullSwap = () => {
-        if (_nullDestroyed) return;
-        let newVal: any;
-        try {
-          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch {
-          return;
-        }
-
-        const newKey = !newVal
-          ? '__empty__'
-          : newVal.__isCurriedComponent
-            ? '__curried:' + (newVal.__name || '')
-            : typeof newVal === 'string'
-              ? '__str:' + newVal
-              : '__other';
-        if (newKey === _nullLastKey) return;
-        _nullLastKey = newKey;
-
-        const parent = nullPlaceholder.parentNode;
-        if (!parent) return;
-
-        // Remove previously inserted nodes before rendering new content
-        for (const node of _insertedNodes) {
-          if (node.parentNode) node.parentNode.removeChild(node);
-        }
-        _insertedNodes = [];
-
-        // Render the new component
-        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const newResult = renderSwappedValue(
-            newVal,
-            componentGetter,
-            gxtArgs,
-            ctx,
-            _dcCapturedOwner
-          );
-          if (newResult instanceof Node) {
-            _insertedNodes = renderedNodesOf(newResult);
-            parent.insertBefore(newResult, nullPlaceholder);
-          }
-        }
-      };
-
-      const _nullListener = (): boolean => {
-        if (_nullDestroyed) return false;
-        _nullSwap();
-        return true;
-      };
-
-      // `_gxtSyncAllWrappers` in manager.ts dispatches the dynamic-component
-      // change listeners after each sync; `addDynamicComponentListener` returns
-      // an off-fn (called from `_nullCleanup` below).
-      const _offNullListener =
-        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(_nullListener);
-
-      const _nullCleanup = () => {
-        _nullDestroyed = true;
-        _offNullListener?.();
-      };
-      if (ctx) {
-        try {
-          gxtModule.registerDestructor(ctx, _nullCleanup);
-        } catch {
-          /* ignore */
-        }
-      }
-
-      return nullPlaceholder;
-    }
-
-    // Handle CurriedComponent — render once initially, and register a listener
-    // (dispatched by `_gxtSyncAllWrappers`) that performs a manual DOM swap when
-    // the underlying component identity changes (e.g., compName switches between
-    // 'my-comp' and 'your-comp'). GXT's $_dc is avoided for CurriedComponents
-    // because its factory mechanism does not work with Ember's component manager.
-    if (componentValue && componentValue.__isCurriedComponent) {
-      // --- Initial one-shot render ---
-      let initialResult: any = null;
-      if (componentValue && componentValue.__isCurriedComponent) {
-        const prev = getDcComponentGetter();
-        setDcComponentGetter(componentGetter);
-        try {
-          const hasCurriedPositionals = (componentValue.__curriedPositionals || []).length > 0;
-          initialResult = renderComponent(componentValue, gxtArgs, ctx, !hasCurriedPositionals);
-        } finally {
-          setDcComponentGetter(prev);
-        }
-      }
-
-      // --- Reactive swap tracking ---
-      let _lastIdentityKey = dcIdentityKey(componentValue);
-      let _dcDestroyed = false;
-      const _dcCapturedOwner = getAmbientOwner();
-
-      // Collect initial rendered nodes for later removal during swaps.
-      let currentNodes: Node[] = renderedNodesOf(initialResult);
-
-      // Perform DOM swap when the component identity changes.
-      const performSwap = () => {
-        if (_dcDestroyed) return;
-
-        let newVal: any;
-        try {
-          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch {
-          return;
-        }
-
-        const newKey = dcIdentityKey(newVal);
-        if (newKey === _lastIdentityKey) return;
-        _lastIdentityKey = newKey;
-
-        // Find insertion reference from current nodes
-        const lastNode = currentNodes.length > 0 ? currentNodes[currentNodes.length - 1] : null;
-        const parent = lastNode?.parentNode;
-        if (!parent) return;
-        // If the managed node has been detached from the live DOM, its DOM was
-        // replaced by a newer render that registered its own listener. Mark this
-        // listener as orphaned and skip; otherwise the stale listener would still
-        // call performSwap and create duplicate component instances (double init on
-        // compName changes — GH#13982).
-        if (lastNode && !(lastNode as Node).isConnected) {
-          _dcDestroyed = true;
-          return;
-        }
-        const insertBefore = lastNode?.nextSibling || null;
-
-        // Remove old nodes
-        for (const node of currentNodes) {
-          if (node.parentNode) node.parentNode.removeChild(node);
-        }
-        currentNodes = [];
-
-        // Render the new component
-        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const newResult = renderSwappedValue(
-            newVal,
-            componentGetter,
-            gxtArgs,
-            ctx,
-            _dcCapturedOwner
-          );
-          // Insert new nodes at the position of the old nodes
-          currentNodes = renderedNodesOf(newResult);
-          if (newResult instanceof Node) {
-            parent.insertBefore(newResult, insertBefore);
-          } else {
-            for (const n of currentNodes) {
-              parent.insertBefore(n, insertBefore);
-            }
-          }
-        }
-        // If newVal is null/undefined, currentNodes stays empty (component removed)
-      };
-
-      // Change listener dispatched by `_gxtSyncAllWrappers`.
-      const _dcChangeListener = (): boolean => {
-        if (_dcDestroyed) return false;
-        performSwap();
-        return true;
-      };
-
-      // Add the listener to the registry shared with the null/string paths; the
-      // returned off-fn is used for cleanup.
-      const _offDcListener =
-        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(_dcChangeListener);
-
-      // Cleanup destructor
-      const _cleanupDcListener = () => {
-        _dcDestroyed = true;
-        _offDcListener?.();
-      };
-      if (ctx) {
-        try {
-          gxtModule.registerDestructor(ctx, _cleanupDcListener);
-        } catch {
-          /* ignore */
-        }
-      }
-
-      // Return the initial result; performSwap uses currentNodes to find the
-      // insertion point for later swaps.
-      return initialResult;
-    }
-
-    // Handle string component name — render through Ember's component manager.
-    //
-    // We cannot delegate to GXT's native $_dc (`original`) here because native
-    // $_dc expects the component factory to return a GXT component instance
-    // with [RENDERED_NODES_PROPERTY] metadata. Our `handleStringComponent`
-    // returns a lazy `() => Node` closure, which GXT's D() short-circuits and
-    // returns as a raw Node in GLIMMER_COMPAT_MODE — triggering `Node[at].push`
-    // in G() (undefined push crash). Instead we manage the DOM ourselves using
-    // the same direct-render + performSwap pattern as the curried path above.
-    if (typeof componentValue === 'string') {
-      // A string where Glimmer resolves no name (an angle-bracket invocation, a
-      // strict-mode template) is an error, whether or not a component has that
-      // name.
+    // A string where Glimmer resolves no name (an angle-bracket invocation, a
+    // strict-mode template), or that no component has, is an error of the
+    // render.
+    if (kind === 'string') {
       const stringError = dcStringDefinitionError(componentValue, gxtArgs);
       if (stringError !== null) {
-        getGxtRenderer()?.compilePipeline.captureRenderError(stringError);
+        captureDcError(stringError);
         throw stringError;
       }
-      // Eagerly check if the component exists. If it doesn't, throw immediately
-      // so assert.throws() in tests can catch it (matching Ember behavior).
       const managers = g.$_MANAGERS;
-      if (
-        componentValue.length > 0 &&
-        managers?.component &&
-        !managers.component.canHandle(componentValue)
-      ) {
+      if (managers?.component && !managers.component.canHandle(componentValue)) {
         const err = new Error(
           `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
             `Could not find component named "${componentValue}" (no component or template with that name was found)`
         );
-        const captureErr = getGxtRenderer()?.compilePipeline.captureRenderError;
-        if (typeof captureErr === 'function') {
-          captureErr(err);
-        }
+        captureDcError(err);
         throw err;
       }
-
-      // Track the Ember component instance created for the CURRENT dynamic
-      // component slot so that we can fire willDestroy lifecycle hooks when
-      // the component is swapped out. The callback is stashed as a non-enumerable
-      // property on the per-render args object (`__gxtDcCapture`) and fired by
-      // renderClassicComponent / renderGlimmerComponent when the instance is
-      // created — its lifetime equals the render operation that owns it, so
-      // there is no global state and no cross-test leak surface.
-      let _dcEmberInstance: any = null;
-      const captureInstance = (inst: any) => {
-        _dcEmberInstance = inst;
-      };
-
-      const destroyCurrentDcInstance = () => {
-        if (!_dcEmberInstance) return;
-        const inst = _dcEmberInstance;
-        _dcEmberInstance = null;
-        try {
-          getGxtRenderer()?.destruction.destroyEmberComponentInstance(inst);
-        } catch {
-          /* ignore */
-        }
-      };
-
-      // --- Initial one-shot render ---
-      let initialResult: any = null;
-      {
-        const _prevDcGetter = getDcComponentGetter();
-        setDcComponentGetter(componentGetter);
-        // Stash the capture callback on the per-render args object. renderComponent
-        // copies it onto mergedArgs (non-enumerably) and the recursive handle()
-        // paths propagate it forward, so the consumer (renderClassicComponent /
-        // renderGlimmerComponent) can find it on the args parameter it receives.
-        Object.defineProperty(gxtArgs, '__gxtDcCapture', {
-          value: captureInstance,
-          configurable: true,
-          enumerable: false,
-          writable: true,
-        });
-        try {
-          initialResult = renderComponent(componentValue, gxtArgs, ctx, true);
-        } finally {
-          setDcComponentGetter(_prevDcGetter);
-          try {
-            delete (gxtArgs as any).__gxtDcCapture;
-          } catch {
-            /* configurable: true above ensures delete succeeds for our own writes */
-          }
-        }
-      }
-
-      // --- Reactive swap tracking ---
-      let _lastIdentityKey = dcIdentityKey(componentValue);
-      let _dcDestroyed = false;
-      const _dcCapturedOwner = getAmbientOwner();
-
-      // Collect initial rendered nodes for later removal during swaps.
-      let currentNodes: Node[] = renderedNodesOf(initialResult);
-      // Track the placeholder comment that holds our position when all nodes
-      // are removed (so we can find parent/insertBefore on subsequent swaps).
-      let anchor: Comment | null = null;
-
-      // Perform DOM swap when the component identity changes.
-      const performSwap = () => {
-        if (_dcDestroyed) return;
-
-        let newVal: any;
-        try {
-          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch {
-          return;
-        }
-
-        const newKey = dcIdentityKey(newVal);
-        if (newKey === _lastIdentityKey) return;
-        _lastIdentityKey = newKey;
-
-        // Find insertion reference from current nodes (or anchor)
-        let parent: Node | null = null;
-        let insertBefore: Node | null = null;
-        if (currentNodes.length > 0) {
-          const lastNode = currentNodes[currentNodes.length - 1]!;
-          parent = lastNode.parentNode;
-          insertBefore = lastNode.nextSibling;
-        } else if (anchor) {
-          parent = anchor.parentNode;
-          insertBefore = anchor;
-        }
-        if (!parent) return;
-
-        // Drop the anchor before removing nodes, since it may be between them.
-        if (anchor && anchor.parentNode) {
-          // Re-attach anchor at the tail so we can re-seat new nodes before it.
-          insertBefore = anchor;
-        }
-
-        // Remove old nodes BEFORE destroying the Ember instance so that
-        // willDestroyElement assertions that check the element is still
-        // attached can re-attach and see it.
-        for (const node of currentNodes) {
-          if (node.parentNode) node.parentNode.removeChild(node);
-        }
-        currentNodes = [];
-
-        // Fire Ember willDestroy lifecycle for the previous instance.
-        destroyCurrentDcInstance();
-
-        // Render the new component (the capture callback is re-stashed for
-        // the swap render, see the initial render above).
-        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const newResult = renderSwappedValue(
-            newVal,
-            componentGetter,
-            gxtArgs,
-            ctx,
-            _dcCapturedOwner,
-            captureInstance
-          );
-          currentNodes = renderedNodesOf(newResult);
-          if (newResult instanceof Node) {
-            parent.insertBefore(newResult, insertBefore);
-          } else {
-            for (const n of currentNodes) {
-              parent.insertBefore(n, insertBefore);
-            }
-          }
-          // Flush the afterInsert queue so the newly-rendered instance's
-          // __gxtEverInserted flag gets set. Without this, the subsequent
-          // swap-out would skip the user willDestroy override due to the
-          // __gxtEverInserted gate in patchedComponentClass.willDestroy.
-          //
-          // Typed bridge call via `viewUtils.flushAfterInsertQueue`. The
-          // bridge adapter also dispatches the `afterFlushAfterInsertQueue`
-          // host hook contributed by compile.ts via `installViewUtilsPart`
-          // (the in-element deferred-render drain).
-          try {
-            getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
-          } catch {
-            /* ignore */
-          }
-        }
-        // If newVal is null/undefined, currentNodes stays empty (component removed)
-
-        // Ensure we always have an anchor so subsequent swaps have a
-        // parent/insertion reference even when the component renders nothing.
-        if (currentNodes.length === 0) {
-          if (!anchor) {
-            anchor = document.createComment('dc-str-anchor');
-          }
-          if (!anchor.parentNode) {
-            parent.insertBefore(anchor, insertBefore);
-          }
-        }
-      };
-
-      // Change listener dispatched by `_gxtSyncAllWrappers`.
-      const _dcChangeListener = (): boolean => {
-        if (_dcDestroyed) return false;
-        performSwap();
-        return true;
-      };
-
-      // Add the listener to the registry shared with the null/curried paths. The
-      // `stringPath: true` option also bumps a counter that `_gxtSyncDomNow` reads
-      // via `hasStringDynamicComponentListeners`; the returned off-fn removes the
-      // listener and decrements the counter together.
-      const _offDcListener = getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
-        _dcChangeListener,
-        { stringPath: true }
-      );
-
-      // Cleanup destructor
-      const _cleanupDcListener = () => {
-        _dcDestroyed = true;
-        _offDcListener?.();
-        // NOTE: we do NOT call destroyCurrentDcInstance here — the surrounding
-        // render tree is being torn down by Ember, which will fire destroy
-        // hooks through its normal path. Calling it here would double-destroy.
-        if (anchor && anchor.parentNode) {
-          anchor.parentNode.removeChild(anchor);
-        }
-      };
-      if (ctx) {
-        try {
-          gxtModule.registerDestructor(ctx, _cleanupDcListener);
-        } catch {
-          /* ignore */
-        }
-      }
-
-      // Return the initial result, as the curried path does. performSwap uses
-      // currentNodes to find the insertion point.
-      return initialResult;
     }
 
-    // Handle component definitions (template-only, GlimmerishComponent, etc.)
-    // that have a template in COMPONENT_TEMPLATES
+    // A definition the Ember component manager does not render.
     if (
-      componentValue &&
-      (typeof componentValue === 'object' || typeof componentValue === 'function')
+      kind === 'definition' &&
+      (typeof componentValue === 'object' || typeof componentValue === 'function') &&
+      !g.$_MANAGERS?.component?.canHandle?.(componentValue)
     ) {
-      const managers = g.$_MANAGERS;
-      if (managers?.component?.canHandle?.(componentValue)) {
-        return renderComponent(componentValue, gxtArgs, ctx);
-      }
       // Non-component object/function (e.g., a helper or modifier function)
       // was passed in dynamic-component position (`<this.Foo/>` / `<x.Foo/>`).
       // Stock Ember throws here — emit the same message so `assert.throws(...)`
@@ -2722,8 +2550,7 @@ function createEmberDc(original: Function) {
         const err = new Error(
           `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${debugName}>\` or \`{{${debugName}}}\`, and the incorrect definition is the value at the path \`${debugName}\`, which was: ${valLabel}`
         );
-        const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
-        if (typeof captureFn === 'function') captureFn(err);
+        captureDcError(err);
         throw err;
       }
       // Any other object is no component definition either (a function may be
@@ -2739,12 +2566,27 @@ function createEmberDc(original: Function) {
         const err = new Error(
           'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
         );
-        getGxtRenderer()?.compilePipeline.captureRenderError(err);
+        captureDcError(err);
         throw err;
       }
+      // Fall back to original GXT $_dc for native GXT components
+      return original(componentGetter, gxtArgs, ctx);
     }
 
-    // Fall back to original GXT $_dc for native GXT components
+    // We cannot delegate an Ember component value to GXT's native $_dc
+    // (`original`): native $_dc expects the component factory to return a GXT
+    // component instance with [RENDERED_NODES_PROPERTY] metadata, while the
+    // Ember component manager returns DOM (or a lazy `() => Node` closure for a
+    // name). The binding renders through the manager and manages the DOM.
+    if (
+      kind !== 'definition' ||
+      typeof componentValue === 'object' ||
+      typeof componentValue === 'function'
+    ) {
+      return followDefinition(componentGetter, gxtArgs, ctx, componentValue, kind, reads);
+    }
+
+    // Any other value (a number, `true`) goes to GXT's native $_dc.
     return original(componentGetter, gxtArgs, ctx);
   };
 }
