@@ -711,8 +711,9 @@ interface CustomManagedEntry {
   // Takes the component out of its instance pool, so no render reuses it.
   release: () => void;
   destroyed: boolean;
-  // The order the components were created in, which is the order Glimmer
-  // destroys the components of a block in.
+  // The order the components are destroyed in: the order they were created
+  // in, the components a block's teardown destroys put in document order
+  // among themselves (`_orderInDocument`).
   order: number;
   // The block the component was rendered in (`_gxtBlockOf`).
   block: object | null;
@@ -860,8 +861,35 @@ export function gxtRenderInBlock<T>(block: object, parent: object | null, render
  * the DOM and ran the insert hooks; outside a sync, now.
  */
 export function gxtDestroyBlock(block: object): void {
+  const queued = _componentsOfDestroyedBlocks.length;
   _markBlockDestroyed(block);
+  _orderInDocument(_componentsOfDestroyedBlocks.slice(queued));
   _gxtDestroyComponentsOfDestroyedBlocksOutsideSync();
+}
+
+// Glimmer destroys the components of a block in the order it rendered them,
+// which is the order of their nodes in the document. The order compat created
+// them in is the same, but for a yielded block it renders before the component
+// whose template yields it is created. So while the nodes of the components a
+// block's teardown destroys are all in the document (gxt runs a block's
+// destructors before it removes the block's nodes), they are destroyed in
+// document order: they take the creation-order places among themselves in that
+// order.
+function _orderInDocument(entries: CustomManagedEntry[]): void {
+  if (entries.length < 2) return;
+  for (const entry of entries) {
+    if (entry.node === null || !entry.node.isConnected) return;
+  }
+  const places = entries.map((entry) => entry.order).sort((a, b) => a - b);
+  entries.sort((a, b) => {
+    const position = a.node!.compareDocumentPosition(b.node!);
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+    if (position & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+    return a.order - b.order;
+  });
+  entries.forEach((entry, index) => {
+    entry.order = places[index]!;
+  });
 }
 
 // The block of a component invoked with `ctx`: the row an `{{#each}}` row ctx
