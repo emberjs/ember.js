@@ -451,18 +451,6 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
   );
 }
 
-// Helper to detect assertion-related throws that must escape catch blocks.
-// The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
-// when a stubbed assert fires. Also re-throws actual Assertion Failed errors.
-export function isAssertionLike(e: unknown): boolean {
-  if (e instanceof Error) {
-    return e.message?.includes('Assertion Failed') === true;
-  }
-  // Non-Error, non-null/undefined objects may be the BREAK sentinel from expectAssertion.
-  if (e !== null && e !== undefined && typeof e === 'object') return true;
-  return false;
-}
-
 /**
  * Install `value` at `globalThis[name]` behind a getter that ignores writes, so
  * a later `setupGlobalScope()` pass (GXT iterates its symbol table and writes

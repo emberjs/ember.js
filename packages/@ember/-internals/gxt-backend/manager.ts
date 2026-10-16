@@ -19,7 +19,6 @@ import {
   dasherize,
   doubleColonToSlash,
   constructStyleDeprecationMessage,
-  isAssertionLike as _isAssertionLike,
   protectGlobal,
   capabilitiesErrorPrefix,
   keepArgValue,
@@ -2947,6 +2946,17 @@ let _isInRenderPass = false;
  */
 let _suppressDestroyCapture = false;
 
+// Collects an error a teardown hook threw into `errors`. During a spurious
+// unclaimed-pool sweep (`_suppressDestroyCapture`) an Error reaches no caller
+// (it would surface from the next, unrelated flush): reported in DEBUG.
+function _collectTeardownError(errors: unknown[], error: unknown): void {
+  if (_suppressDestroyCapture && error instanceof Error) {
+    _gxtReportDroppedRead('A teardown hook in a sweep no property change drove', error);
+  } else {
+    errors.push(error);
+  }
+}
+
 export function markTemplateRendered(instance: any): void {
   if (instance) {
     _templateRenderedInstances.add(instance);
@@ -3177,10 +3187,6 @@ export function checkBacktracking(targetObj: any, key: string): void {
   }
 }
 
-// Thrown for a block invocation (`{{#name}}…{{/name}}`) of a name that resolves
-// to a helper; the owner-lookup catch around it rethrows only this class.
-class GxtHelperAsBlockError extends Error {}
-
 export function captureRenderError(err: unknown): void {
   _renderErrors.push({
     error: err instanceof Error ? err : new Error(String(err)),
@@ -3364,8 +3370,11 @@ function triggerLifecycleHook(instance: any, hookName: string, opts?: { rethrow?
     // through flushRenderErrors() in the renderer. Honor
     // _suppressDestroyCapture, which is set during spurious unclaimed-
     // pool sweeps where a user destroy/lifecycle throw should not propagate
-    // to assert.throws (see `_gxtDestroyUnclaimedPoolEntries` phase 1).
-    if (!_suppressDestroyCapture) {
+    // to assert.throws (see `_gxtDestroyUnclaimedPoolEntries` phase 1): there
+    // it is reported in DEBUG.
+    if (_suppressDestroyCapture) {
+      _gxtReportDroppedRead('A lifecycle hook in a sweep no property change drove', e);
+    } else {
       captureRenderError(e);
     }
   }
@@ -4959,9 +4968,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // newborn instance whose element is disconnected), the unclaimed sweep is
   // spurious and any user-thrown lifecycle errors must not be captured into
   // _renderErrors (they would otherwise re-throw out of the next
-  // runAppend/runTask flushRenderErrors call). All Phase 1-3 local try/catches
-  // already swallow synchronous throws; this flag only gates the renderer.ts
-  // wrappedDestroy/wrappedTrigger capture path. We read isSyncIsPropertyDriven
+  // runAppend/runTask flushRenderErrors call): `triggerLifecycleHook` and
+  // `_collectTeardownError` report them in DEBUG instead. We read isSyncIsPropertyDriven
   // (set in compile.ts at the start of `_gxtSyncDomNow`) instead of
   // hadPendingSync because the latter is cleared by forceEmberRerender's
   // finally block before this Phase runs. The predicate is false before the
@@ -4974,7 +4982,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
     _suppressDestroyCapture = true;
   }
 
-  let firstPhase3Error: Error | null = null;
+  // The errors Phase 3's destroy/willDestroy throw (`_collectTeardownError`).
+  const phase3Errors: unknown[] = [];
   try {
     // Phase 1: willDestroyElement + willClearRender.
     // The elements have been detached from the DOM by innerHTML=''.
@@ -5066,13 +5075,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       {
         try {
           _destroyIfAlive(instance);
-        } catch (e) {
-          // Honor _suppressDestroyCapture, which is set during spurious
-          // unclaimed-pool sweeps (initial-render syncs not driven by a
-          // real property change).
-          if (e instanceof Error && !_suppressDestroyCapture) {
-            if (!firstPhase3Error) firstPhase3Error = e;
-          }
+        } catch (error) {
+          _collectTeardownError(phase3Errors, error);
         }
       }
       if (
@@ -5082,12 +5086,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       ) {
         try {
           instance.willDestroy();
-        } catch (e) {
-          // Same capture policy as destroy() above: willDestroy errors are
-          // captured here (honoring _suppressDestroyCapture).
-          if (e instanceof Error && !_suppressDestroyCapture) {
-            if (!firstPhase3Error) firstPhase3Error = e;
-          }
+        } catch (error) {
+          _collectTeardownError(phase3Errors, error);
         }
       }
     }
@@ -5122,8 +5122,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // Throw rather than capture into _renderErrors so the error escapes
   // `_gxtSyncDomNow`'s deferred-error path and reaches runTask's caller
   // synchronously, eliminating the dependency on a post-task flush.
-  if (firstPhase3Error) {
-    throw firstPhase3Error;
+  if (phase3Errors.length > 0) {
+    throw phase3Errors[0];
   }
   if (customDestroyErrors.length > 0) throw customDestroyErrors[0];
 }
@@ -7393,11 +7393,7 @@ function resolveComponent(
         while (pointer) {
           manager = COMPONENT_MANAGERS.get(pointer);
           if (manager) break;
-          try {
-            pointer = Object.getPrototypeOf(pointer);
-          } catch {
-            break;
-          }
+          pointer = Object.getPrototypeOf(pointer);
           if (pointer === Object.prototype || pointer === Function.prototype) break;
         }
       }
@@ -7475,16 +7471,12 @@ function _forwardEventsToElement(el: HTMLElement, events: any[], owner: object):
 // Append a function slot item to `parent`. A node thunk (the compiler marks
 // every component-child DOM producer with `$_isNode`) is called and its node,
 // or a fragment's children, appended. Any other function is a reactive text
-// getter: a text node kept current by an effect. A node thunk that throws or
-// returns no node is treated as a text getter too.
+// getter: a text node kept current by an effect. A node thunk that returns no
+// node is treated as a text getter too; what rendering it throws propagates,
+// as a Glimmer block's render error does.
 function _appendSlotFunctionItem(parent: Node, item: Function): void {
   if ((item as any).$_isNode === true) {
-    let evaluated: any;
-    try {
-      evaluated = item();
-    } catch {
-      evaluated = null;
-    }
+    const evaluated: any = item();
     if (evaluated instanceof Node) {
       // A fragment's children move on append: snapshot them first.
       if (evaluated.nodeType === 11 /* DocumentFragment */) {
@@ -7713,27 +7705,18 @@ function _resolveEmberHelper(
       }
     }
 
-    // Direct function call
+    // Direct function call. What the helper throws propagates, as Glimmer's
+    // helper invocation does.
     if (typeof definition === 'function') {
-      return (positional: any[], named: any) => {
-        try {
-          return definition(positional, named || {});
-        } catch (e) {
-          if (_isAssertionLike(e)) throw e;
-          return undefined;
-        }
-      };
+      return (positional: any[], named: any) => definition(positional, named || {});
     }
 
-    // Factory create (classic Helper.extend)
+    // Factory create (classic Helper.extend); what `init` or `compute` throws
+    // propagates.
     return (positional: any[], named: any) => {
-      try {
-        const instance = factory.create();
-        if (instance && typeof instance.compute === 'function') {
-          return instance.compute(positional, named || {});
-        }
-      } catch (e) {
-        if (_isAssertionLike(e)) throw e; /* ignore */
+      const instance = factory.create();
+      if (instance && typeof instance.compute === 'function') {
+        return instance.compute(positional, named || {});
       }
       return undefined;
     };
@@ -8334,19 +8317,18 @@ const $_MANAGERS = {
         // If block slot is present AND the name resolves to a helper (not a
         // component), this is an illegal `{{#helper-name}}...{{/helper-name}}`
         // invocation. Throw the expected Ember error immediately.
-        if (hasBlockSlot && owner) {
-          try {
-            const helperName = pascalToKebab(resolvedKomp);
-            const hf = owner.factoryFor?.(`helper:${helperName}`);
-            const hl = !hf ? owner.lookup?.(`helper:${helperName}`) : null;
-            if (hf || hl) {
-              throw new GxtHelperAsBlockError(
-                `Attempted to resolve \`${helperName}\`, which was expected to be a component, but nothing was found.`
-              );
-            }
-          } catch (e) {
-            if (e instanceof GxtHelperAsBlockError) throw e;
-            // Other lookup errors: fall through to normal flow.
+        // A destroyed owner resolves nothing (its container asserts), and a
+        // name with a `:` is no valid registry name (the DEBUG registry
+        // asserts on it).
+        if (hasBlockSlot && owner && !owner.isDestroyed && !owner.isDestroying) {
+          const helperName = pascalToKebab(resolvedKomp);
+          if (
+            !helperName.includes(':') &&
+            (owner.factoryFor?.(`helper:${helperName}`) || owner.lookup?.(`helper:${helperName}`))
+          ) {
+            throw new Error(
+              `Attempted to resolve \`${helperName}\`, which was expected to be a component, but nothing was found.`
+            );
           }
         }
         // Convert PascalCase to kebab-case for helper lookup. A destroyed
@@ -8569,11 +8551,7 @@ const $_MANAGERS = {
         let pointer = helper;
         while (pointer != null && pointer !== Object.prototype && pointer !== Function.prototype) {
           if (INTERNAL_HELPER_MANAGERS.has(pointer)) return true;
-          try {
-            pointer = Object.getPrototypeOf(pointer);
-          } catch {
-            break;
-          }
+          pointer = Object.getPrototypeOf(pointer);
         }
       }
       return false;
@@ -8746,22 +8724,17 @@ const $_MANAGERS = {
           if (factory) return true;
 
           // If the modifier name is a registered helper, throw an error.
-          // Helpers cannot be used as modifiers (element position).
-          try {
-            const helperFactory = owner.factoryFor?.(`helper:${modifier}`);
-            const helperLookup = !helperFactory ? owner.lookup?.(`helper:${modifier}`) : null;
-            if (helperFactory || helperLookup) {
-              const err = new Error(
-                `Attempted to resolve \`${modifier}\`, which was expected to be a modifier, but nothing was found.`
-              );
-              captureRenderError(err);
-              return true; // Claim we can handle it to prevent GXT default behavior
-            }
-          } catch (e: any) {
-            if (e?.message?.includes('expected to be a modifier')) {
-              captureRenderError(e);
-              return true;
-            }
+          // Helpers cannot be used as modifiers (element position). (The name
+          // is valid: the modifier lookup above took it. What the lookup's
+          // instantiation throws propagates.)
+          const helperFactory = owner.factoryFor?.(`helper:${modifier}`);
+          const helperLookup = !helperFactory ? owner.lookup?.(`helper:${modifier}`) : null;
+          if (helperFactory || helperLookup) {
+            const err = new Error(
+              `Attempted to resolve \`${modifier}\`, which was expected to be a modifier, but nothing was found.`
+            );
+            captureRenderError(err);
+            return true; // Claim we can handle it to prevent GXT default behavior
           }
         }
         return false;
@@ -8773,11 +8746,7 @@ const $_MANAGERS = {
         while (pointer && !visited.has(pointer)) {
           visited.add(pointer);
           if (INTERNAL_MODIFIER_MANAGERS.has(pointer)) return true;
-          try {
-            pointer = Object.getPrototypeOf(pointer);
-          } catch {
-            break;
-          }
+          pointer = Object.getPrototypeOf(pointer);
         }
       }
       return false;
@@ -8827,11 +8796,7 @@ const $_MANAGERS = {
           while (p && !seen.has(p)) {
             seen.add(p);
             if (INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
-            try {
-              p = Object.getPrototypeOf(p);
-            } catch {
-              break;
-            }
+            p = Object.getPrototypeOf(p);
           }
           return false;
         })();
@@ -9164,11 +9129,7 @@ const $_MANAGERS = {
           managerFactory = mgr;
           break;
         }
-        try {
-          pointer = Object.getPrototypeOf(pointer);
-        } catch {
-          break;
-        }
+        pointer = Object.getPrototypeOf(pointer);
       }
 
       if (!managerFactory) return undefined;
@@ -11428,9 +11389,12 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       // using assert.rejectsAssertion() during initial visit() can see it
       // (e.g., LinkTo to a route with unsupplied dynamic segments). Later
       // re-runs of applyHref (classic-tag bridge, reactor) must NOT capture
-      // repeatedly — that would leak an error across subsequent tests.
+      // repeatedly — that would leak an error across subsequent tests: they
+      // report it in DEBUG.
       if (_hrefAttempts === 0) {
         captureRenderError(e);
+      } else {
+        _gxtReportDroppedRead("LinkTo's href, read again,", e);
       }
       _hrefAttempts++;
     }
@@ -12933,11 +12897,7 @@ export function getInternalHelperManager(helper: any, isOptional?: boolean) {
     if (manager !== undefined) {
       return manager;
     }
-    try {
-      pointer = Object.getPrototypeOf(pointer);
-    } catch {
-      break;
-    }
+    pointer = Object.getPrototypeOf(pointer);
   }
   // Functions are the default helper type (simple function helpers)
   if (typeof helper === 'function') {
@@ -13045,11 +13005,7 @@ export function getInternalComponentManager(handle: any, isOptional?: boolean) {
   while (pointer !== null && pointer !== undefined) {
     const manager = INTERNAL_MANAGERS.get(pointer);
     if (manager !== undefined) return manager;
-    try {
-      pointer = Object.getPrototypeOf(pointer);
-    } catch {
-      break;
-    }
+    pointer = Object.getPrototypeOf(pointer);
   }
   // Then look for custom component managers registered via setComponentManager.
   // For these, wrap the raw factory in a CustomComponentManager so tests that
@@ -13067,11 +13023,7 @@ export function getInternalComponentManager(handle: any, isOptional?: boolean) {
       }
       return wrapper;
     }
-    try {
-      pointer = Object.getPrototypeOf(pointer);
-    } catch {
-      break;
-    }
+    pointer = Object.getPrototypeOf(pointer);
   }
   // Nothing found. When the caller explicitly marks this as an optional lookup
   // (e.g. `resolveOptionalComponentOrHelper` probing whether `def` is a
@@ -13096,11 +13048,8 @@ function _managerDebugToString(value: any): string {
   if (typeof value === 'object') {
     const ctor = value.constructor;
     if (ctor && ctor.name && ctor !== Object) return `[object ${ctor.name}]`;
-    try {
-      return String(value);
-    } catch {
-      return '[object]';
-    }
+    // An object without `toString` (a null-prototype one) has no string form.
+    return typeof value.toString === 'function' ? String(value) : '[object]';
   }
   return String(value);
 }
@@ -13336,11 +13285,7 @@ export function hasInternalHelperManager(helper: any) {
     if (INTERNAL_HELPER_MANAGERS.has(pointer)) {
       return true;
     }
-    try {
-      pointer = Object.getPrototypeOf(pointer);
-    } catch {
-      break;
-    }
+    pointer = Object.getPrototypeOf(pointer);
   }
   return false;
 }
@@ -13366,11 +13311,7 @@ export function getInternalModifierManager(modifier: any, isOptional?: boolean) 
   if (stored === undefined) {
     let pointer: any = modifier;
     for (let depth = 0; depth < 20; depth++) {
-      try {
-        pointer = Object.getPrototypeOf(pointer);
-      } catch {
-        break;
-      }
+      pointer = Object.getPrototypeOf(pointer);
       if (pointer === null || pointer === undefined) break;
       const candidate = INTERNAL_MODIFIER_MANAGERS.get(pointer);
       if (candidate !== undefined) {
@@ -13426,13 +13367,9 @@ export function hasInternalComponentManager(component: any): boolean {
   for (let depth = 0; depth < 20; depth++) {
     if (pointer === null || pointer === undefined) break;
     if (INTERNAL_MANAGERS.has(pointer) || COMPONENT_MANAGERS.has(pointer)) return true;
-    try {
-      const next = Object.getPrototypeOf(pointer);
-      if (next === pointer || next === null) break;
-      pointer = next;
-    } catch {
-      break;
-    }
+    const next = Object.getPrototypeOf(pointer);
+    if (next === pointer || next === null) break;
+    pointer = next;
   }
   return false;
 }
@@ -13602,12 +13539,10 @@ export class CustomComponentManager {
     if (definitionState && typeof definitionState === 'object') {
       const ctor = (definitionState as any).constructor;
       if (ctor && ctor.name) return ctor.name;
+      // An object without `toString` (a null-prototype one) has no string form.
+      if (typeof (definitionState as any).toString !== 'function') return 'Component';
     }
-    try {
-      return String(definitionState);
-    } catch {
-      return 'Component';
-    }
+    return String(definitionState);
   }
 
   getSelf(state: CustomComponentState): any {
@@ -13822,9 +13757,9 @@ export class CustomModifierManager {
       typeof delegate.createModifier === 'function'
         ? delegate.createModifier(definition, proxiedArgs)
         : delegate;
-    // Lazy import: the validator shim creates an updatable tag we can return
-    // from getTag(). This matches @glimmer/manager's public CustomModifierManager.
-    const tag = _createUpdatableTagForModifier();
+    // getTag() returns the validator shim's updatable tag. This matches
+    // @glimmer/manager's public CustomModifierManager.
+    const tag = _gxtCreateUpdatableTag();
     const state: ShimCustomModifierState = { tag, element, delegate, args: proxiedArgs, modifier };
     // Match stock @glimmer/manager/lib/public/modifier.ts: register a
     // destructor on the state that invokes delegate.destroyModifier when the
@@ -13885,14 +13820,6 @@ export class CustomModifierManager {
   destroy(state: ShimCustomModifierState) {
     const { delegate, modifier } = state;
     delegate?.destroyModifier?.(modifier);
-  }
-}
-
-function _createUpdatableTagForModifier(): any {
-  try {
-    return _gxtCreateUpdatableTag();
-  } catch {
-    return null;
   }
 }
 
