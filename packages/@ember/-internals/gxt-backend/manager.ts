@@ -11705,7 +11705,8 @@ function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
     slot.argGetters[key] = fresh[key];
   }
   // Redirect each existing named-arg ref to the freshest upstream getter.
-  // Add new keys that were absent at creation; swallow frozen-named errors.
+  // Add new keys that were absent at creation. (`args.named` is the plain
+  // object `_argsForInternalManagerWithSlots` built.)
   //
   // When an arg that was present at creation is NOT in the new invocation's
   // args, we must DELETE it from args.named (not just null the getter). LinkTo
@@ -11726,49 +11727,38 @@ function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
       // guards reflect the new template's arg shape accurately.
       delete slot.namedRefSlots[key];
       if (liveNamed && typeof liveNamed === 'object') {
-        try {
-          delete (liveNamed as any)[key];
-        } catch {
-          /* frozen */
-        }
+        delete (liveNamed as any)[key];
       }
     }
   }
   for (const key of Object.keys(freshNamed)) {
     if (slot.namedRefSlots[key]) continue;
     slot.namedRefSlots[key] = { getter: freshNamed[key] };
-    try {
-      const named = slot.instance?.args?.named;
-      if (named && typeof named === 'object' && !(key in named)) {
-        const refSlot = slot.namedRefSlots[key];
-        const ref: any = {
-          get value() {
-            const v = refSlot.getter();
-            if (v && v.__isMutCell) return v.value;
-            if (v && v.__isReadonly) return v.__readonlyValue;
-            return v;
-          },
-        };
-        Object.defineProperty(named, key, {
-          configurable: true,
-          enumerable: true,
-          value: ref,
-          writable: true,
-        });
-      }
-    } catch {
-      /* ignore frozen */
+    const named = slot.instance?.args?.named;
+    if (named && typeof named === 'object' && !(key in named)) {
+      const refSlot = slot.namedRefSlots[key];
+      const ref: any = {
+        get value() {
+          const v = refSlot.getter();
+          if (v && v.__isMutCell) return v.value;
+          if (v && v.__isReadonly) return v.__readonlyValue;
+          return v;
+        },
+      };
+      Object.defineProperty(named, key, {
+        configurable: true,
+        enumerable: true,
+        value: ref,
+        writable: true,
+      });
     }
   }
   for (const key of Object.keys(slot.lastArgValues)) {
     delete slot.lastArgValues[key];
   }
+  // What an argument's getter throws reaches the render.
   for (const key of Object.keys(slot.argGetters)) {
-    try {
-      slot.lastArgValues[key] = slot.argGetters[key]();
-    } catch {
-      /* ignore */
-    }
+    slot.lastArgValues[key] = slot.argGetters[key]();
   }
 }
 
@@ -11843,14 +11833,11 @@ function handleManagedComponent(
       if (inst && inst._value && typeof inst._value.__syncFromUpstream === 'function') {
         inst._value.__syncFromUpstream();
         if (cached.liveEl && cached.liveEl.isConnected) {
-          try {
-            const upstreamVal = inst.value;
-            const stringVal = upstreamVal == null ? '' : String(upstreamVal);
-            if ((cached.liveEl as HTMLInputElement).value !== stringVal) {
-              (cached.liveEl as HTMLInputElement).value = stringVal;
-            }
-          } catch {
-            /* ignore */
+          // What the value's getter or its toString throws reaches the render.
+          const upstreamVal = inst.value;
+          const stringVal = upstreamVal == null ? '' : String(upstreamVal);
+          if ((cached.liveEl as HTMLInputElement).value !== stringVal) {
+            (cached.liveEl as HTMLInputElement).value = stringVal;
           }
         }
       }
@@ -12013,10 +12000,10 @@ function handleManagedComponent(
           const start = (el as HTMLInputElement).selectionStart;
           const end = (el as HTMLInputElement).selectionEnd;
           (el as HTMLInputElement).value = String(value);
-          try {
+          // An input type without a selection (number, email, …) reports a
+          // null selectionStart, and its setSelectionRange throws.
+          if (start !== null && end !== null) {
             (el as HTMLInputElement).setSelectionRange(start, end);
-          } catch {
-            // setSelectionRange may fail for some input types
           }
         } else {
           (el as HTMLInputElement).value = String(value);
@@ -12079,26 +12066,23 @@ function handleManagedComponent(
           // `value` effect (subscribed to the local fork cell that
           // __syncFromUpstream just set) will also re-run, but writing here
           // guarantees the DOM is correct within this synchronous flush
-          // regardless of effect ordering.
-          try {
-            const stringVal = upstreamVal == null ? '' : String(upstreamVal);
-            if ((el as HTMLInputElement).value !== stringVal) {
-              const activeEl = document.activeElement;
-              if (activeEl === el) {
-                const start = (el as HTMLInputElement).selectionStart;
-                const end = (el as HTMLInputElement).selectionEnd;
-                (el as HTMLInputElement).value = stringVal;
-                try {
-                  (el as HTMLInputElement).setSelectionRange(start, end);
-                } catch {
-                  /* setSelectionRange may fail for some input types */
-                }
-              } else {
-                (el as HTMLInputElement).value = stringVal;
+          // regardless of effect ordering. What the value's toString throws
+          // propagates.
+          const stringVal = upstreamVal == null ? '' : String(upstreamVal);
+          if ((el as HTMLInputElement).value !== stringVal) {
+            const activeEl = document.activeElement;
+            if (activeEl === el) {
+              const start = (el as HTMLInputElement).selectionStart;
+              const end = (el as HTMLInputElement).selectionEnd;
+              (el as HTMLInputElement).value = stringVal;
+              // No selection on some input types: null selectionStart, and
+              // setSelectionRange throws.
+              if (start !== null && end !== null) {
+                (el as HTMLInputElement).setSelectionRange(start, end);
               }
+            } else {
+              (el as HTMLInputElement).value = stringVal;
             }
-          } catch {
-            /* best-effort DOM sync */
           }
         });
       }
@@ -12266,13 +12250,11 @@ function handleManagedComponent(
     // (set() → notifyPropertyChange → cellFor with skipDefine=true), so
     // we poll the arg getters during `_gxtSyncAllWrappers` and apply changes.
     // Seed the slot's lastArgValues (shared, mutable) so the refresh path
-    // observes the same map that the sync callback below mutates.
+    // observes the same map that the sync callback below mutates. What an
+    // argument's getter throws reaches the render (and, in the callback, the
+    // sync).
     for (const key of Object.keys(argGetters)) {
-      try {
-        slotRef.lastArgValues[key] = argGetters[key]();
-      } catch {
-        /* ignore */
-      }
+      slotRef.lastArgValues[key] = argGetters[key]();
     }
     const lastArgValues = slotRef.lastArgValues;
 
@@ -12284,14 +12266,10 @@ function handleManagedComponent(
       // refresh path rewrites entries on this same object so we pick up new
       // template args transparently without re-creating the syncCallback.
       for (const key of Object.keys(slotRef.argGetters)) {
-        try {
-          const newVal = slotRef.argGetters[key]();
-          if (newVal !== lastArgValues[key]) {
-            lastArgValues[key] = newVal;
-            changedKeys.add(key);
-          }
-        } catch {
-          /* ignore */
+        const newVal = slotRef.argGetters[key]();
+        if (newVal !== lastArgValues[key]) {
+          lastArgValues[key] = newVal;
+          changedKeys.add(key);
         }
       }
       if (changedKeys.size === 0) return;
@@ -12512,12 +12490,8 @@ function renderClassicComponent(
   // (the block-param closure held a stale value) and stamped
   // __gxtSyncAllFiredCycleId.
   if (reusedWithChanges && isForceRerender && instance) {
-    try {
-      const __gCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-      (instance as any).__gxtPoolReuseWithChangesCycleId = __gCycle;
-    } catch {
-      /* ignore */
-    }
+    const __gCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+    (instance as any).__gxtPoolReuseWithChangesCycleId = __gCycle;
   }
 
   // Suppress re-render triggering (notifyPropertyChange → compile.ts
@@ -12550,11 +12524,8 @@ function renderClassicComponent(
     const _dcCap = args && (args as any).__gxtDcCapture;
     if (typeof _dcCap === 'function') {
       _dcCap(instance);
-      try {
-        delete (args as any).__gxtDcCapture;
-      } catch {
-        /* configurable: true above ensures delete succeeds for our own writes */
-      }
+      // Defined configurable by $_dc_ember.
+      delete (args as any).__gxtDcCapture;
     }
 
     // Track this instance for destroy detection during force-rerender
@@ -12700,9 +12671,7 @@ function renderClassicComponent(
         const inst = instance;
         _afterInsertQueue.push(() => {
           if (inst._transitionTo && isInteractiveModeChecked()) {
-            try {
-              inst._transitionTo('inDOM');
-            } catch {}
+            inst._transitionTo('inDOM');
           }
           inst.__gxtEverInserted = true;
         });
@@ -12716,17 +12685,14 @@ function renderClassicComponent(
       // mirroring classic Ember's CurlyComponentManager.create() instrumentation
       // (glimmer/lib/component-managers/curly.ts). The finalizer runs after the
       // template/layout has been rendered.
+      // What a subscriber throws propagates, as from Glimmer's curly manager.
       let _initialRenderInstrumentFinalizer: (() => void) | null = null;
       if (instance && typeof (instance as any).instrumentDetails === 'function') {
-        try {
-          _initialRenderInstrumentFinalizer = _gxtInstrumentStart(
-            'render.component',
-            _initialRenderInstrumentationPayload,
-            instance
-          );
-        } catch {
-          /* ignore */
-        }
+        _initialRenderInstrumentFinalizer = _gxtInstrumentStart(
+          'render.component',
+          _initialRenderInstrumentationPayload,
+          instance
+        );
       }
 
       // Init-phase: rethrow synchronously so user-thrown errors surface in the
@@ -12742,9 +12708,7 @@ function renderClassicComponent(
         setElementView(wrapper, instance);
       }
       if (instance?._transitionTo) {
-        try {
-          instance._transitionTo('hasElement');
-        } catch {}
+        instance._transitionTo('hasElement');
       }
 
       // willInsertElement is called in hasElement state (element now available).
@@ -12763,11 +12727,7 @@ function renderClassicComponent(
       // been rendered. Classic Ember finalizes in didRenderLayout — we match
       // that timing here (immediately after renderTemplateWithParentView).
       if (_initialRenderInstrumentFinalizer) {
-        try {
-          _initialRenderInstrumentFinalizer();
-        } catch {
-          /* ignore */
-        }
+        _initialRenderInstrumentFinalizer();
       }
 
       // Queue didInsertElement / didRender to fire after the element is in the DOM.
@@ -12802,9 +12762,7 @@ function renderClassicComponent(
           }
           if (!isConnected) return;
           if (inst._transitionTo && isInteractiveModeChecked()) {
-            try {
-              inst._transitionTo('inDOM');
-            } catch {}
+            inst._transitionTo('inDOM');
           }
           inst.__gxtEverInserted = true;
           triggerLifecycleHook(inst, 'didInsertElement');
@@ -12872,11 +12830,8 @@ function renderGlimmerComponent(
   const _dcCap = args && (args as any).__gxtDcCapture;
   if (typeof _dcCap === 'function') {
     _dcCap(instance);
-    try {
-      delete (args as any).__gxtDcCapture;
-    } catch {
-      /* configurable: true above ensures delete succeeds for our own writes */
-    }
+    // Defined configurable by $_dc_ember.
+    delete (args as any).__gxtDcCapture;
   }
 
   const container = document.createDocumentFragment();
@@ -13262,58 +13217,52 @@ export function setInternalModifierManager(manager: any, modifier: any, _skipGua
   // by shape: it exposes a `counters` getter returning { adds, removes }.
   // Wrap it so that reads of `.counters` resolve to our instrumented pair
   // (which the Element.prototype patch above keeps in sync).
+  // What the manager's getDebugName throws propagates (Glimmer calls it
+  // unguarded).
   if (manager && typeof manager === 'object') {
-    try {
-      const debugName =
-        typeof manager.getDebugName === 'function' ? manager.getDebugName() : undefined;
-      const desc = Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(manager) || manager,
-        'counters'
-      );
-      const hasCountersGetter = !!(desc && typeof desc.get === 'function');
-      if (debugName === 'on' && hasCountersGetter) {
-        __gxtInstallOnElementPatch();
-        // Create a proxied manager that forwards everything to the original
-        // OnModifierManager, but resolves `.counters` to our instrumented
-        // pair. We proxy rather than mutate the original because the manager
-        // prototype's getter returns a fresh object per read; we want the
-        // test's `getInternalModifierManager(on).counters` to see OUR live
-        // counters while leaving the Glimmer VM's install/update path
-        // untouched.
-        const wrapped = new Proxy(manager, {
-          get(target, prop, receiver) {
-            if (prop === 'counters') return { ...__gxtOnCounters };
-            return Reflect.get(target, prop, receiver);
-          },
-        });
-        manager = wrapped;
-      }
-    } catch {
-      /* ignore */
+    const debugName =
+      typeof manager.getDebugName === 'function' ? manager.getDebugName() : undefined;
+    const desc = Object.getOwnPropertyDescriptor(
+      Object.getPrototypeOf(manager) || manager,
+      'counters'
+    );
+    const hasCountersGetter = !!(desc && typeof desc.get === 'function');
+    if (debugName === 'on' && hasCountersGetter) {
+      __gxtInstallOnElementPatch();
+      // Create a proxied manager that forwards everything to the original
+      // OnModifierManager, but resolves `.counters` to our instrumented
+      // pair. We proxy rather than mutate the original because the manager
+      // prototype's getter returns a fresh object per read; we want the
+      // test's `getInternalModifierManager(on).counters` to see OUR live
+      // counters while leaving the Glimmer VM's install/update path
+      // untouched.
+      const wrapped = new Proxy(manager, {
+        get(target, prop, receiver) {
+          if (prop === 'counters') return { ...__gxtOnCounters };
+          return Reflect.get(target, prop, receiver);
+        },
+      });
+      manager = wrapped;
     }
   }
   INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
   // Register internal modifier managers as built-in keyword modifiers
   // so that string-based resolution (e.g., {{on "click" ...}}) works.
   if (manager && typeof manager.getDebugName === 'function') {
-    try {
-      const name = manager.getDebugName();
-      if (name) {
-        if ($_MANAGERS?.modifier?._builtinModifiers) {
-          $_MANAGERS.modifier._builtinModifiers[name] = modifier;
-          // See the matching `on-ext` aliasing in
-          // _flushPendingBuiltinModifiers below — the alias must also be
-          // installed on this direct path, which is the one a consuming
-          // app's import order typically takes.
-          if (name === 'on') {
-            $_MANAGERS.modifier._builtinModifiers['on-ext'] ??= modifier;
-          }
-        } else {
-          _pendingBuiltinModifiers.push({ name, modifier });
+    const name = manager.getDebugName();
+    if (name) {
+      if ($_MANAGERS?.modifier?._builtinModifiers) {
+        $_MANAGERS.modifier._builtinModifiers[name] = modifier;
+        // See the matching `on-ext` aliasing in
+        // _flushPendingBuiltinModifiers below — the alias must also be
+        // installed on this direct path, which is the one a consuming
+        // app's import order typically takes.
+        if (name === 'on') {
+          $_MANAGERS.modifier._builtinModifiers['on-ext'] ??= modifier;
         }
+      } else {
+        _pendingBuiltinModifiers.push({ name, modifier });
       }
-    } catch {
-      /* ignore */
     }
   }
   return modifier;
@@ -13698,21 +13647,14 @@ export class CustomComponentManager {
         typeof delegate?.getContext === 'function' ? delegate.getContext(component) : component;
       const r = _createConstRef(ctx, 'this');
       // Ensure `debugLabel` is set so downstream `childRefFor` produces
-      // `this.Foo`-style labels for stock Glimmer VM error messages.
-      try {
-        (r as any).debugLabel = 'this';
-      } catch {
-        /* frozen */
-      }
+      // `this.Foo`-style labels for stock Glimmer VM error messages. (The
+      // shim's const ref is its own extensible object.)
+      (r as any).debugLabel = 'this';
       return r;
     }
     // Defensive path for callers passing a raw instance (legacy tests).
     const r2 = _createConstRef(state, 'this');
-    try {
-      (r2 as any).debugLabel = 'this';
-    } catch {
-      /* frozen */
-    }
+    (r2 as any).debugLabel = 'this';
     return r2;
   }
 
@@ -13798,13 +13740,11 @@ function _isGlimmerRef(v: any): boolean {
   return false;
 }
 
+// What computing the reference throws propagates, as Glimmer's args proxy
+// reads it with valueForRef.
 function _unwrapMaybeRef(v: any): any {
   if (_isGlimmerRef(v)) {
-    try {
-      return _valueForRefForManager(v);
-    } catch {
-      // fall through
-    }
+    return _valueForRefForManager(v);
   }
   return v;
 }
@@ -13924,11 +13864,8 @@ export class CustomModifierManager {
     // previous instance's destroyable, which (with the destructor registered
     // here) fires the modifier's destructor.
     if (typeof delegate?.destroyModifier === 'function') {
-      try {
-        _registerDestructor(state, () => delegate.destroyModifier(modifier, proxiedArgs));
-      } catch {
-        /* fall through — destructor registration optional */
-      }
+      // A fresh state object, not destroying.
+      _registerDestructor(state, () => delegate.destroyModifier(modifier, proxiedArgs));
     }
     return state;
   }
@@ -14225,27 +14162,18 @@ setGxtRenderer({
   const wrap = (fn: any): any => {
     if (typeof fn !== 'function') return fn;
     if ((fn as any).__gxtInstrumented) return fn;
+    // What a subscriber throws propagates; the finalizer runs in a finally,
+    // as Ember's `instrument` runs it.
     const wrapped = function (this: any, outletRef: any) {
-      let finalizer: (() => void) | null = null;
-      try {
-        finalizer = _gxtInstrumentStart(
-          'render.outlet',
-          _outletRerenderInstrumentationPayload,
-          outletRef
-        );
-      } catch {
-        /* ignore */
-      }
+      const finalizer = _gxtInstrumentStart(
+        'render.outlet',
+        _outletRerenderInstrumentationPayload,
+        outletRef
+      );
       try {
         return fn.call(this, outletRef);
       } finally {
-        if (finalizer) {
-          try {
-            finalizer();
-          } catch {
-            /* ignore */
-          }
-        }
+        if (finalizer) finalizer();
       }
     };
     (wrapped as any).__gxtInstrumented = true;
