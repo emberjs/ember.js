@@ -211,6 +211,10 @@ Code words are:
 - `true`, `false`, `null`, `undefined` (when referring to programming values)
 - references to other properties/methods
 
+To see your documentation as https://api.emberjs.com will show it, ask a
+maintainer to add the `api-docs-preview` label to your pull request. A comment
+on the pull request then tells you how to download and view the preview.
+
 And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md
