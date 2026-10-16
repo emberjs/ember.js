@@ -7236,32 +7236,33 @@ function _outletRerenderInstrumentationPayload(_outletRef: any) {
 // after the DOM sync completes. We drain this queue there.
 const _pendingRerenderInstrumentFinalizers: Array<() => void> = [];
 
+// What an instrumentation subscriber throws propagates, as from Glimmer's
+// curly manager.
 function _fireRerenderInstrumentStart(component: any): void {
   if (!component || typeof component.instrumentDetails !== 'function') return;
-  try {
-    const finalizer = _gxtInstrumentStart(
-      'render.component',
-      _rerenderInstrumentationPayload,
-      component
-    );
-    if (finalizer) _pendingRerenderInstrumentFinalizers.push(finalizer);
-  } catch {
-    /* ignore */
-  }
+  const finalizer = _gxtInstrumentStart(
+    'render.component',
+    _rerenderInstrumentationPayload,
+    component
+  );
+  if (finalizer) _pendingRerenderInstrumentFinalizers.push(finalizer);
 }
 
 function _drainPendingRerenderInstrumentFinalizers(): void {
   if (_pendingRerenderInstrumentFinalizers.length === 0) return;
-  // Drain before calling so any nested sync doesn't double-fire.
+  // Drain before calling so any nested sync doesn't double-fire. Every
+  // finalizer runs; the first error a subscriber throws is thrown after.
   const list = _pendingRerenderInstrumentFinalizers.slice();
   _pendingRerenderInstrumentFinalizers.length = 0;
+  const errors: unknown[] = [];
   for (const finalizer of list) {
     try {
       finalizer();
-    } catch {
-      /* ignore */
+    } catch (error) {
+      errors.push(error);
     }
   }
+  if (errors.length > 0) throw errors[0];
 }
 
 /**
@@ -7280,23 +7281,20 @@ function resolveComponent(
   // (owner, component name). Classic Ember's resolver fires this event the
   // first time a component definition is looked up; re-renders hit the cache
   // and do NOT fire again. Tests subscribe to this event and assert count.
+  // What a subscriber throws propagates.
   let _definitionInstrumentFinalizer: (() => void) | null = null;
-  try {
-    let seen = _componentDefinitionInstrumentedKeys.get(owner);
-    if (!seen) {
-      seen = new Set<string>();
-      _componentDefinitionInstrumentedKeys.set(owner, seen);
-    }
-    if (!seen.has(normalizedName)) {
-      seen.add(normalizedName);
-      _definitionInstrumentFinalizer = _gxtInstrumentStart(
-        'render.getComponentDefinition',
-        _componentDefinitionInstrumentationPayload,
-        normalizedName
-      );
-    }
-  } catch {
-    /* ignore — instrumentation is best-effort */
+  let seen = _componentDefinitionInstrumentedKeys.get(owner);
+  if (!seen) {
+    seen = new Set<string>();
+    _componentDefinitionInstrumentedKeys.set(owner, seen);
+  }
+  if (!seen.has(normalizedName)) {
+    seen.add(normalizedName);
+    _definitionInstrumentFinalizer = _gxtInstrumentStart(
+      'render.getComponentDefinition',
+      _componentDefinitionInstrumentationPayload,
+      normalizedName
+    );
   }
 
   let factory = owner.factoryFor(`component:${normalizedName}`);
@@ -7386,23 +7384,11 @@ function resolveComponent(
       }
     }
 
-    if (_definitionInstrumentFinalizer) {
-      try {
-        _definitionInstrumentFinalizer();
-      } catch {
-        /* ignore */
-      }
-    }
+    if (_definitionInstrumentFinalizer) _definitionInstrumentFinalizer();
     return { factory, template, manager };
   }
 
-  if (_definitionInstrumentFinalizer) {
-    try {
-      _definitionInstrumentFinalizer();
-    } catch {
-      /* ignore */
-    }
-  }
+  if (_definitionInstrumentFinalizer) _definitionInstrumentFinalizer();
   return null;
 }
 
@@ -7961,12 +7947,13 @@ const $_MANAGERS = {
           let kebab = pascalToKebab(strippedKomp);
           // Also check for helpers — inline curlies like {{my-helper "foo"}} get
           // transformed to <MyHelper @__pos0__="foo" /> which GXT compiles as $_c.
-          try {
-            if (owner.factoryFor(`helper:${kebab}`) || owner.lookup(`helper:${kebab}`)) {
-              return true;
-            }
-          } catch {
-            /* ignore destroyed owner errors */
+          // A name with a `:` is no valid registry name (the DEBUG registry
+          // asserts on it).
+          if (
+            !kebab.includes(':') &&
+            (owner.factoryFor(`helper:${kebab}`) || owner.lookup(`helper:${kebab}`))
+          ) {
+            return true;
           }
         }
         return false;
@@ -8319,23 +8306,19 @@ const $_MANAGERS = {
           }
           // $_args places the slots object on the args symbol set. Walk symbol keys.
           if (!hasBlockSlot) {
-            try {
-              const syms = Object.getOwnPropertySymbols(args);
-              for (const sym of syms) {
-                const val = (args as any)[sym];
-                if (
-                  val &&
-                  typeof val === 'object' &&
-                  (typeof val.default === 'function' ||
-                    typeof val.inverse === 'function' ||
-                    typeof val.else === 'function')
-                ) {
-                  hasBlockSlot = true;
-                  break;
-                }
+            const syms = Object.getOwnPropertySymbols(args);
+            for (const sym of syms) {
+              const val = (args as any)[sym];
+              if (
+                val &&
+                typeof val === 'object' &&
+                (typeof val.default === 'function' ||
+                  typeof val.inverse === 'function' ||
+                  typeof val.else === 'function')
+              ) {
+                hasBlockSlot = true;
+                break;
               }
-            } catch {
-              /* ignore */
             }
           }
         }
@@ -8357,63 +8340,68 @@ const $_MANAGERS = {
             // Other lookup errors: fall through to normal flow.
           }
         }
-        if (owner && !hasBlockSlot) {
-          try {
-            // Convert PascalCase to kebab-case for helper lookup
-            const helperName = pascalToKebab(resolvedKomp);
-            const helperFactory = owner.factoryFor(`helper:${helperName}`);
-            const helperLookup = !helperFactory ? owner.lookup(`helper:${helperName}`) : null;
-            if (helperFactory || helperLookup) {
-              // Reconstruct positional args from @__pos*__ named args
-              const positional: any[] = [];
-              const named: Record<string, any> = {};
-              const posCount =
-                typeof args?.__posCount__ === 'function' ? args.__posCount__() : args?.__posCount__;
-              if (posCount > 0) {
-                for (let i = 0; i < posCount; i++) {
-                  const val = args[`__pos${i}__`];
-                  positional.push(typeof val === 'function' ? val() : val);
-                }
-              }
-              // Collect regular named args (skip internal @__pos*__ and $-prefixed)
-              if (args) {
-                for (const key of Object.keys(args)) {
-                  if (!key.startsWith('__') && !key.startsWith('$')) {
-                    const val = args[key];
-                    named[key] = typeof val === 'function' ? val() : val;
-                  }
-                }
-              }
-
-              // Use $_maybeHelper to invoke the helper through Ember's protocol.
-              // Wrap the result in a getter function so GXT can render it as a text node.
-              // The component manager's handle() must return a function (not a raw value),
-              // because GXT expects component results to be renderable.
-              const maybeHelper = (globalThis as any).$_maybeHelper;
-              if (typeof maybeHelper === 'function') {
-                // Temporarily ensure the ambient owner is set so $_maybeHelper can resolve
-                const prevOwnerH = getAmbientOwner();
-                if (!prevOwnerH && owner) {
-                  setAmbientOwner(owner);
-                }
-                let helperResult: any;
-                try {
-                  helperResult = maybeHelper(helperName, positional, named, ctx);
-                } finally {
-                  if (!prevOwnerH && owner) {
-                    setAmbientOwner(prevOwnerH);
-                  }
-                }
-                // Return a getter so GXT renders the value as text
-                return () => {
-                  const val = helperResult;
-                  if (val == null) return '';
-                  return String(val);
-                };
+        // Convert PascalCase to kebab-case for helper lookup. A destroyed
+        // owner resolves nothing (its container asserts), and a name with a
+        // `:` is no valid registry name (the DEBUG registry asserts on it).
+        // What the arguments and the helper throw propagates.
+        const helperName = pascalToKebab(resolvedKomp);
+        if (
+          owner &&
+          !owner.isDestroyed &&
+          !owner.isDestroying &&
+          !hasBlockSlot &&
+          !helperName.includes(':')
+        ) {
+          const helperFactory = owner.factoryFor(`helper:${helperName}`);
+          const helperLookup = !helperFactory ? owner.lookup(`helper:${helperName}`) : null;
+          if (helperFactory || helperLookup) {
+            // Reconstruct positional args from @__pos*__ named args
+            const positional: any[] = [];
+            const named: Record<string, any> = {};
+            const posCount =
+              typeof args?.__posCount__ === 'function' ? args.__posCount__() : args?.__posCount__;
+            if (posCount > 0) {
+              for (let i = 0; i < posCount; i++) {
+                const val = args[`__pos${i}__`];
+                positional.push(typeof val === 'function' ? val() : val);
               }
             }
-          } catch {
-            /* ignore errors */
+            // Collect regular named args (skip internal @__pos*__ and $-prefixed)
+            if (args) {
+              for (const key of Object.keys(args)) {
+                if (!key.startsWith('__') && !key.startsWith('$')) {
+                  const val = args[key];
+                  named[key] = typeof val === 'function' ? val() : val;
+                }
+              }
+            }
+
+            // Use $_maybeHelper to invoke the helper through Ember's protocol.
+            // Wrap the result in a getter function so GXT can render it as a text node.
+            // The component manager's handle() must return a function (not a raw value),
+            // because GXT expects component results to be renderable.
+            const maybeHelper = (globalThis as any).$_maybeHelper;
+            if (typeof maybeHelper === 'function') {
+              // Temporarily ensure the ambient owner is set so $_maybeHelper can resolve
+              const prevOwnerH = getAmbientOwner();
+              if (!prevOwnerH && owner) {
+                setAmbientOwner(owner);
+              }
+              let helperResult: any;
+              try {
+                helperResult = maybeHelper(helperName, positional, named, ctx);
+              } finally {
+                if (!prevOwnerH && owner) {
+                  setAmbientOwner(prevOwnerH);
+                }
+              }
+              // Return a getter so GXT renders the value as text
+              return () => {
+                const val = helperResult;
+                if (val == null) return '';
+                return String(val);
+              };
+            }
           }
         }
 
@@ -8549,12 +8537,8 @@ const $_MANAGERS = {
           const factory = owner.factoryFor?.(`helper:${helper}`);
           if (factory) return true;
           // Also try direct lookup (for helpers registered via application.register)
-          try {
-            const lookup = owner.lookup?.(`helper:${helper}`);
-            if (lookup != null) return true;
-          } catch {
-            /* ignore destroyed owner errors */
-          }
+          const lookup = owner.lookup?.(`helper:${helper}`);
+          if (lookup != null) return true;
           // Also check built-in helpers
           const BUILTIN_HELPERS = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
           if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) return true;
@@ -9396,12 +9380,10 @@ const $_MANAGERS = {
               oldCache.delete(modKey);
               if (oldCache.size === 0) self._cache.delete(oldEl);
             }
-            // Update instance.element so future update/destroy targets correctly.
-            try {
-              instance.element = element;
-            } catch {
-              /* ignore (sealed instance) */
-            }
+            // Update instance.element so future update/destroy targets
+            // correctly (the instance's own property: what a setter throws
+            // propagates).
+            instance.element = element;
           }
         } else {
           instance = manager.createModifier(ModifierClass, trackedInstallArgs);
