@@ -178,6 +178,18 @@ function _gxtReportDroppedRead(what: string, error: unknown): void {
     warn(`${what} threw: ${String(error)}`, false, { id: 'ember-gxt.dropped-read' });
   }
 }
+// The latest value of the `{{component}}` invocation a curried component's
+// arguments read through (`getDcComponentGetter`). Glimmer reads the curried
+// definition's own arguments: a getter that throws falls back to them,
+// reported in DEBUG (the dynamic component's own read throws to the render).
+function _readLatestCurried(dcGetter: () => any): any {
+  try {
+    return dcGetter();
+  } catch (error) {
+    _gxtReportDroppedRead("a dynamic component's value, read for a curried argument,", error);
+    return null;
+  }
+}
 // The DOM api of the compat renderers (the bridge's `gxtLib.HTMLBrowserDOMApi`).
 // A text-content update of an element whose content is one text node changes
 // that node's value, as Glimmer updates a text node in place: gxt's api sets
@@ -2112,11 +2124,15 @@ function createComponentInstance(
       // lets createCache / invokeHelper consumers — which captured the
       // classic tag via consumeTag in the getter below — detect that an
       // arg-derived property has changed even when nothing reads it
-      // explicitly after the parent mutates.
+      // explicitly after the parent mutates. The effect reads the getter
+      // eagerly, for the classic tag only (as `_readArgCell` does): a getter
+      // that throws is reported in DEBUG, and the sync's own read of the
+      // argument throws to the update.
       _installArgDirtyEffect(instance, instance, key, () => {
         try {
           return getter();
-        } catch {
+        } catch (error) {
+          _gxtReportDroppedRead('an argument getter read for its classic tag', error);
           return undefined;
         }
       });
@@ -2466,7 +2482,7 @@ const _instanceRenderHookPassMap = new WeakMap<any, number>();
 // and hooks refire indefinitely as long as the hook keeps dirtying state.
 const _instanceLastAttrsFiredArgs = new WeakMap<any, Record<string, unknown>>();
 
-// The getters are the ones the sync just read.
+// The getters are the ones the sync just read (what they throw propagates).
 function snapshotArgsForInstance(cells: Record<string, any>): Record<string, unknown> {
   const snap: Record<string, unknown> = {};
   for (const key of Object.keys(cells)) {
@@ -2485,13 +2501,9 @@ function argsEqualToSnapshot(
   if (keys.length !== Object.keys(snap).length) return false;
   for (const key of keys) {
     if (!(key in snap)) return false;
-    try {
-      const getter = cells[key]?.getter;
-      const v = typeof getter === 'function' ? getter() : undefined;
-      if (v !== snap[key]) return false;
-    } catch {
-      return false;
-    }
+    const getter = cells[key]?.getter;
+    const v = typeof getter === 'function' ? getter() : undefined;
+    if (v !== snap[key]) return false;
   }
   return true;
 }
@@ -2949,12 +2961,15 @@ export function markTemplateRendered(instance: any): void {
     // Also check getOwnPropertyNames to catch non-enumerable getter properties
     for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
 
+    // Glimmer reads none of these properties: one whose getter throws is
+    // skipped, reported in DEBUG (as `checkBacktracking`'s scan does).
     for (const k of allKeys) {
       if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
       let val: any;
       try {
         val = instance[k];
-      } catch {
+      } catch (error) {
+        _gxtReportDroppedRead(`the rendered-instance scan's read of \`${k}\``, error);
         continue;
       }
       if (
@@ -3900,9 +3915,15 @@ function _installArgDescriptor(
     get() {
       _classicConsumeTagHook(_classicTagForHook(instance, key));
       if (useLocal) return localValue;
+      // Glimmer's property holds the value the last create or update wrote
+      // (`localValue` here); this read re-runs the argument's getter. A getter
+      // that throws (e.g. read during teardown, after its source went away)
+      // returns that value, reported in DEBUG; the sync's own read of the
+      // argument throws to the update.
       try {
         return getter();
-      } catch {
+      } catch (error) {
+        _gxtReportDroppedRead(`the \`${key}\` argument's getter`, error);
         return localValue;
       }
     },
@@ -6273,11 +6294,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // user getter's side effect. A get-only getter is never overridden.
         instanceVal = argVal;
       } else {
-        try {
-          instanceVal = instance?.[key];
-        } catch {
-          instanceVal = argVal;
-        }
+        // What the property's getter throws propagates, as the same probe
+        // at component creation does.
+        instanceVal = instance?.[key];
       }
       const freshOverride = instance && instanceVal !== argVal && instanceVal !== undefined;
       // Check if this was flagged as init-overridden on a previous render pass
@@ -8027,12 +8046,7 @@ const $_MANAGERS = {
             // Dynamic getter: reads from the LATEST curried component via $_dc getter
             Object.defineProperty(mergedArgs, key, {
               get: () => {
-                let latest: any;
-                try {
-                  latest = dcGetter();
-                } catch {
-                  latest = null;
-                }
+                const latest = _readLatestCurried(dcGetter);
                 if (latest && latest.__isCurriedComponent) {
                   const latestVal = latest.__curriedArgs?.[key];
                   return typeof latestVal === 'function' && !latestVal.__isCurriedComponent
@@ -8129,12 +8143,7 @@ const $_MANAGERS = {
             if (dcGetter) {
               Object.defineProperty(mergedArgs, `__pos${i}__`, {
                 get: () => {
-                  let latest: any;
-                  try {
-                    latest = dcGetter();
-                  } catch {
-                    latest = null;
-                  }
+                  const latest = _readLatestCurried(dcGetter);
                   if (latest && latest.__isCurriedComponent) {
                     const latestPos = latest.__curriedPositionals;
                     if (latestPos && posIdx < latestPos.length) {
@@ -10542,19 +10551,14 @@ function handleCustomManagedComponent(
     // re-reads `this.salutation` fresh.
     let _argsRevCell: any = null;
     if (renderContext) {
-      try {
-        _argsRevCell = _gxtCellFor(renderContext, '__gxtArgsRev', /* skipDefine */ true);
-        if (_argsRevCell) {
-          // Seed so the first read has a defined value.
-          if (_argsRevCell.value === undefined) _argsRevCell.update(0);
-          // Stash the cell + flush helper on the instance/context/renderContext
-          // so _installCustomManagedArgEffect can dirty it on arg change.
-          (renderContext as any).__gxtArgsRevCell = _argsRevCell;
-          if (context) (context as any).__gxtArgsRevCell = _argsRevCell;
-          if (instance) (instance as any).__gxtArgsRevCell = _argsRevCell;
-        }
-      } catch {
-        _argsRevCell = null;
+      _argsRevCell = _gxtCellFor(renderContext, '__gxtArgsRev', /* skipDefine */ true);
+      // Seed so the first read has a defined value.
+      if (_argsRevCell.value === undefined) _argsRevCell.update(0);
+      // Stash the cell on the instance/context/renderContext so
+      // _installCustomManagedArgEffect can dirty it on arg change. A custom
+      // manager's instance or context may be frozen: it takes no stash.
+      for (const target of [renderContext, context, instance]) {
+        if (target && Object.isExtensible(target)) target.__gxtArgsRevCell = _argsRevCell;
       }
     }
     const _defineArgSub = (target: any, key: string, live: any) => {
@@ -10858,13 +10862,17 @@ function _installCustomManagedArgEffect(o: {
 
   _gxtEffectWithOwner(instance || context || renderContext, () => {
     // READ every source getter to subscribe to its cells. Build the change set.
+    // Glimmer reads a custom-managed component's arguments only when the
+    // component does: a getter that throws keeps its last value, reported in
+    // DEBUG (the component's own read of the argument throws).
     const newNamed: Record<string, any> = {};
     const changedNamed: string[] = [];
     for (const k of namedKeys) {
       let v: any;
       try {
         v = argGetters[k]!();
-      } catch {
+      } catch (error) {
+        _gxtReportDroppedRead(`the \`${k}\` argument, read for a custom manager's update,`, error);
         v = lastNamed[k];
       }
       newNamed[k] = v;
@@ -10876,7 +10884,8 @@ function _installCustomManagedArgEffect(o: {
       let v: any;
       try {
         v = posGetters[i]!();
-      } catch {
+      } catch (error) {
+        _gxtReportDroppedRead("a positional argument, read for a custom manager's update,", error);
         v = lastPos[i];
       }
       newPos[i] = v;
@@ -11003,38 +11012,30 @@ function _installCustomManagedYieldEffect(o: {
   // getter may itself return a nested function or a GXT reactive formula
   // (object with a `value` accessor / `fn`); unwrap a few levels so the
   // comparison is against the resolved value (mirrors glimmer-next deepFnValue).
+  // A getter takes no parameters (a function with parameters is a yielded
+  // value). Glimmer runs no such read: a level that throws ends the
+  // resolution, reported in DEBUG (the block's own read of the value throws).
   const _resolve = (g: () => any): any => {
     let v: any;
     try {
       v = g();
-    } catch {
-      return undefined;
-    }
-    let depth = 0;
-    while (depth < 5 && v != null) {
-      if (typeof v === 'function' && !v.prototype) {
-        try {
+      for (let depth = 0; depth < 5 && v != null; depth++) {
+        if (typeof v === 'function' && !v.prototype && v.length === 0) {
           v = v();
-        } catch {
-          break;
-        }
-      } else if (
-        typeof v === 'object' &&
-        v !== null &&
-        ('value' in v || typeof (v as any).fn === 'function') &&
-        // Don't treat a real Node / array as a reactive wrapper.
-        !(v instanceof Node) &&
-        !Array.isArray(v)
-      ) {
-        try {
+        } else if (
+          typeof v === 'object' &&
+          ('value' in v || typeof (v as any).fn === 'function') &&
+          // Don't treat a real Node / array as a reactive wrapper.
+          !(v instanceof Node) &&
+          !Array.isArray(v)
+        ) {
           v = (v as any).value;
-        } catch {
+        } else {
           break;
         }
-      } else {
-        break;
       }
-      depth++;
+    } catch (error) {
+      _gxtReportDroppedRead("a yielded value, read for a custom manager's update,", error);
     }
     return v;
   };
@@ -11638,10 +11639,14 @@ function _argsForInternalManagerWithSlots(
     const slot = { getter: initialGetter };
     namedRefSlots[key] = slot;
 
+    // Read once to tell a `(mut)` argument. Glimmer tells it from the
+    // reference and reads the value only when the component does: a getter
+    // that throws here is reported in DEBUG (the component's read throws).
     let initialValue: any;
     try {
       initialValue = slot.getter();
-    } catch {
+    } catch (error) {
+      _gxtReportDroppedRead(`the \`${key}\` argument, read to find a (mut) cell,`, error);
       initialValue = undefined;
     }
     const hasMutCell = initialValue && initialValue.__isMutCell;
@@ -13493,66 +13498,31 @@ function _customComponentArgsProxyFor(vmArgs: any): any {
       enumerable: true,
       configurable: true,
       get() {
-        const ref = namedSource[key];
-        // REFERENCE-branded refs (including raw gxt Cells, which is what the
-        // VM's captured args hold in production builds — DEBUG wraps them in
-        // createDebugAliasRef compute refs) resolve through valueForRef so
-        // the read both unwraps the value and registers with any active
-        // classic tracking frame. Without this, `instance.args.foo` returns
-        // the Cell object itself in production.
-        if (_isGlimmerRef(ref)) {
-          try {
-            return _valueForRefForManager(ref);
-          } catch {
-            return undefined;
-          }
-        }
-        if (ref && typeof ref === 'object' && 'compute' in ref) {
-          try {
-            return (ref as any).compute();
-          } catch {
-            return undefined;
-          }
-        }
-        // Some refs expose `.value` directly (e.g. ConstRef wrappers).
-        if (ref && typeof (ref as any).value === 'function') {
-          try {
-            return (ref as any).value();
-          } catch {
-            return undefined;
-          }
-        }
-        return ref;
+        return _customComponentArgValue(namedSource[key]);
       },
     });
   }
 
-  const positionalArr: any[] = positionalSource.map((ref: any) => {
-    if (_isGlimmerRef(ref)) {
-      try {
-        return _valueForRefForManager(ref);
-      } catch {
-        return undefined;
-      }
-    }
-    if (ref && typeof ref === 'object' && 'compute' in ref) {
-      try {
-        return ref.compute();
-      } catch {
-        return undefined;
-      }
-    }
-    if (ref && typeof ref.value === 'function') {
-      try {
-        return ref.value();
-      } catch {
-        return undefined;
-      }
-    }
-    return ref;
-  });
+  const positionalArr: any[] = positionalSource.map(_customComponentArgValue);
 
   return { named: namedProxy, positional: positionalArr };
+}
+
+// The value of a reference in a custom component's arguments. What the
+// reference's computation throws propagates, as Glimmer's `valueForRef` in
+// `argsProxyFor` does.
+function _customComponentArgValue(ref: any): any {
+  // REFERENCE-branded refs (including raw gxt Cells, which is what the VM's
+  // captured args hold in production builds — DEBUG wraps them in
+  // createDebugAliasRef compute refs) resolve through valueForRef so the read
+  // both unwraps the value and registers with any active classic tracking
+  // frame. Without this, `instance.args.foo` returns the Cell object itself
+  // in production.
+  if (_isGlimmerRef(ref)) return _valueForRefForManager(ref);
+  if (ref && typeof ref === 'object' && 'compute' in ref) return ref.compute();
+  // Some refs expose `.value` directly (e.g. ConstRef wrappers).
+  if (ref && typeof ref.value === 'function') return ref.value();
+  return ref;
 }
 
 /**
