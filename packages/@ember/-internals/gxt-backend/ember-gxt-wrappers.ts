@@ -347,27 +347,23 @@ installCompilePipelinePart({
     },
     set lastArgsSer(v: string | null) {
       this._val = v;
-      try {
-        // The bridge accessor is undefined before compile.ts has installed its
-        // pipeline part, in which case there is nothing to clear.
-        const tagCache = getGxtRenderer()?.compilePipeline.getTagHelperInstanceCache?.() as
-          | Map<string, { instance: any }>
-          | undefined;
-        if (!tagCache || tagCache.size === 0) return;
-        // forEach, NOT for…of — gxt's reactive Map.prototype patch would
-        // otherwise register this bookkeeping Map with the ambient tracking
-        // frame (see the dirtyTagFor cache loop in validator.ts).
-        tagCache.forEach((entry) => {
-          const inst = entry?.instance;
-          if (inst) {
-            // Clearing the dedup key forces compile.ts's helperGetter to
-            // re-run compute() instead of returning the stale cached result.
-            inst.__gxtLastArgsSerialized = null;
-          }
-        });
-      } catch {
-        /* noop — defensive */
-      }
+      // The bridge accessor is undefined before compile.ts has installed its
+      // pipeline part, in which case there is nothing to clear.
+      const tagCache = getGxtRenderer()?.compilePipeline.getTagHelperInstanceCache?.() as
+        | Map<string, { instance: any }>
+        | undefined;
+      if (!tagCache || tagCache.size === 0) return;
+      // forEach, NOT for…of — gxt's reactive Map.prototype patch would
+      // otherwise register this bookkeeping Map with the ambient tracking
+      // frame (see the dirtyTagFor cache loop in validator.ts).
+      tagCache.forEach((entry) => {
+        const inst = entry?.instance;
+        if (inst) {
+          // Clearing the dedup key forces compile.ts's helperGetter to
+          // re-run compute() instead of returning the stale cached result.
+          inst.__gxtLastArgsSerialized = null;
+        }
+      });
     },
   };
   classHelperInstanceCache.set('__tagDirtySentinel__', _tagDirtySentinel);
@@ -742,22 +738,20 @@ function createEmberMaybeHelper(original: Function) {
       // is invoked via `(fn ...)` (shadowed), the returned closure must reach
       // the outer helper (e.g. `invoke`) as-is rather than be eagerly called.
       const markHelperResult = (v: any) => {
+        // A frozen function cannot take the mark.
         if (
           typeof v === 'function' &&
           !v.prototype &&
           !v.__isFnHelper &&
           !v.__isMutCell &&
-          !v.__isHelperResult
+          !v.__isHelperResult &&
+          Object.isExtensible(v)
         ) {
-          try {
-            Object.defineProperty(v, '__isHelperResult', {
-              value: true,
-              enumerable: false,
-              configurable: true,
-            });
-          } catch {
-            /* frozen or non-extensible — skip */
-          }
+          Object.defineProperty(v, '__isHelperResult', {
+            value: true,
+            enumerable: false,
+            configurable: true,
+          });
         }
         return v;
       };
@@ -783,8 +777,11 @@ function createEmberMaybeHelper(original: Function) {
       let argsSer: string | null = null;
       try {
         argsSer = JSON.stringify({ p: positional, n: named });
-      } catch {
-        /* skip */
+      } catch (error) {
+        // A cyclic or BigInt argument cannot be serialized (a TypeError): the
+        // helper then runs on every evaluation. Any other error (a `toJSON`
+        // of an argument) is the argument's own and is thrown.
+        if (!(error instanceof TypeError)) throw error;
       }
 
       if (cached && cached.__plainFnHelper) {
@@ -1069,11 +1066,7 @@ function createEmberMaybeHelper(original: Function) {
                     // classic Helper lifecycle semantics.
                     const ifScope2 = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
                     if (ifScope2 && typeof ifScope2.add === 'function') {
-                      try {
-                        ifScope2.add(destroyable);
-                      } catch {
-                        /* ignore */
-                      }
+                      ifScope2.add(destroyable);
                     }
                   }
                 }
@@ -1106,14 +1099,10 @@ function createEmberMaybeHelper(original: Function) {
                 // that consumed the RECOMPUTE_TAG) then re-runs compute().
                 let _gxtRecomputeTag: any = null;
                 if (bucket) {
-                  try {
-                    const _inst = (bucket as any).instance;
-                    if (_inst && typeof _inst === 'object') {
-                      _gxtRecomputeTag =
-                        getGxtRenderer()!.compilePipeline.getHelperRecomputeTag!(_inst) ?? null;
-                    }
-                  } catch {
-                    /* ignore */
+                  const _inst = (bucket as any).instance;
+                  if (_inst && typeof _inst === 'object') {
+                    _gxtRecomputeTag =
+                      getGxtRenderer()!.compilePipeline.getHelperRecomputeTag!(_inst) ?? null;
                   }
                 }
                 // Read the RECOMPUTE_TAG cell now so the enclosing effect
@@ -1152,22 +1141,20 @@ function createEmberMaybeHelper(original: Function) {
                     const origPropChange = bucket[PROP_CHANGE];
                     bucket[PROP_CHANGE] = function (key: string) {
                       if (origPropChange) origPropChange.call(this, key);
-                      // Re-compute getValue and update the cell
-                      try {
-                        const newResult = _cached.delegate.getValue(_cached.bucket);
-                        if (newResult !== _cached.lastResult) {
-                          _cached.lastResult = newResult;
-                          if (_cached.helperCell && _cached.helperCell.update) {
-                            _cached.helperCell.update(newResult);
-                          }
-                          // Trigger DOM sync (bridge `syncDomNow`).
-                          const syncDomNow = getGxtRenderer()?.compilePipeline.syncDomNow;
-                          if (typeof syncDomNow === 'function') {
-                            queueMicrotask(() => syncDomNow());
-                          }
+                      // Re-compute getValue and update the cell. What the
+                      // helper's compute throws reaches the code that changed
+                      // the property.
+                      const newResult = _cached.delegate.getValue(_cached.bucket);
+                      if (newResult !== _cached.lastResult) {
+                        _cached.lastResult = newResult;
+                        if (_cached.helperCell && _cached.helperCell.update) {
+                          _cached.helperCell.update(newResult);
                         }
-                      } catch {
-                        /* ignore errors during recompute */
+                        // Trigger DOM sync (bridge `syncDomNow`).
+                        const syncDomNow = getGxtRenderer()?.compilePipeline.syncDomNow;
+                        if (typeof syncDomNow === 'function') {
+                          queueMicrotask(() => syncDomNow());
+                        }
                       }
                     };
                   }
@@ -1267,11 +1254,7 @@ function createEmberMaybeHelper(original: Function) {
               // willDestroy fire on branch swap (not only on component teardown).
               const ifScope = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
               if (ifScope && typeof ifScope.add === 'function') {
-                try {
-                  ifScope.add(instance);
-                } catch {
-                  /* ignore */
-                }
+                ifScope.add(instance);
               }
             } catch (e) {
               console.error(`[ember-gxt] Error creating class helper "${name}":`, e);
@@ -1295,24 +1278,16 @@ function createEmberMaybeHelper(original: Function) {
           }
         }
 
-        // No manager found - create instance and call compute directly
-        try {
-          if (typeof factoryClass?.create === 'function') {
-            const instance = factory.create();
-            if (instance && typeof instance.compute === 'function') {
-              const result = instance.compute(positional, named);
-              return result;
-            }
+        // No manager found - create instance and call compute directly. A
+        // plain function registered via `owner.register('helper:name', fn)`
+        // has no `create` and falls through to the invocation below; what a
+        // helper class's `create` or `compute` throws reaches the render.
+        if (typeof factoryClass?.create === 'function') {
+          const instance = factory.create();
+          if (instance && typeof instance.compute === 'function') {
+            const result = instance.compute(positional, named);
+            return result;
           }
-        } catch (e) {
-          // factoryClass may be a plain function registered via
-          // `owner.register('helper:name', fn)`. In classic Ember a resolver
-          // auto-wraps plain functions with a helper manager, but the
-          // container-only path used by buildOwner(…)/owner.register does
-          // not run that resolver hook in the GXT backend. Fall through to
-          // the plain-function invocation below instead of swallowing the
-          // assertion; the console.error would otherwise mask a working
-          // code path.
         }
 
         // Plain function registered directly via owner.register('helper:name', fn).
@@ -1605,20 +1580,22 @@ function createEmberTag(original: Function) {
       // $_maybeHelper. The component manager's handle() wraps helper results
       // in getter functions which GXT's parent $_tag doesn't handle as children.
       // $_maybeHelper returns raw values (strings, etc.) which work as children.
+      //
+      // A name with a `:` (`foo::bar`, a nested invocation) is not a valid
+      // registry name (the registry asserts on it), so it names no helper.
       {
         const _owner = getAmbientOwner();
-        if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
-          try {
-            const _helperFactory = _owner.factoryFor?.(`helper:${kebabName}`);
-            const _componentFactory = _owner.factoryFor?.(`component:${kebabName}`);
-            if (_helperFactory && !_componentFactory) {
-              const maybeHelper = g.$_maybeHelper;
-              if (typeof maybeHelper === 'function') {
-                return maybeHelper(kebabName, children || [], {}, ctx);
-              }
-            }
-          } catch {
-            /* ignore lookup errors */
+        if (
+          _owner &&
+          !_owner.isDestroyed &&
+          !_owner.isDestroying &&
+          !kebabName.includes(':') &&
+          _owner.factoryFor?.(`helper:${kebabName}`) &&
+          !_owner.factoryFor?.(`component:${kebabName}`)
+        ) {
+          const maybeHelper = g.$_maybeHelper;
+          if (typeof maybeHelper === 'function') {
+            return maybeHelper(kebabName, children || [], {}, ctx);
           }
         }
       }
@@ -2465,17 +2442,19 @@ function createEmberDc(original: Function) {
 
   return function $_dc_ember(componentGetter: () => any, gxtArgs: any, ctx: any): any {
     // Inject $PROPS_SYMBOL on args so GXT's $_c (component function) can find them.
-    if (gxtArgs && typeof gxtArgs === 'object' && !($PROPS_SYMBOL in gxtArgs)) {
-      try {
-        Object.defineProperty(gxtArgs, $PROPS_SYMBOL, {
-          value: gxtArgs,
-          enumerable: false,
-          configurable: true,
-          writable: true,
-        });
-      } catch {
-        /* frozen object */
-      }
+    // (Not on frozen args, which cannot take it.)
+    if (
+      gxtArgs &&
+      typeof gxtArgs === 'object' &&
+      !($PROPS_SYMBOL in gxtArgs) &&
+      Object.isExtensible(gxtArgs)
+    ) {
+      Object.defineProperty(gxtArgs, $PROPS_SYMBOL, {
+        value: gxtArgs,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
     }
 
     // Try to evaluate the component getter to check what kind of value it returns.
@@ -3061,34 +3040,32 @@ let _emberFormValueUndefinedPatched = false;
 // `notifyPropertyChange`) and consumed on the next `UpdatingVM.execute`. The
 // `{{#each}}` list iterator and other stable-rerender paths are unaffected on
 // rerenders where no tracked set occurred, preserving DOM node identity.
+// The module is bundled (the GXT dist bundles a stub whose `UpdatingVM` is
+// undefined), so the import does not fail.
 Promise.resolve().then(async () => {
-  try {
-    const rt: any = await import('@glimmer/runtime');
-    const UVM = rt.UpdatingVM;
-    if (UVM && !UVM.prototype.__gxtEmberPatchedAlwaysRevalidate) {
-      const origExecute = UVM.prototype.execute;
-      UVM.prototype.execute = function (this: any, ...args: any[]) {
-        // Only force revalidate if a tracked setter has fired since the last
-        // execute. This limits the perf cost and preserves DOM node identity
-        // for untouched subtrees. Before the bridge is installed, `?? false`
-        // means "never force revalidate".
-        const sawTrackedSet =
-          getGxtRenderer()?.compilePipeline.consumeTrackedSetSinceRerender?.() ?? false;
-        if (sawTrackedSet) {
-          const prevRevalidate = this.alwaysRevalidate;
-          this.alwaysRevalidate = true;
-          try {
-            return origExecute.apply(this, args);
-          } finally {
-            this.alwaysRevalidate = prevRevalidate;
-          }
+  const rt: any = await import('@glimmer/runtime');
+  const UVM = rt.UpdatingVM;
+  if (UVM && !UVM.prototype.__gxtEmberPatchedAlwaysRevalidate) {
+    const origExecute = UVM.prototype.execute;
+    UVM.prototype.execute = function (this: any, ...args: any[]) {
+      // Only force revalidate if a tracked setter has fired since the last
+      // execute. This limits the perf cost and preserves DOM node identity
+      // for untouched subtrees. Before the bridge is installed, `?? false`
+      // means "never force revalidate".
+      const sawTrackedSet =
+        getGxtRenderer()?.compilePipeline.consumeTrackedSetSinceRerender?.() ?? false;
+      if (sawTrackedSet) {
+        const prevRevalidate = this.alwaysRevalidate;
+        this.alwaysRevalidate = true;
+        try {
+          return origExecute.apply(this, args);
+        } finally {
+          this.alwaysRevalidate = prevRevalidate;
         }
-        return origExecute.apply(this, args);
-      };
-      UVM.prototype.__gxtEmberPatchedAlwaysRevalidate = true;
-    }
-  } catch {
-    /* runtime not reachable — noop */
+      }
+      return origExecute.apply(this, args);
+    };
+    UVM.prototype.__gxtEmberPatchedAlwaysRevalidate = true;
   }
 });
 
