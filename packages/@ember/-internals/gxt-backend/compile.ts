@@ -6764,6 +6764,33 @@ function _gxtFireRowPreDestroy(rowCtx: object): void {
   }
 }
 
+// gxt removes the DOM of a row it destroys by the row's nodes: the nodes the
+// row's content is, the nodes an object of it records
+// (`RENDERED_NODES_PROPERTY`), and those of its arrays. A component renders
+// into a DocumentFragment, which gxt inserts (that empties it), and destroying
+// a fragment removes nothing: a row that was a component, or that held one
+// among other content, left the component's nodes in the document when its
+// item left the list. The fragments of a row's content record the nodes they
+// hold before gxt inserts them, as the nodes destroying them removes (as the
+// fragment of `_gxtDynamicContent` does).
+function _gxtRecordFragmentNodes(content: unknown): void {
+  if (content instanceof DocumentFragment) {
+    if (!(RENDERED_NODES_PROPERTY in content)) {
+      (content as any)[RENDERED_NODES_PROPERTY] = Array.from(content.childNodes);
+    }
+  } else if (Array.isArray(content)) {
+    for (const item of content) _gxtRecordFragmentNodes(item);
+  } else if (content !== null && typeof content === 'object' && !(content instanceof Node)) {
+    // A block's content (`$_ucw`): the items it renders.
+    const items = (content as any)[RENDERED_NODES_PROPERTY];
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        if (item instanceof DocumentFragment || Array.isArray(item)) _gxtRecordFragmentNodes(item);
+      }
+    }
+  }
+}
+
 function patchGlobalEachSync() {
   const g = globalThis as any;
   if (!g.$_eachSync || g.$_eachSync.__emberPatched) return false;
@@ -6921,7 +6948,7 @@ function patchGlobalEachSync() {
       // components the row renders (manager.ts `gxtRenderInBlock`).
       const rowBlock = ctx0 && _gxtEachRowCtxSet.has(ctx0) ? (ctx0 as object) : null;
       try {
-        return _gxtRenderBlockContent(rowBlock, blockOfEach, () =>
+        const row = _gxtRenderBlockContent(rowBlock, blockOfEach, () =>
           withParent(() => {
             // If index is a plain number (not a cell), wrap it in a cell-like object
             if (typeof index === 'number') {
@@ -6938,6 +6965,8 @@ function patchGlobalEachSync() {
             return origFn(bodyItem, index, ctx0);
           })
         );
+        _gxtRecordFragmentNodes(row);
+        return row;
       } finally {
         _gxtCurrentRowCtx = _prevRowCtx;
       }
