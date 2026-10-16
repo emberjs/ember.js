@@ -587,22 +587,19 @@ const gxtFormula = _formulaFromDirectImport;
 // to template.render).
 function _gxtRootIsStale(root: any): boolean {
   if (!root || typeof root !== 'object') return true;
-  try {
-    const rcProp = RENDERING_CONTEXT_PROPERTY as any;
-    if (!rcProp) return false;
-    const rc = root[rcProp];
-    if (rc == null) return true;
-    // GXT stores the DOM-attachment node on the rendering context; if its
-    // element back-reference has been nulled by destroyElementSync (the path
-    // test cleanup walks), the root can no longer be used for new renders.
-    const anyRc: any = rc;
-    if (anyRc.element === null) return true;
-    if (anyRc.roots && Array.isArray(anyRc.roots) && anyRc.roots.length > 0) {
-      const first = anyRc.roots[0];
-      if (first && first.element === null) return true;
-    }
-  } catch {
-    return true;
+  // (Plain reads of gxt's root and its rendering context.)
+  const rcProp = RENDERING_CONTEXT_PROPERTY as any;
+  if (!rcProp) return false;
+  const rc = root[rcProp];
+  if (rc == null) return true;
+  // GXT stores the DOM-attachment node on the rendering context; if its
+  // element back-reference has been nulled by destroyElementSync (the path
+  // test cleanup walks), the root can no longer be used for new renders.
+  const anyRc: any = rc;
+  if (anyRc.element === null) return true;
+  if (anyRc.roots && Array.isArray(anyRc.roots) && anyRc.roots.length > 0) {
+    const first = anyRc.roots[0];
+    if (first && first.element === null) return true;
   }
   return false;
 }
@@ -1268,11 +1265,7 @@ const _inElementDeferQueue: Array<() => void> = [];
   const _drainImpl = () => {
     while (_inElementDeferQueue.length > 0) {
       const cb = _inElementDeferQueue.shift()!;
-      try {
-        cb();
-      } catch (e) {
-        throw e;
-      }
+      cb();
     }
   };
   _drainInElementDeferQueue = _drainImpl;
@@ -7108,13 +7101,9 @@ function patchGlobalEachSync() {
     // identity (this.<name>), then register the iterable's backing array.
     const _itemsPropName = (() => {
       if (typeof items !== 'function') return null;
-      try {
-        const src = items.toString();
-        const m = src.match(/this\.([A-Za-z_$][A-Za-z0-9_$]*)/);
-        return m ? m[1] : null;
-      } catch {
-        return null;
-      }
+      const src = items.toString();
+      const m = src.match(/this\.([A-Za-z_$][A-Za-z0-9_$]*)/);
+      return m ? m[1] : null;
     })();
     const _itemsOwner = ctx ? ctx.__gxtRawTarget || ctx : null;
     const _registerIterableUnderlyingArray = (rawItems: any) => {
@@ -8818,11 +8807,7 @@ const _emberBuiltinHelpers: Record<string, any> = {
       while (ptr) {
         mgr = managers.get(ptr);
         if (mgr) break;
-        try {
-          ptr = Object.getPrototypeOf(ptr);
-        } catch {
-          break;
-        }
+        ptr = Object.getPrototypeOf(ptr);
       }
       if (mgr && typeof mgr.getDelegateFor === 'function') {
         const delegate = mgr.getDelegateFor(getAmbientOwner());
@@ -8890,11 +8875,7 @@ const _emberBuiltinHelpers: Record<string, any> = {
             hasManager = true;
             break;
           }
-          try {
-            ptr = Object.getPrototypeOf(ptr);
-          } catch {
-            break;
-          }
+          ptr = Object.getPrototypeOf(ptr);
         }
       }
       if (hasManager) {
@@ -9994,11 +9975,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // div scratch works.
         const needsContext = _GXT_CONTEXTUAL_PARSE_TAGS.has(contextTag);
         const scratch = document.createElement(needsContext ? contextTag : 'div');
-        try {
-          scratch.innerHTML = rawHtml;
-        } catch {
-          return [];
-        }
+        scratch.innerHTML = rawHtml;
         const result: Node[] = [];
         while (scratch.firstChild) {
           result.push(scratch.firstChild);
