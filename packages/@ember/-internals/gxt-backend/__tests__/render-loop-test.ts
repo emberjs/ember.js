@@ -8,6 +8,9 @@
  * keeps invalidating them stop after `ENV._RERENDER_LOOP_LIMIT` renders in a
  * row with "infinite rendering invalidation detected".
  *
+ * A modifier is a destroyable child of its element's block: removing the block
+ * destroys it, however many times it updated before.
+ *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { defineSimpleModifier, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
@@ -166,6 +169,32 @@ moduleFor(
 
       runTask(() => set(this.context, 'value', 100));
       this.assertText('100');
+    }
+
+    ['@test a modifier that updates again after its own write is destroyed with its block']() {
+      let steps: string[] = [];
+      // Its update with 1 sets the count to 2: the write renders in the same
+      // run loop, and the modifier, which reads the count, updates again.
+      let record = defineSimpleModifier((_element: Element, [count]: [number]) => {
+        steps.push(`run ${count}`);
+        if (count === 1) set(this.context, 'count', 2);
+        return () => steps.push(`destroy ${count}`);
+      });
+      this.render(
+        '{{#if this.show}}<p {{this.modifiers.record this.count}}>{{this.count}}</p>{{/if}}',
+        { show: true, count: 0, modifiers: { record } }
+      );
+      this.assertText('0');
+
+      runTask(() => set(this.context, 'count', 1));
+      this.assertText('2');
+      this.assert.ok(steps.includes('run 1'), `the modifier updated: ${steps.join(', ')}`);
+
+      runTask(() => set(this.context, 'show', false));
+      this.assertText('');
+      let runs = steps.filter((step) => step.startsWith('run')).length;
+      let destroys = steps.filter((step) => step.startsWith('destroy')).length;
+      this.assert.strictEqual(destroys, runs, `every run is torn down: ${steps.join(', ')}`);
     }
   }
 );
