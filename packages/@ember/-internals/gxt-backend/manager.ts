@@ -11,7 +11,7 @@
  */
 
 import { DEBUG } from '@glimmer/env';
-import { assert, getDebugFunction } from '@ember/debug';
+import { assert, getDebugFunction, warn } from '@ember/debug';
 import {
   pascalToKebab,
   isAllDigits,
@@ -168,6 +168,15 @@ function _gxtReadProperty(obj: object, key: string): unknown {
   const tracker = _gxtGetTracker();
   if (tracker !== null) tracker.add(_gxtPropertyTag(obj, key));
   return (obj as Record<string, unknown>)[key];
+}
+// Reports, in DEBUG, an error that an eager read dropped: the read covers a
+// value Glimmer reads lazily or not at all (for dependency tracking, or to
+// name a property in a message), and the template's own read of such a value
+// throws to the render.
+function _gxtReportDroppedRead(what: string, error: unknown): void {
+  if (DEBUG) {
+    warn(`${what} threw: ${String(error)}`, false, { id: 'ember-gxt.dropped-read' });
+  }
 }
 // The DOM api of the compat renderers (the bridge's `gxtLib.HTMLBrowserDOMApi`).
 // A text-content update of an element whose content is one text node changes
@@ -1844,14 +1853,10 @@ function createComponentInstance(
     // descriptor in createRenderContext.
     let _skipPropSeed = false;
     if (getter) {
-      try {
-        _skipPropSeed = _isPlainNativeGetterCollision(
-          (factory as any)?.class?.prototype || (factory as any)?.prototype,
-          key
-        );
-      } catch {
-        /* ignore — fall through to seeding props */
-      }
+      _skipPropSeed = _isPlainNativeGetterCollision(
+        (factory as any)?.class?.prototype || (factory as any)?.prototype,
+        key
+      );
     }
     if (!_skipPropSeed) {
       props[key] = resolved;
@@ -1933,7 +1938,7 @@ function createComponentInstance(
   // willDestroy body (which often increments destroy counters or releases
   // resources) should not run. We still call Ember's super.willDestroy()
   // via the prototype chain to keep internal bookkeeping consistent.
-  try {
+  {
     const proto = Object.getPrototypeOf(instance);
     if (proto && typeof instance.willDestroy === 'function') {
       const ownWillDestroy = instance.willDestroy;
@@ -1965,11 +1970,7 @@ function createComponentInstance(
             // bookkeeping consistent. The root Ember willDestroy is a no-op
             // in most cases, so this is usually just a safety call.
             if (baseWillDestroy && baseWillDestroy !== ownWillDestroy) {
-              try {
-                return baseWillDestroy.call(this);
-              } catch {
-                /* ignore */
-              }
+              return baseWillDestroy.call(this);
             }
             return;
           }
@@ -1980,8 +1981,6 @@ function createComponentInstance(
         enumerable: false,
       });
     }
-  } catch {
-    /* ignore — willDestroy may not be wrappable */
   }
 
   // In non-interactive (SSR-style) rendering, suppress interactive-only
@@ -2003,7 +2002,7 @@ function createComponentInstance(
   // of these (no Evented `trigger`, no elementId, no classNameBindings), so the
   // blocks no-op at runtime for them and are DCE-stripped in a native build.
   if (__GXT_CLASSIC_COMPONENTS__) {
-    try {
+    {
       if (!isInteractiveModeChecked()) {
         const buildGate = (orig: Function) => {
           if (!orig || (orig as any).__gxtNonInteractiveFiltered) return orig;
@@ -2033,8 +2032,6 @@ function createComponentInstance(
           });
         }
       }
-    } catch {
-      /* ignore */
     }
 
     // Restore user-toggled-false state for components whose wrapper id is in
@@ -2044,15 +2041,14 @@ function createComponentInstance(
     // recreates these instances on every force-rerender, resetting the property
     // to its class-field default (true). If this component's elementId was
     // marked user-false and it has an isExpanded property, set it to false so
-    // subsequent clicks toggle from the user's last known state.
-    try {
+    // subsequent clicks toggle from the user's last known state. What the
+    // property's setter throws propagates.
+    {
       const userFalseSet = getGxtRenderer()?.viewUtils.getWrapperUserFalseSet?.();
       const elId = props.elementId;
       if (userFalseSet && elId && userFalseSet.has(elId) && instance && 'isExpanded' in instance) {
         instance.isExpanded = false;
       }
-    } catch {
-      /* ignore */
     }
 
     // Validate tagless component constraints early (before view registry registration)
@@ -2090,10 +2086,13 @@ function createComponentInstance(
     // Install reactive getters for args that have closures.
     // This ensures instance.foo always returns the current arg value,
     // even when GXT doesn't re-invoke the component function on re-render.
+    // What an argument's getter or the instance's property throws propagates,
+    // as Glimmer's curly manager reads every argument when it creates the
+    // component.
     for (const key of Object.keys(argGetters)) {
       if (key === 'id' || key === 'elementId') continue;
       const getter = argGetters[key]!;
-      try {
+      {
         // When `key` collides with a plain get-only native getter on the
         // prototype (e.g. `get count() { return this.args.count }`), reading
         // `instance[key]` here would invoke that user getter and fire its side
@@ -2121,20 +2120,14 @@ function createComponentInstance(
         // classic tag via consumeTag in the getter below — detect that an
         // arg-derived property has changed even when nothing reads it
         // explicitly after the parent mutates.
-        try {
-          _installArgDirtyEffect(instance, instance, key, () => {
-            try {
-              return getter();
-            } catch {
-              return undefined;
-            }
-          });
-        } catch {
-          /* ignore if effect can't be installed */
-        }
+        _installArgDirtyEffect(instance, instance, key, () => {
+          try {
+            return getter();
+          } catch {
+            return undefined;
+          }
+        });
         _installArgDescriptor(instance, key, getter, localValue, useLocal, cpWithSetter);
-      } catch {
-        /* some properties may not be configurable */
       }
     }
   }
@@ -2162,36 +2155,36 @@ function createComponentInstance(
         if (key === 'id' || key === 'elementId') continue;
         const argGetter = argGetters[key]!;
         // Try proxy-based tracking first (works when parent has a proxy render context)
+        // Clear the source slots to `null` before invoking the getter; the
+        // probe-detected (prop, target) pair is read back afterward and
+        // checked for truthiness below.
+        _lastArgSourceKey = null;
+        _lastArgSourceCtx = null;
+        // Arm the gate before the probe invokes the arg getter; the gate-reader
+        // in the proxy `get` trap at the bottom of this file uses this flag.
+        // Disarmed even when the getter throws (it read the same value without
+        // error when the component was created), so the gate cannot stay armed
+        // for subsequent renderContext reads.
+        _gxtTrackArgSource = true;
         try {
-          // Arm the gate before the probe invokes the arg getter; the gate-reader
-          // in the proxy `get` trap at the bottom of this file uses this flag.
-          // Disarmed on both the success path (after the source slots are read
-          // back) and the catch path.
-          _gxtTrackArgSource = true;
-          // Clear the source slots to `null` before invoking the getter; the
-          // probe-detected (prop, target) pair is read back afterward and
-          // checked for truthiness below.
-          _lastArgSourceKey = null;
-          _lastArgSourceCtx = null;
           argGetter();
+        } finally {
+          _gxtTrackArgSource = false;
+        }
+        {
           const detectedKey = _lastArgSourceKey;
           const detectedCtx = _lastArgSourceCtx;
-          _gxtTrackArgSource = false;
           if (detectedKey && detectedCtx) {
             twoWayBindings[key] = { sourceCtx: detectedCtx, sourceKey: detectedKey };
           }
-        } catch {
-          // Defensive cleanup so a thrown getter cannot leave the gate armed for
-          // subsequent renderContext reads.
-          _gxtTrackArgSource = false;
         }
         // If proxy-based tracking didn't find a source, try cell-interception.
         // The arg getter reads from the parent's cell-backed property. We temporarily
         // wrap the parent's getters to detect which property is accessed.
         if (!twoWayBindings[key] && parentView) {
+          const descriptors: Record<string, { obj: any; desc: PropertyDescriptor }> = {};
+          let detectedProp: string | null = null;
           try {
-            const descriptors: Record<string, { obj: any; desc: PropertyDescriptor }> = {};
-            let detectedProp: string | null = null;
             // Install temporary traps on parent's getter properties
             let obj = parentView;
             for (let depth = 0; depth < 3 && obj && obj !== Object.prototype; depth++) {
@@ -2220,24 +2213,16 @@ function createComponentInstance(
               obj = Object.getPrototypeOf(obj);
             }
             // Call the arg getter - it should trigger one of our traps
-            try {
-              argGetter();
-            } catch {
-              /* ignore */
-            }
-            // Restore original descriptors
+            argGetter();
+          } finally {
+            // Restore original descriptors (configurable: each trap replaced a
+            // configurable one with a configurable one).
             for (const [propName, { obj: origObj, desc }] of Object.entries(descriptors)) {
-              try {
-                Object.defineProperty(origObj, propName, desc);
-              } catch {
-                /* ignore */
-              }
+              Object.defineProperty(origObj, propName, desc);
             }
-            if (detectedProp) {
-              twoWayBindings[key] = { sourceCtx: parentView, sourceKey: detectedProp };
-            }
-          } catch {
-            /* ignore detection failure */
+          }
+          if (detectedProp) {
+            twoWayBindings[key] = { sourceCtx: parentView, sourceKey: detectedProp };
           }
         }
       }
@@ -2250,41 +2235,36 @@ function createComponentInstance(
       // `parent.string` when the child's `value` is `@computed('a','b')` and
       // passed in as `value=this.string`.
       const cpDepToArgKey: Record<string, string[]> = {};
-      try {
-        for (const argKey of argKeySet) {
-          if (argKey === 'id' || argKey === 'elementId') continue;
-          const desc = _findMetaDescriptor(instance, argKey);
-          const deps: string[] | undefined = desc?._dependentKeys;
-          if (Array.isArray(deps) && deps.length > 0) {
-            for (const dep of deps) {
-              // Only handle simple local keys (not chained paths)
-              if (dep.indexOf('.') !== -1) continue;
-              if (!cpDepToArgKey[dep]) cpDepToArgKey[dep] = [];
-              cpDepToArgKey[dep].push(argKey);
-            }
+      for (const argKey of argKeySet) {
+        if (argKey === 'id' || argKey === 'elementId') continue;
+        const desc = _findMetaDescriptor(instance, argKey);
+        const deps: string[] | undefined = desc?._dependentKeys;
+        if (Array.isArray(deps) && deps.length > 0) {
+          for (const dep of deps) {
+            // Only handle simple local keys (not chained paths)
+            if (dep.indexOf('.') !== -1) continue;
+            if (!cpDepToArgKey[dep]) cpDepToArgKey[dep] = [];
+            cpDepToArgKey[dep].push(argKey);
           }
         }
-      } catch {
-        /* ignore */
       }
       // Cache the CP descriptors for each arg key so we can call their raw getter
       // directly (bypassing cell-cached getters installed on the instance).
       const argKeyToCpDesc: Record<string, any> = {};
-      try {
-        for (const argKey of argKeySet) {
-          if (argKey === 'id' || argKey === 'elementId') continue;
-          const desc = _findMetaDescriptor(instance, argKey);
-          if (desc && typeof desc.get === 'function') {
-            argKeyToCpDesc[argKey] = desc;
-          }
+      for (const argKey of argKeySet) {
+        if (argKey === 'id' || argKey === 'elementId') continue;
+        const desc = _findMetaDescriptor(instance, argKey);
+        if (desc && typeof desc.get === 'function') {
+          argKeyToCpDesc[argKey] = desc;
         }
-      } catch {
-        /* ignore */
       }
 
       // Override PROPERTY_DID_CHANGE on the instance. The `triggerReRender`
       // bridge method is optional, so it may be `undefined` (the call sites
-      // guard on it).
+      // guard on it). What the original PROPERTY_DID_CHANGE, a computed
+      // property's getter, an argument's getter or a two-way write to the
+      // parent throws reaches the code that changed the property, as a
+      // mutable binding's update does in Glimmer.
       const triggerReRender = getGxtRenderer()?.compilePipeline.triggerReRender;
       const origPDC = instance[PROPERTY_DID_CHANGE]?.bind(instance);
       instance[PROPERTY_DID_CHANGE] = function (key: string, value?: unknown) {
@@ -2295,23 +2275,13 @@ function createComponentInstance(
 
         // Skip two-way propagation for readonly keys (readonly prevents upstream mutation)
         if (readonlyKeys.has(key)) {
-          if (origPDC)
-            try {
-              origPDC(key, value);
-            } catch {
-              /* ignore */
-            }
+          if (origPDC) origPDC(key, value);
           return;
         }
 
         // Only propagate binding logic for keys that were passed as args
         if (!argKeySet.has(key)) {
-          if (origPDC)
-            try {
-              origPDC(key, value);
-            } catch {
-              /* ignore */
-            }
+          if (origPDC) origPDC(key, value);
           // GH#18417: if this key is a dep of a CP that's bound as an arg, re-read
           // the CP value and propagate upstream to the parent's bound property.
           const affectedArgs = cpDepToArgKey[key];
@@ -2326,34 +2296,22 @@ function createComponentInstance(
                   // any cell-backed getter that may be caching a stale value.
                   const cpDesc = argKeyToCpDesc[argKey];
                   if (cpDesc && typeof cpDesc.get === 'function') {
-                    try {
-                      cpValue = cpDesc.get(instance, argKey);
-                    } catch {
-                      /* fall through */
-                    }
+                    cpValue = cpDesc.get(instance, argKey);
                   }
                   if (cpValue === undefined) {
-                    try {
-                      cpValue = instance[argKey];
-                    } catch {
-                      continue;
-                    }
+                    cpValue = instance[argKey];
                   }
 
                   // 1) Raw mut cell: update via .update()
                   const rawGetter2 = rawArgGetters[argKey];
                   if (rawGetter2) {
-                    try {
-                      const rawVal = rawGetter2();
-                      if (rawVal && rawVal.__isMutCell) {
-                        rawVal.update(cpValue);
-                        if (triggerReRender && instance.parentView) {
-                          triggerReRender(instance.parentView, argKey);
-                        }
-                        continue;
+                    const rawVal = rawGetter2();
+                    if (rawVal && rawVal.__isMutCell) {
+                      rawVal.update(cpValue);
+                      if (triggerReRender && instance.parentView) {
+                        triggerReRender(instance.parentView, argKey);
                       }
-                    } catch {
-                      /* ignore */
+                      continue;
                     }
                   }
 
@@ -2361,31 +2319,23 @@ function createComponentInstance(
                   const binding2 = twoWayBindings[argKey];
                   if (binding2?.sourceCtx && binding2?.sourceKey) {
                     const srcInst = binding2.sourceCtx.__gxtRawTarget || binding2.sourceCtx;
-                    try {
-                      if (typeof srcInst.set === 'function') {
-                        srcInst.set(binding2.sourceKey, cpValue);
-                      } else {
-                        binding2.sourceCtx[binding2.sourceKey] = cpValue;
-                      }
-                      if (triggerReRender) triggerReRender(srcInst, binding2.sourceKey);
-                    } catch {
-                      /* ignore */
+                    if (typeof srcInst.set === 'function') {
+                      srcInst.set(binding2.sourceKey, cpValue);
+                    } else {
+                      binding2.sourceCtx[binding2.sourceKey] = cpValue;
                     }
+                    if (triggerReRender) triggerReRender(srcInst, binding2.sourceKey);
                     continue;
                   }
 
                   // 3) Fallback: parentView has matching property
                   const pv2 = instance.parentView;
                   if (pv2 && argKey in pv2) {
-                    try {
-                      if (typeof pv2.set === 'function') {
-                        pv2.set(argKey, cpValue);
-                      } else {
-                        pv2[argKey] = cpValue;
-                        if (triggerReRender) triggerReRender(pv2, argKey);
-                      }
-                    } catch {
-                      /* ignore */
+                    if (typeof pv2.set === 'function') {
+                      pv2.set(argKey, cpValue);
+                    } else {
+                      pv2[argKey] = cpValue;
+                      if (triggerReRender) triggerReRender(pv2, argKey);
                     }
                   }
                 }
@@ -2402,17 +2352,13 @@ function createComponentInstance(
         // Check if the raw arg getter returns a mut cell — use .update() for direct propagation
         const rawGetter = rawArgGetters[key];
         if (rawGetter) {
-          try {
-            const rawVal = rawGetter();
-            if (rawVal && rawVal.__isMutCell) {
-              rawVal.update(resolvedValue);
-              if (triggerReRender && instance.parentView) {
-                triggerReRender(instance.parentView, key);
-              }
-              return;
+          const rawVal = rawGetter();
+          if (rawVal && rawVal.__isMutCell) {
+            rawVal.update(resolvedValue);
+            if (triggerReRender && instance.parentView) {
+              triggerReRender(instance.parentView, key);
             }
-          } catch {
-            /* ignore */
+            return;
           }
         }
 
@@ -2423,19 +2369,15 @@ function createComponentInstance(
           if (sourceCtx && sourceKey) {
             // Guard: skip stale CP re-reads triggered by deferred observer flushes
             // (see pv.set branch below for rationale).
-            try {
-              const dispatched: Record<string, unknown> | undefined = (instance as any)
-                .__gxtCpArgDispatched;
-              if (dispatched && key in dispatched) {
-                const lastDisp = dispatched[key];
-                // resolvedValue matches a prior dispatched value AND parent has
-                // moved past it — the PDC re-read is stale; skip.
-                if (resolvedValue === lastDisp && sourceCtx[sourceKey] !== lastDisp) {
-                  return;
-                }
+            const dispatched: Record<string, unknown> | undefined = (instance as any)
+              .__gxtCpArgDispatched;
+            if (dispatched && key in dispatched) {
+              const lastDisp = dispatched[key];
+              // resolvedValue matches a prior dispatched value AND parent has
+              // moved past it — the PDC re-read is stale; skip.
+              if (resolvedValue === lastDisp && sourceCtx[sourceKey] !== lastDisp) {
+                return;
               }
-            } catch {
-              /* ignore */
             }
             // Use set() if available to trigger PROPERTY_DID_CHANGE chain on the source
             const sourceInstance = sourceCtx.__gxtRawTarget || sourceCtx;
@@ -2458,27 +2400,19 @@ function createComponentInstance(
           // (i.e. already newer upstream), this PDC is a stale re-read firing
           // from a deferred observer — skip to avoid clobbering the newer
           // upstream state.
-          try {
-            const dispatched: Record<string, unknown> | undefined = (instance as any)
-              .__gxtCpArgDispatched;
-            if (dispatched && key in dispatched) {
-              const lastDisp = dispatched[key];
-              if (resolvedValue === lastDisp && pv[key] !== lastDisp) {
-                return;
-              }
+          const dispatched: Record<string, unknown> | undefined = (instance as any)
+            .__gxtCpArgDispatched;
+          if (dispatched && key in dispatched) {
+            const lastDisp = dispatched[key];
+            if (resolvedValue === lastDisp && pv[key] !== lastDisp) {
+              return;
             }
-          } catch {
-            /* ignore */
           }
-          try {
-            if (typeof pv.set === 'function') {
-              pv.set(key, resolvedValue);
-            } else {
-              pv[key] = resolvedValue;
-              if (triggerReRender) triggerReRender(pv, key);
-            }
-          } catch {
-            /* ignore */
+          if (typeof pv.set === 'function') {
+            pv.set(key, resolvedValue);
+          } else {
+            pv[key] = resolvedValue;
+            if (triggerReRender) triggerReRender(pv, key);
           }
         }
       };
@@ -2509,11 +2443,7 @@ function createComponentInstance(
       typeof instance.attrs !== 'object' ||
       Object.keys(instance.attrs).length === 0)
   ) {
-    try {
-      instance.attrs = attrs;
-    } catch {
-      /* sealed/frozen instance — nothing to do */
-    }
+    instance.attrs = attrs;
   }
 
   // Trigger initial didReceiveAttrs. Rethrow synchronously so user-thrown
@@ -2546,15 +2476,12 @@ const _instanceRenderHookPassMap = new WeakMap<any, number>();
 // and hooks refire indefinitely as long as the hook keeps dirtying state.
 const _instanceLastAttrsFiredArgs = new WeakMap<any, Record<string, unknown>>();
 
+// The getters are the ones the sync just read.
 function snapshotArgsForInstance(cells: Record<string, any>): Record<string, unknown> {
   const snap: Record<string, unknown> = {};
   for (const key of Object.keys(cells)) {
-    try {
-      const getter = cells[key]?.getter;
-      snap[key] = typeof getter === 'function' ? getter() : undefined;
-    } catch {
-      /* getter may throw — omit key */
-    }
+    const getter = cells[key]?.getter;
+    snap[key] = typeof getter === 'function' ? getter() : undefined;
   }
   return snap;
 }
@@ -2645,21 +2572,14 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     // If this instance had state mutated during a nested-arg-mutation didUpdate
     // (see `_gxtSyncAllWrappers`), the arg identity is now changing. Restore
     // the pre-hook snapshot so the instance sees its init-time defaults for
-    // the new row — matching Ember's destroy+recreate semantics.
+    // the new row — matching Ember's destroy+recreate semantics. What a
+    // property's setter throws propagates.
     if (instance.__gxtPreHookStateSnapshot) {
-      try {
-        const snap = instance.__gxtPreHookStateSnapshot;
-        for (const k of Object.keys(snap)) {
-          try {
-            instance[k] = snap[k];
-          } catch {
-            /* ignore */
-          }
-        }
-        instance.__gxtPreHookStateSnapshot = null;
-      } catch {
-        /* ignore */
+      const snap = instance.__gxtPreHookStateSnapshot;
+      for (const k of Object.keys(snap)) {
+        instance[k] = snap[k];
       }
+      instance.__gxtPreHookStateSnapshot = null;
     }
     // Second pass: apply the changes (set properties first, then fire hooks)
     for (const key of newKeys) {
@@ -2684,13 +2604,9 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         // not re-enter (e.g., when an upstream cellFor removed the marker on
         // its descriptor), but the WeakMap state survives across descriptor
         // replacements and is what rcGet's closure references.
-        try {
-          const _stateForGetter2 = _getRcArgState(instance, key);
-          if (_stateForGetter2) {
-            _stateForGetter2.currentGetter = newGetter;
-          }
-        } catch {
-          /* ignore */
+        const _stateForGetter2 = _getRcArgState(instance, key);
+        if (_stateForGetter2) {
+          _stateForGetter2.currentGetter = newGetter;
         }
         // Check if there's already a render-context-installed descriptor with
         // local-override state (from a previous createRenderContext call). If
@@ -2704,21 +2620,17 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         );
         // Reinstall the reactive property descriptor with the new getter,
         // preserving the useLocal/dispatching semantics from createComponentInstance.
-        try {
-          if (hasPreservedDesc) {
-            // Render-context descriptor already holds local-override state; leave it untouched.
-          } else {
-            _installArgDescriptor(
-              instance,
-              key,
-              newGetter,
-              newValue,
-              false,
-              _findCpWithSetterFor(instance, key)
-            );
-          }
-        } catch {
-          /* non-configurable */
+        // (A render-context descriptor already holds local-override state;
+        // leave it untouched.)
+        if (!hasPreservedDesc) {
+          _installArgDescriptor(
+            instance,
+            key,
+            newGetter,
+            newValue,
+            false,
+            _findCpWithSetterFor(instance, key)
+          );
         }
       }
 
@@ -2732,14 +2644,11 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         // This triggers triggerReRender which recomputes @computed dependent
         // keys (e.g., @computed('location') get componentName()).
         // Without this, computed properties that depend on args never invalidate.
-        // The `triggerReRender` bridge method is optional.
+        // The `triggerReRender` bridge method is optional. What a dependent
+        // computed property's getter throws propagates.
         const triggerReRender = getGxtRenderer()?.compilePipeline.triggerReRender;
         if (triggerReRender) {
-          try {
-            triggerReRender(instance, key);
-          } catch {
-            /* ignore */
-          }
+          triggerReRender(instance, key);
         }
       }
     }
@@ -2755,16 +2664,12 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         // property descriptor that returns undefined, overwriting the stale
         // cell-backed getter.
         if (instance[key] !== undefined) {
-          try {
-            Object.defineProperty(instance, key, {
-              value: undefined,
-              writable: true,
-              enumerable: true,
-              configurable: true,
-            });
-          } catch {
-            /* non-configurable */
-          }
+          Object.defineProperty(instance, key, {
+            value: undefined,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
         }
         // Also remove from argGetters to prevent createRenderContext from
         // re-installing a getter that reads from the old args object.
@@ -3000,12 +2905,8 @@ function isElementLiveOrInElementHosted(el: Node | null | undefined): boolean {
     depth++;
   }
   // The root node (e.g. the detached destination div) may itself be the host.
-  try {
-    const root = (el as any).getRootNode ? (el as any).getRootNode() : null;
-    if (root && (root as any).__gxtIsInElementHost) return true;
-  } catch {
-    /* getRootNode unavailable — ignore */
-  }
+  const root = (el as any).getRootNode ? (el as any).getRootNode() : null;
+  if (root && (root as any).__gxtIsInElementHost) return true;
   return false;
 }
 
@@ -3050,18 +2951,14 @@ export function markTemplateRendered(instance: any): void {
     // Also track non-component objects that are properties of the rendered component.
     // This enables backtracking detection for shared dependencies
     // (e.g., this.wrapper.content where wrapper is an EmberObject or tracked class).
-    try {
+    {
       // Use both own keys and prototype keys to catch class fields like `wrapper = new Wrapper()`
       // that may have been moved to the prototype by cellFor or reactive getters.
       const allKeys = new Set<string>();
       const ownKeys = Object.keys(instance);
       for (const k of ownKeys) allKeys.add(k);
       // Also check getOwnPropertyNames to catch non-enumerable getter properties
-      try {
-        for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
-      } catch {
-        /* ignore */
-      }
+      for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
 
       for (const k of allKeys) {
         if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
@@ -3084,8 +2981,6 @@ export function markTemplateRendered(instance: any): void {
           _templateRenderedInstances.add(val);
         }
       }
-    } catch {
-      /* ignore prototype or frozen objects */
     }
   }
 }
@@ -3094,18 +2989,13 @@ export function beginRenderPass(): void {
   // Dispatch the registered `beforeBeginRenderPass` host hook (if any) BEFORE
   // manager.ts's bookkeeping. compile.ts contributes this hook (via
   // `installRenderPassPart`) to clear its module-local template-only state
-  // (`_gxtTemplateOnlyRenderedSet` / `_gxtTemplateOnlyStack`). Best-effort:
-  // errors from the hook are swallowed.
+  // (`_gxtTemplateOnlyRenderedSet` / `_gxtTemplateOnlyStack`).
   //
   // `getGxtRenderer` is imported at file bottom (ES module imports hoist, so
   // the binding is available here).
   const _beforeHook = getGxtRenderer()?.renderPass.beforeBeginRenderPass;
   if (_beforeHook) {
-    try {
-      _beforeHook();
-    } catch {
-      /* ignore */
-    }
+    _beforeHook();
   }
   _isInRenderPass = true;
   _templateRenderedInstances.clear();
@@ -3183,17 +3073,21 @@ export function checkBacktracking(targetObj: any, key: string): void {
       const keys = Object.keys(rendered);
       for (const k of keys) {
         if (k.startsWith('_') || k.startsWith('$')) continue;
+        // The read only names the property path in the assertion's message;
+        // Glimmer reads no property here.
+        let val: unknown;
         try {
-          const val = rendered[k];
-          // Check both raw and proxy-unwrapped identity
-          const rawTarget = _proxyToRaw.get(targetObj) || targetObj;
-          if (val === rawTarget || val === targetObj) {
-            startObj = rendered;
-            propPath = `this.${k}.${key}`;
-            break;
-          }
-        } catch {
-          /* ignore */
+          val = rendered[k];
+        } catch (error) {
+          _gxtReportDroppedRead(`the backtracking message's read of \`${k}\``, error);
+          continue;
+        }
+        // Check both raw and proxy-unwrapped identity
+        const rawTarget = _proxyToRaw.get(targetObj) || targetObj;
+        if (val === rawTarget || val === targetObj) {
+          startObj = rendered;
+          propPath = `this.${k}.${key}`;
+          break;
         }
       }
       if (startObj !== targetObj) break;
@@ -3271,11 +3165,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
   // template-only component names into the render tree.
   const _transformMsg = getGxtRenderer()?.backtracking.transformBacktrackingMessage;
   if (_transformMsg) {
-    try {
-      msg = _transformMsg(msg);
-    } catch {
-      /* ignore — fall back to the original message */
-    }
+    msg = _transformMsg(msg);
   }
   if (typeof _assertFn === 'function') {
     _assertFn(msg, false);
@@ -3377,11 +3267,7 @@ export function flushAfterInsertQueue(): void {
   // Routes through the `viewUtils.rebuildViewTreeFromDom` bridge adapter, which
   // also dispatches the `afterRebuildViewTreeFromDom` host hook contributed by
   // compile.ts.
-  try {
-    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
-  } catch {
-    /* ignore */
-  }
+  getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
 }
 
 // Lifecycle hooks that only fire in interactive mode. In non-interactive
@@ -3406,17 +3292,14 @@ const INTERACTIVE_ONLY_HOOKS = new Set([
 let _isInteractiveCached: boolean | undefined;
 function isInteractiveMode(): boolean {
   if (_isInteractiveCached !== undefined) return _isInteractiveCached;
-  try {
-    const owner = getAmbientOwner();
-    if (owner) {
-      const env = owner.lookup?.('-environment:main');
-      if (env && typeof env.isInteractive === 'boolean') {
-        _isInteractiveCached = env.isInteractive;
-        return _isInteractiveCached;
-      }
+  const owner: any = getAmbientOwner();
+  // A destroyed owner resolves nothing (its container's `lookup` asserts).
+  if (owner && !owner.isDestroyed && !owner.isDestroying) {
+    const env = owner.lookup?.('-environment:main');
+    if (env && typeof env.isInteractive === 'boolean') {
+      _isInteractiveCached = env.isInteractive;
+      return _isInteractiveCached;
     }
-  } catch {
-    /* ignore */
   }
   // Default to true (interactive) if we can't determine
   return true;
