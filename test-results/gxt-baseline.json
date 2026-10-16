@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T05:21:00.509Z",
+    "capturedAt": "2026-10-16T07:39:31.171Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "5f939592a4",
-    "totalTests": 10152,
-    "totalModules": 996,
+    "emberCommit": "fd04350576",
+    "totalTests": 10155,
+    "totalModules": 997,
     "quarantinedTests": 0,
-    "totalAssertions": 60586,
-    "totalAssertionsPassing": 60029,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a cell written in a modifier's install or update is rendered in the same run loop; written by runner.mjs in the GitHub Actions GXT full workflow (run 38855187634, on the code of 5f939592a4). 9748/10152 green (was 9746/10150), 996 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 2 new tests, green: a tracked write in a modifier update is rendered in the same run loop, and modifier installs that keep switching the branch stop at the rerender limit. The 9 'updating and setting within #each' tests now pass their assertion after the modifier update (one more passing assertion each) and stay red at the assertion after the list is replaced (the old rows' component DOM and reused component instances)."
+    "totalAssertions": 60599,
+    "totalAssertionsPassing": 60063,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after components with a custom manager are destroyed with the block they render in (an {{#if}} branch, an {{#each}} row, a dynamic component's content, an {{#in-element}} render, a render's root, and the blocks created in them), in document order, in the run loop that removes the block, and the ones still rendered are destroyed at test teardown; written by runner.mjs in the GitHub Actions GXT full workflow (run 38868471993, on the code of fd04350576). 9762/10155 green (was 9748/10152), 997 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 11 known reds green (Glimmer component willDestroy timing, order and teardown in the curly, dynamic, if/each, in-element, error-recovery and jit teardown suites) and 3 new tests green (GXT components are destroyed with their block)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1540,14 +1540,10 @@
     },
     "Components test: curly components": {
       "total": 60,
-      "passing": 51,
+      "passing": 53,
       "assertionsTotal": 238,
-      "assertionsPassing": 226,
+      "assertionsPassing": 230,
       "failingTests": [
-        {
-          "name": " the component and its child components are destroyed",
-          "category": "gxt:triage"
-        },
         {
           "name": " non-block with properties access via attrs is asserted against",
           "category": "gxt:triage"
@@ -1575,10 +1571,6 @@
         {
           "name": " class is applied before modifiers are installed",
           "category": "gxt:triage"
-        },
-        {
-          "name": " setting a tracked property in willDestroy does not assert (GH#14273)",
-          "category": "gxt:triage"
         }
       ]
     },
@@ -1596,20 +1588,12 @@
     },
     "Components test: dynamic components": {
       "total": 20,
-      "passing": 15,
+      "passing": 17,
       "assertionsTotal": 69,
-      "assertionsPassing": 60,
+      "assertionsPassing": 65,
       "failingTests": [
         {
           "name": " it throws a useful assertion for an invalid dynamic component value in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " the component and its child components are destroyed",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " component helper destroys underlying component when it is swapped out",
           "category": "gxt:triage"
         },
         {
@@ -2398,16 +2382,12 @@
     },
     "Errors thrown during render": {
       "total": 4,
-      "passing": 2,
+      "passing": 3,
       "assertionsTotal": 12,
-      "assertionsPassing": 10,
+      "assertionsPassing": 11,
       "failingTests": [
         {
           "name": " it can recover resets the transaction when an error is thrown during modifier installation",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " it can recover resets the transaction when an error is thrown during destroy",
           "category": "gxt:triage"
         }
       ],
@@ -2567,6 +2547,13 @@
       "passing": 8,
       "assertionsTotal": 12,
       "assertionsPassing": 12,
+      "failingTests": []
+    },
+    "GXT components are destroyed with their block": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 13,
+      "assertionsPassing": 13,
       "failingTests": []
     },
     "GXT correctness: @glimmer/tracking/primitives/cache": {
@@ -4883,15 +4870,10 @@
     },
     "Syntax test: {{#if}}": {
       "total": 2,
-      "passing": 1,
+      "passing": 2,
       "assertionsTotal": 9,
-      "assertionsPassing": 8,
-      "failingTests": [
-        {
-          "name": " using `if` with an `{{each}}` destroys components when transitioning to and from inverse (GH #12267)",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 9,
+      "failingTests": []
     },
     "Syntax test: {{#if}} and {{#unless}} without inverse": {
       "total": 105,
@@ -6149,27 +6131,10 @@
     },
     "[integration] jit :: [components] teardown": {
       "total": 5,
-      "passing": 1,
+      "passing": 5,
       "assertionsTotal": 42,
-      "assertionsPassing": 33,
-      "failingTests": [
-        {
-          "name": "components inside a list are destroyed",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "components inside a list are destroyed (when key is @identity)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "deeply nested destructions",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "components inside the root are destroyed when the render result is destroyed",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 42,
+      "failingTests": []
     },
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
@@ -8782,15 +8747,10 @@
     },
     "{{in-element}}": {
       "total": 8,
-      "passing": 7,
+      "passing": 8,
       "assertionsTotal": 42,
-      "assertionsPassing": 41,
-      "failingTests": [
-        {
-          "name": " components are cleaned up properly",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 42,
+      "failingTests": []
     },
     "{{link-to}} component (rendering tests)": {
       "total": 5,
@@ -8859,6 +8819,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 404
+    "gxt:triage": 393
   }
 }
