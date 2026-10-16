@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T02:12:30.011Z",
+    "capturedAt": "2026-10-16T05:21:00.509Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "d6c2ee0b9b",
-    "totalTests": 10150,
-    "totalModules": 995,
+    "emberCommit": "5f939592a4",
+    "totalTests": 10152,
+    "totalModules": 996,
     "quarantinedTests": 0,
-    "totalAssertions": 60579,
-    "totalAssertionsPassing": 60013,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a dynamic component follows its definition, a curried component made from a reference follows its definition, a component whose template starts with a dynamic component lives on when it changes, and a component in an in-element block lives with the block and leaves with it; written by runner.mjs in the GitHub Actions GXT full workflow (run 38839119767, on the code of d6c2ee0b9b). 9746/10150 green (was 9737/10146), 995 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 4 new tests, green: {{component}} and an angle-bracket invocation render the component of the definition their value changes to, a dynamic component renders nothing while its value defines no component, and a dynamic component that rendered nothing renders the component its value changes to. 5 tests turned green: component helper with bound properties are updating correctly in init of component, initially missing then present then missing, and the three strict-mode string-definition tests after first render (append, block and expression position)."
+    "totalAssertions": 60586,
+    "totalAssertionsPassing": 60029,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a cell written in a modifier's install or update is rendered in the same run loop; written by runner.mjs in the GitHub Actions GXT full workflow (run 38855187634, on the code of 5f939592a4). 9748/10152 green (was 9746/10150), 996 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 2 new tests, green: a tracked write in a modifier update is rendered in the same run loop, and modifier installs that keep switching the branch stop at the rerender limit. The 9 'updating and setting within #each' tests now pass their assertion after the modifier update (one more passing assertion each) and stay red at the assertion after the list is replaced (the old rows' component DOM and reused component instances)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2716,6 +2716,13 @@
       "assertionsPassing": 9,
       "failingTests": []
     },
+    "GXT writes during an update": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
+      "failingTests": []
+    },
     "HashLocation": {
       "total": 10,
       "passing": 10,
@@ -4756,7 +4763,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4768,7 +4775,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4780,7 +4787,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4792,7 +4799,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4804,7 +4811,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4816,7 +4823,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4828,7 +4835,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4840,7 +4847,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 183,
-      "assertionsPassing": 181,
+      "assertionsPassing": 182,
       "failingTests": [
         {
           "name": " updating and setting within #each",
@@ -4852,7 +4859,7 @@
       "total": 23,
       "passing": 22,
       "assertionsTotal": 198,
-      "assertionsPassing": 196,
+      "assertionsPassing": 197,
       "failingTests": [
         {
           "name": " updating and setting within #each",
