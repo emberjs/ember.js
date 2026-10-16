@@ -4387,13 +4387,11 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
   // Dispatch the BEFORE-chain (empty-chain check is a length-zero short-circuit
   // so per-call overhead stays at one cmp + one branch when nothing is
   // registered).
+  // The hooks (manager.ts, ember-gxt-wrappers.ts) record the change in a set
+  // or a flag.
   if (_beforeTriggerReRender.length > 0) {
     for (let i = 0; i < _beforeTriggerReRender.length; i++) {
-      try {
-        _beforeTriggerReRender[i]!(obj, keyName);
-      } catch {
-        /* ignore — host hook must not break canonical body */
-      }
+      _beforeTriggerReRender[i]!(obj, keyName);
     }
   }
   // Run SyncCore with the in-trigger-rerender flag set
@@ -4564,13 +4562,11 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
       }
     }
   } finally {
+    // The hook (glimmer/lib/renderer.ts) updates the cells of the components
+    // holding an ArrayProxy whose content array changed.
     if (_afterTriggerReRender.length > 0) {
       for (let i = 0; i < _afterTriggerReRender.length; i++) {
-        try {
-          _afterTriggerReRender[i]!(obj, keyName);
-        } catch {
-          /* ignore */
-        }
+        _afterTriggerReRender[i]!(obj, keyName);
       }
     }
   }
@@ -4629,23 +4625,16 @@ function _walkRenderContexts(obj: object, fn: (ctx: object, isProto: boolean) =>
   if (!ctxsMap) return;
   // Check both the object itself and its prototype as keys.
   const candidates: object[] = [obj];
-  try {
-    const proto = Object.getPrototypeOf(obj);
-    if (proto && proto !== Object.prototype) candidates.push(proto);
-  } catch {
-    /* ignore */
-  }
+  const proto = Object.getPrototypeOf(obj);
+  if (proto && proto !== Object.prototype) candidates.push(proto);
 
+  // What `fn` throws (a getter its cell update reads) propagates.
   for (const candidate of candidates) {
     const ctxs = ctxsMap.get(candidate);
     if (!ctxs) continue;
     const isProto = candidate !== obj;
     for (const ctx of ctxs) {
-      try {
-        fn(ctx, isProto);
-      } catch {
-        /* ignore */
-      }
+      fn(ctx, isProto);
     }
   }
 }
@@ -4677,23 +4666,17 @@ function _gxtTriggerReRenderSyncCore(
   // correctness for callers that don't pass `value` (notifyPropertyChange
   // invocations that omit the value argument).
   const newValue = hasValueArg ? value : (obj as any)[keyName];
-  try {
-    // Use skipDefine=true to avoid replacing tracked setters on the object.
-    // The tracked setter calls dirtyTagFor which bumps the global revision
-    // counter, which is essential for track()/validateTag() to work.
-    // Using skipDefine=true still creates the cell in GXT's internal storage,
-    // ensuring formula tracking works, without installing a getter/setter
-    // that would shadow the tracked descriptor.
-    const c = cellFor(obj, keyName, /* skipDefine */ true);
-    if (c) c.update(newValue);
-  } catch {
-    try {
-      const c = cellFor(obj, keyName, /* skipDefine */ true);
-      if (c) c.update(newValue);
-    } catch {
-      /* ignore */
-    }
-  }
+  // Use skipDefine=true to avoid replacing tracked setters on the object.
+  // The tracked setter calls dirtyTagFor which bumps the global revision
+  // counter, which is essential for track()/validateTag() to work.
+  // Using skipDefine=true still creates the cell in GXT's internal storage,
+  // ensuring formula tracking works, without installing a getter/setter
+  // that would shadow the tracked descriptor.
+  //
+  // Here and below, a `cellFor` that creates a cell reads the property; what
+  // a getter throws propagates to the caller of the change.
+  const c = cellFor(obj, keyName, /* skipDefine */ true);
+  if (c) c.update(newValue);
   // If a NEW key was added to an object an each-in source has iterated, bump
   // its key-SET revision so the source re-iterates. No-op when the key was
   // already observed (value-only change) or no each-in tracks `obj`.
@@ -4704,7 +4687,7 @@ function _gxtTriggerReRenderSyncCore(
   // flag-set below (SyncCore), but the actual `cellFor(...).update(obj)` fan-out
   // on the owners is performed by `_gxtTriggerReRenderDeferred`.
   let _deferredTagDirties: Array<{ obj: object; key: string }> | null = null;
-  try {
+  {
     const owners = _objectValueCellMap.get(obj);
     if (owners) {
       for (const { obj: ownerObj, key: ownerKey } of owners) {
@@ -4713,8 +4696,6 @@ function _gxtTriggerReRenderSyncCore(
         _deferredTagDirties.push({ obj: ownerObj, key: ownerKey });
       }
     }
-  } catch {
-    /* ignore */
   }
   // Recompute computed properties that depend on the changed key.
   // Ember computed properties (e.g., @computed('message') get formattedMessage())
@@ -4723,20 +4704,14 @@ function _gxtTriggerReRenderSyncCore(
   //
   // Routes through `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj,
   // keyName)`; state home is `metal/property_events.ts`.
-  try {
+  {
     const dependents = getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, keyName);
     if (dependents) {
       for (const { key, value: depValue } of dependents) {
-        try {
-          const dc = cellFor(obj, key, /* skipDefine */ true);
-          if (dc) dc.update(depValue);
-        } catch {
-          /* ignore */
-        }
+        const dc = cellFor(obj, key, /* skipDefine */ true);
+        if (dc) dc.update(depValue);
       }
     }
-  } catch {
-    /* ignore */
   }
   // The `_arrayOwnerMap` fan-out (both branches — Array-typed and non-Array
   // wrapper) and the `_objectValueCellMap` reverse-lookup fan-out below MUST run
@@ -4751,16 +4726,12 @@ function _gxtTriggerReRenderSyncCore(
       if (owners) {
         for (const { obj: ownerObj, key: ownerKey } of owners) {
           if (!_isOwnerAlive(ownerObj)) continue;
-          try {
-            // Use skipDefine=true to avoid overwriting custom getters on renderContext
-            // that were set up during createRenderContext. The custom getter reads
-            // from the Ember instance via a getter function, while cellFor's default
-            // getter reads from cell._value which may be stale for same-ref arrays.
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
+          // Use skipDefine=true to avoid overwriting custom getters on renderContext
+          // that were set up during createRenderContext. The custom getter reads
+          // from the Ember instance via a getter function, while cellFor's default
+          // getter reads from cell._value which may be stale for same-ref arrays.
+          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+          if (c) c.update(obj);
         }
       }
     } else if (obj && typeof obj === 'object') {
@@ -4771,12 +4742,8 @@ function _gxtTriggerReRenderSyncCore(
       if (owners) {
         for (const { obj: ownerObj, key: ownerKey } of owners) {
           if (!_isOwnerAlive(ownerObj)) continue;
-          try {
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
+          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+          if (c) c.update(obj);
         }
       }
     }
@@ -4787,17 +4754,13 @@ function _gxtTriggerReRenderSyncCore(
   // we need to dirty that cell so the formula re-evaluates with the new
   // computed property result. Same-runtask template formulas read these
   // owner cells, so the cell.update must run synchronously.
-  try {
+  {
     const owners = _objectValueCellMap.get(obj);
     if (owners) {
       for (const { obj: ownerObj, key: ownerKey } of owners) {
         if (!_isOwnerAlive(ownerObj)) continue;
-        try {
-          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-          if (oc) oc.update(obj);
-        } catch {
-          /* ignore */
-        }
+        const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+        if (oc) oc.update(obj);
         // Nested-args computed propagation: when the dirtied owner is a
         // component args-proxy carrying a back-reference to its component (set in
         // manager.ts createRenderContext), the component may have
@@ -4806,27 +4769,16 @@ function _gxtTriggerReRenderSyncCore(
         // held object), so the dependent-CP loop above keyed on `obj` never
         // matched. Re-run recomputeDependents on the COMPONENT with the full
         // chain path so its arg-derived CPs (and their cells) refresh.
-        try {
-          const ownerComp = (ownerObj as any).__gxtOwnerComponent;
-          if (ownerComp) {
-            const chainKey = 'args.' + ownerKey + '.' + keyName;
-            const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(
-              ownerComp,
-              chainKey
-            );
-            if (deps) {
-              for (const { key: depKey, value: depVal } of deps) {
-                try {
-                  const dcell = cellFor(ownerComp, depKey, /* skipDefine */ true);
-                  if (dcell) dcell.update(depVal);
-                } catch {
-                  /* ignore */
-                }
-              }
+        const ownerComp = (ownerObj as any).__gxtOwnerComponent;
+        if (ownerComp) {
+          const chainKey = 'args.' + ownerKey + '.' + keyName;
+          const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(ownerComp, chainKey);
+          if (deps) {
+            for (const { key: depKey, value: depVal } of deps) {
+              const dcell = cellFor(ownerComp, depKey, /* skipDefine */ true);
+              if (dcell) dcell.update(depVal);
             }
           }
-        } catch {
-          /* ignore — nested-args CP propagation is best-effort */
         }
         // `(hash)`/`(array)` computed propagation: when the dirtied owner cell
         // holds an Ember hash object, a member of it just changed (the hash's
@@ -4839,166 +4791,150 @@ function _gxtTriggerReRenderSyncCore(
         // createRenderContext) keyed on the arg name (`hash`), so
         // `@computed('hash.<member>')` refreshes and its cell — which the
         // template tracks — updates.
-        try {
-          if ((ownerObj as any).__emberHashObject) {
-            // Invalidate the Ember property tag the consumer's `@computed`
-            // chain-key watches (`tagForProperty(hashObject, member)`); the
-            // `cellFor(...).update` above bumps gxt's cell but not this tag, so
-            // without it `CP.get` would serve the cached (stale) value.
-            try {
-              _gxtDirtyTagFor(ownerObj, ownerKey);
-            } catch {
-              /* best-effort */
-            }
-            const hashConsumers = _objectValueCellMap.get(ownerObj);
-            if (hashConsumers) {
-              for (const { obj: comp, key: argKey } of hashConsumers) {
-                if (!_isOwnerAlive(comp)) continue;
-                const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(comp, argKey);
-                if (deps) {
-                  for (const { key: depKey, value: depVal } of deps) {
-                    try {
-                      const dcell = cellFor(comp, depKey, /* skipDefine */ true);
-                      if (dcell) dcell.update(depVal);
-                    } catch {
-                      /* ignore */
-                    }
-                  }
+        if ((ownerObj as any).__emberHashObject) {
+          // Invalidate the Ember property tag the consumer's `@computed`
+          // chain-key watches (`tagForProperty(hashObject, member)`); the
+          // `cellFor(...).update` above bumps gxt's cell but not this tag, so
+          // without it `CP.get` would serve the cached (stale) value.
+          _gxtDirtyTagFor(ownerObj, ownerKey);
+          const hashConsumers = _objectValueCellMap.get(ownerObj);
+          if (hashConsumers) {
+            for (const { obj: comp, key: argKey } of hashConsumers) {
+              if (!_isOwnerAlive(comp)) continue;
+              const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(comp, argKey);
+              if (deps) {
+                for (const { key: depKey, value: depVal } of deps) {
+                  const dcell = cellFor(comp, depKey, /* skipDefine */ true);
+                  if (dcell) dcell.update(depVal);
                 }
               }
             }
           }
-        } catch {
-          /* ignore — (hash) CP propagation is best-effort */
         }
       }
     }
-  } catch {
-    /* ignore */
   }
   // Also update cells on the prototype chain.
   // cellFor creates cells keyed by object identity. If a cell-backed getter
   // was installed on a prototype (e.g., via Component.extend({foo: true})),
   // the cell is keyed to that prototype, not the instance. We need to update
-  // that prototype cell so GXT formulas tracking it will re-evaluate.
-  try {
+  // that prototype cell so GXT formulas tracking it will re-evaluate. Only a
+  // cell that exists is updated (a new one has no reader): creating one would
+  // run the prototype's getter with the prototype as `this`.
+  {
     let proto = Object.getPrototypeOf(obj);
     for (let depth = 0; depth < 5 && proto && proto !== Object.prototype; depth++) {
       const desc = Object.getOwnPropertyDescriptor(proto, keyName);
       if (desc && desc.get) {
         // This prototype has a getter for this key — likely a cell-backed getter
-        const protoCell = cellFor(proto, keyName, /* skipDefine */ true);
+        const protoCell = _gxtPeekTagFor(proto, keyName);
         if (protoCell) protoCell.update(newValue);
         break; // Only need to update the first matching prototype
       }
       proto = Object.getPrototypeOf(proto);
     }
-  } catch {
-    /* ignore */
   }
   // Also dirty cells on ALL render contexts derived from this component.
   // GXT's $_if formula tracks cells on Object.create(component) wrappers.
   // The contexts map is keyed by prototype, so we check both obj and its
   // prototype. Walk delegated to `_walkRenderContexts`.
-  try {
-    _walkRenderContexts(obj, (ctx, isProto) => {
-      // Use the raw target if ctx is a Proxy — cells are installed on the
-      // raw target during initial render, so we must update the SAME cell.
-      const cellTarget = (ctx as any).__gxtRawTarget || ctx;
-      // For proto-keyed ctxs: only update cells whose raw target IS obj.
-      // The prototype bucket aggregates contexts from every instance
-      // sharing the prototype (e.g., every x-toggle instance). Without
-      // this filter, obj's new value leaks into every sibling instance's
-      // cell — the cell-aliasing bug that broke the View tree tests by
-      // flipping all x-toggle {{#if}} branches at once whenever one was
-      // toggled.
-      if (isProto && cellTarget !== obj) return;
-      // A context whose target is `obj` itself must not get a cell accessor
-      // over a `@tracked` key: it would shadow the tracked accessor
-      // (`isTrackedAccessor`), and the next write would render nothing.
-      const rc = cellFor(
-        cellTarget,
+  _walkRenderContexts(obj, (ctx, isProto) => {
+    // Use the raw target if ctx is a Proxy — cells are installed on the
+    // raw target during initial render, so we must update the SAME cell.
+    const cellTarget = (ctx as any).__gxtRawTarget || ctx;
+    // For proto-keyed ctxs: only update cells whose raw target IS obj.
+    // The prototype bucket aggregates contexts from every instance
+    // sharing the prototype (e.g., every x-toggle instance). Without
+    // this filter, obj's new value leaks into every sibling instance's
+    // cell — the cell-aliasing bug that broke the View tree tests by
+    // flipping all x-toggle {{#if}} branches at once whenever one was
+    // toggled.
+    if (isProto && cellTarget !== obj) return;
+    // A context whose target is `obj` itself must not get a cell accessor
+    // over a `@tracked` key: it would shadow the tracked accessor
+    // (`isTrackedAccessor`), and the next write would render nothing.
+    const rc = cellFor(
+      cellTarget,
+      keyName,
+      /* skipDefine */ cellTarget === obj && isTrackedAccessor(obj, keyName)
+    );
+    if (rc) {
+      rc.update(newValue);
+    }
+    // Also re-evaluate sibling getter cells on the same render context.
+    // When a controller's `model` is updated on the renderContext, any
+    // plain JS getter on the controller prototype that reads `this.model`
+    // (e.g. `get derived() { return this.model + 1 }`) has a cell
+    // installed on the renderContext (see root.ts prototype-getter pass),
+    // but that cell is static — it captured the initial value and has
+    // no declared dependency on `model`. Walk the renderContext's own
+    // keys and, for each key whose value comes from a prototype getter,
+    // re-read via that getter and refresh the cell so formulas tracking
+    // the getter key re-evaluate.
+    //
+    // Bounded by `_innerSiblingRescanDepth` against identity-churn from
+    // wrapper-aliased getters that return new instances per call. Scoped to
+    // render-context wrappers, with the same depth limit as the
+    // prototype-chain walk.
+    if (_innerSiblingRescanDepth >= _INNER_SIBLING_RESCAN_MAX_DEPTH) {
+      console.warn('[gxt] inner sibling-getter rescan depth exceeded', {
         keyName,
-        /* skipDefine */ cellTarget === obj && isTrackedAccessor(obj, keyName)
-      );
-      if (rc) {
-        rc.update(newValue);
-      }
-      // Also re-evaluate sibling getter cells on the same render context.
-      // When a controller's `model` is updated on the renderContext, any
-      // plain JS getter on the controller prototype that reads `this.model`
-      // (e.g. `get derived() { return this.model + 1 }`) has a cell
-      // installed on the renderContext (see root.ts prototype-getter pass),
-      // but that cell is static — it captured the initial value and has
-      // no declared dependency on `model`. Walk the renderContext's own
-      // keys and, for each key whose value comes from a prototype getter,
-      // re-read via that getter and refresh the cell so formulas tracking
-      // the getter key re-evaluate.
-      //
-      // Bounded by `_innerSiblingRescanDepth` against identity-churn from
-      // wrapper-aliased getters that return new instances per call. Scoped to
-      // render-context wrappers, with the same depth limit as the
-      // prototype-chain walk.
-      if (_innerSiblingRescanDepth >= _INNER_SIBLING_RESCAN_MAX_DEPTH) {
-        console.warn('[gxt] inner sibling-getter rescan depth exceeded', {
-          keyName,
-          depth: _innerSiblingRescanDepth,
-        });
-        return;
-      }
-      _innerSiblingRescanDepth++;
-      try {
-        const ownKeys = Object.getOwnPropertyNames(cellTarget);
-        for (const ownKey of ownKeys) {
-          if (ownKey === keyName) continue;
-          if (ownKey.startsWith('_') || ownKey.startsWith('$')) continue;
-          try {
-            const ownDesc = Object.getOwnPropertyDescriptor(cellTarget, ownKey);
-            if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
-            let protoGetter: (() => any) | null = null;
-            let p = Object.getPrototypeOf(cellTarget);
-            while (p && p !== Object.prototype) {
-              const pd = Object.getOwnPropertyDescriptor(p, ownKey);
-              if (pd && pd.get) {
-                protoGetter = pd.get;
-                break;
-              }
-              p = Object.getPrototypeOf(p);
-            }
-            if (!protoGetter) continue;
-            // Read the getter as the context's first render read it: with
-            // `obj`, the object the context derives from, as `this`. root.ts
-            // copies a controller's getter values into its route template's
-            // `Object.create(controller)` context; read with the context as
-            // `this`, an `action` getter returns a function bound to the
-            // context, and the action's writes then shadow the controller's
-            // properties instead of setting them.
-            const freshVal = protoGetter.call(obj);
-            const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
-            if (oc) oc.update(freshVal);
-          } catch {
-            /* skip */
+        depth: _innerSiblingRescanDepth,
+      });
+      return;
+    }
+    _innerSiblingRescanDepth++;
+    try {
+      const ownKeys = Object.getOwnPropertyNames(cellTarget);
+      for (const ownKey of ownKeys) {
+        if (ownKey === keyName) continue;
+        if (ownKey.startsWith('_') || ownKey.startsWith('$')) continue;
+        const ownDesc = Object.getOwnPropertyDescriptor(cellTarget, ownKey);
+        if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
+        let protoGetter: (() => any) | null = null;
+        let p = Object.getPrototypeOf(cellTarget);
+        while (p && p !== Object.prototype) {
+          const pd = Object.getOwnPropertyDescriptor(p, ownKey);
+          if (pd && pd.get) {
+            protoGetter = pd.get;
+            break;
           }
+          p = Object.getPrototypeOf(p);
         }
-      } finally {
-        _innerSiblingRescanDepth--;
+        if (!protoGetter) continue;
+        // Read the getter as the context's first render read it: with
+        // `obj`, the object the context derives from, as `this`. root.ts
+        // copies a controller's getter values into its route template's
+        // `Object.create(controller)` context; read with the context as
+        // `this`, an `action` getter returns a function bound to the
+        // context, and the action's writes then shadow the controller's
+        // properties instead of setting them.
+        //
+        // Every sibling getter is read, also ones no template reads (a
+        // change runs none of them in Glimmer): one that throws keeps its
+        // cell, and the template's read of it throws to the render.
+        let freshVal: unknown;
+        try {
+          freshVal = protoGetter.call(obj);
+        } catch (error) {
+          _gxtReportDroppedRead(`The \`${ownKey}\` getter`, error);
+          continue;
+        }
+        const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
+        if (oc) oc.update(freshVal);
       }
-    });
-  } catch {
-    /* ignore */
-  }
+    } finally {
+      _innerSiblingRescanDepth--;
+    }
+  });
   // For nested paths like 'colors.apple', also dirty the root property cell.
   // Templates read `this.colors` which creates a cell for 'colors'. When
   // set(obj, 'colors.apple', val) fires, we need to dirty 'colors' too
   // so the template re-evaluates the full path.
   if (keyName.includes('.')) {
     const rootKey = keyName.split('.')[0]!;
-    try {
-      const rootCell = cellFor(obj, rootKey, /* skipDefine */ true);
-      if (rootCell) rootCell.update((obj as any)[rootKey]);
-    } catch {
-      /* ignore */
-    }
+    const rootCell = cellFor(obj, rootKey, /* skipDefine */ true);
+    if (rootCell) rootCell.update((obj as any)[rootKey]);
   }
 
   _gxtSetPendingSync(true);
@@ -5079,12 +5015,9 @@ function _gxtTriggerReRenderDeferred(obj: object, keyName: string): void {
     const watcher = modWatchers.get(obj);
     if (typeof watcher === 'function') watcher();
   }
-  // Sync wrapper element if the object has attribute/class bindings.
-  try {
-    getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
-  } catch {
-    /* ignore */
-  }
+  // Sync wrapper element if the object has attribute/class bindings. What
+  // a binding's read throws reaches `_drainCascadeQueue`, which reports it.
+  getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
 }
 
 // $_if watchers. $_if is patched to capture IfCondition instances and register
