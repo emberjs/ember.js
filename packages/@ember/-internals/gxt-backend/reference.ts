@@ -32,14 +32,14 @@ const INVOKABLE_MARKER = Symbol('gxt:invokable');
 // 3=INVOKABLE), matching @glimmer/reference's encoding. Exported for the
 // test-only iterable port (`./reference-vm-compat`).
 export function brandRef<T>(ref: T, type: number = 1): T {
-  if (ref != null && (typeof ref === 'object' || typeof ref === 'function')) {
-    try {
-      if (!(GLIMMER_REFERENCE in (ref as any))) {
-        (ref as any)[GLIMMER_REFERENCE] = type;
-      }
-    } catch {
-      // frozen — ignore
-    }
+  // A frozen ref cannot take the brand.
+  if (
+    ref != null &&
+    (typeof ref === 'object' || typeof ref === 'function') &&
+    !(GLIMMER_REFERENCE in (ref as any)) &&
+    Object.isExtensible(ref)
+  ) {
+    (ref as any)[GLIMMER_REFERENCE] = type;
   }
   return ref;
 }
@@ -51,32 +51,24 @@ export function createPrimitiveRef(value: any): any {
 
 export function createConstRef(value: any, debugLabel?: any): any {
   const ref = _createConstRef(value, debugLabel);
-  try {
-    (ref as any)[CONST_MARKER] = true;
-    // GXT's createConstRef constructs a `new Dt(value)` that doesn't keep the
-    // second (debugLabel) argument. Stock Glimmer's classic Reference carries
-    // `debugLabel` so downstream consumers (e.g. fn helper's assertion message,
-    // childRefFor's label composition) can produce messages like
-    // "this.myFunc". Stamp it on so the label propagates.
-    if (debugLabel !== undefined) {
-      (ref as any).debugLabel = String(debugLabel);
-    }
-  } catch {
-    // ignore (frozen)
+  (ref as any)[CONST_MARKER] = true;
+  // GXT's createConstRef constructs a `new Dt(value)` that doesn't keep the
+  // second (debugLabel) argument. Stock Glimmer's classic Reference carries
+  // `debugLabel` so downstream consumers (e.g. fn helper's assertion message,
+  // childRefFor's label composition) can produce messages like
+  // "this.myFunc". Stamp it on so the label propagates.
+  if (debugLabel !== undefined) {
+    (ref as any).debugLabel = String(debugLabel);
   }
   return brandRef(ref, 0 /* CONSTANT */);
 }
 
 export function createUnboundRef(value: any, debugLabel?: any): any {
   const ref = _createUnboundRef(value, debugLabel);
-  try {
-    (ref as any)[UNBOUND_MARKER] = true;
-    (ref as any).__unboundValue = value;
-    if (debugLabel !== undefined) {
-      (ref as any).debugLabel = String(debugLabel);
-    }
-  } catch {
-    // ignore
+  (ref as any)[UNBOUND_MARKER] = true;
+  (ref as any).__unboundValue = value;
+  if (debugLabel !== undefined) {
+    (ref as any).debugLabel = String(debugLabel);
   }
   return brandRef(ref, 2 /* UNBOUND */);
 }
@@ -114,14 +106,10 @@ export function createComputeRef(
     return ref;
   }
   const ref = _createComputeRef(compute);
-  try {
-    (ref as any)[COMPUTED_MARKER] = true;
-    (ref as any).update = update;
-    (ref as any).compute = compute;
-    (ref as any).debugLabel = debugLabel;
-  } catch {
-    // ignore
-  }
+  (ref as any)[COMPUTED_MARKER] = true;
+  (ref as any).update = update;
+  (ref as any).compute = compute;
+  (ref as any).debugLabel = debugLabel;
   return brandRef(ref, 1 /* COMPUTE */);
 }
 
@@ -173,13 +161,7 @@ export function childRefFor(parentRef: any, path: string): any {
     // Stock @glimmer/reference uses isDict() (non-null/undefined) here; getProp from
     // @glimmer/global-context rejects primitives, so use direct auto-boxed access.
     if (parent != null) {
-      let primValue: any = undefined;
-      try {
-        primValue = (parent as any)[path];
-      } catch {
-        // ignore
-      }
-      return createUnboundRef(primValue, path);
+      return createUnboundRef((parent as any)[path], path);
     }
     return createUnboundRef(undefined, path);
   }
@@ -196,11 +178,7 @@ export function childRefFor(parentRef: any, path: string): any {
     let children = parentRef.__gxtChildren as Map<string, any> | undefined;
     if (!children) {
       children = new Map();
-      try {
-        parentRef.__gxtChildren = children;
-      } catch {
-        // ignore
-      }
+      parentRef.__gxtChildren = children;
     }
     const cached = children.get(path);
     if (cached) return cached;
@@ -218,11 +196,7 @@ export function childRefFor(parentRef: any, path: string): any {
       // `'foo'.length`, `(42).toString` etc. work. Matches isDict() semantics
       // used by stock @glimmer/reference's childRefFor.
       if (p != null) {
-        try {
-          return (p as any)[path];
-        } catch {
-          return undefined;
-        }
+        return (p as any)[path];
       }
       return undefined;
     };
@@ -262,11 +236,7 @@ export function childRefFor(parentRef: any, path: string): any {
     // JavaScript auto-boxing, matching stock @glimmer/reference's isDict()
     // gate which accepts any non-null/undefined value.
     if (p != null) {
-      try {
-        return (p as any)[path];
-      } catch {
-        return undefined;
-      }
+      return (p as any)[path];
     }
     return undefined;
   };
@@ -359,14 +329,21 @@ export function updateRef(ref: any, value: any): void {
     ref.update(value);
     return;
   }
-  // Avoid writing to cell getters that lack an update method.
-  try {
-    if ('value' in ref) {
-      ref.value = value;
-    }
-  } catch {
-    /* ignore: cannot set read-only getter */
+  // A ref without an update method is written only through a writable
+  // `value` (a computed ref's getter-only `value` is not written).
+  if (hasWritableValue(ref)) {
+    ref.value = value;
   }
+}
+
+// Whether `ref.value` (own or inherited) can be assigned: a data property that
+// is writable, or an accessor with a setter.
+function hasWritableValue(ref: object): boolean {
+  for (let o: object | null = ref; o !== null; o = Object.getPrototypeOf(o)) {
+    const desc = Object.getOwnPropertyDescriptor(o, 'value');
+    if (desc !== undefined) return desc.writable === true || desc.set !== undefined;
+  }
+  return false;
 }
 
 // Create a reference from a path on an object
