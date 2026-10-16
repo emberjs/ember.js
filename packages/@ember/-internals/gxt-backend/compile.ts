@@ -8,7 +8,7 @@
 
 import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
-import { getDebugFunction } from '@ember/debug';
+import { getDebugFunction, warn } from '@ember/debug';
 import {
   pascalToKebab,
   isAllDigits,
@@ -32,6 +32,15 @@ import {
 } from '@ember/-internals/views/lib/system/utils';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from '@ember/-internals/environment';
+
+// Reports, in DEBUG, an error that an eager read for dependency tracking
+// dropped: the read covers values Glimmer reads lazily or not at all, and the
+// template's own read of such a value throws to the render.
+function _gxtReportDroppedRead(what: string, error: unknown): void {
+  if (DEBUG) {
+    warn(`${what} threw: ${String(error)}`, false, { id: 'ember-gxt.dropped-read' });
+  }
+}
 
 // Utility functions (regex-free)
 
@@ -146,8 +155,10 @@ function _unboundSnapshot(value: any): any {
  * branch here still captures any live member getters (when present) and
  * recurses into nested hashes inside an array.
  *
- * Read-only and defensive: any getter throw is swallowed (the value will be
- * recomputed by the effect anyway). Bounded depth guards against cycles.
+ * Read-only. A plain object's getters and an array's arrow functions are read
+ * whatever their source, also a user object's (rendered as text, Glimmer reads
+ * none of them): a member that throws is skipped, reported in DEBUG
+ * (`_gxtReportDroppedRead`). Bounded depth guards against cycles.
  */
 function _gxtCaptureHashArrayDeps(value: any, depth = 0): void {
   if (value == null || depth > 4) return;
@@ -159,11 +170,14 @@ function _gxtCaptureHashArrayDeps(value: any, depth = 0): void {
       // A live member getter (kept by the $_array wrapper) — invoke to read
       // its cell; otherwise recurse into nested hashes.
       if (typeof member === 'function' && !(member as any).prototype) {
+        let sub: unknown;
         try {
-          _gxtCaptureHashArrayDeps((member as any)(), depth + 1);
-        } catch {
-          /* getter threw — effect will recompute */
+          sub = (member as any)();
+        } catch (error) {
+          _gxtReportDroppedRead('An array member', error);
+          continue;
         }
+        _gxtCaptureHashArrayDeps(sub, depth + 1);
       } else {
         _gxtCaptureHashArrayDeps(member, depth + 1);
       }
@@ -176,14 +190,16 @@ function _gxtCaptureHashArrayDeps(value: any, depth = 0): void {
   if (proto !== Object.prototype && proto !== null) return;
   if ((value as any).__isCurriedComponent) return;
   for (const key of Object.keys(value)) {
+    // Reading the key invokes the $__hash lazy getter → reads the source
+    // cell → captured by the active tracker. Recurse for nested hashes.
+    let sub: unknown;
     try {
-      // Reading the key invokes the $__hash lazy getter → reads the source
-      // cell → captured by the active tracker. Recurse for nested hashes.
-      const sub = (value as any)[key];
-      _gxtCaptureHashArrayDeps(sub, depth + 1);
-    } catch {
-      /* getter threw — effect will recompute */
+      sub = (value as any)[key];
+    } catch (error) {
+      _gxtReportDroppedRead(`The \`${key}\` member of a hash`, error);
+      continue;
     }
+    _gxtCaptureHashArrayDeps(sub, depth + 1);
   }
 }
 
@@ -960,44 +976,41 @@ function renderReactiveHtml(getHtml: () => any): DocumentFragment {
 
   // Unchanged HTML keeps its nodes (DOM stability).
   let lastHtml = initialHtml;
-  try {
-    gxtEffect(() => {
-      const html = getHtml();
-      const parent = endAnchor.parentNode;
-      if (!parent) return;
-      if (html === lastHtml) return;
-      lastHtml = html;
-      if (html) {
-        if (isEmpty && placeholder.parentNode === parent) {
-          parent.removeChild(placeholder);
-        }
-        for (const n of contentNodes) {
-          if (n.parentNode === parent) parent.removeChild(n);
-        }
-        const tpl = document.createElement('template');
-        tpl.innerHTML = html;
-        const newNodes: Node[] = [];
-        while (tpl.content.firstChild) {
-          const child = tpl.content.firstChild;
-          newNodes.push(child);
-          parent.insertBefore(child, endAnchor);
-        }
-        contentNodes = newNodes;
-        isEmpty = false;
-      } else {
-        for (const n of contentNodes) {
-          if (n.parentNode === parent) parent.removeChild(n);
-        }
-        contentNodes = [];
-        if (!isEmpty || !placeholder.parentNode) {
-          parent.insertBefore(placeholder, endAnchor);
-        }
-        isEmpty = true;
+  // What `getHtml` throws (a template getter) propagates.
+  gxtEffect(() => {
+    const html = getHtml();
+    const parent = endAnchor.parentNode;
+    if (!parent) return;
+    if (html === lastHtml) return;
+    lastHtml = html;
+    if (html) {
+      if (isEmpty && placeholder.parentNode === parent) {
+        parent.removeChild(placeholder);
       }
-    });
-  } catch {
-    /* effect setup may fail */
-  }
+      for (const n of contentNodes) {
+        if (n.parentNode === parent) parent.removeChild(n);
+      }
+      const tpl = document.createElement('template');
+      tpl.innerHTML = html;
+      const newNodes: Node[] = [];
+      while (tpl.content.firstChild) {
+        const child = tpl.content.firstChild;
+        newNodes.push(child);
+        parent.insertBefore(child, endAnchor);
+      }
+      contentNodes = newNodes;
+      isEmpty = false;
+    } else {
+      for (const n of contentNodes) {
+        if (n.parentNode === parent) parent.removeChild(n);
+      }
+      contentNodes = [];
+      if (!isEmpty || !placeholder.parentNode) {
+        parent.insertBefore(placeholder, endAnchor);
+      }
+      isEmpty = true;
+    }
+  });
   return fragment;
 }
 
@@ -1027,18 +1040,15 @@ function _setInternalProp(obj: any, key: string, value: any): void {
     enumerable: false,
     configurable: true,
   });
+  // `obj` is a named-args object the compat layer built (no symbol keys), so
+  // the alias can be defined.
   if (key === '$slots') {
-    const sym = $SLOTS_SYMBOL;
-    try {
-      Object.defineProperty(obj, sym, {
-        value,
-        writable: true,
-        enumerable: false,
-        configurable: true,
-      });
-    } catch {
-      /* ignore frozen obj */
-    }
+    Object.defineProperty(obj, $SLOTS_SYMBOL, {
+      value,
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
   }
 }
 
@@ -1200,14 +1210,12 @@ function _gxtSetIsRendering(on: boolean): void {
     // the renderComponent strict-mode path, which does not go through
     // the after-insert flush.
     if (_renderPassDepth === 0) {
-      try {
-        // The guard handles the pointer being undefined until module-load runs
-        // the in-element-defer setup block below.
-        const drain = _drainInElementDeferQueue;
-        if (typeof drain === 'function') drain();
-      } catch {
-        /* ignore */
-      }
+      // The guard handles the pointer being undefined until module-load runs
+      // the in-element-defer setup block below. What a deferred render throws
+      // (its block, or the assertion on a destination that never resolved)
+      // propagates.
+      const drain = _drainInElementDeferQueue;
+      if (typeof drain === 'function') drain();
     }
   }
 }
@@ -1432,12 +1440,7 @@ function _afterFlushAfterInsertQueue(): void {
       // Eagerly compute the block body nodes now — the render context
       // may be torn down by the time the deferred queue drains, so we
       // materialize the DOM synchronously and just re-parent it later.
-      let _eagerNodes: any[] = [];
-      try {
-        _eagerNodes = roots(ctx);
-      } catch {
-        /* fall through */
-      }
+      const _eagerNodes: any[] = roots(ctx);
       const _deferredRender = () => {
         // Re-resolve the destination. Prefer the compile-time literal id
         // (a direct document.getElementById lookup) since the reactive
@@ -1472,11 +1475,7 @@ function _afterFlushAfterInsertQueue(): void {
         // _deferredRoots now.
         let deferredNodes: any[] = _eagerNodes;
         if (!deferredNodes || deferredNodes.length === 0) {
-          try {
-            deferredNodes = _deferredRoots(_deferredCtx);
-          } catch {
-            /* ignore */
-          }
+          deferredNodes = _deferredRoots(_deferredCtx);
         }
         const deferredFragment = document.createDocumentFragment();
         for (const node of deferredNodes) {
@@ -1491,13 +1490,9 @@ function _afterFlushAfterInsertQueue(): void {
               return v == null ? '' : String(v);
             };
             textNode.textContent = getValue();
-            try {
-              gxtEffect(() => {
-                textNode.textContent = getValue();
-              });
-            } catch {
-              /* effect setup may fail */
-            }
+            gxtEffect(() => {
+              textNode.textContent = getValue();
+            });
             deferredRenderedNodes.push(textNode);
             deferredFragment.appendChild(textNode);
           } else if (typeof node === 'string') {
@@ -1824,22 +1819,19 @@ let _gxtLastSafeStringResult: string | undefined;
 // bundles.
 if (DEBUG) {
   setTimeout(() => {
-    try {
-      // Use dynamic import to avoid circular dependency during static init
-      import('@ember/-internals/glimmer/lib/utils/string')
-        .then((mod) => {
-          const SafeString = mod.SafeString;
-          if (SafeString?.prototype?.toString) {
-            const origToString = SafeString.prototype.toString;
-            SafeString.prototype.toString = function () {
-              const result = origToString.call(this);
-              _gxtLastSafeStringResult = result;
-              return result;
-            };
-          }
-        })
-        .catch(() => {});
-    } catch {}
+    // Use dynamic import to avoid circular dependency during static init. The
+    // module is bundled, so the import does not fail.
+    import('@ember/-internals/glimmer/lib/utils/string').then((mod) => {
+      const SafeString = mod.SafeString;
+      if (SafeString?.prototype?.toString) {
+        const origToString = SafeString.prototype.toString;
+        SafeString.prototype.toString = function () {
+          const result = origToString.call(this);
+          _gxtLastSafeStringResult = result;
+          return result;
+        };
+      }
+    });
   }, 0);
 }
 
@@ -2081,27 +2073,20 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 }
 
 // Read a curried component's argument getters (named and positional) so the
-// running effect depends on them.
+// running effect depends on them. What a getter throws propagates: the change
+// check that follows (`_curriedComponentChanged`) reads them all too.
 function _touchCurriedArgGetters(curried: any): void {
   if (curried.__curriedArgs) {
     for (const val of Object.values(curried.__curriedArgs)) {
       if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-        try {
-          val();
-        } catch {
-          /* ignore */
-        }
+        val();
       }
     }
   }
   if (curried.__curriedPositionals) {
     for (const val of curried.__curriedPositionals) {
       if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-        try {
-          val();
-        } catch {
-          /* ignore */
-        }
+        val();
       }
     }
   }
@@ -2386,11 +2371,8 @@ function _gxtLinkHashMemberSources(getter: any, ctx: any, hashObj: any, hashKey:
   let paths = getter.__gxtHashPaths as string[] | undefined;
   if (paths === undefined) {
     paths = _gxtExtractAllThisPaths(String(getter));
-    try {
-      getter.__gxtHashPaths = paths;
-    } catch {
-      /* getter frozen — re-parse next time */
-    }
+    // A frozen getter keeps no cache: it is parsed again next time.
+    if (Object.isExtensible(getter)) getter.__gxtHashPaths = paths;
   }
   for (let p = 0; p < paths.length; p++) {
     let cur: any = ctx;
@@ -2423,11 +2405,8 @@ function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
   let paths = getter.__gxtHashPaths as string[] | undefined;
   if (paths === undefined) {
     paths = _gxtExtractAllThisPaths(String(getter));
-    try {
-      getter.__gxtHashPaths = paths;
-    } catch {
-      /* getter frozen — re-parse next time */
-    }
+    // A frozen getter keeps no cache: it is parsed again next time.
+    if (Object.isExtensible(getter)) getter.__gxtHashPaths = paths;
   }
   for (let i = 0; i < paths.length; i++) {
     _gxtWalkThisPathCells(paths[i]!, ctx);
@@ -2511,15 +2490,12 @@ function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
         // through their (live, source-entangling) getters instead of snapshotting
         // a `cellFor(hashObject,key)` cell. Stamp the construction context so the
         // marker survives `cellFor` defining a cell-backed accessor over it.
-        try {
-          Object.defineProperty(result, '__emberHashObject', {
-            value: pathCtx || true,
-            enumerable: false,
-            configurable: true,
-          });
-        } catch {
-          /* frozen — $__cellFor_ember falls back to the snapshot path */
-        }
+        // (`$__hash` returns a new plain object.)
+        Object.defineProperty(result, '__emberHashObject', {
+          value: pathCtx || true,
+          enumerable: false,
+          configurable: true,
+        });
         // Link each member's source objects to `(result, key)` so an Ember
         // `@computed('hash.key')` (whose getter runs under `untrack`) re-fires
         // when the source changes — its chain-tag watches `tagFor(result,key)`.
@@ -2834,12 +2810,14 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           if (typeof val === 'function' && !val.prototype && parentRenderCtx) {
             (val as any).__mutParentCtx = parentRenderCtx;
           }
-          // Touch the value to track the cell dependency
+          // Touch the value to track the cell dependency. The component reads
+          // its arguments lazily (Glimmer reads none here), so a getter that
+          // throws is skipped; the component's read of it throws.
           if (typeof val === 'function' && !val.prototype) {
             try {
               val();
-            } catch {
-              /* ignore */
+            } catch (error) {
+              _gxtReportDroppedRead(`The curried \`${key}\` argument`, error);
             }
           }
         }
@@ -2855,12 +2833,13 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           (p as any).__mutParentCtx = parentRenderCtx;
         }
         positionals.push(p);
-        // Touch positional values to track cell dependencies
+        // Touch positional values to track cell dependencies (skipped when
+        // it throws, as a named argument is).
         if (typeof p === 'function' && !p.prototype) {
           try {
             p();
-          } catch {
-            /* ignore */
+          } catch (error) {
+            _gxtReportDroppedRead('A curried positional argument', error);
           }
         }
       }
@@ -3321,27 +3300,21 @@ function _gxtCaptureLeafOwnersForGetter(getter: any): void {
         _gxtSubscribeUntrackedThisPath(path, pc);
       }
     }
-  } catch {
-    /* best-effort */
   } finally {
     _gxtSetTracker(ambient);
     frame.forEach((c) => {
       if (ambient) ambient.add(c);
-      try {
-        const _v = (c as any)._value;
-        const _ro = (c as any)._relatedObj;
-        const _rk = (c as any)._relatedKey;
-        if (
-          _v &&
-          typeof _v === 'object' &&
-          _ro &&
-          typeof _ro === 'object' &&
-          typeof _rk === 'string'
-        ) {
-          registerObjectValueOwner(_v, _ro, _rk);
-        }
-      } catch {
-        /* registration is best-effort */
+      const _v = (c as any)._value;
+      const _ro = (c as any)._relatedObj;
+      const _rk = (c as any)._relatedKey;
+      if (
+        _v &&
+        typeof _v === 'object' &&
+        _ro &&
+        typeof _ro === 'object' &&
+        typeof _rk === 'string'
+      ) {
+        registerObjectValueOwner(_v, _ro, _rk);
       }
     });
   }
