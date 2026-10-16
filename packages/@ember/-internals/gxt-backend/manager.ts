@@ -10237,8 +10237,13 @@ function handleStringComponent(
     if (typeof manager === 'function') {
       return _renderCustomManagedComponent(factory.class, manager, args, fw, ctx, owner, template);
     }
-    // Internal manager (Input, Textarea)
-    return handleManagedComponent(factory.class, args, fw, ctx, manager, owner);
+    // Internal manager (Input, Textarea). One that creates no component (no
+    // `create`: Glimmer's `createInstance` capability is off, as for a
+    // template-only component's manager) renders the template with no
+    // instance, below.
+    if (typeof manager.create === 'function') {
+      return handleManagedComponent(factory.class, args, fw, ctx, manager, owner);
+    }
   }
 
   // Handle positional params mapping
