@@ -5519,22 +5519,19 @@ function buildWrapperElement(instance: any, args: any, componentDef: any, fw?: a
     // Install a protective setter that throws when elementId is changed after creation.
     // This mirrors the behavior in @ember/-internals/views/lib/views/states.ts IN_DOM.enter()
     // which may not execute in GXT mode due to renderer.register() failures.
-    try {
-      Object.defineProperty(instance, 'elementId', {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return frozenElementId;
-        },
-        set(value: any) {
-          if (value !== frozenElementId) {
-            throw new Error("Changing a view's elementId after creation is not allowed");
-          }
-        },
-      });
-    } catch {
-      /* ignore if defineProperty fails */
-    }
+    // (The instance's `elementId` was just assigned: a configurable property.)
+    Object.defineProperty(instance, 'elementId', {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return frozenElementId;
+      },
+      set(value: any) {
+        if (value !== frozenElementId) {
+          throw new Error("Changing a view's elementId after creation is not allowed");
+        }
+      },
+    });
   }
 
   // Set ariaRole -> role attribute
@@ -5659,19 +5656,16 @@ function wrapNestedObjectForTracking(obj: any): any {
       // Use skipDefine=true to avoid overwriting @tracked getter/setters
       // which include backtracking detection. We sync the cell value
       // with the actual property value and read cell.value for GXT
-      // formula tracking.
-      try {
-        const cell = _gxtCellFor(target, prop, /* skipDefine */ true);
-        if (cell) {
-          // Sync cell value silently (bypass update() to avoid dirty marking)
-          if (cell._value !== value) {
-            cell._value = value;
-          }
-          // Read cell.value to register with GXT's currentTracker
-          cell.value;
+      // formula tracking. (A new cell reads the property, as the read above
+      // did; what that throws propagates.)
+      const cell = _gxtCellFor(target, prop, /* skipDefine */ true);
+      if (cell) {
+        // Sync cell value silently (bypass update() to avoid dirty marking)
+        if (cell._value !== value) {
+          cell._value = value;
         }
-      } catch {
-        /* ignore */
+        // Read cell.value to register with GXT's currentTracker
+        cell.value;
       }
       return value;
     },
@@ -5711,28 +5705,24 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
   // Only remove getters that shadow PURE getters (no setter) — tracked
   // property getters (with both get/set) should be preserved.
   if ((getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) && instance) {
-    try {
-      const ownKeys = Object.getOwnPropertyNames(instance);
-      for (const key of ownKeys) {
-        const ownDesc = Object.getOwnPropertyDescriptor(instance, key);
-        if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
-        // Walk prototype chain to find a matching getter
-        let p = Object.getPrototypeOf(instance);
-        while (p && p !== Object.prototype) {
-          const protoDesc = Object.getOwnPropertyDescriptor(p, key);
-          if (protoDesc) {
-            // Only remove if prototype has a PURE getter (no setter).
-            // Tracked properties have both get and set — keep their cellFor getters.
-            if (protoDesc.get && !protoDesc.set) {
-              delete instance[key];
-            }
-            break;
+    const ownKeys = Object.getOwnPropertyNames(instance);
+    for (const key of ownKeys) {
+      const ownDesc = Object.getOwnPropertyDescriptor(instance, key);
+      if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
+      // Walk prototype chain to find a matching getter
+      let p = Object.getPrototypeOf(instance);
+      while (p && p !== Object.prototype) {
+        const protoDesc = Object.getOwnPropertyDescriptor(p, key);
+        if (protoDesc) {
+          // Only remove if prototype has a PURE getter (no setter).
+          // Tracked properties have both get and set — keep their cellFor getters.
+          if (protoDesc.get && !protoDesc.set) {
+            delete instance[key];
           }
-          p = Object.getPrototypeOf(p);
+          break;
         }
+        p = Object.getPrototypeOf(p);
       }
-    } catch {
-      /* ignore */
     }
   }
 
@@ -5804,11 +5794,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
       if (sfn.__hasBlockParams !== undefined) continue;
       const markerKey = `${sname}_`;
       if (markerKey in slots && typeof slots[markerKey] === 'boolean') {
-        try {
-          (sfn as any).__hasBlockParams = slots[markerKey];
-        } catch {
-          /* ignore */
-        }
+        (sfn as any).__hasBlockParams = slots[markerKey];
       }
     }
   }
@@ -5896,33 +5882,19 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // `notifyPropertyChange(foo, 'text')` reverse-look-up and dirty
         // `cellFor(attrsProxy, 'foo')`, re-firing the subscribed text effect +
         // the dependent CP.
-        {
-          try {
-            if (initialVal && typeof initialVal === 'object') {
-              getGxtRenderer()?.compilePipeline.registerObjectValueOwner?.(
-                initialVal,
-                attrsProxy,
-                key
-              );
-              // Stash a back-reference from the args proxy to the component
-              // instance so the SyncCore reverse-lookup fan-out can recompute
-              // the component's `@computed('args.<key>.<nested>')` CPs when a
-              // nested property on the arg value changes. (`renderContext` is
-              // the component instance; its `.args` is set to `attrsProxy`.)
-              if (!(attrsProxy as any).__gxtOwnerComponent) {
-                try {
-                  Object.defineProperty(attrsProxy, '__gxtOwnerComponent', {
-                    value: renderContext,
-                    enumerable: false,
-                    configurable: true,
-                  });
-                } catch {
-                  /* non-configurable — ignore */
-                }
-              }
-            }
-          } catch {
-            /* ignore — owner registration is best-effort */
+        if (initialVal && typeof initialVal === 'object') {
+          getGxtRenderer()?.compilePipeline.registerObjectValueOwner?.(initialVal, attrsProxy, key);
+          // Stash a back-reference from the args proxy to the component
+          // instance so the SyncCore reverse-lookup fan-out can recompute
+          // the component's `@computed('args.<key>.<nested>')` CPs when a
+          // nested property on the arg value changes. (`renderContext` is
+          // the component instance; its `.args` is set to `attrsProxy`.)
+          if (!(attrsProxy as any).__gxtOwnerComponent) {
+            Object.defineProperty(attrsProxy, '__gxtOwnerComponent', {
+              value: renderContext,
+              enumerable: false,
+              configurable: true,
+            });
           }
         }
       } else if (getter) {
@@ -6019,31 +5991,13 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           // we just installed — producing `[object Object]` rather than the arg
           // value — so we must read directly from the args getter instead.
           const _skipInstFallback = _key === 'attrs' || _key === 'args';
+          // What the read throws reaches the code reading `attrs.<key>.value`.
           const _readValue = () => {
             if (_skipInstFallback) {
-              if (_getter) {
-                try {
-                  return _getter();
-                } catch {
-                  /* ignore */
-                }
-              }
-              return initialVal;
+              return _getter ? _getter() : initialVal;
             }
-            if (_inst) {
-              try {
-                return _inst[_key];
-              } catch {
-                /* ignore */
-              }
-            }
-            if (_getter) {
-              try {
-                return _getter();
-              } catch {
-                /* ignore */
-              }
-            }
+            if (_inst) return _inst[_key];
+            if (_getter) return _getter();
             return initialVal;
           };
           emberAttrs[key] = {
@@ -6136,15 +6090,11 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         },
       }
     );
-    try {
-      Object.defineProperty(attrsProxy, 'this', {
-        value: { attrs: attrsShim },
-        enumerable: false,
-        configurable: true,
-      });
-    } catch {
-      /* non-configurable */
-    }
+    Object.defineProperty(attrsProxy, 'this', {
+      value: { attrs: attrsShim },
+      enumerable: false,
+      configurable: true,
+    });
   }
   // gxt reads `@foo` as `this['args'].foo` (its `$args` key).
   renderContext[$ARGS_KEY] = attrsProxy;
@@ -6272,34 +6222,31 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           _crcExistingDesc && (_crcExistingDesc.get as any)?.__gxtRenderCtxArgGetter
         );
         if (_crcAlreadyInstalled) {
-          try {
-            const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
-            const _savedOverride = instance?.__gxtInitOverrides?.[key];
-            renderCtxArgCells[key] = {
-              cell,
-              getter,
-              lastArgValue: getter(),
-              ...(_savedOverride ? { initOverridden: true } : {}),
-            };
-            // The descriptor's rcGet reads from `state.currentGetter` on
-            // the WeakMap state. Update it to the latest getter so that reads
-            // during force-rerender (which builds a fresh outer template and
-            // re-invokes each-row child components with new arg closures) see
-            // the new value. Otherwise the descriptor's closure holds the
-            // original getter from the first createRenderContext call, and
-            // `this.item` returns stale row data after the parent re-renders.
-            // See also: updateInstanceWithNewArgs, which performs the same
-            // refresh up-front so this is robust even when an upstream
-            // cellFor reinstall has stripped the __gxtRenderCtxArgGetter
-            // marker (in which case this fast path is skipped entirely).
-            if (instance) {
-              const _stateForGetter = _getRcArgState(instance, key);
-              if (_stateForGetter) {
-                _stateForGetter.currentGetter = getter;
-              }
+          // What the arg getter throws propagates.
+          const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
+          const _savedOverride = instance?.__gxtInitOverrides?.[key];
+          renderCtxArgCells[key] = {
+            cell,
+            getter,
+            lastArgValue: getter(),
+            ...(_savedOverride ? { initOverridden: true } : {}),
+          };
+          // The descriptor's rcGet reads from `state.currentGetter` on
+          // the WeakMap state. Update it to the latest getter so that reads
+          // during force-rerender (which builds a fresh outer template and
+          // re-invokes each-row child components with new arg closures) see
+          // the new value. Otherwise the descriptor's closure holds the
+          // original getter from the first createRenderContext call, and
+          // `this.item` returns stale row data after the parent re-renders.
+          // See also: updateInstanceWithNewArgs, which performs the same
+          // refresh up-front so this is robust even when an upstream
+          // cellFor reinstall has stripped the __gxtRenderCtxArgGetter
+          // marker (in which case this fast path is skipped entirely).
+          if (instance) {
+            const _stateForGetter = _getRcArgState(instance, key);
+            if (_stateForGetter) {
+              _stateForGetter.currentGetter = getter;
             }
-          } catch {
-            /* ignore */
           }
           continue;
         }
@@ -6347,48 +6294,39 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // returns the instance value but can be updated by arg changes.
         // Create a cell FIRST, then install our custom getter that reads
         // cell.value for GXT tracking but returns the correct local/arg value.
-        try {
-          let localVal = instanceVal;
-          let useLocal = true;
-          // Create a cell with skipDefine=true to avoid cellFor installing
-          // its own getter/setter (we'll install our own below).
-          const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
-          if (cell) cell.update(localVal);
-          // For init-overridden properties, track the cell but mark it as init-overridden.
-          // `_gxtSyncAllWrappers` will skip the cell update and instead check the getter
-          // to see if the arg value actually changed from the parent's perspective.
-          renderCtxArgCells[key] = { cell, getter, initOverridden: true };
-          const rcInitGet: any = function () {
-            if (cell)
-              try {
-                cell.value;
-              } catch {
-                /* ignore */
-              }
-            return useLocal ? localVal : getter();
-          };
-          rcInitGet.__gxtRenderCtxArgGetter = true;
-          Object.defineProperty(renderContext, key, {
-            get: rcInitGet,
-            set(v: any) {
-              // When __gxtDispatchingArgs is true, this is an arg update from parent,
-              // not an explicit set from component code. Switch to arg-driven mode.
-              if ((instance as any).__gxtDispatchingArgs) {
-                localVal = v;
-                useLocal = false;
-                if (cell) cell.update(v);
-              } else {
-                localVal = v;
-                useLocal = true;
-                if (cell) cell.update(v);
-              }
-            },
-            enumerable: true,
-            configurable: true,
-          });
-        } catch {
-          /* ignore */
-        }
+        let localVal = instanceVal;
+        let useLocal = true;
+        // Create a cell with skipDefine=true to avoid cellFor installing
+        // its own getter/setter (we'll install our own below).
+        const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
+        if (cell) cell.update(localVal);
+        // For init-overridden properties, track the cell but mark it as init-overridden.
+        // `_gxtSyncAllWrappers` will skip the cell update and instead check the getter
+        // to see if the arg value actually changed from the parent's perspective.
+        renderCtxArgCells[key] = { cell, getter, initOverridden: true };
+        const rcInitGet: any = function () {
+          if (cell) cell.value;
+          return useLocal ? localVal : getter();
+        };
+        rcInitGet.__gxtRenderCtxArgGetter = true;
+        Object.defineProperty(renderContext, key, {
+          get: rcInitGet,
+          set(v: any) {
+            // When __gxtDispatchingArgs is true, this is an arg update from parent,
+            // not an explicit set from component code. Switch to arg-driven mode.
+            if ((instance as any).__gxtDispatchingArgs) {
+              localVal = v;
+              useLocal = false;
+              if (cell) cell.update(v);
+            } else {
+              localVal = v;
+              useLocal = true;
+              if (cell) cell.update(v);
+            }
+          },
+          enumerable: true,
+          configurable: true,
+        });
       } else {
         // Install a cell on the render context for this arg.
         // GXT formulas reading renderContext.key will track this cell.
@@ -6420,13 +6358,10 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               // _setter / dependent-key descriptor in meta — `cell.value` is
               // correct for them).
               if (!desc.set) {
-                let _isClassicCp = false;
-                try {
-                  _isClassicCp = !!_findMetaDescriptor(Object.getPrototypeOf(instance), key);
-                } catch {
-                  /* ignore — treat as plain native on detection failure */
-                }
-                protoGetterIsPlainNative = !_isClassicCp;
+                protoGetterIsPlainNative = !_findMetaDescriptor(
+                  Object.getPrototypeOf(instance),
+                  key
+                );
               }
               break;
             }
@@ -6449,268 +6384,187 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           // getter that would invoke the user's `get count()` a second
           // time just to prime the cell. Pre-installing a data descriptor
           // with the value we already have avoids that extra invocation.
-          try {
-            const initialVal = argVal;
-            try {
-              Object.defineProperty(renderContext, key, {
-                value: initialVal,
-                writable: true,
-                enumerable: true,
-                configurable: true,
-              });
-            } catch {
-              /* ignore — fall through to cellFor */
-            }
-            const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
-            cell.update(initialVal);
-            renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
-            // Register the array value as an owner of this arg cell via the
-            // bridge.
-            if (Array.isArray(initialVal)) {
-              getGxtRenderer()?.compilePipeline.registerArrayOwner?.(
-                initialVal,
-                renderContext,
-                key
-              );
-            }
-            // Detect classic @computed CP with a setter on the prototype chain.
-            // When present, the wrapper setter below must also invoke the CP's
-            // `_setter` for its side effects (e.g. `set width(w) { this.set('height', w/2) }`);
-            // otherwise the cell-backed descriptor silently eats the write and
-            // breaks mutable bindings of CP-with-setter.
-            let cpWithSetter_rc: any = null;
-            try {
-              let proto_rc = Object.getPrototypeOf(instance!);
-              while (proto_rc && proto_rc !== Object.prototype) {
-                const pmeta_rc: any = peekMeta(proto_rc);
-                if (pmeta_rc) {
-                  const d = pmeta_rc.peekDescriptors?.(key);
-                  if (d && d._setter && d._setter !== d._getter) {
-                    cpWithSetter_rc = d;
-                    break;
-                  }
-                }
-                proto_rc = Object.getPrototypeOf(proto_rc);
+          const initialVal = argVal;
+          Object.defineProperty(renderContext, key, {
+            value: initialVal,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
+          const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
+          cell.update(initialVal);
+          renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
+          // Register the array value as an owner of this arg cell via the
+          // bridge.
+          if (Array.isArray(initialVal)) {
+            getGxtRenderer()?.compilePipeline.registerArrayOwner?.(initialVal, renderContext, key);
+          }
+          // Detect classic @computed CP with a setter on the prototype chain.
+          // When present, the wrapper setter below must also invoke the CP's
+          // `_setter` for its side effects (e.g. `set width(w) { this.set('height', w/2) }`);
+          // otherwise the cell-backed descriptor silently eats the write and
+          // breaks mutable bindings of CP-with-setter.
+          let cpWithSetter_rc: any = null;
+          let proto_rc = Object.getPrototypeOf(instance!);
+          while (proto_rc && proto_rc !== Object.prototype) {
+            const pmeta_rc: any = peekMeta(proto_rc);
+            if (pmeta_rc) {
+              const d = pmeta_rc.peekDescriptors?.(key);
+              if (d && d._setter && d._setter !== d._getter) {
+                cpWithSetter_rc = d;
+                break;
               }
-            } catch {
-              /* ignore */
             }
-            // Install a cell-backed descriptor manually: argVal is already
-            // computed and the cell initialized with it, whereas
-            // cellFor(skipDefine=false) would invoke the user's prototype
-            // getter a second time to prime the cell.
-            try {
-              // For a plain native get-only collision getter, build a
-              // per-instance dep-memoized GXT `cached()` wrapper of the
-              // prototype getter so `this.<key>` re-invokes the user getter
-              // (firing its side effect) — but only when its deps (e.g.
-              // `this.args.count`) dirty, not on every read. Reusing the
-              // module-level `__gxtPureGetterCache` keeps the wrapper stable
-              // across createRenderContext re-invocations so multi-read
-              // priming within one render returns the cached value
-              // (exactly-once side effect). The arg cell is still kept
-              // current (updated on the setter below + the effect) so
-              // `this.args.<key>` reads stay reactive.
-              let _nativeGetterWrapper: any = undefined;
-              if (_useCachedNativeGetter) {
-                let _wmap = __gxtPureGetterCache.get(instance!);
-                if (!_wmap) {
-                  _wmap = new Map<string, any>();
-                  __gxtPureGetterCache.set(instance!, _wmap);
-                }
-                _nativeGetterWrapper = _wmap.get(key);
-                if (!_nativeGetterWrapper) {
-                  const _pg = protoGetterFn;
-                  const _inst = instance!;
-                  _nativeGetterWrapper = _gxtCached(
-                    () => _pg.call(_inst),
-                    'native-arg-getter:' + key
-                  );
-                  _wmap.set(key, _nativeGetterWrapper);
-                }
-              }
-              const rcHasCompGet: any = function () {
-                try {
-                  _classicConsumeTagHook(_classicTagForHook(renderContext, key));
-                } catch {
-                  /* noop */
-                }
-                // Plain native collision getter → route through the cached
-                // wrapper (dep-memoized; re-invokes the user getter only when
-                // its deps dirty). Read cell.value too so the arg-cell
-                // dependency is still tracked by the ambient formula.
-                if (_nativeGetterWrapper) {
-                  try {
-                    cell.value;
-                  } catch {
-                    /* ignore */
-                  }
-                  return _nativeGetterWrapper.value;
-                }
-                return cell.value;
-              };
-              // Mark so re-entrant createRenderContext can detect and skip
-              // the redundant cellFor, which would trigger the user's
-              // prototype getter a second time just to read the current
-              // value. The installed getter already handles reads.
-              rcHasCompGet.__gxtRenderCtxArgGetter = true;
-              Object.defineProperty(renderContext, key, {
-                get: rcHasCompGet,
-                set(v: any) {
-                  cell.update(v);
-                  // Invoke CP setter for its side effects (see createComponentInstance).
-                  if (cpWithSetter_rc && !(instance as any).__gxtInvokingCpSetter) {
-                    if ((instance as any).__gxtDispatchingArgs) {
-                      if (!(instance as any).__gxtCpArgDispatched)
-                        (instance as any).__gxtCpArgDispatched = {};
-                      (instance as any).__gxtCpArgDispatched[key] = v;
-                    }
-                    try {
-                      (instance as any).__gxtInvokingCpSetter = true;
-                      cpWithSetter_rc.set(instance, key, v);
-                    } catch {
-                      /* ignore CP setter failures */
-                    } finally {
-                      (instance as any).__gxtInvokingCpSetter = false;
-                    }
-                  }
-                  try {
-                    classicDirtyTagForGuarded(renderContext, key);
-                  } catch {
-                    /* noop */
-                  }
-                },
-                enumerable: true,
-                configurable: true,
-              });
-              // Install a gxt effect that dirties the classic tag whenever
-              // the upstream arg cell invalidates — handles parent mutations
-              // that don't route through the instance's setter.
-              _installArgDirtyEffect(instance || renderContext, renderContext, key, () =>
-                _readArgCell(cell, getter)
-              );
-            } catch {
-              /* ignore */
+            proto_rc = Object.getPrototypeOf(proto_rc);
+          }
+          // Install a cell-backed descriptor manually: argVal is already
+          // computed and the cell initialized with it, whereas
+          // cellFor(skipDefine=false) would invoke the user's prototype
+          // getter a second time to prime the cell.
+          // For a plain native get-only collision getter, build a
+          // per-instance dep-memoized GXT `cached()` wrapper of the
+          // prototype getter so `this.<key>` re-invokes the user getter
+          // (firing its side effect) — but only when its deps (e.g.
+          // `this.args.count`) dirty, not on every read. Reusing the
+          // module-level `__gxtPureGetterCache` keeps the wrapper stable
+          // across createRenderContext re-invocations so multi-read
+          // priming within one render returns the cached value
+          // (exactly-once side effect). The arg cell is still kept
+          // current (updated on the setter below + the effect) so
+          // `this.args.<key>` reads stay reactive.
+          let _nativeGetterWrapper: any = undefined;
+          if (_useCachedNativeGetter) {
+            let _wmap = __gxtPureGetterCache.get(instance!);
+            if (!_wmap) {
+              _wmap = new Map<string, any>();
+              __gxtPureGetterCache.set(instance!, _wmap);
             }
-          } catch {
-            try {
-              const g = getter;
-              Object.defineProperty(renderContext, key, {
-                get() {
-                  return g();
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            } catch {
-              /* ignore */
+            _nativeGetterWrapper = _wmap.get(key);
+            if (!_nativeGetterWrapper) {
+              const _pg = protoGetterFn;
+              const _inst = instance!;
+              _nativeGetterWrapper = _gxtCached(() => _pg.call(_inst), 'native-arg-getter:' + key);
+              _wmap.set(key, _nativeGetterWrapper);
             }
           }
-        } else {
-          // Plain data property — use skipDefine=true with custom getter/setter for local override tracking.
-          try {
-            const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
-            const initialVal = argVal;
-            cell.update(initialVal);
-            renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
-            // Preserve local-override state across createRenderContext re-invocations
-            // by storing it in a WeakMap keyed by instance+key. Closure variables
-            // would be lost when the descriptor is replaced (e.g. by
-            // cellFor(obj, key, false) called elsewhere during the same render
-            // pass); the WeakMap survives.
-            const existingState = instance ? _getRcArgState(instance, key) : undefined;
-            const state = existingState || {
-              localVal: initialVal,
-              useLocal: false,
-              currentGetter: getter,
-            };
-            // Always refresh the currentGetter slot so the rcGet closure reads
-            // the latest arg getter (the per-row closure for #each iterations).
-            // The slow path runs on first install AND when the descriptor was
-            // replaced (e.g., by an upstream cellFor reinstall) — both need a
-            // fresh getter. The fast-path skip above keeps state.currentGetter
-            // in sync for subsequent createRenderContext re-invocations.
-            state.currentGetter = getter;
-            if (!existingState && instance) _setRcArgState(instance, key, state);
-            const rcGet: any = function () {
-              try {
-                cell.value;
-              } catch {
-                /* ignore */
-              }
-              try {
-                _classicConsumeTagHook(_classicTagForHook(renderContext, key));
-              } catch {
-                /* noop */
-              }
-              if (state.useLocal) return state.localVal;
-              const g = state.currentGetter || getter;
-              return g ? g() : state.localVal;
-            };
-            rcGet.__gxtRenderCtxArgGetter = true;
-            const rcSet = function (v: any) {
-              if ((instance as any).__gxtDispatchingArgs) {
-                state.localVal = v;
-                state.useLocal = false;
-                cell.update(v);
-                if (instance?.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
-              } else {
-                state.localVal = v;
-                state.useLocal = true;
-                cell.update(v);
-                if (instance) {
-                  if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
-                  instance.__gxtLocalOverrides.add(key);
+          const rcHasCompGet: any = function () {
+            _classicConsumeTagHook(_classicTagForHook(renderContext, key));
+            // Plain native collision getter → route through the cached
+            // wrapper (dep-memoized; re-invokes the user getter only when
+            // its deps dirty). Read cell.value too so the arg-cell
+            // dependency is still tracked by the ambient formula.
+            if (_nativeGetterWrapper) {
+              cell.value;
+              return _nativeGetterWrapper.value;
+            }
+            return cell.value;
+          };
+          // Mark so re-entrant createRenderContext can detect and skip
+          // the redundant cellFor, which would trigger the user's
+          // prototype getter a second time just to read the current
+          // value. The installed getter already handles reads.
+          rcHasCompGet.__gxtRenderCtxArgGetter = true;
+          Object.defineProperty(renderContext, key, {
+            get: rcHasCompGet,
+            set(v: any) {
+              cell.update(v);
+              // Invoke CP setter for its side effects (see createComponentInstance).
+              if (cpWithSetter_rc && !(instance as any).__gxtInvokingCpSetter) {
+                if ((instance as any).__gxtDispatchingArgs) {
+                  if (!(instance as any).__gxtCpArgDispatched)
+                    (instance as any).__gxtCpArgDispatched = {};
+                  (instance as any).__gxtCpArgDispatched[key] = v;
+                }
+                // What the setter throws reaches the write.
+                try {
+                  (instance as any).__gxtInvokingCpSetter = true;
+                  cpWithSetter_rc.set(instance, key, v);
+                } finally {
+                  (instance as any).__gxtInvokingCpSetter = false;
                 }
               }
-              try {
-                classicDirtyTagForGuarded(renderContext, key);
-              } catch {
-                /* noop */
+              // What a classic reactor the dirty runs throws reaches the write.
+              classicDirtyTagForGuarded(renderContext, key);
+            },
+            enumerable: true,
+            configurable: true,
+          });
+          // Install a gxt effect that dirties the classic tag whenever
+          // the upstream arg cell invalidates — handles parent mutations
+          // that don't route through the instance's setter.
+          _installArgDirtyEffect(instance || renderContext, renderContext, key, () =>
+            _readArgCell(cell, getter)
+          );
+        } else {
+          // Plain data property — use skipDefine=true with custom getter/setter for local override tracking.
+          const cell = _gxtCellFor(renderContext, key, /* skipDefine */ true);
+          const initialVal = argVal;
+          cell.update(initialVal);
+          renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
+          // Preserve local-override state across createRenderContext re-invocations
+          // by storing it in a WeakMap keyed by instance+key. Closure variables
+          // would be lost when the descriptor is replaced (e.g. by
+          // cellFor(obj, key, false) called elsewhere during the same render
+          // pass); the WeakMap survives.
+          const existingState = instance ? _getRcArgState(instance, key) : undefined;
+          const state = existingState || {
+            localVal: initialVal,
+            useLocal: false,
+            currentGetter: getter,
+          };
+          // Always refresh the currentGetter slot so the rcGet closure reads
+          // the latest arg getter (the per-row closure for #each iterations).
+          // The slow path runs on first install AND when the descriptor was
+          // replaced (e.g., by an upstream cellFor reinstall) — both need a
+          // fresh getter. The fast-path skip above keeps state.currentGetter
+          // in sync for subsequent createRenderContext re-invocations.
+          state.currentGetter = getter;
+          if (!existingState && instance) _setRcArgState(instance, key, state);
+          const rcGet: any = function () {
+            cell.value;
+            _classicConsumeTagHook(_classicTagForHook(renderContext, key));
+            if (state.useLocal) return state.localVal;
+            const g = state.currentGetter || getter;
+            return g ? g() : state.localVal;
+          };
+          rcGet.__gxtRenderCtxArgGetter = true;
+          const rcSet = function (v: any) {
+            if ((instance as any).__gxtDispatchingArgs) {
+              state.localVal = v;
+              state.useLocal = false;
+              cell.update(v);
+              if (instance?.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
+            } else {
+              state.localVal = v;
+              state.useLocal = true;
+              cell.update(v);
+              if (instance) {
+                if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
+                instance.__gxtLocalOverrides.add(key);
               }
-            };
-            Object.defineProperty(renderContext, key, {
-              get: rcGet,
-              set: rcSet,
-              enumerable: true,
-              configurable: true,
-            });
-            // Install a gxt effect that dirties the classic tag whenever
-            // the upstream arg cell invalidates. This handles the common
-            // case where nothing reads `instance.key` between a parent
-            // mutation and the downstream cache read — the effect re-runs
-            // on cell change and proactively dirties the tag.
-            try {
-              _installArgDirtyEffect(instance || renderContext, renderContext, key, () =>
-                _readArgCell(cell, getter)
-              );
-            } catch {
-              /* ignore */
             }
-            // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
-            // Register the array value as an owner of this arg cell via the
-            // bridge.
-            if (Array.isArray(initialVal)) {
-              getGxtRenderer()?.compilePipeline.registerArrayOwner?.(
-                initialVal,
-                renderContext,
-                key
-              );
-            }
-          } catch {
-            // Fallback to plain getter
-            try {
-              const g = getter;
-              Object.defineProperty(renderContext, key, {
-                get() {
-                  return g();
-                },
-                enumerable: true,
-                configurable: true,
-              });
-            } catch {
-              /* ignore */
-            }
+            // What a classic reactor the dirty runs throws reaches the write.
+            classicDirtyTagForGuarded(renderContext, key);
+          };
+          Object.defineProperty(renderContext, key, {
+            get: rcGet,
+            set: rcSet,
+            enumerable: true,
+            configurable: true,
+          });
+          // Install a gxt effect that dirties the classic tag whenever
+          // the upstream arg cell invalidates. This handles the common
+          // case where nothing reads `instance.key` between a parent
+          // mutation and the downstream cache read — the effect re-runs
+          // on cell change and proactively dirties the tag.
+          _installArgDirtyEffect(instance || renderContext, renderContext, key, () =>
+            _readArgCell(cell, getter)
+          );
+          // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
+          // Register the array value as an owner of this arg cell via the
+          // bridge.
+          if (Array.isArray(initialVal)) {
+            getGxtRenderer()?.compilePipeline.registerArrayOwner?.(initialVal, renderContext, key);
           }
         }
       }
@@ -6857,44 +6711,36 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           desc.configurable !== false &&
           typeof desc.value !== 'function'
         ) {
-          try {
-            // Guard against recursive cell-backed getters (GH#18417):
-            // If GXT's template machinery has already registered a lazy formula
-            // cell (Yt with __fn) for (instance, key), calling cellFor with
-            // skipDefine=false would install a getter `() => cell.value`. The
-            // cell's __fn reads `instance[key]` — which now routes through the
-            // newly installed getter — producing infinite recursion (StackOverflow).
-            // Probe with skipDefine=true first; if the cell already exists and
-            // is formula-backed, leave the raw data property in place so the
-            // formula's __fn reads the data directly.
-            const _existing = _gxtCellFor(instance, key, /* skipDefine */ true);
-            if (_existing && typeof (_existing as any).__fn === 'function') {
-              continue;
-            }
-            const _c = _gxtCellFor(instance, key, /* skipDefine */ false);
-            // Reconcile: cellFor(skipDefine=false) may install a fresh getter/setter
-            // backed by a cell that doesn't know the current data value (it was set
-            // via this.set() BEFORE the cell was installed, e.g., in didReceiveAttrs).
-            // If the cell's value disagrees with the data value we just saw, update
-            // the cell so the getter returns the correct initial value.
-            if (_c && desc.value !== undefined && _c._value !== desc.value) {
-              try {
-                _c.update(desc.value);
-              } catch {
-                /* ignore */
-              }
-            }
-            // Register array owner for KVO array mutation tracking
-            if (Array.isArray(desc.value)) {
-              _gxtCp?.registerArrayOwner?.(desc.value, instance, key);
-            }
-            // Register reverse mapping: when a property on this object value changes,
-            // dirty this cell so formulas reading nested paths (e.g., this.m.formattedMessage) re-evaluate.
-            if (desc.value && typeof desc.value === 'object') {
-              _gxtCp?.registerObjectValueOwner?.(desc.value, instance, key);
-            }
-          } catch {
-            /* ignore */
+          // Guard against recursive cell-backed getters (GH#18417):
+          // If GXT's template machinery has already registered a lazy formula
+          // cell (Yt with __fn) for (instance, key), calling cellFor with
+          // skipDefine=false would install a getter `() => cell.value`. The
+          // cell's __fn reads `instance[key]` — which now routes through the
+          // newly installed getter — producing infinite recursion (StackOverflow).
+          // Probe with skipDefine=true first; if the cell already exists and
+          // is formula-backed, leave the raw data property in place so the
+          // formula's __fn reads the data directly.
+          const _existing = _gxtCellFor(instance, key, /* skipDefine */ true);
+          if (_existing && typeof (_existing as any).__fn === 'function') {
+            continue;
+          }
+          const _c = _gxtCellFor(instance, key, /* skipDefine */ false);
+          // Reconcile: cellFor(skipDefine=false) may install a fresh getter/setter
+          // backed by a cell that doesn't know the current data value (it was set
+          // via this.set() BEFORE the cell was installed, e.g., in didReceiveAttrs).
+          // If the cell's value disagrees with the data value we just saw, update
+          // the cell so the getter returns the correct initial value.
+          if (_c && desc.value !== undefined && _c._value !== desc.value) {
+            _c.update(desc.value);
+          }
+          // Register array owner for KVO array mutation tracking
+          if (Array.isArray(desc.value)) {
+            _gxtCp?.registerArrayOwner?.(desc.value, instance, key);
+          }
+          // Register reverse mapping: when a property on this object value changes,
+          // dirty this cell so formulas reading nested paths (e.g., this.m.formattedMessage) re-evaluate.
+          if (desc.value && typeof desc.value === 'object') {
+            _gxtCp?.registerObjectValueOwner?.(desc.value, instance, key);
           }
         }
       }
@@ -6977,15 +6823,13 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             wrapper = _gxtCached(() => getterFn.call(target), 'ember-getter:' + prop);
             gxtGetterCache.set(prop, wrapper);
           }
-          try {
-            const val = wrapper.value;
-            if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
-              return wrapNestedObjectForTracking(val);
-            }
-            return val;
-          } catch {
-            // fall through to the uncached read below on any failure
+          // What the getter throws propagates (it ran again uncached, and threw
+          // again, when this read retried).
+          const val = wrapper.value;
+          if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
+            return wrapNestedObjectForTracking(val);
           }
+          return val;
         }
 
         const val = Reflect.get(target, prop, target);
@@ -7009,18 +6853,16 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         return value;
       }
 
-      try {
-        const cell = _gxtCellFor(target, prop, /* skipDefine */ false);
-        if (cell) {
-          const cellVal = cell.value;
-          // Wrap nested Ember objects so sub-property reads are tracked
-          if (cellVal !== null && typeof cellVal === 'object' && !(cellVal instanceof Node)) {
-            return wrapNestedObjectForTracking(cellVal);
-          }
-          return cellVal;
+      // A data property or none (gxt's own accessor install skips an
+      // object that does not take it).
+      const cell = _gxtCellFor(target, prop, /* skipDefine */ false);
+      if (cell) {
+        const cellVal = cell.value;
+        // Wrap nested Ember objects so sub-property reads are tracked
+        if (cellVal !== null && typeof cellVal === 'object' && !(cellVal instanceof Node)) {
+          return wrapNestedObjectForTracking(cellVal);
         }
-      } catch {
-        /* ignore */
+        return cellVal;
       }
 
       // Wrap nested Ember objects for tracking even without cells
@@ -7059,18 +6901,10 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
 const _gxtListMarkers = new WeakSet<Comment>();
 {
   const _registerMarker = (m: Comment) => {
-    try {
-      _gxtListMarkers.add(m);
-    } catch {
-      /* non-comment / frozen — skip */
-    }
+    _gxtListMarkers.add(m);
   };
   const _unregisterMarker = (m: Comment) => {
-    try {
-      _gxtListMarkers.delete(m);
-    } catch {
-      /* ignore */
-    }
+    _gxtListMarkers.delete(m);
   };
   _gxtRegisterHostHooks({
     registerListMarker: _registerMarker,
