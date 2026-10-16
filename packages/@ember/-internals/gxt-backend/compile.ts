@@ -2597,6 +2597,52 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
     // destroyed owners.
     const _seenNames = new Set<string>();
 
+    // A curried component made from a reference to its definition
+    // (`(component this.name)`, `(component @definition)`) follows the
+    // reference, as Glimmer's curried reference (`createCurryRef`) does: its
+    // `__gxtFollow` returns the curried component of the definition the
+    // reference has now, made again only when the definition changed (which
+    // throws where making it throws: a string in a strict-mode template, a
+    // name no component has). An invocation of the curried value
+    // (`{{#let (component this.name) as |C|}}<C />{{/let}}`) renders through
+    // it, so it renders the component of the new definition.
+    // A curried component is the same definition as another curried component
+    // of the same definition (a reference to one can make a new one on every
+    // read; its arguments are live).
+    const sameDefinition = (a: any, b: any): boolean =>
+      a === b ||
+      (!!a &&
+        !!b &&
+        a.__isCurriedComponent === true &&
+        b.__isCurriedComponent === true &&
+        a.__name === b.__name);
+    const followReference = (
+      made: any,
+      first: unknown,
+      params: any[],
+      hash: Record<string, any>,
+      strict?: boolean
+    ): any => {
+      const source = params[0];
+      if (typeof source !== 'function' || source.prototype) return made;
+      let current = made;
+      let currentFirst = first;
+      Object.defineProperty(made, '__gxtFollow', {
+        value: () => {
+          const next = unwrapArg(source);
+          if (!sameDefinition(next, currentFirst)) {
+            current = g.$_componentHelper(params, hash, strict);
+            currentFirst = next;
+          }
+          return current;
+        },
+        configurable: true,
+        enumerable: false,
+        writable: true,
+      });
+      return made;
+    };
+
     // `strict`: the call is in a strict-mode template (its `$_componentHelper`
     // passes `true`, see the strict-mode injection in `precompileTemplate`).
     g.$_componentHelper = function $_componentHelper_ember(
@@ -2628,7 +2674,7 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           __curriedPositionals: [],
           __isEmpty: true,
         };
-        return emptyMarker;
+        return followReference(emptyMarker, first, params, hash, strict);
       }
 
       // A strict-mode template resolves no string definition (Glimmer's
@@ -2767,7 +2813,13 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
       }
       try {
         // Create a curried component
-        return createCurried(first, namedArgs, positionals);
+        return followReference(
+          createCurried(first, namedArgs, positionals),
+          first,
+          params,
+          hash,
+          strict
+        );
       } finally {
         if (!prevOwner && owner) {
           setAmbientOwner(prevOwner);
@@ -9154,6 +9206,17 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     }
 
     if (comp && comp.__isCurriedComponent) {
+      // A curried component made from a reference to its definition renders
+      // the component of the definition the reference has (see `__gxtFollow`
+      // in `$_componentHelper_ember`), as a dynamic component invocation.
+      if (
+        typeof comp.__gxtFollow === 'function' &&
+        args !== null &&
+        typeof args === 'object' &&
+        !isTagPropsTuple(args)
+      ) {
+        return g.$_dc(comp.__gxtFollow, args, ctx);
+      }
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
         let fw = args?.[$PROPS_SYMBOL] || null;
