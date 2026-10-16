@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T00:19:14.131Z",
+    "capturedAt": "2026-10-16T02:12:30.011Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "81d10d84e9",
-    "totalTests": 10146,
-    "totalModules": 994,
+    "emberCommit": "d6c2ee0b9b",
+    "totalTests": 10150,
+    "totalModules": 995,
     "quarantinedTests": 0,
-    "totalAssertions": 60558,
-    "totalAssertionsPassing": 59984,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a render asserts when it writes a tracked value it already read, a value invoked as a modifier, helper or component needs a manager of that kind, and a Glimmer component used as a route template is created by its manager; written by runner.mjs in the GitHub Actions GXT full workflow (run 38828701577, on the code of 81d10d84e9). 9737/10146 green (was 9727/10140), 994 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 6 new tests, green: a child writing a tracked property its Glimmer parent rendered asserts, a child setting a property of an object its Glimmer parent rendered asserts, a child writing a tracked property its Glimmer parent did not render does not assert, a child setting a property its Glimmer parent did not render of an object the parent rendered does not assert, a component definition invoked as a helper throws, a function in modifier position is not a modifier. 4 tests turned green: it can use a component as the route template, an invalid dynamic component value in non-strict mode, and the strict-mode static non-component and non-modifier tests. Message-only differences (the assertion fires, its text differs from Glimmer's): the 2 tracked Glimmer-component backtracking tests (render tree lines), the 2 backtracking-message tests (outlet render tree, object name), the strict-mode invalid dynamic component value and the dynamic non-modifier test."
+    "totalAssertions": 60579,
+    "totalAssertionsPassing": 60013,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a dynamic component follows its definition, a curried component made from a reference follows its definition, a component whose template starts with a dynamic component lives on when it changes, and a component in an in-element block lives with the block and leaves with it; written by runner.mjs in the GitHub Actions GXT full workflow (run 38839119767, on the code of d6c2ee0b9b). 9746/10150 green (was 9737/10146), 995 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 4 new tests, green: {{component}} and an angle-bracket invocation render the component of the definition their value changes to, a dynamic component renders nothing while its value defines no component, and a dynamic component that rendered nothing renders the component its value changes to. 5 tests turned green: component helper with bound properties are updating correctly in init of component, initially missing then present then missing, and the three strict-mode string-definition tests after first render (append, block and expression position)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1596,9 +1596,9 @@
     },
     "Components test: dynamic components": {
       "total": 20,
-      "passing": 14,
+      "passing": 15,
       "assertionsTotal": 69,
-      "assertionsPassing": 59,
+      "assertionsPassing": 60,
       "failingTests": [
         {
           "name": " it throws a useful assertion for an invalid dynamic component value in strict mode",
@@ -1610,10 +1610,6 @@
         },
         {
           "name": " component helper destroys underlying component when it is swapped out",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " component helper with bound properties are updating correctly in init of component",
           "category": "gxt:triage"
         },
         {
@@ -2620,6 +2616,13 @@
       "passing": 3,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT dynamic components follow their definition": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 21,
+      "assertionsPassing": 21,
       "failingTests": []
     },
     "GXT dynamic content": {
@@ -6118,15 +6121,10 @@
     },
     "[integration] jit :: [components] dynamic components": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 7,
-      "assertionsPassing": 4,
-      "failingTests": [
-        {
-          "name": "initially missing, then present, then missing",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 7,
+      "failingTests": []
     },
     "[integration] jit :: [components] glimmer components": {
       "total": 3,
@@ -7155,9 +7153,9 @@
     },
     "[integration] jit :: strict mode: general properties": {
       "total": 17,
-      "passing": 9,
+      "passing": 12,
       "assertionsTotal": 70,
-      "assertionsPassing": 62,
+      "assertionsPassing": 65,
       "failingTests": [
         {
           "name": "Undefined references is an error",
@@ -7172,23 +7170,11 @@
           "category": "gxt:triage"
         },
         {
-          "name": "{{component}} throws an error if a string is used indirectly in strict after first render (append position)",
-          "category": "gxt:triage"
-        },
-        {
           "name": "{{component}} throws an error if a string is used in strict (block position)",
           "category": "gxt:triage"
         },
         {
-          "name": "{{component}} throws an error if a string is used indirectly in strict after first render (block position)",
-          "category": "gxt:triage"
-        },
-        {
           "name": "{{component}} throws an error if a string is used in strict (expression position)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{component}} throws an error if a string is used indirectly in strict after first render (expression position)",
           "category": "gxt:triage"
         }
       ]
@@ -8791,7 +8777,7 @@
       "total": 8,
       "passing": 7,
       "assertionsTotal": 42,
-      "assertionsPassing": 40,
+      "assertionsPassing": 41,
       "failingTests": [
         {
           "name": " components are cleaned up properly",
@@ -8866,6 +8852,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 409
+    "gxt:triage": 404
   }
 }
