@@ -209,11 +209,7 @@ function _callGetValueWithBacktracking(
   // EXISTS but throws when invoked. Never call it outside DEBUG.
   if (DEBUG && typeof delegate.getDebugName === 'function') {
     const definition = self._getDefinitionForBucket(bucket);
-    try {
-      debugName = delegate.getDebugName(definition || bucket) || 'Helper';
-    } catch {
-      /* fallback */
-    }
+    debugName = delegate.getDebugName(definition || bucket) || 'Helper';
   }
   if (bt) {
     bt.beginFrame(debugName);
@@ -506,11 +502,7 @@ export class CustomHelperManager {
       // it. The createComputeRef/createConstRef wrappers don't set this by
       // default because most GXT paths consume `.value` directly without
       // going through the VM's reference checker.
-      try {
-        (ref as any)[REFERENCE] = true;
-      } catch {
-        // frozen — ignore
-      }
+      (ref as any)[REFERENCE] = true;
 
       // Associate the helper bucket as a destroyable child of the returned
       // ref. When stock Glimmer VM's VM_DYNAMIC_HELPER_OP swaps the helper
@@ -522,13 +514,9 @@ export class CustomHelperManager {
       //
       // Only associate when the delegate opted into destroyable handling.
       if (manager.capabilities?.hasDestroyable && typeof manager.getDestroyable === 'function') {
-        try {
-          const destroyable = manager.getDestroyable(bucket);
-          if (destroyable) {
-            associateDestroyableChild(ref, destroyable);
-          }
-        } catch {
-          /* association failures must not break rendering */
+        const destroyable = manager.getDestroyable(bucket);
+        if (destroyable) {
+          associateDestroyableChild(ref, destroyable);
         }
       }
       return ref;
