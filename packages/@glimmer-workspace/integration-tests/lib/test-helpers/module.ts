@@ -9,6 +9,7 @@ import type { DeclaredComponentKind } from '../test-decorator';
 import { JitRenderDelegate } from '../modes/jit/delegate';
 import { JitSerializationDelegate, NodeJitRenderDelegate } from '../modes/node/env';
 import { GxtRehydrationDelegate, gxtUnsupportedReason } from '../modes/rehydration/gxt-delegate';
+import { gxtVmOnlyReason } from './gxt-unsupported';
 
 /**
  * Under GXT (`__GXT_MODE__`) the rehydration suites render through GXT, with
@@ -21,7 +22,8 @@ function overrideRehydrationDelegate<D extends RenderDelegate>(
   return GxtRehydrationDelegate as unknown as RenderDelegateConstructor<D>;
 }
 
-// Tests the GXT rehydration delegate cannot run (see `gxtUnsupportedReason`)
+// Under GXT, tests that check Glimmer VM internals (see `gxtVmOnlyReason`) and
+// tests the GXT rehydration delegate cannot run (see `gxtUnsupportedReason`)
 // are registered as `QUnit.skip`.
 function isUnsupportedUnderGxt(
   Delegate: RenderDelegateConstructor<RenderDelegate>,
@@ -30,8 +32,9 @@ function isUnsupportedUnderGxt(
 ): boolean {
   return (
     __GXT_MODE__ &&
-    (Delegate as unknown) === GxtRehydrationDelegate &&
-    gxtUnsupportedReason(suiteName, testName) !== undefined
+    (gxtVmOnlyReason(suiteName, testName) !== undefined ||
+      ((Delegate as unknown) === GxtRehydrationDelegate &&
+        gxtUnsupportedReason(suiteName, testName) !== undefined))
   );
 }
 

@@ -1,0 +1,32 @@
+/**
+ * Tests of the suites that check Glimmer VM internals with no GXT equivalent,
+ * by suite name (the test class's `suiteName`) and test name, with the reason.
+ * Under GXT (`__GXT_MODE__`), `module.ts` registers them as `QUnit.skip`,
+ * whatever the delegate. The rehydration delegate's own list is
+ * `GXT_UNSUPPORTED` in `modes/rehydration/gxt-delegate.ts`.
+ */
+
+const LIST_UPDATE_STEPS =
+  "verifies only the LOCAL_DEBUG 'list-updates' steps (retain/move) of the Glimmer VM's list reconciliation; GXT's keyed list records no such steps";
+
+const GXT_VM_ONLY: Record<string, Record<string, string>> = {
+  '#each': {
+    'When re-iterated via swap #1, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #2, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #3, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #4, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #5, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #6, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #7, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #8, the original references are updated': LIST_UPDATE_STEPS,
+    'When re-iterated via swap #9, the original references are updated': LIST_UPDATE_STEPS,
+  },
+};
+
+/** The reason `testName` of `suiteName` checks Glimmer VM internals, if listed. */
+export function gxtVmOnlyReason(suiteName: string, testName: string): string | undefined {
+  const suite = GXT_VM_ONLY[suiteName];
+  return suite && Object.prototype.hasOwnProperty.call(suite, testName)
+    ? suite[testName]
+    : undefined;
+}
