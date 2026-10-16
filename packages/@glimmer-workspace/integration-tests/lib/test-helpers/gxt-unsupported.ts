@@ -10,6 +10,8 @@ const LIST_UPDATE_STEPS =
   "verifies only the LOCAL_DEBUG 'list-updates' steps (retain/move) of the Glimmer VM's list reconciliation; GXT's keyed list records no such steps";
 const SERIALIZATION =
   "asserts the markers of Glimmer's SerializeBuilder (the block comments and the `<!--% %-->` placeholder of an empty text node); GXT emits no serialization markers";
+const DYNAMIC_SCOPE =
+  "sets and reads dynamic variables other than outletState, which only the Glimmer VM's default DynamicScopeImpl stores; Ember's dynamic scope, and GXT with it, supports outletState only";
 
 const GXT_VM_ONLY: Record<string, Record<string, string>> = {
   '#each': {
@@ -25,6 +27,11 @@ const GXT_VM_ONLY: Record<string, Record<string, string>> = {
   },
   'Server-side rendering in Node.js (serialize)': {
     'Null literals do not have representation in DOM': SERIALIZATION,
+  },
+  '-with-dynamic-vars and -get-dynamic-var': {
+    'Can get and set dynamic variable': DYNAMIC_SCOPE,
+    'Can get and set dynamic variable with bound names': DYNAMIC_SCOPE,
+    'Can shadow existing dynamic variable': DYNAMIC_SCOPE,
   },
 };
 
