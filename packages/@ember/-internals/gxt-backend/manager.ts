@@ -4793,22 +4793,16 @@ function _viewDepth(instance: any): number {
   return depth;
 }
 
-// Recursion depth guard for `_gxtPostRenderHooks` re-entry. When a didUpdate
-// hook calls `this.set(...)` which dirties a cell, we run a follow-up sync
-// pass so the DOM reflects the change before the runTask returns. That sync
-// pass calls `_gxtPostRenderHooks` again; bound the recursion so a hook that
-// perpetually dirties state can't loop forever.
-let _postRenderHookReentryDepth = 0;
-const _POST_RENDER_MAX_REENTRY = 3;
-
 // Post-render lifecycle hooks — called after DOM sync completes.
 // Order: deepest children first; siblings at the same depth fire in insertion
 // order (i.e., the order they appear in _updatedInstances). Parents fire last.
 //
 // Exposed as the `compilePipeline.postRenderHooks` bridge method, called from
-// phase 3 of compile.ts's `_gxtSyncDomNow`.
-function _gxtPostRenderHooks(): void {
-  if (_updatedInstances.length === 0) return;
+// phase 3 of compile.ts's `_gxtSyncDomNow`. Returns whether a hook wrote state
+// (`this.set(...)` inside `didUpdate`): the sync then renders again
+// (compile.ts `_gxtRenderPostRenderWrites`).
+function _gxtPostRenderHooks(): boolean {
+  if (_updatedInstances.length === 0) return false;
 
   // Stable sort: deeper components first, preserve insertion order for same depth
   const indexed = _updatedInstances.map((inst, i) => ({ inst, idx: i, depth: _viewDepth(inst) }));
@@ -4842,10 +4836,7 @@ function _gxtPostRenderHooks(): void {
   // post-render hooks are the GXT equivalent (DOM sync is complete).
   _drainPendingRerenderInstrumentFinalizers();
 
-  // If a lifecycle hook scheduled a property change (via `this.set(...)`),
-  // run another sync pass so the DOM reflects the change within this
-  // runTask (e.g. a tracked write inside `didUpdate` followed by a DOM
-  // assertion before the runTask returns).
+  // Whether a lifecycle hook scheduled a property change (via `this.set(...)`).
   const hookProducedChanges = !!_cpPRH?.getPendingSync?.();
   // Restore the outer pending flags if the hooks didn't contribute new changes;
   // otherwise OR the saved values back in so nothing is lost.
@@ -4859,25 +4850,7 @@ function _gxtPostRenderHooks(): void {
     const _curPC = !!_cpPRH?.getPendingSyncFromPropertyChange?.();
     _cpPRH?.setPendingSyncFromPropertyChange?.(_curPC || savedPendingPC);
   }
-  if (hookProducedChanges && _postRenderHookReentryDepth < _POST_RENDER_MAX_REENTRY) {
-    _postRenderHookReentryDepth++;
-    try {
-      // Temporarily clear the re-entrancy guard so the sync runs. The
-      // `withSyncing(false, fn)` bridge helper clears compile.ts's syncing flag
-      // for the duration of `fn` and restores it afterward.
-      const _cpSync = getGxtRenderer()!.compilePipeline;
-      const syncNow = _cpSync.syncDomNow!;
-      _cpSync.withSyncing!(false, () => {
-        try {
-          syncNow();
-        } catch {
-          /* ignore */
-        }
-      });
-    } finally {
-      _postRenderHookReentryDepth--;
-    }
-  }
+  return hookProducedChanges;
 }
 
 // Track ALL live component instances for destroy detection.

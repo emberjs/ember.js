@@ -7449,6 +7449,41 @@ function _gxtRevalidate(): boolean {
   return true;
 }
 
+// The re-renders started by the writes of the post-render hooks, while they
+// run: a sync among them reports the writes of its own hooks here (`dirty`)
+// instead of starting re-renders of its own.
+let _gxtPostRenderLoop: { dirty: boolean } | null = null;
+
+// A classic component's `didUpdate` / `didRender` runs in the commit of a
+// render, after the DOM changed (Phase 3 of the sync). A write it makes
+// invalidates the render, and Ember renders again before the run loop ends,
+// until no hook writes, at most `ENV._RERENDER_LOOP_LIMIT` times in a row, and
+// then throws "infinite rendering invalidation detected" (base-renderer.ts
+// `loopEnd`, the limit `_gxtRevalidate` applies to the writes of modifier
+// commits). Each re-render is a sync run in the post-render phase of the sync
+// that started the loop, and the rest of that sync's phases run after it.
+function _gxtRenderPostRenderWrites(): void {
+  const outer = _gxtPostRenderLoop;
+  if (outer !== null) {
+    outer.dirty = true;
+    return;
+  }
+  const loop = { dirty: true };
+  _gxtPostRenderLoop = loop;
+  try {
+    let renders = 0;
+    while (loop.dirty) {
+      loop.dirty = false;
+      if (++renders > ENV._RERENDER_LOOP_LIMIT) {
+        throw new Error('infinite rendering invalidation detected');
+      }
+      _gxtWithSyncing(false, _gxtSyncDomNow);
+    }
+  } finally {
+    _gxtPostRenderLoop = null;
+  }
+}
+
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 //
@@ -7806,11 +7841,14 @@ function _gxtSyncDomNow(): void {
       // is fully updated by the force-rerender. Routes through the typed
       // `compilePipeline.postRenderHooks` bridge; the optional chain short-
       // circuits to a no-op when manager.ts has not yet seeded the
-      // compilePipeline namespace (e.g. in classic-Ember builds).
+      // compilePipeline namespace (e.g. in classic-Ember builds). A hook that
+      // wrote state makes the render invalid: it renders again.
       try {
-        getGxtRenderer()?.compilePipeline.postRenderHooks?.();
-      } catch {
-        /* ignore */
+        if (getGxtRenderer()?.compilePipeline.postRenderHooks?.()) {
+          _gxtRenderPostRenderWrites();
+        }
+      } catch (postRenderErr) {
+        _gxtDeferredSyncError = _gxtDeferredSyncError || postRenderErr;
       }
       // PHASE 3b: Flush pending didInsertElement / didRender callbacks for
       // classic components that were instantiated DURING this sync cycle
@@ -14431,11 +14469,6 @@ installCompilePipelinePart({
   // read by the `@ember/object/core.ts` DEBUG proxy-trap and several
   // non-proxy-trap readers.
   isSyncing: _gxtIsSyncing,
-  // Save-restore wrapper for the "syncing" flag, taking the new value as an
-  // argument. The cross-package `manager.ts` post-render-hook re-entry calls it
-  // with `value=false` to bypass the re-entrancy guard on the nested
-  // `_gxtSyncDomNow` invocation.
-  withSyncing: _gxtWithSyncing,
   // Run a modifier manager's install or update as Glimmer's commit (manager.ts
   // `_modifierCommit`): `_gxtRevalidate` renders the cells it writes, and the
   // cells validator.ts's `dirtyTagFor` dirties in it.
@@ -14593,7 +14626,6 @@ assertCompilePipelineInstalled([
   'getHelperRecomputeTag',
   'isTemplateOnlyDefinition',
   'createElementWithContent',
-  'withSyncing',
   'withSuppressDirtyInRcSet',
   'isSyncIsPropertyDriven',
   'isInOutletRender',

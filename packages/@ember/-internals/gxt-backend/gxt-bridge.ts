@@ -371,13 +371,6 @@ export interface GxtCompilePipelineCapabilities {
   isSyncing?(): boolean;
 
   /**
-   * Run `fn` with the syncing flag set to `value`, restoring the previous
-   * value afterwards. manager.ts passes `false` to re-enter `syncDomNow` from
-   * post-render hooks.
-   */
-  withSyncing?<T>(value: boolean, fn: () => T): T;
-
-  /**
    * Run `fn` as a modifier manager's install or update, which is Glimmer's
    * commit: a cell it writes while the sync re-executes the changed bindings
    * is rendered by another pass of that sync. manager.ts wraps the install and
@@ -580,9 +573,9 @@ export interface GxtCompilePipelineCapabilities {
 
   /**
    * Fire the queued `didUpdate` / `didRender` hooks, deepest components first.
-   * If the hooks dirty new state, `syncDomNow` is re-entered (at most 3 levels).
+   * Returns whether the hooks dirtied new state (the sync then renders again).
    */
-  postRenderHooks?(): void;
+  postRenderHooks?(): boolean;
 
   /**
    * Re-render the GXT roots whose tag changed during this sync, or every root
