@@ -28,12 +28,10 @@ class EmberMountElement extends HTMLElement {
     // the engine instance — it will be reused via the shared engine cache
     // (`compilePipeline.getEngineInstances()`).
     if (!(getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false)) {
+      // `destroy()` is a no-op on an instance already destroying; an error
+      // the engine's destructors throw is the engine's own and is reported.
       if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
-        try {
-          this._engineInstance.destroy();
-        } catch {
-          /* ignore */
-        }
+        this._engineInstance.destroy();
       }
     }
     this._engineInstance = null;
