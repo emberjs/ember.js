@@ -2,8 +2,9 @@
  * Writes made while an update renders (compat, GXT_MODE).
  *
  * Glimmer semantics (base-renderer.ts `loopEnd`): a tracked write made in the
- * commit of a render (a modifier's install or update) makes the renderer
- * invalid, and it renders again before the run loop ends. Renders whose commit
+ * commit of a render (a modifier's install or update, a classic component's
+ * `didUpdate` or `didRender`) makes the renderer invalid, and it renders again
+ * before the run loop ends, as many times as it takes. Renders whose commit
  * keeps invalidating them stop after `ENV._RERENDER_LOOP_LIMIT` renders in a
  * row with "infinite rendering invalidation detected".
  *
@@ -15,6 +16,7 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
+import EmberComponent from '@ember/component';
 import { tracked } from '@glimmer/tracking';
 
 moduleFor(
@@ -106,6 +108,64 @@ moduleFor(
 
       runTask(() => (shared.on = true));
       this.assertText('on');
+    }
+
+    ['@test a write in didUpdate is rendered in the same run loop, however many renders it takes']() {
+      let context: object | undefined;
+      // Each update raises the value its parent passes, up to 8.
+      class BumpValue extends EmberComponent {
+        declare value: number;
+
+        didUpdate() {
+          if (this.value < 8) set(context!, 'value', this.value + 1);
+        }
+      }
+      this.owner.register(
+        'component:bump-value',
+        setComponentTemplate(precompileTemplate('{{this.value}}'), BumpValue)
+      );
+      this.render('{{bump-value value=this.value}}', { value: 1 });
+      context = this.context;
+      this.assertText('1');
+
+      runTask(() => set(this.context, 'value', 2));
+      this.assertText('8');
+    }
+
+    ['@test didUpdate writes that keep invalidating stop at the rerender limit']() {
+      let context: object | undefined;
+      let armed = false;
+      // Each update raises the value its parent passes, while armed.
+      class BumpValue extends EmberComponent {
+        declare value: number;
+
+        didUpdate() {
+          if (armed) set(context!, 'value', this.value + 1);
+        }
+      }
+      this.owner.register(
+        'component:bump-value',
+        setComponentTemplate(precompileTemplate('{{this.value}}'), BumpValue)
+      );
+      this.render('{{bump-value value=this.value}}', { value: 1 });
+      context = this.context;
+      this.assertText('1');
+
+      let limit = ENV._RERENDER_LOOP_LIMIT;
+      ENV._RERENDER_LOOP_LIMIT = 10;
+      armed = true;
+      try {
+        this.assert.throws(
+          () => runTask(() => set(this.context, 'value', 2)),
+          /infinite rendering invalidation detected/
+        );
+      } finally {
+        armed = false;
+        ENV._RERENDER_LOOP_LIMIT = limit;
+      }
+
+      runTask(() => set(this.context, 'value', 100));
+      this.assertText('100');
     }
   }
 );
