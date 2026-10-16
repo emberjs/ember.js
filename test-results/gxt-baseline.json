@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T15:02:31.627Z",
+    "capturedAt": "2026-10-16T16:51:01.389Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "6ec3d03b1a",
-    "totalTests": 10180,
-    "totalModules": 1001,
+    "emberCommit": "f921fb272b",
+    "totalTests": 10185,
+    "totalModules": 1003,
     "quarantinedTests": 0,
-    "totalAssertions": 60916,
-    "totalAssertionsPassing": 60508,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a bare dirtyTagFor renders the property's new value (the dirty is recorded for the run loop's DOM sync, and re-runs the bindings that read the object through a cell holding it), creating a property's tag no longer reads the property (a tagFor before the first render no longer overflows the stack), and a content binding re-runs before the bindings its evaluation created (a nested renderComponent no longer re-renders before its parent); written by runner.mjs in the GitHub Actions GXT full workflow (run 38920491051, on the code of 6ec3d03b1a). 9871/10180 green (was 9861/10171), 1001 modules, no timeouts, no harness errors, no green->red. 1 test no longer fails (Strict Mode - renderComponent: renderComponent is eager, so it tracks with its parent); the new module GXT dirtyTagFor passes 9/9; no module has fewer passing assertions."
+    "totalAssertions": 60929,
+    "totalAssertionsPassing": 60534,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a route manager's own wrapper (getRouteWrapper) renders its routes (the wrapper is invoked with @Component, @bucket, @context and @outlet; a classic route's template renders with its controller as this; <@outlet /> renders the next level in classic route templates too) and a route template's action keeps its controller as this after a controller property changes; written by runner.mjs in the GitHub Actions GXT full workflow (run 38934966332, on the code of f921fb272b). 9882/10185 green (was 9871/10180), 1003 modules, no timeouts, no harness errors, no green->red. 6 tests no longer fail (Query Params - main: queryParams are updated when a controller property is set and the route is refreshed. Issue #13263; the Route manager tests manager-provided outlet, module-stable wrapper across owners, outlet composition, outlet opacity and wrapper-less rendering); the new modules GXT route manager wrappers (4/4) and GXT correctness: route template actions (1/1) pass; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2592,6 +2592,13 @@
       "assertionsPassing": 2,
       "failingTests": []
     },
+    "GXT correctness: route template actions": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
     "GXT correctness: {{#if}} truthiness": {
       "total": 3,
       "passing": 3,
@@ -2709,6 +2716,13 @@
       "passing": 3,
       "assertionsTotal": 9,
       "assertionsPassing": 9,
+      "failingTests": []
+    },
+    "GXT route manager wrappers": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "GXT writes during an update": {
@@ -4017,15 +4031,10 @@
     },
     "Query Params - main": {
       "total": 63,
-      "passing": 62,
+      "passing": 63,
       "assertionsTotal": 223,
-      "assertionsPassing": 222,
-      "failingTests": [
-        {
-          "name": " queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  ",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 223,
+      "failingTests": []
     },
     "Query Params - model-dependent state": {
       "total": 6,
@@ -4232,27 +4241,17 @@
     },
     "Route manager - manager-provided outlet": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 3,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " a manager-provided outlet owns its level and continues the chain",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 3,
+      "failingTests": []
     },
     "Route manager - module-stable wrapper across owners": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 3,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " the same wrapper renders under the application owner and an engine owner",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 3,
+      "failingTests": []
     },
     "Route manager - nested dynamic params with a normalizing resolver": {
       "total": 1,
@@ -4263,27 +4262,17 @@
     },
     "Route manager - outlet composition": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 2,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " a manager can wrap every level it invokes itself",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 2,
+      "failingTests": []
     },
     "Route manager - outlet opacity": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 1,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " a parent cannot parameterize the outlet it places",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 1,
+      "failingTests": []
     },
     "Route manager - substates": {
       "total": 2,
@@ -4294,15 +4283,10 @@
     },
     "Route manager - wrapper-less rendering": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 3,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " a manager without a wrapper renders and tears down per route",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 3,
+      "failingTests": []
     },
     "Route serialize": {
       "total": 5,
@@ -8532,6 +8516,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 309
+    "gxt:triage": 303
   }
 }
