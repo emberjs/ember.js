@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T21:59:00.862Z",
+    "capturedAt": "2026-10-16T00:19:14.131Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "528cf966aa",
-    "totalTests": 10140,
-    "totalModules": 993,
+    "emberCommit": "81d10d84e9",
+    "totalTests": 10146,
+    "totalModules": 994,
     "quarantinedTests": 0,
-    "totalAssertions": 60550,
-    "totalAssertionsPassing": 59972,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after Glimmer component arguments read (mut)/(readonly) values and (mut @arg) writes through the argument's reference, a dependent key through a component argument follows what the argument reads, and createCache re-computes when a gxt cell its function read changes; written by runner.mjs in the GitHub Actions GXT full workflow (run 38813755980, on the code of 528cf966aa). 9727/10140 green (was 9713/10139), 993 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 1 new test, green: a @cached getter over a Glimmer component argument re-computes when the argument changes. 13 tests turned green: the Glimmer-component {{readonly}} tests (4), {{mut}} tests (3) and contextual-component mutable params (2), the invokeHelper tests over a component argument (3), and {{hash}} works with computeds."
+    "totalAssertions": 60558,
+    "totalAssertionsPassing": 59984,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a render asserts when it writes a tracked value it already read, a value invoked as a modifier, helper or component needs a manager of that kind, and a Glimmer component used as a route template is created by its manager; written by runner.mjs in the GitHub Actions GXT full workflow (run 38828701577, on the code of 81d10d84e9). 9737/10146 green (was 9727/10140), 994 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 6 new tests, green: a child writing a tracked property its Glimmer parent rendered asserts, a child setting a property of an object its Glimmer parent rendered asserts, a child writing a tracked property its Glimmer parent did not render does not assert, a child setting a property its Glimmer parent did not render of an object the parent rendered does not assert, a component definition invoked as a helper throws, a function in modifier position is not a modifier. 4 tests turned green: it can use a component as the route template, an invalid dynamic component value in non-strict mode, and the strict-mode static non-component and non-modifier tests. Message-only differences (the assertion fires, its text differs from Glimmer's): the 2 tracked Glimmer-component backtracking tests (render tree lines), the 2 backtracking-message tests (outlet render tree, object name), the strict-mode invalid dynamic component value and the dynamic non-modifier test."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -609,16 +609,12 @@
     },
     "Application test: rendering": {
       "total": 18,
-      "passing": 16,
+      "passing": 17,
       "assertionsTotal": 51,
-      "assertionsPassing": 49,
+      "assertionsPassing": 50,
       "failingTests": [
         {
           "name": " it emits a useful backtracking re-render assertion message",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " it can use a component as the route template",
           "category": "gxt:triage"
         }
       ]
@@ -1600,14 +1596,10 @@
     },
     "Components test: dynamic components": {
       "total": 20,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 69,
-      "assertionsPassing": 58,
+      "assertionsPassing": 59,
       "failingTests": [
-        {
-          "name": " it throws a useful assertion for an invalid dynamic component value in non-strict mode",
-          "category": "gxt:triage"
-        },
         {
           "name": " it throws a useful assertion for an invalid dynamic component value in strict mode",
           "category": "gxt:triage"
@@ -2491,10 +2483,10 @@
       "failingTests": []
     },
     "GXT @glimmer/tracking: DOM after writes": {
-      "total": 14,
-      "passing": 14,
-      "assertionsTotal": 73,
-      "assertionsPassing": 73,
+      "total": 18,
+      "passing": 18,
+      "assertionsTotal": 79,
+      "assertionsPassing": 79,
       "failingTests": []
     },
     "GXT @glimmer/tracking: Helper Tracked Properties (port)": {
@@ -2533,6 +2525,13 @@
       "failingTests": []
     },
     "GXT Integration - Nested Components": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
+    "GXT a definition invoked as another kind": {
       "total": 2,
       "passing": 2,
       "assertionsTotal": 2,
@@ -7196,9 +7195,9 @@
     },
     "[integration] jit :: strict mode: static template values": {
       "total": 23,
-      "passing": 10,
+      "passing": 12,
       "assertionsTotal": 82,
-      "assertionsPassing": 69,
+      "assertionsPassing": 71,
       "failingTests": [
         {
           "name": "Can use template local in nested blocks with locals",
@@ -7241,15 +7240,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "Throws an error if a non-component is used as a component",
-          "category": "gxt:triage"
-        },
-        {
           "name": "Throws an error if a non-helper is used as a helper",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Throws an error if a non-modifier is used as a modifier",
           "category": "gxt:triage"
         }
       ]
@@ -8875,6 +8866,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 413
+    "gxt:triage": 409
   }
 }
