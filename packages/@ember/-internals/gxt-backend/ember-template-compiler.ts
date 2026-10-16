@@ -335,13 +335,11 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
   Object.setPrototypeOf(wrapped, Object.getPrototypeOf(inner));
   for (const key of Object.getOwnPropertyNames(inner)) {
     if (key === 'length' || key === 'name' || key === 'prototype') continue;
+    // `wrapped` is a fresh function whose own properties (`length`, `name`,
+    // `prototype`) are skipped above, so every descriptor can be defined.
     const desc = Object.getOwnPropertyDescriptor(inner, key);
     if (desc) {
-      try {
-        Object.defineProperty(wrapped, key, desc);
-      } catch {
-        /* ignore */
-      }
+      Object.defineProperty(wrapped, key, desc);
     }
   }
   wrapped.__gxtCountedFactory = true;
