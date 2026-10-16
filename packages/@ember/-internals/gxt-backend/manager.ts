@@ -1938,49 +1938,47 @@ function createComponentInstance(
   // willDestroy body (which often increments destroy counters or releases
   // resources) should not run. We still call Ember's super.willDestroy()
   // via the prototype chain to keep internal bookkeeping consistent.
-  {
-    const proto = Object.getPrototypeOf(instance);
-    if (proto && typeof instance.willDestroy === 'function') {
-      const ownWillDestroy = instance.willDestroy;
-      // Find the prototype's willDestroy (Ember base) to use as fallback.
-      // Walk the prototype chain past any instance-local override.
-      let p = proto;
-      let baseWillDestroy: Function | null = null;
-      while (p && p !== Object.prototype) {
-        const d = Object.getOwnPropertyDescriptor(p, 'willDestroy');
-        if (d && typeof d.value === 'function') {
-          // The TOPMOST willDestroy on a class (CoreView) is the Ember base.
-          // Keep walking to the deepest (Object.prototype boundary) to get the
-          // root implementation.
-          baseWillDestroy = d.value;
-        }
-        p = Object.getPrototypeOf(p);
+  const proto = Object.getPrototypeOf(instance);
+  if (proto && typeof instance.willDestroy === 'function') {
+    const ownWillDestroy = instance.willDestroy;
+    // Find the prototype's willDestroy (Ember base) to use as fallback.
+    // Walk the prototype chain past any instance-local override.
+    let p = proto;
+    let baseWillDestroy: Function | null = null;
+    while (p && p !== Object.prototype) {
+      const d = Object.getOwnPropertyDescriptor(p, 'willDestroy');
+      if (d && typeof d.value === 'function') {
+        // The TOPMOST willDestroy on a class (CoreView) is the Ember base.
+        // Keep walking to the deepest (Object.prototype boundary) to get the
+        // root implementation.
+        baseWillDestroy = d.value;
       }
-      Object.defineProperty(instance, 'willDestroy', {
-        value: function (this: any) {
-          // Idempotency: the sync willDestroy fire in phase 3 of
-          // `_gxtDestroyUnclaimedPoolEntries` may beat the backburner-scheduled
-          // destructor. The guard makes the second call a no-op so the user's
-          // override doesn't run twice.
-          if (this.__gxtWillDestroyFired) return;
-          this.__gxtWillDestroyFired = true;
-          if (this.__gxtEverInserted === false || this.__gxtEverInserted === undefined) {
-            // Never actually rendered — skip the user override but invoke
-            // the Ember base implementation (if distinct) to keep core teardown
-            // bookkeeping consistent. The root Ember willDestroy is a no-op
-            // in most cases, so this is usually just a safety call.
-            if (baseWillDestroy && baseWillDestroy !== ownWillDestroy) {
-              return baseWillDestroy.call(this);
-            }
-            return;
-          }
-          return ownWillDestroy.apply(this, arguments as any);
-        },
-        writable: true,
-        configurable: true,
-        enumerable: false,
-      });
+      p = Object.getPrototypeOf(p);
     }
+    Object.defineProperty(instance, 'willDestroy', {
+      value: function (this: any) {
+        // Idempotency: the sync willDestroy fire in phase 3 of
+        // `_gxtDestroyUnclaimedPoolEntries` may beat the backburner-scheduled
+        // destructor. The guard makes the second call a no-op so the user's
+        // override doesn't run twice.
+        if (this.__gxtWillDestroyFired) return;
+        this.__gxtWillDestroyFired = true;
+        if (this.__gxtEverInserted === false || this.__gxtEverInserted === undefined) {
+          // Never actually rendered — skip the user override but invoke
+          // the Ember base implementation (if distinct) to keep core teardown
+          // bookkeeping consistent. The root Ember willDestroy is a no-op
+          // in most cases, so this is usually just a safety call.
+          if (baseWillDestroy && baseWillDestroy !== ownWillDestroy) {
+            return baseWillDestroy.call(this);
+          }
+          return;
+        }
+        return ownWillDestroy.apply(this, arguments as any);
+      },
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
   }
 
   // In non-interactive (SSR-style) rendering, suppress interactive-only
@@ -2002,35 +2000,33 @@ function createComponentInstance(
   // of these (no Evented `trigger`, no elementId, no classNameBindings), so the
   // blocks no-op at runtime for them and are DCE-stripped in a native build.
   if (__GXT_CLASSIC_COMPONENTS__) {
-    {
-      if (!isInteractiveModeChecked()) {
-        const buildGate = (orig: Function) => {
-          if (!orig || (orig as any).__gxtNonInteractiveFiltered) return orig;
-          const wrapped = function (this: any, name: string, ...rest: any[]) {
-            if (INTERACTIVE_ONLY_HOOKS.has(name)) return undefined;
-            return orig.call(this, name, ...rest);
-          };
-          (wrapped as any).__gxtNonInteractiveFiltered = true;
-          return wrapped;
+    if (!isInteractiveModeChecked()) {
+      const buildGate = (orig: Function) => {
+        if (!orig || (orig as any).__gxtNonInteractiveFiltered) return orig;
+        const wrapped = function (this: any, name: string, ...rest: any[]) {
+          if (INTERACTIVE_ONLY_HOOKS.has(name)) return undefined;
+          return orig.call(this, name, ...rest);
         };
-        const origInst = instance?._trigger;
-        const origPub = instance?.trigger;
-        if (typeof origInst === 'function') {
-          Object.defineProperty(instance, '_trigger', {
-            value: buildGate(origInst),
-            writable: true,
-            configurable: true,
-            enumerable: false,
-          });
-        }
-        if (typeof origPub === 'function') {
-          Object.defineProperty(instance, 'trigger', {
-            value: buildGate(origPub),
-            writable: true,
-            configurable: true,
-            enumerable: false,
-          });
-        }
+        (wrapped as any).__gxtNonInteractiveFiltered = true;
+        return wrapped;
+      };
+      const origInst = instance?._trigger;
+      const origPub = instance?.trigger;
+      if (typeof origInst === 'function') {
+        Object.defineProperty(instance, '_trigger', {
+          value: buildGate(origInst),
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        });
+      }
+      if (typeof origPub === 'function') {
+        Object.defineProperty(instance, 'trigger', {
+          value: buildGate(origPub),
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        });
       }
     }
 
@@ -2043,12 +2039,10 @@ function createComponentInstance(
     // marked user-false and it has an isExpanded property, set it to false so
     // subsequent clicks toggle from the user's last known state. What the
     // property's setter throws propagates.
-    {
-      const userFalseSet = getGxtRenderer()?.viewUtils.getWrapperUserFalseSet?.();
-      const elId = props.elementId;
-      if (userFalseSet && elId && userFalseSet.has(elId) && instance && 'isExpanded' in instance) {
-        instance.isExpanded = false;
-      }
+    const userFalseSet = getGxtRenderer()?.viewUtils.getWrapperUserFalseSet?.();
+    const elId = props.elementId;
+    if (userFalseSet && elId && userFalseSet.has(elId) && instance && 'isExpanded' in instance) {
+      instance.isExpanded = false;
     }
 
     // Validate tagless component constraints early (before view registry registration)
@@ -2092,43 +2086,41 @@ function createComponentInstance(
     for (const key of Object.keys(argGetters)) {
       if (key === 'id' || key === 'elementId') continue;
       const getter = argGetters[key]!;
-      {
-        // When `key` collides with a plain get-only native getter on the
-        // prototype (e.g. `get count() { return this.args.count }`), reading
-        // `instance[key]` here would invoke that user getter and fire its side
-        // effects during instance setup, which genuine Ember never does. The
-        // render-time read is routed through a dep-memoized `cached()` wrapper in
-        // createRenderContext, so read the arg value directly instead (value-
-        // equivalent: a getter that just returns the arg yields argValue, so
-        // `useLocal` resolves identically). Scoped to plain-native getters only
-        // (not @tracked / @computed / getters with a setter).
-        const _plainNativeCollision = _isPlainNativeGetterCollision(
-          Object.getPrototypeOf(instance),
-          key
-        );
-        const argValue = getter();
-        const localValue = _plainNativeCollision ? argValue : instance[key]; // current value (from factory.create or init)
-        // If instance value differs from arg value, the component overrode it in init()
-        const useLocal = localValue !== argValue;
-        // Detect @computed CP with a setter on the prototype chain so the
-        // shadow setter below can still invoke the CP's `_setter` body for
-        // its side effects (e.g. {mut, set}-triggered writes into other deps).
-        const cpWithSetter = _findCpWithSetterFor(instance, key);
-        // Install a gxt effect that dirties the classic validator tag for
-        // (instance, key) whenever the upstream arg cell invalidates. This
-        // lets createCache / invokeHelper consumers — which captured the
-        // classic tag via consumeTag in the getter below — detect that an
-        // arg-derived property has changed even when nothing reads it
-        // explicitly after the parent mutates.
-        _installArgDirtyEffect(instance, instance, key, () => {
-          try {
-            return getter();
-          } catch {
-            return undefined;
-          }
-        });
-        _installArgDescriptor(instance, key, getter, localValue, useLocal, cpWithSetter);
-      }
+      // When `key` collides with a plain get-only native getter on the
+      // prototype (e.g. `get count() { return this.args.count }`), reading
+      // `instance[key]` here would invoke that user getter and fire its side
+      // effects during instance setup, which genuine Ember never does. The
+      // render-time read is routed through a dep-memoized `cached()` wrapper in
+      // createRenderContext, so read the arg value directly instead (value-
+      // equivalent: a getter that just returns the arg yields argValue, so
+      // `useLocal` resolves identically). Scoped to plain-native getters only
+      // (not @tracked / @computed / getters with a setter).
+      const _plainNativeCollision = _isPlainNativeGetterCollision(
+        Object.getPrototypeOf(instance),
+        key
+      );
+      const argValue = getter();
+      const localValue = _plainNativeCollision ? argValue : instance[key]; // current value (from factory.create or init)
+      // If instance value differs from arg value, the component overrode it in init()
+      const useLocal = localValue !== argValue;
+      // Detect @computed CP with a setter on the prototype chain so the
+      // shadow setter below can still invoke the CP's `_setter` body for
+      // its side effects (e.g. {mut, set}-triggered writes into other deps).
+      const cpWithSetter = _findCpWithSetterFor(instance, key);
+      // Install a gxt effect that dirties the classic validator tag for
+      // (instance, key) whenever the upstream arg cell invalidates. This
+      // lets createCache / invokeHelper consumers — which captured the
+      // classic tag via consumeTag in the getter below — detect that an
+      // arg-derived property has changed even when nothing reads it
+      // explicitly after the parent mutates.
+      _installArgDirtyEffect(instance, instance, key, () => {
+        try {
+          return getter();
+        } catch {
+          return undefined;
+        }
+      });
+      _installArgDescriptor(instance, key, getter, localValue, useLocal, cpWithSetter);
     }
   }
 
@@ -2171,12 +2163,10 @@ function createComponentInstance(
         } finally {
           _gxtTrackArgSource = false;
         }
-        {
-          const detectedKey = _lastArgSourceKey;
-          const detectedCtx = _lastArgSourceCtx;
-          if (detectedKey && detectedCtx) {
-            twoWayBindings[key] = { sourceCtx: detectedCtx, sourceKey: detectedKey };
-          }
+        const detectedKey = _lastArgSourceKey;
+        const detectedCtx = _lastArgSourceCtx;
+        if (detectedKey && detectedCtx) {
+          twoWayBindings[key] = { sourceCtx: detectedCtx, sourceKey: detectedKey };
         }
         // If proxy-based tracking didn't find a source, try cell-interception.
         // The arg getter reads from the parent's cell-backed property. We temporarily
@@ -2951,35 +2941,33 @@ export function markTemplateRendered(instance: any): void {
     // Also track non-component objects that are properties of the rendered component.
     // This enables backtracking detection for shared dependencies
     // (e.g., this.wrapper.content where wrapper is an EmberObject or tracked class).
-    {
-      // Use both own keys and prototype keys to catch class fields like `wrapper = new Wrapper()`
-      // that may have been moved to the prototype by cellFor or reactive getters.
-      const allKeys = new Set<string>();
-      const ownKeys = Object.keys(instance);
-      for (const k of ownKeys) allKeys.add(k);
-      // Also check getOwnPropertyNames to catch non-enumerable getter properties
-      for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
+    // Use both own keys and prototype keys to catch class fields like `wrapper = new Wrapper()`
+    // that may have been moved to the prototype by cellFor or reactive getters.
+    const allKeys = new Set<string>();
+    const ownKeys = Object.keys(instance);
+    for (const k of ownKeys) allKeys.add(k);
+    // Also check getOwnPropertyNames to catch non-enumerable getter properties
+    for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
 
-      for (const k of allKeys) {
-        if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
-        let val: any;
-        try {
-          val = instance[k];
-        } catch {
-          continue;
-        }
-        if (
-          val &&
-          typeof val === 'object' &&
-          !Array.isArray(val) &&
-          !(val instanceof Node) &&
-          !(val instanceof Date) &&
-          !(val instanceof RegExp) &&
-          !(val instanceof Error) &&
-          !(val instanceof Promise)
-        ) {
-          _templateRenderedInstances.add(val);
-        }
+    for (const k of allKeys) {
+      if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
+      let val: any;
+      try {
+        val = instance[k];
+      } catch {
+        continue;
+      }
+      if (
+        val &&
+        typeof val === 'object' &&
+        !Array.isArray(val) &&
+        !(val instanceof Node) &&
+        !(val instanceof Date) &&
+        !(val instanceof RegExp) &&
+        !(val instanceof Error) &&
+        !(val instanceof Promise)
+      ) {
+        _templateRenderedInstances.add(val);
       }
     }
   }
@@ -3910,11 +3898,7 @@ function _installArgDescriptor(
 ): void {
   Object.defineProperty(instance, key, {
     get() {
-      try {
-        _classicConsumeTagHook(_classicTagForHook(instance, key));
-      } catch {
-        /* noop */
-      }
+      _classicConsumeTagHook(_classicTagForHook(instance, key));
       if (useLocal) return localValue;
       try {
         return getter();
@@ -3941,20 +3925,16 @@ function _installArgDescriptor(
           if (!instance.__gxtCpArgDispatched) instance.__gxtCpArgDispatched = {};
           instance.__gxtCpArgDispatched[key] = v;
         }
+        // What the computed property's setter throws reaches the write.
         try {
           instance.__gxtInvokingCpSetter = true;
           cpWithSetter.set(instance, key, v);
-        } catch {
-          /* ignore CP setter failures */
         } finally {
           instance.__gxtInvokingCpSetter = false;
         }
       }
-      try {
-        classicDirtyTagForGuarded(instance, key);
-      } catch {
-        /* noop */
-      }
+      // What a classic reactor the dirty runs throws reaches the write.
+      classicDirtyTagForGuarded(instance, key);
     },
     configurable: true,
     enumerable: true,
@@ -3979,11 +3959,9 @@ function _installArgDirtyEffect(
   _gxtEffectWithOwner(owner, () => {
     const v = read();
     if (primed && v !== lastValue) {
-      try {
-        withArgPropagation(() => classicDirtyTagForGuarded(target, key));
-      } catch {
-        /* noop */
-      }
+      // An arg propagation runs no classic reactor: the dirty only marks the
+      // tag and schedules the sync.
+      withArgPropagation(() => classicDirtyTagForGuarded(target, key));
     }
     lastValue = v;
     primed = true;
@@ -3992,20 +3970,18 @@ function _installArgDirtyEffect(
 
 // The value an arg's render-context cell stands for: the getter's value when
 // there is a getter, else the cell's value. Both reads run, so an effect calling
-// this depends on the cell as well; a throwing read keeps the previous one.
+// this depends on the cell as well. The effect reads the getter eagerly, for
+// the classic tag only: a getter that throws leaves the cell's value, reported
+// in DEBUG, and the template's own read of the argument throws to the render.
 function _readArgCell(cell: any, getter: (() => unknown) | undefined): unknown {
-  let v: unknown;
+  const v: unknown = cell.value;
+  if (!getter) return v;
   try {
-    v = cell.value;
-  } catch {
-    /* noop */
+    return getter();
+  } catch (error) {
+    _gxtReportDroppedRead('an argument getter read for its classic tag', error);
+    return v;
   }
-  try {
-    v = getter ? getter() : v;
-  } catch {
-    /* noop */
-  }
-  return v;
 }
 
 // Write an arg value onto a component instance as manager.ts's own write-back:
@@ -4055,20 +4031,17 @@ function _dispatchArgWrite(
 // replaced by a plain cell descriptor (set -> cell.update, no forward), and the
 // dependent property would go stale. So the setter is run explicitly;
 // `__gxtInvokingCpSetter` makes it a no-op when the descriptor did forward.
+// What the setter throws propagates.
 function _runCpSetterSideEffect(instance: any, key: string, value: unknown): void {
   if (instance.__gxtInvokingCpSetter) return;
-  try {
-    const _cp = _findCpWithSetterFor(instance, key);
-    if (_cp) {
-      instance.__gxtInvokingCpSetter = true;
-      try {
-        _cp.set(instance, key, value);
-      } finally {
-        instance.__gxtInvokingCpSetter = false;
-      }
+  const _cp = _findCpWithSetterFor(instance, key);
+  if (_cp) {
+    instance.__gxtInvokingCpSetter = true;
+    try {
+      _cp.set(instance, key, value);
+    } finally {
+      instance.__gxtInvokingCpSetter = false;
     }
-  } catch {
-    /* CP-setter bridge is best-effort */
   }
 }
 
@@ -4094,12 +4067,8 @@ function _findMetaDescriptor(obj: object, key: string): any {
 // `set width(w)` body), though the instance's own reactive descriptor shadows
 // the CP (GH#19028-style mutable bindings of a CP with a setter).
 function _findCpWithSetterFor(inst: any, k: string): any {
-  try {
-    const desc = _findMetaDescriptor(inst, k);
-    if (desc && desc._setter && desc._setter !== desc._getter) return desc;
-  } catch {
-    /* ignore */
-  }
+  const desc = _findMetaDescriptor(inst, k);
+  if (desc && desc._setter && desc._setter !== desc._getter) return desc;
   return null;
 }
 
@@ -4155,13 +4124,7 @@ function _isPlainNativeGetterCollision(start: any, key: string): boolean {
     if (pdesc) {
       // A `@tracked` accessor has a setter.
       if (!pdesc.get || pdesc.set) return false;
-      let isClassicCp = false;
-      try {
-        isClassicCp = !!_findMetaDescriptor(start, key);
-      } catch {
-        /* ignore */
-      }
-      return !isClassicCp;
+      return !_findMetaDescriptor(start, key);
     }
     proto = Object.getPrototypeOf(proto);
   }
@@ -4174,31 +4137,31 @@ function _gxtSyncAllWrappers(): void {
   _gxtSyncAllInFlightCycle = __curCycle;
   // Proactively wrap `trigger` on all known-alive instances in all pool
   // arrays so update-hook triggers fired during the body are recorded.
-  try {
-    for (const poolArr of _allPoolArrays) {
-      for (const entry of poolArr) {
-        _wrapInstanceTriggerForSyncAllMark(entry && entry.instance);
-      }
+  for (const poolArr of _allPoolArrays) {
+    for (const entry of poolArr) {
+      _wrapInstanceTriggerForSyncAllMark(entry && entry.instance);
     }
-  } catch {
-    /* ignore */
   }
 
+  // MAIN BODY: the sync-all logic. AFTER: clear in-flight state and dispatch
+  // dynamic-component change listeners (they render the new component). Every
+  // listener runs; the first error, the body's before the listeners', is
+  // thrown after them.
+  const errors: unknown[] = [];
   try {
-    // MAIN BODY: the sync-all logic.
     _gxtSyncAllWrappersBody();
-  } finally {
-    // AFTER: clear in-flight state and dispatch dynamic-component change
-    // listeners.
-    _gxtSyncAllInFlightCycle = 0;
-    for (const listener of _dcChangeListeners) {
-      try {
-        listener();
-      } catch {
-        /* ignore */
-      }
+  } catch (error) {
+    errors.push(error);
+  }
+  _gxtSyncAllInFlightCycle = 0;
+  for (const listener of _dcChangeListeners) {
+    try {
+      listener();
+    } catch (error) {
+      errors.push(error);
     }
   }
+  if (errors.length > 0) throw errors[0];
 }
 
 // Exposed on `compilePipeline.syncAllWrappers` (see the `setGxtRenderer`
@@ -4218,152 +4181,133 @@ function _gxtSyncAllWrappersBody(): void {
     // this fires `didUpdate` (but NOT didUpdateAttrs/didReceiveAttrs, since
     // the args themselves didn't change from the parent's perspective).
     let hasNestedArgMutation = false;
+    // What an argument's getter, a setter or a dependent computed property
+    // throws is the sync's error, as Glimmer's curly manager reads and sets
+    // every argument of a classic component when it updates it.
     for (const key of Object.keys(entry.cells)) {
       const cellEntry = entry.cells[key]!;
       const { cell, getter, extraCell, initOverridden } = cellEntry;
-      try {
-        const newValue = getter();
-        // Detect same-reference arg whose internals were mutated this cycle.
-        if (
-          newValue &&
-          typeof newValue === 'object' &&
-          _dirtiedNestedObjectsForHooks.has(newValue)
-        ) {
+      const newValue = getter();
+      // Detect same-reference arg whose internals were mutated this cycle.
+      if (newValue && typeof newValue === 'object' && _dirtiedNestedObjectsForHooks.has(newValue)) {
+        hasNestedArgMutation = true;
+      } else if (
+        newValue &&
+        typeof newValue === 'object' &&
+        _dirtiedNestedObjectsForHooks.size > 0
+      ) {
+        // An #each-body component receives its block-param `item` arg as the
+        // each-item tracking proxy (compile.ts `wrapEachItemForTracking`), not
+        // the raw source object. The before-trigger hook records the raw object
+        // in `_dirtiedNestedObjectsForHooks` when `set(item, 'value', …)` fires
+        // in-place, so `.has(proxy)` above is always false → `didUpdate` would
+        // never dispatch, and an each-body component whose template gates on
+        // hook-derived state (e.g. `didUpdate` → `this.set('isEven', …)` →
+        // `{{#if this.isEven}}`) would go stale. Unwrap the proxy to its raw
+        // source and re-check membership.
+        const rawFromProxy = getGxtRenderer()?.compilePipeline.eachItemRawFor?.(newValue);
+        if (rawFromProxy && _dirtiedNestedObjectsForHooks.has(rawFromProxy)) {
           hasNestedArgMutation = true;
-        } else if (
-          newValue &&
-          typeof newValue === 'object' &&
-          _dirtiedNestedObjectsForHooks.size > 0
-        ) {
-          // An #each-body component receives its block-param `item` arg as the
-          // each-item tracking proxy (compile.ts `wrapEachItemForTracking`), not
-          // the raw source object. The before-trigger hook records the raw object
-          // in `_dirtiedNestedObjectsForHooks` when `set(item, 'value', …)` fires
-          // in-place, so `.has(proxy)` above is always false → `didUpdate` would
-          // never dispatch, and an each-body component whose template gates on
-          // hook-derived state (e.g. `didUpdate` → `this.set('isEven', …)` →
-          // `{{#if this.isEven}}`) would go stale. Unwrap the proxy to its raw
-          // source and re-check membership.
-          const rawFromProxy = getGxtRenderer()?.compilePipeline.eachItemRawFor?.(newValue);
-          if (rawFromProxy && _dirtiedNestedObjectsForHooks.has(rawFromProxy)) {
-            hasNestedArgMutation = true;
-          }
         }
+      }
 
-        if (initOverridden) {
-          // For init-overridden properties, only update when the ARG value
-          // actually changed from the parent's perspective (not just
-          // when it differs from the cell value, which was set to the
-          // init-overridden local value).
-          const lastArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : undefined;
-          const argChanged = lastArg !== undefined && lastArg !== newValue;
-          cellEntry.lastArgValue = newValue;
+      if (initOverridden) {
+        // For init-overridden properties, only update when the ARG value
+        // actually changed from the parent's perspective (not just
+        // when it differs from the cell value, which was set to the
+        // init-overridden local value).
+        const lastArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : undefined;
+        const argChanged = lastArg !== undefined && lastArg !== newValue;
+        cellEntry.lastArgValue = newValue;
 
-          if (argChanged) {
-            cell.update(newValue);
-            if (
-              entry.instance &&
-              key !== 'class' &&
-              key !== 'classNames' &&
-              !cellEntry.skipInstanceAssign
-            ) {
-              // Assignment errors are ignored here (some setters throw).
-              try {
-                _dispatchArgWrite(
-                  entry.instance,
-                  key,
-                  newValue,
-                  'arg-pass cell.update failed (initOverridden)',
-                  () => _runCpSetterSideEffect(entry.instance, key, newValue)
-                );
-              } catch {
-                /* ignore */
-              }
-            }
-            hasChanges = true;
-          }
-          // Also update extra cell if arg changed
-          if (argChanged && extraCell) {
-            extraCell.update(newValue);
-          }
-        } else {
-          // Track last known arg value for local override detection
-          const lastKnownArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : cell.__value;
-          const argActuallyChanged = lastKnownArg !== newValue;
-          cellEntry.lastArgValue = newValue;
-
-          // Skip cell update if the key is locally overridden and the arg hasn't actually changed from parent
-          const isLocallyOverridden = entry.instance?.__gxtLocalOverrides?.has(key);
-          // Also skip when a locally-overridden arg transitions to undefined
-          // while the last known arg value was defined. This protects against
-          // GXT reactive getters that temporarily return undefined during
-          // gxtSyncDom cell processing (the getter's closure may reference a
-          // context that is stale during the sync cycle). Without this guard,
-          // the sync would clobber the local value (e.g., incrementProperty)
-          // with undefined, cascading incorrect values to child components.
+        if (argChanged) {
+          cell.update(newValue);
           if (
-            isLocallyOverridden &&
-            (!argActuallyChanged || (newValue === undefined && lastKnownArg !== undefined))
+            entry.instance &&
+            key !== 'class' &&
+            key !== 'classNames' &&
+            !cellEntry.skipInstanceAssign
           ) {
-            // Local override is in effect and arg hasn't changed (or getter returned stale undefined) — skip
-          } else if (argActuallyChanged) {
-            // Gate cell updates on whether the ARG value actually changed
-            // (tracked via cellEntry.lastArgValue), not on `cell.__value`.
-            // LazyCell stores its value in `__lazyValue` (not `__value`), so
-            // the latter is perpetually `undefined` for lazy-backed arg cells
-            // — causing every sync cycle to flip `hasChanges` to true on
-            // every #each row even when the arg is stable, which spuriously
-            // fires `didUpdate` on siblings.
-            cell.update(newValue);
-            if (
-              entry.instance &&
-              key !== 'class' &&
-              key !== 'classNames' &&
-              !cellEntry.skipInstanceAssign
-            ) {
-              // Assignment errors are ignored here (some setters throw).
-              try {
-                _dispatchArgWrite(
-                  entry.instance,
-                  key,
-                  newValue,
-                  'arg-pass cell.update failed (sync)',
-                  () => _runCpSetterSideEffect(entry.instance, key, newValue)
-                );
-              } catch {
-                /* ignore */
-              }
-              // When there are active $_dc dynamic component listeners,
-              // call notifyPropertyChange to dirty Ember tags for @computed
-              // properties that depend on this arg. Without this, computed
-              // properties on classic components won't recompute after arg
-              // updates via syncAll (the Ember tag isn't dirtied by direct
-              // property assignment).
-              if (
-                _gxtHasStringDynamicComponentListeners() &&
-                entry.instance &&
-                typeof entry.instance.trigger === 'function'
-              ) {
-                // `notifyPropertyChange` is owned by `metal/lib/property_events.ts`
-                // and reached through the bridge.
-                try {
-                  getGxtRenderer()?.compilePipeline.notifyPropertyChange?.(entry.instance, key);
-                } catch {
-                  /* ignore */
-                }
-              }
-            }
-            hasChanges = true;
+            _dispatchArgWrite(
+              entry.instance,
+              key,
+              newValue,
+              'arg-pass cell.update failed (initOverridden)',
+              () => _runCpSetterSideEffect(entry.instance, key, newValue)
+            );
           }
-          // Also update the attrsProxy cell (used by GXT effects tracking @arg)
-          // Gate on argActuallyChanged for the same LazyCell __value reason.
-          if (extraCell && argActuallyChanged) {
-            extraCell.update(newValue);
-            hasChanges = true;
-          }
+          hasChanges = true;
         }
-      } catch {
-        /* getter may throw */
+        // Also update extra cell if arg changed
+        if (argChanged && extraCell) {
+          extraCell.update(newValue);
+        }
+      } else {
+        // Track last known arg value for local override detection
+        const lastKnownArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : cell.__value;
+        const argActuallyChanged = lastKnownArg !== newValue;
+        cellEntry.lastArgValue = newValue;
+
+        // Skip cell update if the key is locally overridden and the arg hasn't actually changed from parent
+        const isLocallyOverridden = entry.instance?.__gxtLocalOverrides?.has(key);
+        // Also skip when a locally-overridden arg transitions to undefined
+        // while the last known arg value was defined. This protects against
+        // GXT reactive getters that temporarily return undefined during
+        // gxtSyncDom cell processing (the getter's closure may reference a
+        // context that is stale during the sync cycle). Without this guard,
+        // the sync would clobber the local value (e.g., incrementProperty)
+        // with undefined, cascading incorrect values to child components.
+        if (
+          isLocallyOverridden &&
+          (!argActuallyChanged || (newValue === undefined && lastKnownArg !== undefined))
+        ) {
+          // Local override is in effect and arg hasn't changed (or getter returned stale undefined) — skip
+        } else if (argActuallyChanged) {
+          // Gate cell updates on whether the ARG value actually changed
+          // (tracked via cellEntry.lastArgValue), not on `cell.__value`.
+          // LazyCell stores its value in `__lazyValue` (not `__value`), so
+          // the latter is perpetually `undefined` for lazy-backed arg cells
+          // — causing every sync cycle to flip `hasChanges` to true on
+          // every #each row even when the arg is stable, which spuriously
+          // fires `didUpdate` on siblings.
+          cell.update(newValue);
+          if (
+            entry.instance &&
+            key !== 'class' &&
+            key !== 'classNames' &&
+            !cellEntry.skipInstanceAssign
+          ) {
+            _dispatchArgWrite(
+              entry.instance,
+              key,
+              newValue,
+              'arg-pass cell.update failed (sync)',
+              () => _runCpSetterSideEffect(entry.instance, key, newValue)
+            );
+            // When there are active $_dc dynamic component listeners,
+            // call notifyPropertyChange to dirty Ember tags for @computed
+            // properties that depend on this arg. Without this, computed
+            // properties on classic components won't recompute after arg
+            // updates via syncAll (the Ember tag isn't dirtied by direct
+            // property assignment).
+            if (
+              _gxtHasStringDynamicComponentListeners() &&
+              entry.instance &&
+              typeof entry.instance.trigger === 'function'
+            ) {
+              // `notifyPropertyChange` is owned by `metal/lib/property_events.ts`
+              // and reached through the bridge.
+              getGxtRenderer()?.compilePipeline.notifyPropertyChange?.(entry.instance, key);
+            }
+          }
+          hasChanges = true;
+        }
+        // Also update the attrsProxy cell (used by GXT effects tracking @arg)
+        // Gate on argActuallyChanged for the same LazyCell __value reason.
+        if (extraCell && argActuallyChanged) {
+          extraCell.update(newValue);
+          hasChanges = true;
+        }
       }
     }
     // Check if this instance is in the forced-rerender ancestor chain
@@ -4373,20 +4317,13 @@ function _gxtSyncAllWrappersBody(): void {
     // identity is now changing, restore the pre-hook state so the
     // component sees its init-time defaults for the new row — matching
     // Ember's destroy+recreate behavior for replaceList.
+    // What a property's setter throws propagates.
     if (hasChanges && entry.instance?.__gxtPreHookStateSnapshot) {
-      try {
-        const snap = entry.instance.__gxtPreHookStateSnapshot;
-        for (const k of Object.keys(snap)) {
-          try {
-            entry.instance[k] = snap[k];
-          } catch {
-            /* ignore */
-          }
-        }
-        entry.instance.__gxtPreHookStateSnapshot = null;
-      } catch {
-        /* ignore */
+      const snap = entry.instance.__gxtPreHookStateSnapshot;
+      for (const k of Object.keys(snap)) {
+        entry.instance[k] = snap[k];
       }
+      entry.instance.__gxtPreHookStateSnapshot = null;
     }
     // Stamp the instance as "syncAll-reviewed this cycle" even when neither
     // hasChanges nor forceThis fires. compile.ts guards its force-rerender
@@ -4395,29 +4332,25 @@ function _gxtSyncAllWrappersBody(): void {
     // didUpdateAttrs/didReceiveAttrs/willUpdate/willRender during a
     // force-rerender pass on descendants whose args didn't change.
     if (entry.instance && typeof entry.instance === 'object') {
-      try {
-        // `0` (no sync in flight) falls through the guard below.
-        const cycle = _gxtSyncAllInFlightCycle;
-        if (cycle) {
-          // Define non-enumerable so user code doing JSON.stringify(component)
-          // or deep-equality against a plain literal does not see this
-          // GXT-internal marker. If already defined as a non-enumerable, skip
-          // redefine (value update via property-write may promote it back to
-          // enumerable on some property-descriptor paths).
-          const prev = Object.getOwnPropertyDescriptor(entry.instance, '__gxtSyncAllFiredCycleId');
-          if (!prev || prev.enumerable !== false || prev.configurable !== false) {
-            Object.defineProperty(entry.instance, '__gxtSyncAllFiredCycleId', {
-              value: cycle,
-              writable: true,
-              enumerable: false,
-              configurable: true,
-            });
-          } else {
-            entry.instance.__gxtSyncAllFiredCycleId = cycle;
-          }
+      // `0` (no sync in flight) falls through the guard below.
+      const cycle = _gxtSyncAllInFlightCycle;
+      if (cycle) {
+        // Define non-enumerable so user code doing JSON.stringify(component)
+        // or deep-equality against a plain literal does not see this
+        // GXT-internal marker. If already defined as a non-enumerable, skip
+        // redefine (value update via property-write may promote it back to
+        // enumerable on some property-descriptor paths).
+        const prev = Object.getOwnPropertyDescriptor(entry.instance, '__gxtSyncAllFiredCycleId');
+        if (!prev || prev.enumerable !== false || prev.configurable !== false) {
+          Object.defineProperty(entry.instance, '__gxtSyncAllFiredCycleId', {
+            value: cycle,
+            writable: true,
+            enumerable: false,
+            configurable: true,
+          });
+        } else {
+          entry.instance.__gxtSyncAllFiredCycleId = cycle;
         }
-      } catch {
-        /* ignore */
       }
     }
     // Pre-render lifecycle hooks (before DOM sync)
@@ -4456,11 +4389,7 @@ function _gxtSyncAllWrappersBody(): void {
           // Snapshot arg values AFTER the hook fired so a subsequent sync
           // cycle triggered by the hook's side-effects (e.g., this.set)
           // can detect "args unchanged since last fire" and skip re-firing.
-          try {
-            _instanceLastAttrsFiredArgs.set(entry.instance, snapshotArgsForInstance(entry.cells));
-          } catch {
-            /* ignore */
-          }
+          _instanceLastAttrsFiredArgs.set(entry.instance, snapshotArgsForInstance(entry.cells));
         }
         // Begin `render.component` instrumentation (initialRender=false).
         // Classic Ember starts this finalizer at the top of
@@ -4489,21 +4418,17 @@ function _gxtSyncAllWrappersBody(): void {
       // already updated by the proxy setter during updateInstanceWithNewArgs).
       // willUpdate/willRender still need to fire so user-defined hooks (which
       // may call `this.get('name')`, e.g. to sync internal state from args) see
-      // the new arg values.
-      try {
-        const viewEl =
-          getViewElement(entry.instance) ||
-          (entry.instance as any).element ||
-          (entry.instance as any)._element;
-        if (viewEl) {
-          _fireRerenderInstrumentStart(entry.instance);
-          triggerLifecycleHook(entry.instance, 'willUpdate');
-          triggerLifecycleHook(entry.instance, 'willRender');
-          markInstanceRenderHookFired(entry.instance);
-          _updatedInstances.push(entry.instance);
-        }
-      } catch {
-        /* ignore */
+      // the new arg values. A view has no element in a non-interactive
+      // renderer (its `element` getter throws there), unless one was mapped.
+      const viewEl =
+        getViewElement(entry.instance) ||
+        (isInteractiveModeChecked() ? (entry.instance as any)._element : null);
+      if (viewEl) {
+        _fireRerenderInstrumentStart(entry.instance);
+        triggerLifecycleHook(entry.instance, 'willUpdate');
+        triggerLifecycleHook(entry.instance, 'willRender');
+        markInstanceRenderHookFired(entry.instance);
+        _updatedInstances.push(entry.instance);
       }
     } else if (
       hasNestedArgMutation &&
@@ -4517,31 +4442,33 @@ function _gxtSyncAllWrappersBody(): void {
       // destroyed by the #each diff algorithm if its row is removed).
       // Snapshot properties that get mutated during didUpdate so we can
       // restore them if the arg identity later changes (replaceList case).
-      try {
-        if (!entry.instance.__gxtPreHookStateSnapshot) {
-          const snap: Record<string, any> = {};
-          // Snapshot all own enumerable properties of the instance, excluding
-          // arg-backed keys. The snapshot exists to restore local state mutated
-          // during didUpdate (e.g. `this.set('isEven', …)`) when the arg
-          // identity later changes (replaceList destroy+recreate semantics).
-          // Arg properties (those present in `entry.cells`) are owned by the
-          // parent's arg-dispatch, not local state. Restoring an arg key would write
-          // its stale value through the render-context `rcSet` with
-          // __gxtDispatchingArgs=false, which flips the arg getter to
-          // `useLocal=true` holding the old value. For an each-over-arg source
-          // (`{{#each @items}}` after the parent `set(parent,'items',newArr)`),
-          // the each-source would then re-fire reading the stale local value and
-          // clobber the freshly-rendered new array back to empty.
-          const argKeysForEntry = entry.cells;
-          for (const k of Object.keys(entry.instance)) {
-            if (k.startsWith('_') || k.startsWith('__')) continue;
-            if (argKeysForEntry && k in argKeysForEntry) continue;
+      if (!entry.instance.__gxtPreHookStateSnapshot) {
+        const snap: Record<string, any> = {};
+        // Snapshot all own enumerable properties of the instance, excluding
+        // arg-backed keys. The snapshot exists to restore local state mutated
+        // during didUpdate (e.g. `this.set('isEven', …)`) when the arg
+        // identity later changes (replaceList destroy+recreate semantics).
+        // Arg properties (those present in `entry.cells`) are owned by the
+        // parent's arg-dispatch, not local state. Restoring an arg key would write
+        // its stale value through the render-context `rcSet` with
+        // __gxtDispatchingArgs=false, which flips the arg getter to
+        // `useLocal=true` holding the old value. For an each-over-arg source
+        // (`{{#each @items}}` after the parent `set(parent,'items',newArr)`),
+        // the each-source would then re-fire reading the stale local value and
+        // clobber the freshly-rendered new array back to empty.
+        const argKeysForEntry = entry.cells;
+        for (const k of Object.keys(entry.instance)) {
+          if (k.startsWith('_') || k.startsWith('__')) continue;
+          if (argKeysForEntry && k in argKeysForEntry) continue;
+          // Glimmer reads none of these: a getter that throws keeps its
+          // property out of the snapshot, reported in DEBUG.
+          try {
             snap[k] = entry.instance[k];
+          } catch (error) {
+            _gxtReportDroppedRead(`the state snapshot's read of \`${k}\``, error);
           }
-          entry.instance.__gxtPreHookStateSnapshot = snap;
         }
-      } catch {
-        /* ignore */
+        entry.instance.__gxtPreHookStateSnapshot = snap;
       }
       _updatedInstances.push(entry.instance);
     }
@@ -4550,16 +4477,13 @@ function _gxtSyncAllWrappersBody(): void {
 
   // Phase 1c: Sync internal component DOM elements (Input, Textarea).
   // These don't use GXT's effect system for arg tracking, so we sync manually.
+  // What their arguments' getters throw is the sync's error.
   for (const entry of _internalComponentSyncCallbacks) {
     if (!entry.el.isConnected) {
       _internalComponentSyncCallbacks.delete(entry);
       continue;
     }
-    try {
-      entry.callback();
-    } catch {
-      /* ignore */
-    }
+    entry.callback();
   }
 
   // Phase 2: Sync wrapper element attributes/classes.
