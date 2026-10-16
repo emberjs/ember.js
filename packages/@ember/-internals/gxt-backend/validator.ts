@@ -423,7 +423,7 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       // not a revision counter, and that cell value isn't bumped by the
       // dirtyTagFor path here — it's only updated if the mutation goes through
       // GXT's own trackedData.setter. The compat trackedData stores values
-      // in a separate map and only calls gxtDirtyTagFor + markTagDirty, so
+      // in a separate map and only calls markTagDirty, so
       // the dirty-revision bookkeeping here is the source of truth for cache
       // invalidation.
       _consumedTags = Array.from(consumed);
@@ -931,9 +931,7 @@ export function withArgPropagation<T>(fn: () => T): T {
 }
 
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
-const gxtDirtyTagFor = validator.dirtyTagFor;
-
-export function dirtyTagFor(obj: any, key: any) {
+export function dirtyTagFor(obj: any, key: any): void {
   // Convert Symbol keys to safe string representation
   const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
 
@@ -951,8 +949,7 @@ export function dirtyTagFor(obj: any, key: any) {
   }
   // Invalidate the tag itself, as Glimmer does, so that what consumed it
   // re-renders: a build-time template's read of the property (`$__tag(obj,
-  // key)`) consumed it. gxt's own `dirtyTagFor` below re-validates it only
-  // when the value it holds changed, and a property tag holds none.
+  // key)`) consumed it.
   const propertyTag = _gxtPeekTagFor(obj, safeKey);
   if (propertyTag !== undefined) {
     _gxtDirtyCell(propertyTag);
@@ -1002,20 +999,15 @@ export function dirtyTagFor(obj: any, key: any) {
     if (typeof sr === 'function') sr();
   }
 
-  // Then call the original dirtyTagFor with the safe key. It reads the
-  // property to seed the tag's value, so an error a getter throws reaches the
-  // code that changed the property.
-  // Ensure obj has a constructor for GXT's debug label (not on an object that
-  // cannot take new properties).
-  if (obj && typeof obj === 'object' && !obj.constructor && Object.isExtensible(obj)) {
-    Object.defineProperty(obj, 'constructor', {
-      value: Object,
-      writable: true,
-      configurable: true,
-      enumerable: false,
-    });
-  }
-  const result: any = gxtDirtyTagFor(obj, safeKey);
+  // Queue the tag for the next sync whether or not anything consumes it yet,
+  // as gxt's glimmer-compat `dirtyTagFor` does (an update with the value the
+  // tag holds), but without that function's read of the property: like
+  // Glimmer's, this reads no property, and a tag that holds no value yet is
+  // seeded by its reader (`cellFor`). The read ran getters Glimmer never runs:
+  // a getter that notifies its own property re-entered itself until the stack
+  // overflowed, and a symbol key's description was read as a property, which a
+  // DEBUG proxy asserts on.
+  if (propertyTag !== undefined) propertyTag.update(propertyTag._value);
   // Fire side-channel classic reactors. These are callbacks registered by
   // GXT-rendered classic components (e.g. LinkTo) whose template getters
   // call consumeTag() from classic @glimmer/validator — a code path that
@@ -1069,7 +1061,6 @@ export function dirtyTagFor(obj: any, key: any) {
       cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
     });
   }
-  return result;
 }
 
 export function consumeTag(tag: any) {
