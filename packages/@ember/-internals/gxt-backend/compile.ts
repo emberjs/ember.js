@@ -12275,13 +12275,11 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
   //     for it and the pass is skipped.
   if (typeof options?.scope === 'function') {
     let extra: Record<string, unknown> | undefined;
-    try {
-      const scopeResult = options.scope();
-      if (scopeResult && typeof scopeResult === 'object') {
-        extra = scopeResult as Record<string, unknown>;
-      }
-    } catch {
-      /* ignore — scope thunk threw, fall back to scopeValues alone */
+    // What the scope callback throws propagates, as from `template()`, which
+    // calls it too.
+    const scopeResult = options.scope();
+    if (scopeResult && typeof scopeResult === 'object') {
+      extra = scopeResult as Record<string, unknown>;
     }
     if (extra && _templateMayNeedScopeThreading(templateString)) {
       const existing = options.scopeValues || {};
@@ -13165,28 +13163,25 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // Set up reactive effect to track curried arg changes
           const _cinfo: any = { lastRenderedName: _curriedItem.__name, __lastSnapshot: null };
           _snapshotCurriedArgs(_cinfo, _curriedItem);
-          try {
-            _gxtTemplateEffect(() => {
-              // For eagerly-evaluated curried components, track arg getters
-              const cc = _curriedItem;
-              _touchCurriedArgGetters(cc);
-              const parent = _csm.parentNode;
-              if (!parent) return;
-              // Skip if args haven't changed
-              if (_csm.nextSibling !== _cem && !_curriedComponentChanged(_cinfo, cc)) return;
-              // Re-render: remove old, insert new
-              const _removed = _removeNodesBetween(parent, _csm, _cem);
-              if (_removed.length > 0) {
-                getGxtRenderer()?.destruction.destroyInstancesInNodes(_removed);
-              }
-              const newNode = _renderCurried(cc);
-              if (newNode) parent.insertBefore(newNode, _cem);
-              _cinfo.lastRenderedName = cc.__name;
-              _snapshotCurriedArgs(_cinfo, cc);
-            });
-          } catch {
-            /* effect setup may fail */
-          }
+          // What the arguments' getters and the render throw propagates.
+          _gxtTemplateEffect(() => {
+            // For eagerly-evaluated curried components, track arg getters
+            const cc = _curriedItem;
+            _touchCurriedArgGetters(cc);
+            const parent = _csm.parentNode;
+            if (!parent) return;
+            // Skip if args haven't changed
+            if (_csm.nextSibling !== _cem && !_curriedComponentChanged(_cinfo, cc)) return;
+            // Re-render: remove old, insert new
+            const _removed = _removeNodesBetween(parent, _csm, _cem);
+            if (_removed.length > 0) {
+              getGxtRenderer()?.destruction.destroyInstancesInNodes(_removed);
+            }
+            const newNode = _renderCurried(cc);
+            if (newNode) parent.insertBefore(newNode, _cem);
+            _cinfo.lastRenderedName = cc.__name;
+            _snapshotCurriedArgs(_cinfo, cc);
+          });
           return _cfrag;
         }
       }
@@ -13277,21 +13272,17 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // null-proto objects + non-component nested paths reactive. Guard
           // with the cell's recorded owner (`_relatedObj`/`_relatedKey`, set
           // by gxt's rawCellFor); skip when unavailable.
-          try {
-            const _v = (c as any)._value;
-            const _ro = (c as any)._relatedObj;
-            const _rk = (c as any)._relatedKey;
-            if (
-              _v &&
-              typeof _v === 'object' &&
-              _ro &&
-              typeof _ro === 'object' &&
-              typeof _rk === 'string'
-            ) {
-              registerObjectValueOwner(_v, _ro, _rk);
-            }
-          } catch {
-            /* registration is best-effort */
+          const _v = (c as any)._value;
+          const _ro = (c as any)._relatedObj;
+          const _rk = (c as any)._relatedKey;
+          if (
+            _v &&
+            typeof _v === 'object' &&
+            _ro &&
+            typeof _ro === 'object' &&
+            typeof _rk === 'string'
+          ) {
+            registerObjectValueOwner(_v, _ro, _rk);
           }
         });
       }
@@ -13351,103 +13342,98 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
             // CurriedComponent, replace the content between markers.
             // The effect tracks cell reads inside item() so it fires when
             // any dependency (e.g., this.model.greeting) changes.
-            try {
-              // Store the getter so we can manually trigger re-renders
-              const curriedRenderInfo: any = {
-                item,
-                startMarker,
-                endMarker,
-                renderCurriedComponent,
-                managers,
-                lastRenderedName: finalResult.__name,
-              };
-              // Snapshot initial curried args for change detection
-              _snapshotCurriedArgs(curriedRenderInfo, finalResult);
-              // Register for manual re-rendering on property changes.
-              _curriedRenderInfos.push(curriedRenderInfo);
+            // What the getters and the render throw propagates.
+            // Store the getter so we can manually trigger re-renders
+            const curriedRenderInfo: any = {
+              item,
+              startMarker,
+              endMarker,
+              renderCurriedComponent,
+              managers,
+              lastRenderedName: finalResult.__name,
+            };
+            // Snapshot initial curried args for change detection
+            _snapshotCurriedArgs(curriedRenderInfo, finalResult);
+            // Register for manual re-rendering on property changes.
+            _curriedRenderInfos.push(curriedRenderInfo);
 
-              _gxtTemplateEffect(() => {
-                // Determine the current curried component.
-                // If item IS a curried component (not a getter), use it directly.
-                // If item is a getter function, call it to get the curried component.
-                let newFinal: any;
-                if (item.__isCurriedComponent) {
-                  // item is the curried component itself — use it directly
-                  // (it was eagerly evaluated from the template, not a getter)
-                  newFinal = item;
-                } else {
-                  const newResult = item();
-                  newFinal =
-                    typeof newResult === 'function'
-                      ? _gxtContentFunctionValue(newResult)
-                      : newResult;
+            _gxtTemplateEffect(() => {
+              // Determine the current curried component.
+              // If item IS a curried component (not a getter), use it directly.
+              // If item is a getter function, call it to get the curried component.
+              let newFinal: any;
+              if (item.__isCurriedComponent) {
+                // item is the curried component itself — use it directly
+                // (it was eagerly evaluated from the template, not a getter)
+                newFinal = item;
+              } else {
+                const newResult = item();
+                newFinal =
+                  typeof newResult === 'function' ? _gxtContentFunctionValue(newResult) : newResult;
+              }
+              // Evaluate curried arg getters to establish tracking —
+              // when a curried arg changes (e.g., this.model.expectedText),
+              // this effect must re-fire so we can update the component.
+              if (newFinal && newFinal.__isCurriedComponent) {
+                _touchCurriedArgGetters(newFinal);
+              }
+
+              const parent = startMarker.parentNode;
+              if (!parent) return;
+
+              // A value that is not a component: its text, HTML or node.
+              if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
+
+              // Skip teardown if same component with unchanged args (preserves DOM stability)
+              if (
+                newFinal &&
+                newFinal.__isCurriedComponent &&
+                startMarker.nextSibling !== endMarker &&
+                !_curriedComponentChanged(curriedRenderInfo, newFinal)
+              ) {
+                return;
+              }
+
+              // Check if the component type changed (not just args)
+              const _componentSwapped =
+                !newFinal ||
+                !newFinal.__isCurriedComponent ||
+                newFinal.__name !== curriedRenderInfo.lastRenderedName;
+              // Collect and remove existing content between markers
+              const _removedNodes = _removeNodesBetween(parent, startMarker, endMarker);
+              // Destroy old component instances when the component TYPE changed
+              if (_componentSwapped && _removedNodes.length > 0) {
+                getGxtRenderer()?.destruction.destroyInstancesInNodes(_removedNodes);
+              }
+
+              // Insert new content if we have a valid curried component
+              if (
+                newFinal &&
+                newFinal.__isCurriedComponent &&
+                managers.component.canHandle(newFinal)
+              ) {
+                const newNode = renderCurriedComponent(newFinal);
+                if (newNode) {
+                  parent.insertBefore(newNode, endMarker);
                 }
-                // Evaluate curried arg getters to establish tracking —
-                // when a curried arg changes (e.g., this.model.expectedText),
-                // this effect must re-fire so we can update the component.
-                if (newFinal && newFinal.__isCurriedComponent) {
-                  _touchCurriedArgGetters(newFinal);
-                }
-
-                const parent = startMarker.parentNode;
-                if (!parent) return;
-
-                // A value that is not a component: its text, HTML or node.
-                if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
-
-                // Skip teardown if same component with unchanged args (preserves DOM stability)
-                if (
-                  newFinal &&
-                  newFinal.__isCurriedComponent &&
-                  startMarker.nextSibling !== endMarker &&
-                  !_curriedComponentChanged(curriedRenderInfo, newFinal)
-                ) {
-                  return;
-                }
-
-                // Check if the component type changed (not just args)
-                const _componentSwapped =
-                  !newFinal ||
-                  !newFinal.__isCurriedComponent ||
-                  newFinal.__name !== curriedRenderInfo.lastRenderedName;
-                // Collect and remove existing content between markers
-                const _removedNodes = _removeNodesBetween(parent, startMarker, endMarker);
-                // Destroy old component instances when the component TYPE changed
-                if (_componentSwapped && _removedNodes.length > 0) {
-                  getGxtRenderer()?.destruction.destroyInstancesInNodes(_removedNodes);
-                }
-
-                // Insert new content if we have a valid curried component
-                if (
-                  newFinal &&
-                  newFinal.__isCurriedComponent &&
-                  managers.component.canHandle(newFinal)
-                ) {
-                  const newNode = renderCurriedComponent(newFinal);
-                  if (newNode) {
-                    parent.insertBefore(newNode, endMarker);
-                  }
-                  curriedRenderInfo.lastRenderedName = newFinal.__name;
-                  _snapshotCurriedArgs(curriedRenderInfo, newFinal);
-                } else if (newFinal && typeof newFinal === 'string') {
-                  // Component name resolved to string — try rendering directly
-                  if (managers.component.canHandle(newFinal)) {
-                    const handleResult = managers.component.handle(newFinal, {}, null, null);
-                    if (typeof handleResult === 'function') {
-                      const rendered = handleResult();
-                      if (rendered instanceof Node) {
-                        parent.insertBefore(rendered, endMarker);
-                      }
-                    } else if (handleResult instanceof Node) {
-                      parent.insertBefore(handleResult, endMarker);
+                curriedRenderInfo.lastRenderedName = newFinal.__name;
+                _snapshotCurriedArgs(curriedRenderInfo, newFinal);
+              } else if (newFinal && typeof newFinal === 'string') {
+                // Component name resolved to string — try rendering directly
+                if (managers.component.canHandle(newFinal)) {
+                  const handleResult = managers.component.handle(newFinal, {}, null, null);
+                  if (typeof handleResult === 'function') {
+                    const rendered = handleResult();
+                    if (rendered instanceof Node) {
+                      parent.insertBefore(rendered, endMarker);
                     }
+                  } else if (handleResult instanceof Node) {
+                    parent.insertBefore(handleResult, endMarker);
                   }
-                  curriedRenderInfo.lastRenderedName = newFinal;
                 }
-              });
-            } catch {
-              /* effect setup may fail */
-            }
+                curriedRenderInfo.lastRenderedName = newFinal;
+              }
+            });
 
             return fragment;
           }
@@ -13619,13 +13605,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
 
       // Check for GXT reactive cell with 'fn' property (from $_slot results)
       // GXT's slots return reactive cells that have a 'fn' getter function
+      // What the slot's content throws propagates.
       if (typeof item.fn === 'function' && 'isConst' in item) {
-        try {
-          const cellValue = item.fn();
-          return itemToNode(cellValue);
-        } catch (e) {
-          // fn() may throw if the cell is destroyed
-        }
+        const cellValue = item.fn();
+        return itemToNode(cellValue);
       }
 
       // Check for $nodes or nodes property
@@ -13787,7 +13770,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // `new HTMLBrowserDOMApi(root.document)` (the same constructor the
           // dom module uses internally) and install it on BOTH the root
           // (so subsequent renders can reuse it) AND the render context.
-          try {
+          // (The root is gxt's object, and the render context is assigned
+          // further properties below.)
+          {
             let rootRenderingCtx =
               gxtRoot && RENDERING_CONTEXT_PROPERTY
                 ? (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any]
@@ -13798,18 +13783,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               const DomApi = getGxtRenderer()?.gxtLib.HTMLBrowserDOMApi ?? _GXT_HTMLBrowserDOMApi;
               rootRenderingCtx = new (DomApi as any)(doc);
               if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
-                try {
-                  (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
-                } catch {
-                  /* ignore frozen root */
-                }
+                (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
               }
             }
             if (rootRenderingCtx && RENDERING_CONTEXT_PROPERTY) {
               renderContext[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
             }
-          } catch {
-            /* ignore */
           }
 
           _gxtCurrentSlots = context.$slots || context[$SLOTS_SYMBOL] || {};
@@ -13832,16 +13811,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
 
           // Check for built-in helper overrides. If the owner has registered a
           // helper with a built-in name, assert before rendering.
+          // (An owner that is being destroyed resolves nothing.)
           {
             const _owner = getAmbientOwner();
-            if (_owner && !_owner.isDestroyed) {
+            if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
               for (const builtinName of BUILTIN_HELPER_NAMES) {
-                let hasOverride = false;
-                try {
-                  hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`);
-                } catch {
-                  /* ignore */
-                }
+                const hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`);
                 if (hasOverride) {
                   emberAssert(
                     `You attempted to overwrite the built-in helper "${builtinName}" which is not allowed. Please rename the helper.`,
@@ -13898,27 +13873,22 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           const __gxtNativeTpl = (compilationResult as any).__gxtNativePath === true;
           if (COMPONENT_ID_PROPERTY && __gxtNativeTpl) {
             if (_gxtIsForceRerender()) {
-              try {
+              // A frozen context keeps its id; the flag is gxt's assignment.
+              const idDesc = Object.getOwnPropertyDescriptor(renderContext, COMPONENT_ID_PROPERTY);
+              if (idDesc === undefined || idDesc.configurable) {
                 delete renderContext[COMPONENT_ID_PROPERTY as any];
-              } catch {
-                /* frozen context, ignore */
               }
               const _attSym = _gxtFindAddedToTreeSym(renderContext);
               if (_attSym) {
-                try {
-                  delete (renderContext as any)[_attSym];
-                } catch {
-                  /* ignore */
-                }
+                delete (renderContext as any)[_attSym];
               }
             }
           } else if (COMPONENT_ID_PROPERTY) {
             const rootId = gxtRoot && (gxtRoot as any)[COMPONENT_ID_PROPERTY as any];
             if (rootId !== undefined && rootId !== null) {
-              try {
+              // A frozen context keeps its id.
+              if (_gxtCanAssign(renderContext, COMPONENT_ID_PROPERTY)) {
                 renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
-              } catch {
-                /* frozen context, ignore */
               }
             } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
               // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
@@ -13947,17 +13917,11 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // so symbol writes are transparent.)
           if (__gxtNativeTpl) {
             const __argsObj = renderContext['args'];
+            // (Frozen args, a legacy-only shape, get neither.)
             if (__argsObj && typeof __argsObj === 'object') {
-              try {
+              if (_gxtCanAssign(__argsObj, $SLOTS_SYMBOL))
                 __argsObj[$SLOTS_SYMBOL] = _gxtCurrentSlots;
-              } catch {
-                /* frozen args — legacy-only shape, ignore */
-              }
-              try {
-                __argsObj[$PROPS_SYMBOL] = _gxtCurrentFw;
-              } catch {
-                /* ignore */
-              }
+              if (_gxtCanAssign(__argsObj, $PROPS_SYMBOL)) __argsObj[$PROPS_SYMBOL] = _gxtCurrentFw;
             }
           }
 
@@ -14016,7 +13980,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // will track the cell, enabling reactive updates when set() is called later.
           // We walk the prototype chain (up to the base Ember component) to find
           // properties set via Component.extend({ fooBar: true }).
-          try {
+          // The walk reads data properties only (a configurable, non-function
+          // value), and gxt's `cellFor` defines its accessor without failing.
+          {
             const internalKeys = new Set([
               'args',
               'attrs',
@@ -14058,34 +14024,26 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                   desc.configurable &&
                   typeof desc.value !== 'function'
                 ) {
-                  try {
-                    // Guard against installing a recursive cell-backed getter (GH#18417):
-                    // if a formula (Yt) cell already exists for (cellTarget, key)
-                    // whose __fn reads cellTarget[key], installing a getter that
-                    // returns cell.value will loop — cell.value → __fn() →
-                    // cellTarget[key] → getter → cell.value. Skip installation
-                    // to keep the raw data property in place; the formula still
-                    // reads the correct value through the data descriptor.
-                    try {
-                      const _existing = cellFor(cellTarget, key as any, /* skipDefine */ true);
-                      if (_existing && typeof (_existing as any).__fn === 'function') {
-                        continue;
-                      }
-                    } catch {
-                      /* ignore probe failure */
-                    }
-                    // Install cell on the raw target (not the proxy)
-                    // This ensures the same cell is used for reads and writes
-                    cellFor(cellTarget, key as any, /* skipDefine */ false);
-                    // Register reverse mapping: if this property holds an object,
-                    // we need to dirty this cell when a property changes on that object.
-                    // This enables {{this.m.formattedMessage}} to update when m.message changes.
-                    const cellValue = desc.value;
-                    if (cellValue && typeof cellValue === 'object') {
-                      registerObjectValueOwner(cellValue, cellTarget, key);
-                    }
-                  } catch {
-                    /* ignore non-configurable properties */
+                  // Guard against installing a recursive cell-backed getter (GH#18417):
+                  // if a formula (Yt) cell already exists for (cellTarget, key)
+                  // whose __fn reads cellTarget[key], installing a getter that
+                  // returns cell.value will loop — cell.value → __fn() →
+                  // cellTarget[key] → getter → cell.value. Skip installation
+                  // to keep the raw data property in place; the formula still
+                  // reads the correct value through the data descriptor.
+                  const _existing = cellFor(cellTarget, key as any, /* skipDefine */ true);
+                  if (_existing && typeof (_existing as any).__fn === 'function') {
+                    continue;
+                  }
+                  // Install cell on the raw target (not the proxy)
+                  // This ensures the same cell is used for reads and writes
+                  cellFor(cellTarget, key as any, /* skipDefine */ false);
+                  // Register reverse mapping: if this property holds an object,
+                  // we need to dirty this cell when a property changes on that object.
+                  // This enables {{this.m.formattedMessage}} to update when m.message changes.
+                  const cellValue = desc.value;
+                  if (cellValue && typeof cellValue === 'object') {
+                    registerObjectValueOwner(cellValue, cellTarget, key);
                   }
                 }
               }
@@ -14093,8 +14051,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               if (!nextProto || nextProto === Object.prototype) break;
               proto = nextProto;
             }
-          } catch {
-            /* ignore */
           }
           // Cell promotion handled by `_gxtForceEmberRerender` (full re-render)
 
