@@ -7860,10 +7860,12 @@ function _assertHelperDelegateCapabilities(delegate: any): void {
 }
 
 // `(helper …)` for a helper whose manager delegate has a value: the bucket is
-// created once, and each call of the curried function updates its args object
-// in place before `getValue`, so the helper instance stays stable (its tracked
-// state re-renders, `getValue` counts are per instance). `createHelper` and
-// `getValue` run in a backtracking frame.
+// created by the first call, and each call of the curried function updates its
+// args object in place before `getValue`, so the helper instance stays stable
+// (its tracked state re-renders, `getValue` counts are per instance). An
+// invocation that owns its helper (a content binding) creates its own instance
+// instead (`__gxtHelperInstance`). `createHelper` and `getValue` run in a
+// backtracking frame.
 function _curryDelegateHelper(delegate: any, definition: any, params: any, hash: any): any {
   const curriedPositionals = _helperPositionalArgs(params);
   const curriedNamed = _helperNamedArgs(hash);
@@ -7871,20 +7873,10 @@ function _curryDelegateHelper(delegate: any, definition: any, params: any, hash:
     positional: [...curriedPositionals],
     named: { ...curriedNamed },
   };
-  beginBacktrackingFrame();
+  // The helper instance the calls of the curried value read, created by the
+  // first call (Glimmer creates a helper when it is invoked).
   let bucket: any;
-  try {
-    bucket = delegate.createHelper(definition, reactiveArgs);
-  } finally {
-    endBacktrackingFrame();
-  }
-  if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
-    const destroyable = delegate.getDestroyable(bucket);
-    if (destroyable) {
-      // Stored for later cleanup.
-      (bucket as any).__destroyable = destroyable;
-    }
-  }
+  let created = false;
   const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
     const newPositional = [...curriedPositionals, ..._helperPositionalArgs(additionalParams)];
     const newNamed = { ...curriedNamed, ..._helperNamedArgs(additionalHash) };
@@ -7892,13 +7884,70 @@ function _curryDelegateHelper(delegate: any, definition: any, params: any, hash:
     reactiveArgs.named = newNamed;
     beginBacktrackingFrame();
     try {
+      if (!created) {
+        created = true;
+        bucket = delegate.createHelper(definition, reactiveArgs);
+      }
       return delegate.getValue(bucket);
     } finally {
       endBacktrackingFrame();
     }
   };
   (curried as any).__isEmberCurriedHelper = true;
+  // A helper instance with the curried arguments (and `positional` / `named`
+  // after them) for an invocation that owns it.
+  (curried as any).__gxtHelperInstance = (positional: any[] = [], named: object = {}) =>
+    _gxtCreateHelperInstance(delegate, definition, {
+      positional: [...curriedPositionals, ...positional],
+      named: { ...curriedNamed, ...named },
+    });
   return curried;
+}
+
+/**
+ * An instance of a helper that an invocation owns, as Glimmer's dynamic
+ * helper invocation owns the helper it creates for its value: compile.ts's
+ * content binding creates it for a helper value and destroys it when the
+ * value changes or the binding's block goes.
+ */
+export interface GxtHelperInstance {
+  value(): unknown;
+  destroy(): void;
+}
+
+// Creates the helper of `definition` through its delegate, with `args`. Its
+// destroyable is also destroyed at test teardown, as the helpers `$_maybeHelper`
+// creates, if its invocation did not destroy it before.
+function _gxtCreateHelperInstance(
+  delegate: any,
+  definition: any,
+  args: { positional: any[]; named: Record<string, any> }
+): GxtHelperInstance {
+  let bucket: any;
+  beginBacktrackingFrame();
+  try {
+    bucket = delegate.createHelper(definition, args);
+  } finally {
+    endBacktrackingFrame();
+  }
+  const destroyable =
+    delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function'
+      ? delegate.getDestroyable(bucket)
+      : null;
+  if (destroyable) getGxtRenderer()?.compilePipeline.pushHelperInstance?.(destroyable);
+  return {
+    value() {
+      beginBacktrackingFrame();
+      try {
+        return delegate.getValue(bucket);
+      } finally {
+        endBacktrackingFrame();
+      }
+    },
+    destroy() {
+      if (destroyable) _destroyDestroyable(destroyable);
+    },
+  };
 }
 
 // `(helper …)` for a helper that is a function of `(positional, named)`. The
@@ -8859,6 +8908,13 @@ const $_MANAGERS = {
           return innerCurried(addPos, addHash);
         };
         (newCurried as any).__isEmberCurriedHelper = true;
+        if (typeof innerCurried.__gxtHelperInstance === 'function') {
+          (newCurried as any).__gxtHelperInstance = (positional: any[] = [], named: object = {}) =>
+            innerCurried.__gxtHelperInstance([...additionalPositionals, ...positional], {
+              ...additionalNamed,
+              ...named,
+            });
+        }
         (newCurried as any).__resolvedFn = helper.__resolvedFn;
         (newCurried as any).__curriedPositionals = mergedPositionals;
         (newCurried as any).__curriedNamed = mergedNamed;

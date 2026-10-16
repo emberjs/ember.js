@@ -663,6 +663,7 @@ import {
   gxtCurrentBlock,
   gxtRenderInBlock,
   gxtDestroyBlock,
+  type GxtHelperInstance,
 } from './manager';
 
 // JS reserved words cannot be used as JS variable names, so scope-binding
@@ -3448,14 +3449,84 @@ function _gxtHasManagerIn(managers: WeakMap<object, unknown> | undefined, value:
   return false;
 }
 
+// The helper a content binding renders the value of. Glimmer's dynamic content
+// invokes a helper value with a helper instance it owns: it is created for the
+// value, and destroyed when the binding's value is another value or no helper,
+// and when the block the binding is in is destroyed.
+interface _GxtContentHelper {
+  // The block the binding was created in (manager.ts `gxtCurrentBlock`).
+  block: object | null;
+  // The helper value `instance` was created for.
+  value: unknown;
+  instance: GxtHelperInstance | null;
+  // Whether the binding's current evaluation rendered `instance`'s value.
+  used: boolean;
+  // Whether `block`'s destruction releases the instance.
+  registered: boolean;
+}
+
+function _gxtContentHelper(): _GxtContentHelper {
+  return {
+    block: gxtCurrentBlock(),
+    value: undefined,
+    instance: null,
+    used: false,
+    registered: false,
+  };
+}
+
+function _gxtReleaseContentHelper(helper: _GxtContentHelper): void {
+  const instance = helper.instance;
+  if (instance === null) return;
+  helper.instance = null;
+  helper.value = undefined;
+  instance.destroy();
+}
+
+// What `_gxtOwnedHelperValue` returns for a function whose helper instances
+// an invocation cannot own.
+const _GXT_NOT_OWNED = Symbol('not an owned helper');
+
+// The value of `fn` through the binding's instance of it, created when the
+// binding's value is a new one: `fn` is a helper definition whose manager has
+// a delegate, or a curried helper of one (manager.ts `__gxtHelperInstance`).
+function _gxtOwnedHelperValue(fn: any, helper: _GxtContentHelper): unknown {
+  let instance = helper.value === fn ? helper.instance : null;
+  if (instance === null) {
+    let create: ((...args: never[]) => GxtHelperInstance) | null = null;
+    if (typeof fn.__gxtHelperInstance === 'function') {
+      create = fn.__gxtHelperInstance;
+    } else if (_gxtHasHelperManager(fn)) {
+      const curried = (globalThis as any).$_MANAGERS?.helper?.handle?.(fn, [], {});
+      if (typeof curried?.__gxtHelperInstance === 'function') create = curried.__gxtHelperInstance;
+    }
+    if (create === null) return _GXT_NOT_OWNED;
+    _gxtReleaseContentHelper(helper);
+    instance = create();
+    helper.instance = instance;
+    helper.value = fn;
+    if (!helper.registered && helper.block !== null) {
+      helper.registered = true;
+      _gxtRegisterDestructor(helper.block, () => _gxtReleaseContentHelper(helper));
+    }
+  }
+  helper.used = true;
+  return instance.value();
+}
+
 // What a function value of a content binding renders, as Glimmer decides
 // (`toDynamicContentType`): a component definition renders as a component (it
 // is the value as it is), a helper definition renders the value of the helper
 // invoked without arguments, and any other function is the binding's getter
 // (or a plain-function helper), called. A class is never called as a plain
-// function.
-function _gxtContentFunctionValue(fn: Function): unknown {
+// function. With the binding's `helper`, a helper value is rendered through
+// the instance the binding owns.
+function _gxtContentFunctionValue(fn: Function, helper: _GxtContentHelper | null = null): unknown {
   if (_gxtIsComponentDefinition(fn)) return fn;
+  if (helper !== null) {
+    const value = _gxtOwnedHelperValue(fn, helper);
+    if (value !== _GXT_NOT_OWNED) return value;
+  }
   if (_gxtHasHelperManager(fn)) return (globalThis as any).$_maybeHelper(fn, [], {});
   return fn();
 }
@@ -3547,6 +3618,9 @@ interface _GxtDynamicContentOptions {
   // cells that evaluation read: the binding subscribes to them and does not
   // evaluate again.
   initial?: { value: unknown; cells: Set<any> };
+  // The helper the caller's evaluation rendered the value of, which the
+  // binding owns from then on.
+  helper?: _GxtContentHelper;
 }
 
 // Renders a content mustache whose binding is `read`, and renders it again
@@ -3619,9 +3693,13 @@ function _gxtDynamicContent(
     (fragment as any)[RENDERED_NODES_PROPERTY] = replacement;
   };
 
+  const helper = options.helper ?? _gxtContentHelper();
   const initial = options.initial;
   if (initial === undefined) {
-    const destroy = gxtEffect(() => show(_gxtContentText(_gxtContentValue(read))), options.owner);
+    const destroy = gxtEffect(
+      () => show(_gxtContentText(_gxtContentValue(read, helper))),
+      options.owner
+    );
     return { fragment, destroy };
   } else {
     // The text of the value read by the caller's evaluation is taken in that
@@ -3643,7 +3721,7 @@ function _gxtDynamicContent(
         if (cells) initial.cells.forEach((cell) => cells.add(cell));
         return;
       }
-      show(_gxtContentText(_gxtContentValue(read)));
+      show(_gxtContentText(_gxtContentValue(read, helper)));
     }, options.owner);
     return { fragment, destroy };
   }
@@ -3665,11 +3743,12 @@ function _gxtContentText(value: unknown): unknown {
 // value-owners (`_gxtRegisterLeafOwners`) on every evaluation, so after
 // `set(context, 'page', newPage)` a change of `newPage.title` updates
 // `{{this.page.title}}`.
-function _gxtContentValue(read: () => unknown): unknown {
+function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null = null): unknown {
+  if (helper !== null) helper.used = false;
   let value = read();
   for (;;) {
     if (typeof value === 'function') {
-      const next = _gxtContentFunctionValue(value);
+      const next = _gxtContentFunctionValue(value, helper);
       if (next === value) break;
       value = next;
     } else if (value !== null && typeof value === 'object') {
@@ -3680,6 +3759,8 @@ function _gxtContentValue(read: () => unknown): unknown {
       break;
     }
   }
+  // The value is no longer the helper the binding's instance is for.
+  if (helper !== null && !helper.used) _gxtReleaseContentHelper(helper);
   const cells = _gxtGetTracker();
   if (cells) _gxtRegisterLeafOwners(cells);
   return value;
@@ -3703,10 +3784,11 @@ function _gxtContentChild(
   const read = _gxtEvaluateOncePerCreation(getter, thisPath);
   const outer = _gxtGetTracker();
   const cells = new Set<any>();
+  const helper = _gxtContentHelper();
   _gxtSetTracker(cells);
   let value: unknown;
   try {
-    value = _gxtContentValue(read);
+    value = _gxtContentValue(read, helper);
     if (value !== null && typeof value === 'object' && RENDERED_NODES_PROPERTY in value) {
       return value;
     }
@@ -3718,6 +3800,7 @@ function _gxtContentChild(
     owner: owner !== null && typeof owner === 'object' ? owner : _gxtTemplateOwner(),
     context,
     initial: { value, cells },
+    helper,
   }).fragment;
 }
 
@@ -13348,6 +13431,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       const _capturedDeps = new Set<any>();
       let result: any;
       let finalResult: any;
+      // The helper a function value renders through (`_gxtContentFunctionValue`),
+      // owned by the binding.
+      let contentHelper: _GxtContentHelper | undefined;
       const _ambientTracker = _gxtGetTracker();
       const _captureFrame = new Set<any>();
       _gxtSetTracker(_captureFrame);
@@ -13358,7 +13444,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         // (`_gxtContentFunctionValue`). A nested getter (e.g. from $__if) is
         // called, a helper definition invoked, and a component definition (a
         // CurriedComponent included) stays for the rendering paths below.
-        finalResult = typeof result === 'function' ? _gxtContentFunctionValue(result) : result;
+        if (typeof result === 'function') {
+          contentHelper = _gxtContentHelper();
+          finalResult = _gxtContentFunctionValue(result, contentHelper);
+        } else {
+          finalResult = result;
+        }
         // Walk every hash/array sub-value so each member's source cell is
         // captured: a hash exposes lazy getters per key and the consumer
         // only reads the keys it references, leaving sibling sub-values
@@ -13582,6 +13673,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           context: _gxtNamespaceContext(),
           renderComponent: renderComponentNodes,
           initial: { value: finalResult, cells: _capturedDeps },
+          helper: contentHelper,
         }).fragment;
 
       // A SafeString renders its HTML, as dynamic content.
