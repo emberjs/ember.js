@@ -5986,14 +5986,11 @@ const _GXT_COLLECTION_TAG: unique symbol = Symbol.for('@ember/reactive:gxt-colle
 
 function _gxtSubscribeBackingArray(raw: any): void {
   if (!raw || typeof raw !== 'object') return;
+  // (A collection's `[]` is no getter that can fail.)
   const _read = (arr: any) => {
-    try {
-      const c = cellFor(arr, '[]', /* skipDefine */ true);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      if (c) (c as any).value;
-    } catch {
-      /* ignore */
-    }
+    const c = cellFor(arr, '[]', /* skipDefine */ true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    if (c) (c as any).value;
   };
   if (Array.isArray(raw)) {
     _read(raw);
@@ -6017,14 +6014,10 @@ function _gxtSubscribeBackingArray(raw: any): void {
     // storage-compat wrapper getter does not propagate entanglement. For a
     // PLAIN (non-proxy) array there is no `GXT_COLLECTION_TAG` → no-op →
     // plain-array / ArrayProxy sources unaffected.
-    try {
-      const _tag = (raw as any)[_GXT_COLLECTION_TAG];
-      if (_tag && _tag._innerCell) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        _tag._innerCell.value;
-      }
-    } catch {
-      /* ignore */
+    const _tag = (raw as any)[_GXT_COLLECTION_TAG];
+    if (_tag && _tag._innerCell) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      _tag._innerCell.value;
     }
     return;
   }
@@ -6469,14 +6462,12 @@ const _eachNestedProxyHandler: ProxyHandler<any> = {
     if (_eachProxySkipProp(prop)) return Reflect.get(target, prop, target);
     const v = Reflect.get(target, prop, target);
     if (typeof v === 'function') return v;
-    try {
-      const cell = cellFor(target, prop, /* skipDefine */ true);
-      if (cell) {
-        if ((cell as any)._value !== v) (cell as any)._value = v;
-        (cell as any).value;
-      }
-    } catch {
-      /* ignore */
+    // Creating the cell reads the property again; what a getter throws
+    // propagates, as from the read above.
+    const cell = cellFor(target, prop, /* skipDefine */ true);
+    if (cell) {
+      if ((cell as any)._value !== v) (cell as any)._value = v;
+      (cell as any).value;
     }
     return _wrapNestedEachValue(v);
   },
@@ -6522,13 +6513,10 @@ function _gxtDrainPendingEachRebinds(): void {
         if (typeof key === 'string') cell.update(proxy[key]);
       });
     }
-    try {
-      const revCell = cellFor(holder as any, '__gxtRev', /* skipDefine */ true);
-      if (revCell) {
-        (revCell as any).update(((revCell as any)._value || 0) + 1);
-      }
-    } catch {
-      /* ignore */
+    // (The holder is a plain object of ours.)
+    const revCell = cellFor(holder as any, '__gxtRev', /* skipDefine */ true);
+    if (revCell) {
+      (revCell as any).update(((revCell as any)._value || 0) + 1);
     }
   }
 }
@@ -6592,13 +6580,10 @@ const _gxtEachItemRawFor = function (maybeProxy: any): any {
 // `.value` here (inside the formula's tracker frame) registers the dep.
 const _gxtSubscribeCellFn = function (obj: any, key: string): void {
   if (!obj || typeof obj !== 'object') return;
-  try {
-    const c = cellFor(obj, key, /* skipDefine */ true);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    if (c) (c as any).value;
-  } catch {
-    /* ignore */
-  }
+  // (The caller reads the same property next.)
+  const c = cellFor(obj, key, /* skipDefine */ true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  if (c) (c as any).value;
 };
 // Lifecycle teardown ORDERING.
 //
@@ -6635,12 +6620,9 @@ const _pendingInverseOldRowFinalize: _PendingInverseFinalize[] = [];
 function _gxtDrainPendingInverseOldRowFinalize(): void {
   if (_pendingInverseOldRowFinalize.length === 0) return;
   const pending = _pendingInverseOldRowFinalize.splice(0);
+  // What the rows' `didDestroyElement` / `willDestroy` throw propagates.
   for (const { rows, cycle } of pending) {
-    try {
-      getGxtRenderer()?.destruction.finalizeInverseOldRows?.(rows, cycle);
-    } catch {
-      /* best-effort */
-    }
+    getGxtRenderer()?.destruction.finalizeInverseOldRows?.(rows, cycle);
   }
 }
 
@@ -6711,42 +6693,35 @@ function _gxtFireRowPreDestroy(rowCtx: object): void {
     // PRE-DOM-removal (teardownAllRowCtxs before clearChildren; destroyRowCtx
     // before destroyElementSync(row)), so the row is still connected here.
     if (!(inst as any).__gxtEverInserted) continue;
-    try {
-      (inst as any).__gxtWDEFiredCycle = _gxtGetSyncCycleId();
-      if (inst._transitionTo && inst._state !== 'inDOM') {
-        try {
-          inst._transitionTo('inDOM');
-        } catch {
-          /* ignore */
-        }
-      }
-      if (typeof inst.trigger === 'function') {
-        inst.trigger('willDestroyElement');
-        inst.trigger('willClearRender');
-      }
-      // Per-instance trigger gate: a later willDestroyElement/willClearRender
-      // trigger in the same sync cycle (e.g. from a reattach path in manager.ts)
-      // is a no-op. Other hooks (didDestroyElement, willDestroy) keep flowing.
-      if (!(inst as any).__gxtPreDestroyGateInstalled) {
-        (inst as any).__gxtPreDestroyGateInstalled = true;
-        const origTrigger = inst.trigger;
-        Object.defineProperty(inst, 'trigger', {
-          value: function (this: any, name: string, ...rest: any[]) {
-            if (
-              (name === 'willDestroyElement' || name === 'willClearRender') &&
-              this.__gxtWDEFiredCycle === _gxtGetSyncCycleId()
-            ) {
-              return undefined;
-            }
-            return origTrigger.call(this, name, ...rest);
-          },
-          writable: true,
-          configurable: true,
-          enumerable: false,
-        });
-      }
-    } catch {
-      /* user override may throw */
+    // What the hooks throw propagates, as from Glimmer's teardown.
+    (inst as any).__gxtWDEFiredCycle = _gxtGetSyncCycleId();
+    if (inst._transitionTo && inst._state !== 'inDOM') {
+      inst._transitionTo('inDOM');
+    }
+    if (typeof inst.trigger === 'function') {
+      inst.trigger('willDestroyElement');
+      inst.trigger('willClearRender');
+    }
+    // Per-instance trigger gate: a later willDestroyElement/willClearRender
+    // trigger in the same sync cycle (e.g. from a reattach path in manager.ts)
+    // is a no-op. Other hooks (didDestroyElement, willDestroy) keep flowing.
+    if (!(inst as any).__gxtPreDestroyGateInstalled) {
+      (inst as any).__gxtPreDestroyGateInstalled = true;
+      const origTrigger = inst.trigger;
+      Object.defineProperty(inst, 'trigger', {
+        value: function (this: any, name: string, ...rest: any[]) {
+          if (
+            (name === 'willDestroyElement' || name === 'willClearRender') &&
+            this.__gxtWDEFiredCycle === _gxtGetSyncCycleId()
+          ) {
+            return undefined;
+          }
+          return origTrigger.call(this, name, ...rest);
+        },
+        writable: true,
+        configurable: true,
+        enumerable: false,
+      });
     }
   }
 }
@@ -6997,7 +6972,8 @@ function patchGlobalEachSync() {
         // to the test teardown.
         let _oldRowsToFinalize: any[] | null = null;
         const _finalizeCycle = _gxtGetSyncCycleId();
-        try {
+        // (Reads and marks of component instances; nothing here can fail.)
+        {
           const currentCycle = _gxtGetSyncCycleId();
           const isSyncing = _gxtIsSyncing();
           const alreadyFired =
@@ -7080,17 +7056,11 @@ function patchGlobalEachSync() {
                 // didDestroyElement / willDestroy — the deferred drain below
                 // owns that, in the correct order.
                 for (const inst of ordered) {
-                  try {
-                    (inst as any).__gxtDeferAsyncDestroyCycle = currentCycle;
-                  } catch {
-                    /* ignore */
-                  }
+                  (inst as any).__gxtDeferAsyncDestroyCycle = currentCycle;
                 }
               }
             }
           }
-        } catch {
-          /* best-effort; never block inverse render */
         }
         // Render the inverse ({{else}}) branch's new content. This enqueues the
         // new components' didInsertElement/didRender into the after-insert
@@ -7146,12 +7116,9 @@ function patchGlobalEachSync() {
       // Register the WRAPPER itself first so that `arrayContentDidChange`
       // notifying '[]'/'length' on the wrapper finds the owner. ArrayProxy
       // emits notifications on itself; ArrayDelegate emits on `_target` which
-      // defaults to the delegate instance.
-      try {
-        registerArrayOwner(rawItems, _itemsOwner, _itemsPropName);
-      } catch {
-        /* ignore */
-      }
+      // defaults to the delegate instance. (`registerArrayOwner` is
+      // bookkeeping in a WeakMap of Sets.)
+      registerArrayOwner(rawItems, _itemsOwner, _itemsPropName);
       // Also register backing arrays so direct array mutations propagate.
       // Walk own + inherited enumerable properties for any value that is an
       // array OR another iterable-like wrapper. This catches:
@@ -7183,17 +7150,9 @@ function patchGlobalEachSync() {
           if (val == null || visited.has(val)) continue;
           visited.add(val);
           if (Array.isArray(val)) {
-            try {
-              registerArrayOwner(val, _itemsOwner, _itemsPropName);
-            } catch {
-              /* ignore */
-            }
+            registerArrayOwner(val, _itemsOwner, _itemsPropName);
           } else if (typeof val === 'object') {
-            try {
-              registerArrayOwner(val, _itemsOwner, _itemsPropName);
-            } catch {
-              /* ignore */
-            }
+            registerArrayOwner(val, _itemsOwner, _itemsPropName);
             queue.push(val);
           }
         }
@@ -7266,13 +7225,11 @@ patchGlobalEachSync();
 queueMicrotask(patchGlobalEachSync);
 
 // Get a getter function for a property on the render context.
+// Creating the cell reads the property, as the condition's own read does next;
+// what a getter throws propagates.
 (globalThis as any).__gxtGetCellOrFormula = function (obj: any, key: string) {
   const raw = obj?.__gxtRawTarget || obj;
-  try {
-    cellFor(raw, key, /* skipDefine */ false);
-  } catch {
-    /* ignore */
-  }
+  cellFor(raw, key, /* skipDefine */ false);
   const getter: any = function () {
     return obj[key];
   };
