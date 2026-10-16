@@ -231,26 +231,20 @@ import {
 function _gxtEffectWithOwner(owner: object | null | undefined, cb: () => void): () => void {
   const cleanup = _gxtEffect(cb);
   let cleaned = false;
+  // gxt's effect cleanup destroys the effect's formulas and unsubscribes it;
+  // the callbacks passed here return no cleanup of their own.
   const wrapped = () => {
     if (cleaned) return;
     cleaned = true;
-    try {
-      if (typeof cleanup === 'function') cleanup();
-    } catch {
-      /* swallow — destruction must continue */
-    }
+    cleanup();
   };
   if (owner && typeof owner === 'object') {
-    try {
-      if (!_isDestroying(owner)) {
-        _registerDestructor(owner, wrapped);
-      } else {
-        // Owner is already tearing down — run cleanup immediately so we
-        // don't leak the formula.
-        wrapped();
-      }
-    } catch {
-      /* registration may fail for non-destroyable hosts */
+    if (!_isDestroying(owner)) {
+      _registerDestructor(owner, wrapped);
+    } else {
+      // Owner is already tearing down — run cleanup immediately so we
+      // don't leak the formula.
+      wrapped();
     }
   }
   return wrapped;
@@ -531,117 +525,88 @@ _gxtSetComponentRenderErrorReporter((err) => {
 function _installHelperRecomputeBridge(instance: any): void {
   if (!instance || typeof instance !== 'object') return;
   if ((instance as any).__gxtHelperRecomputeBridgeInstalled) return;
+  // The bridge marks and patches the instance.
+  if (!Object.isExtensible(instance)) return;
 
   // Glimmer's RECOMPUTE_TAG on the instance (classic Helper only).
-  let recomputeTag: any = null;
-  try {
-    recomputeTag = getGxtRenderer()!.compilePipeline.getHelperRecomputeTag!(instance);
-  } catch {
-    /* ignore */
-  }
+  const recomputeTag: any = getGxtRenderer()!.compilePipeline.getHelperRecomputeTag!(instance);
 
   if (!recomputeTag || typeof recomputeTag !== 'object') return;
 
   // Mark early so repeated pushes don't re-install.
-  try {
-    (instance as any).__gxtHelperRecomputeBridgeInstalled = true;
-  } catch {
-    /* ignore */
-  }
+  (instance as any).__gxtHelperRecomputeBridgeInstalled = true;
 
   // Install a real, scalar `value` property on the tag object (initial 0) and
   // route it through a GXT cell so reads are tracked by gxtEffect.
   // Use defineProperty first so cellFor(skipDefine=false) sees an enumerable
-  // property it can wrap with a cell-backed getter/setter.
-  try {
-    if (!Object.prototype.hasOwnProperty.call(recomputeTag, 'value')) {
-      (recomputeTag as any).value = 0;
-    }
-    _gxtCellFor(recomputeTag, 'value', /* skipDefine */ false);
-  } catch {
-    /* ignore — tag may be sealed, we still patch recompute below */
+  // property it can wrap with a cell-backed getter/setter. (A `createTag()`
+  // tag is a plain object whose own configurable `value` accessor reads a
+  // cell.)
+  if (!Object.prototype.hasOwnProperty.call(recomputeTag, 'value')) {
+    (recomputeTag as any).value = 0;
   }
+  _gxtCellFor(recomputeTag, 'value', /* skipDefine */ false);
+
+  // Bump the tag's scalar so the cell's update() path fires and the tracked
+  // revision changes (the setter installed by cellFor updates the underlying
+  // GXT cell, which notifies dependents), and re-render what read it. The tag
+  // is the shim's own object: no getter, computed property or render context
+  // of a user's is behind it.
+  const bumpTag = (helper: any) => {
+    const rt = helper && helper.__gxtRecomputeTagRef;
+    if (rt) {
+      rt.value = ((rt.value as number) || 0) + 1;
+      // Suppression is handled inside compile.ts's `_gxtTriggerReRender`.
+      getGxtRenderer()?.compilePipeline.triggerReRender?.(rt, 'value');
+    }
+  };
 
   // Patch recompute() on the instance so it also bumps the GXT cell and
   // triggers a GXT re-render, instead of relying on the classic Glimmer
   // dirtyTag pipeline.
-  try {
-    const origRecompute = (instance as any).recompute;
-    if (typeof origRecompute === 'function' && !origRecompute.__gxtPatched) {
-      const patched = function (this: any, ...args: any[]) {
-        let result: any;
-        try {
-          result = origRecompute.apply(this, args);
-        } catch (e) {
-          // Preserve original error after bumping so gxtEffect still re-runs.
-          try {
-            const rt = this && this.__gxtRecomputeTagRef;
-            if (rt) {
-              rt.value = ((rt.value as number) || 0) + 1;
-              // Suppression is handled inside compile.ts's `_gxtTriggerReRender`.
-              getGxtRenderer()?.compilePipeline.triggerReRender?.(rt, 'value');
-            }
-          } catch {
-            /* ignore */
-          }
-          throw e;
-        }
-        try {
-          const rt = this && this.__gxtRecomputeTagRef;
-          if (rt) {
-            // Bump the scalar so the cell's update() path fires and the
-            // tracked revision changes. The setter installed by cellFor
-            // updates the underlying GXT cell, which notifies dependents.
-            rt.value = ((rt.value as number) || 0) + 1;
-            // Suppression is handled inside compile.ts's `_gxtTriggerReRender`.
-            getGxtRenderer()?.compilePipeline.triggerReRender?.(rt, 'value');
-          }
-          // Also invalidate the $_maybeHelper cache in ember-gxt-wrappers.ts
-          // (classHelperInstanceCache) so the next render pass re-runs
-          // delegate.getValue(bucket), which calls compute() with fresh state.
-          // The cache is keyed by helper name and short-circuits when args
-          // haven't changed — which is exactly the case after recompute().
-          try {
-            getGxtRenderer()?.compilePipeline.notifyHelperPropertyChange?.(
-              this,
-              '__gxtRecomputeTagRef'
-            );
-          } catch {
-            /* ignore */
-          }
-          // Force a full re-render so the formula that reads the helper's
-          // cell value picks up the new computed result; invalidating the cache
-          // alone doesn't trigger formula re-evaluation. Mark a pending sync and a
-          // nested-object change so force-rerender traverses the full tree (it
-          // skips that when only a tracked property on a component mutated).
-          try {
-            getGxtRenderer()?.compilePipeline.setHadPendingSync?.(true);
-            getGxtRenderer()?.compilePipeline.setHadNestedObjectChange?.(true);
-            getGxtRenderer()?.compilePipeline.forceEmberRerender?.();
-            // recompute() called OUTSIDE a runloop has no runloop-end to flush
-            // the GXT DOM sync. The recomputeTag cell was just dirtied
-            // (triggerReRender above) and the helper text effect is subscribed
-            // to it, so flush the sync synchronously here to update the DOM.
-            {
-              const _sync = getGxtRenderer()?.compilePipeline.syncDomNow;
-              if (typeof _sync === 'function') _sync();
-            }
-          } catch {
-            /* ignore */
-          }
-        } catch {
-          /* ignore */
-        }
-        return result;
-      };
-      (patched as any).__gxtPatched = true;
-      (instance as any).recompute = patched;
-      // Stash the tag reference so the patched recompute can reach it without
-      // re-scanning symbol keys on every call.
-      (instance as any).__gxtRecomputeTagRef = recomputeTag;
-    }
-  } catch {
-    /* ignore */
+  const origRecompute = (instance as any).recompute;
+  if (typeof origRecompute === 'function' && !origRecompute.__gxtPatched) {
+    const patched = function (this: any, ...args: any[]) {
+      let result: any;
+      try {
+        result = origRecompute.apply(this, args);
+      } catch (e) {
+        // Preserve original error after bumping so gxtEffect still re-runs.
+        bumpTag(this);
+        throw e;
+      }
+      bumpTag(this);
+      // Also invalidate the $_maybeHelper cache in ember-gxt-wrappers.ts
+      // (classHelperInstanceCache) so the next render pass re-runs
+      // delegate.getValue(bucket), which calls compute() with fresh state.
+      // The cache is keyed by helper name and short-circuits when args
+      // haven't changed — which is exactly the case after recompute().
+      getGxtRenderer()?.compilePipeline.notifyHelperPropertyChange?.(this, '__gxtRecomputeTagRef');
+      // Force a full re-render so the formula that reads the helper's
+      // cell value picks up the new computed result; invalidating the cache
+      // alone doesn't trigger formula re-evaluation. Mark a pending sync and a
+      // nested-object change so force-rerender traverses the full tree (it
+      // skips that when only a tracked property on a component mutated).
+      // What the re-render throws (a helper's compute) reaches the caller of
+      // recompute().
+      getGxtRenderer()?.compilePipeline.setHadPendingSync?.(true);
+      getGxtRenderer()?.compilePipeline.setHadNestedObjectChange?.(true);
+      getGxtRenderer()?.compilePipeline.forceEmberRerender?.();
+      // recompute() called OUTSIDE a runloop has no runloop-end to flush
+      // the GXT DOM sync. The recomputeTag cell was just dirtied
+      // (triggerReRender above) and the helper text effect is subscribed
+      // to it, so flush the sync synchronously here to update the DOM.
+      {
+        const _sync = getGxtRenderer()?.compilePipeline.syncDomNow;
+        if (typeof _sync === 'function') _sync();
+      }
+      return result;
+    };
+    (patched as any).__gxtPatched = true;
+    (instance as any).recompute = patched;
+    // Stash the tag reference so the patched recompute can reach it without
+    // re-scanning symbol keys on every call.
+    (instance as any).__gxtRecomputeTagRef = recomputeTag;
   }
 }
 
@@ -660,11 +625,7 @@ function _installHelperRecomputeBridge(instance: any): void {
 // `_installHelperRecomputeBridge`.
 if (__GXT_CLASSIC_COMPONENTS__) {
   queueMicrotask(() => {
-    try {
-      getGxtRenderer()?.compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge);
-    } catch {
-      /* ignore — best-effort */
-    }
+    getGxtRenderer()?.compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge);
   });
 }
 
@@ -773,9 +734,11 @@ function _isInLiveInElementDestination(node: Node): boolean {
  * The components of a destroyed block are destroyed with the block
  * (`_gxtDestroyComponentsOfDestroyedBlocks`); this covers the ones whose block
  * is not known to have gone (content a block this file does not track, such
- * as an outlet's, replaced).
+ * as an outlet's, replaced). What a destruction throws (a manager's
+ * `destroyComponent`, a destructor) is added to `errors`, and the others
+ * still run.
  */
-function _gxtDestroyCustomManagedInstances(): void {
+function _gxtDestroyCustomManagedInstances(errors: unknown[]): void {
   for (let i = _customManagedInstances.length - 1; i >= 0; i--) {
     const entry = _customManagedInstances[i]!;
     if (entry.destroyed || entry.blockDestroyed || entry.node === null) continue;
@@ -784,8 +747,8 @@ function _gxtDestroyCustomManagedInstances(): void {
     entry.destroyed = true;
     try {
       entry.destroyFn();
-    } catch {
-      /* ignore destroy errors */
+    } catch (error) {
+      errors.push(error);
     }
     _customManagedInstances.splice(i, 1);
   }
@@ -1171,29 +1134,24 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
   try {
     const owner = getAmbientOwner();
     // Collect registries from all live pool instances (they know their owner),
-    // plus the current ambient owner and any explicit registry passed in.
+    // plus the current ambient owner and any explicit registry passed in. A
+    // destroyed owner (one that lingers as an instance's or the ambient owner)
+    // resolves nothing: its container's `lookup` asserts.
     const registries = new Set<any>();
     if (explicitRegistry) registries.add(explicitRegistry);
     for (const pool of _allPoolArrays) {
       for (const entry of pool) {
         const inst = entry.instance;
         if (!inst || inst.isDestroyed || inst.isDestroying) continue;
-        try {
-          const instOwner = _glimmerGetOwner(inst) || owner;
-          const reg = instOwner?.lookup?.('-view-registry:main');
-          if (reg) registries.add(reg);
-        } catch {
-          /* ignore */
-        }
+        const instOwner = _glimmerGetOwner(inst) || owner;
+        if (!instOwner || instOwner.isDestroyed || instOwner.isDestroying) continue;
+        const reg = instOwner.lookup?.('-view-registry:main');
+        if (reg) registries.add(reg);
       }
     }
-    if (owner) {
-      try {
-        const reg = owner.lookup?.('-view-registry:main');
-        if (reg) registries.add(reg);
-      } catch {
-        /* ignore */
-      }
+    if (owner && !owner.isDestroyed && !owner.isDestroying) {
+      const reg = owner.lookup?.('-view-registry:main');
+      if (reg) registries.add(reg);
     }
     if (registries.size === 0) return;
 
@@ -1214,14 +1172,12 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
         let el: Element | null = null;
         const elementId: string | undefined = view.elementId || id;
         if (elementId && typeof document !== 'undefined') {
-          try {
-            el = document.getElementById(elementId);
-          } catch {
-            /* ignore */
-          }
+          el = document.getElementById(elementId);
         }
         if (!el) {
-          const cached = getViewElement(view) || view.element;
+          // The view's element mapping (what its `element` getter returns in
+          // an interactive renderer; the getter throws in a non-interactive one).
+          const cached = getViewElement(view);
           if (cached && (cached as any).isConnected) el = cached as Element;
         }
         if (!el) {
@@ -1230,33 +1186,16 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
         }
         liveElFor.set(view, el);
         // Refresh element↔view mapping so pass 2's DOM walk finds this view.
-        try {
-          setElementView(el, view);
-        } catch {
-          /* ignore */
-        }
-        try {
-          setViewElement(view, el);
-        } catch {
-          /* ignore */
-        }
-        try {
-          _initChildViews(view);
-        } catch {
-          /* ignore */
-        }
+        setElementView(el, view);
+        setViewElement(view, el);
+        _initChildViews(view);
       }
       // Disconnected tagged views stay in the registry (pool reuse can re-show
       // them), but clear their CHILD_VIEW_IDS so getChildViews doesn't return
       // a stale snapshot of a subtree hidden by {{#if}}.
       for (const id of disconnectedIds) {
         const v = registry[id];
-        if (v)
-          try {
-            _initChildViews(v);
-          } catch {
-            /* ignore */
-          }
+        if (v) _initChildViews(v);
       }
       // Pass 2: walk each live tagged view's DOM ancestry and wire parentView
       // + CHILD_VIEW_IDS on the nearest ancestor that maps to another live view.
@@ -1292,17 +1231,9 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
         const currentPV = view.parentView;
         if (ancestorView) {
           if (currentPV !== ancestorView) {
-            try {
-              view.parentView = ancestorView;
-            } catch {
-              /* ignore */
-            }
+            view.parentView = ancestorView;
           }
-          try {
-            _addChildView(ancestorView, view);
-          } catch {
-            /* ignore */
-          }
+          _addChildView(ancestorView, view);
         } else if (
           currentPV &&
           !currentPV.isDestroyed &&
@@ -1314,23 +1245,13 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
           // Current parentView is the test harness's tagless `-top-level`
           // wrapper, which has no DOM element for ancestry walking. Preserve
           // parentView and record the CHILD_VIEW_IDS entry.
-          try {
-            _addChildView(currentPV, view);
-          } catch {
-            /* ignore */
-          }
+          _addChildView(currentPV, view);
         } else if (currentPV !== null && currentPV !== undefined) {
           // True DOM root: ensure parentView is null so getRootViews sees it.
-          try {
-            view.parentView = null;
-          } catch {
-            /* ignore */
-          }
+          view.parentView = null;
         }
       }
     }
-  } catch {
-    /* ignore — best effort fixup */
   } finally {
     _rebuildInProgress = false;
     _gxtSuppressDirtyTagForDuringRebuild = false;
@@ -1347,15 +1268,10 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
 // Reads the hook via `getGxtRenderer()` rather than capturing a reference at
 // adapter-creation time so contributions arriving via the deferred install
 // queue (when compile.ts loads after manager.ts) are picked up on first call.
-// Errors from the hook are swallowed (best effort).
 function _gxtBridgeRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
   _gxtRebuildViewTreeFromDom(explicitRegistry);
-  try {
-    const after = getGxtRenderer()?.viewUtils.afterRebuildViewTreeFromDom;
-    if (typeof after === 'function') after(explicitRegistry);
-  } catch {
-    /* ignore — best effort */
-  }
+  const after = getGxtRenderer()?.viewUtils.afterRebuildViewTreeFromDom;
+  if (typeof after === 'function') after(explicitRegistry);
 }
 
 // Bridge adapter. Wraps the exported `flushAfterInsertQueue` so that AFTER the
@@ -1365,20 +1281,12 @@ function _gxtBridgeRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
 // Reads the hook via `getGxtRenderer()` rather than capturing a reference at
 // adapter-creation time so contributions arriving via the deferred install
 // queue (when compile.ts loads after manager.ts) are picked up on first call.
-// Errors from the body and from the hook are swallowed independently; the hook
-// runs even if the body throws.
+// The body queues what an insert callback throws as a render error; what the
+// in-element renders throw propagates.
 function _gxtBridgeFlushAfterInsertQueue(): void {
-  try {
-    flushAfterInsertQueue();
-  } catch {
-    /* ignore — best effort */
-  }
-  try {
-    const after = getGxtRenderer()?.viewUtils.afterFlushAfterInsertQueue;
-    if (typeof after === 'function') after();
-  } catch {
-    /* ignore — best effort */
-  }
+  flushAfterInsertQueue();
+  const after = getGxtRenderer()?.viewUtils.afterFlushAfterInsertQueue;
+  if (typeof after === 'function') after();
 }
 
 /**
@@ -1390,11 +1298,7 @@ function addChildView(parent: any, child: any): void {
 
   // Use Ember's official addChildView which tracks via CHILD_VIEW_IDS WeakMap.
   // This ensures component.childViews getter returns the correct children.
-  try {
-    _addChildView(parent, child);
-  } catch {
-    // Fallback: if official addChildView fails, at least set parentView
-  }
+  _addChildView(parent, child);
 
   child.parentView = parent;
 }
@@ -1754,20 +1658,9 @@ function getCachedOrCreateInstance(
     // when the pooled instance's previous incarnation was destroyed. Without
     // this, getChildViews returns stale/empty sets after toggle cycles.
     if (currentParentView && currentParentView !== poolEntry.instance) {
-      try {
-        addChildView(currentParentView, poolEntry.instance);
-      } catch {
-        /* ignore */
-      }
-      // Also update the instance's parentView pointer in case the parent
-      // was replaced (e.g., across route transitions).
-      if (poolEntry.instance.parentView !== currentParentView) {
-        try {
-          poolEntry.instance.parentView = currentParentView;
-        } catch {
-          /* ignore */
-        }
-      }
+      // addChildView also points the instance's parentView at the parent, in
+      // case the parent was replaced (e.g., across route transitions).
+      addChildView(currentParentView, poolEntry.instance);
     }
 
     return poolEntry.instance;
@@ -1863,37 +1756,26 @@ function getCachedOrCreateInstance(
 function registerInViewRegistry(instance: any): void {
   if (!instance || instance.isDestroyed || instance.isDestroying) return;
   if (!isInteractiveModeChecked()) return;
-  try {
-    const instanceOwner = _glimmerGetOwner(instance);
-    const gOwner = instanceOwner || getAmbientOwner();
-    if (!gOwner) return;
-    const viewRegistry = gOwner.lookup?.('-view-registry:main');
-    if (!viewRegistry) return;
-    const viewId = getViewId(instance);
-    if (!viewId) return;
-    // If a different, still-alive instance is already registered under this
-    // viewId, destroy it before overwriting. Otherwise the orphaned instance
-    // lingers in its pool (and in the ELEMENT_VIEW WeakMap), still receiving
-    // tracked notifications and click events for this elementId, so click
-    // handlers could fire on a stale instance whose state diverged from the live
-    // one.
-    const prev = viewRegistry[viewId];
-    if (prev && prev !== instance && !prev.isDestroyed && !prev.isDestroying) {
-      try {
-        removeInstanceFromPools(prev);
-      } catch {
-        /* ignore */
-      }
-      try {
-        if (typeof prev.destroy === 'function') prev.destroy();
-      } catch {
-        /* ignore */
-      }
-    }
-    viewRegistry[viewId] = instance;
-  } catch {
-    /* ignore */
+  const instanceOwner = _glimmerGetOwner(instance);
+  const gOwner: any = instanceOwner || getAmbientOwner();
+  // A destroyed owner resolves nothing (its container's `lookup` asserts).
+  if (!gOwner || gOwner.isDestroyed || gOwner.isDestroying) return;
+  const viewRegistry = gOwner.lookup?.('-view-registry:main');
+  if (!viewRegistry) return;
+  const viewId = getViewId(instance);
+  if (!viewId) return;
+  // If a different, still-alive instance is already registered under this
+  // viewId, destroy it before overwriting. Otherwise the orphaned instance
+  // lingers in its pool (and in the ELEMENT_VIEW WeakMap), still receiving
+  // tracked notifications and click events for this elementId, so click
+  // handlers could fire on a stale instance whose state diverged from the live
+  // one. What its destruction throws propagates.
+  const prev = viewRegistry[viewId];
+  if (prev && prev !== instance && !prev.isDestroyed && !prev.isDestroying) {
+    removeInstanceFromPools(prev);
+    if (typeof prev.destroy === 'function') prev.destroy();
   }
+  viewRegistry[viewId] = instance;
 }
 
 /**
@@ -5273,9 +5155,15 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
 
   // Also destroy custom-managed component instances whose DOM is disconnected
   // (must run before the early return since there may be no classic unclaimed instances).
-  _gxtDestroyCustomManagedInstances();
+  // The first error their destruction throws is thrown once the unclaimed
+  // classic instances were destroyed too.
+  const customDestroyErrors: unknown[] = [];
+  _gxtDestroyCustomManagedInstances(customDestroyErrors);
 
-  if (unclaimed.length === 0) return;
+  if (unclaimed.length === 0) {
+    if (customDestroyErrors.length > 0) throw customDestroyErrors[0];
+    return;
+  }
 
   // When a sync was not driven by a real property change (e.g., it's an
   // initial-render sync that ran `_gxtSnapshotLiveInstances` and now sees a
@@ -5454,6 +5342,7 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   if (firstPhase3Error) {
     throw firstPhase3Error;
   }
+  if (customDestroyErrors.length > 0) throw customDestroyErrors[0];
 }
 
 // Cleanup function: destroy all tracked component instances with proper lifecycle.
