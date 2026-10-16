@@ -20,6 +20,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
+import { setClassicRouteWrapper } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 import type { ClassicRouteBucket } from './bucket';
 
@@ -238,3 +239,9 @@ setInternalComponentManager(new OutletComponentManager(), OutletComponent.protot
 setComponentTemplate(CLASSIC_TEMPLATE, OutletComponent.prototype);
 
 export const CLASSIC_OUTLET = /*@__PURE__*/ new OutletComponent();
+
+if (__GXT_MODE__) {
+  // GXT renders a route whose manager returns this wrapper through its own
+  // outlet machinery (gxt-backend/outlet.ts); any other wrapper is invoked.
+  setClassicRouteWrapper(CLASSIC_OUTLET);
+}

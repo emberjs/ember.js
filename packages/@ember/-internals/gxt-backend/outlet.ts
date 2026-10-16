@@ -16,15 +16,29 @@
 //     application route, and the `<ember-outlet>` element below renders each
 //     nested level (GXT compiles `{{outlet}}` to `<ember-outlet />`).
 //
+// A route whose manager provides its own wrapper (`getRouteWrapper()`, RFC
+// 1169) renders as upstream's outlet renders every level: the wrapper is
+// invoked with the level's `@Component` (its invokable), `@bucket`, `@context`
+// and `@outlet` (the next level). Only the classic route manager's wrapper is
+// replaced by the machinery above.
+//
 // route.ts and router.ts reach this module through the gxt-bridge route-outlet
 // hooks (`setRouteOutletHooks`), installed when compile.ts loads it.
 import { getOwner, type InternalOwner } from '@ember/-internals/owner';
+import { set } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
+import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
 import { invokableFor } from 'router_js';
-import { hasInternalComponentManager } from './manager';
 import {
+  componentCapabilities,
+  hasInternalComponentManager,
+  setComponentManager,
+  setComponentTemplate,
+} from './manager';
+import {
+  getClassicRouteWrapper,
   getGxtRenderer,
   getCurrentOutletState,
   setCurrentOutletState,
@@ -145,59 +159,15 @@ const EmberOutletElement: any =
 
           // Use 'tpl' instead of 'template' to avoid GXT's CallExpression transform
           // GXT's Babel plugin treats any function named 'template' as an Ember template function
-          const { template: tpl, controller, model, owner } = nestedOutlet.render;
+          const { template: tpl, owner, wrapped } = nestedOutlet.render;
 
           // Track which template we rendered so we can detect changes
           this._lastRenderedTemplate = tpl;
 
-          // Build context from controller via prototype chain.
-          const nestedContext: any = controller ? Object.create(controller) : {};
-          nestedContext.model = model;
-          nestedContext.owner = owner || getAmbientOwner();
-          nestedContext.outletState = nestedOutlet;
-          nestedContext.args = { model, controller, outletState: nestedOutlet };
-
-          // Fix for @tracked properties on controller prototype:
-          // Object.create(controller) makes prototype getters run with `this = nestedContext`
-          // instead of `this = controller`. The @tracked getter's storage is keyed by `this`,
-          // so it creates a fresh storage entry for nestedContext with the initial value
-          // (e.g., `false` for `@tracked isExpanded = false`), ignoring the actual current
-          // value on the controller (e.g., `true` after a toggle click).
-          //
-          // Fix: install GXT cells on nestedContext with the ACTUAL current values from controller.
-          if (controller) {
-            const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-            if (_cellFor) {
-              try {
-                const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, 'model']);
-                const visited = new Set<string>();
-                let proto = Object.getPrototypeOf(controller);
-                while (proto && proto !== Object.prototype) {
-                  for (const key of Object.getOwnPropertyNames(proto)) {
-                    if (visited.has(key)) continue;
-                    visited.add(key);
-                    if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
-                    const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
-                    if (!protoDesc?.get) continue;
-                    if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
-                    try {
-                      // Read the actual value from controller (not through nestedContext prototype)
-                      const actualValue = (controller as any)[key];
-                      // Install GXT cell on nestedContext and set it to the actual value
-                      _cellFor(nestedContext, key, /* skipDefine */ false);
-                      const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
-                      if (cell) cell.update(actualValue);
-                    } catch {
-                      /* ignore */
-                    }
-                  }
-                  proto = Object.getPrototypeOf(proto);
-                }
-              } catch {
-                /* ignore */
-              }
-            }
-          }
+          // A level whose route manager provides its own wrapper renders through
+          // it (`renderWrappedLevel`); a classic level renders its template with
+          // a context built from its controller.
+          const nestedContext = wrapped === undefined ? classicLevelContext(nestedOutlet) : null;
 
           // Update the current outlet state for nested outlets
           const previousOutletState = getCurrentOutletState();
@@ -242,7 +212,10 @@ const EmberOutletElement: any =
             setAmbientOwner(owner);
           }
           try {
-            if (typeof tpl?.render === 'function') {
+            if (wrapped !== undefined) {
+              renderWrappedLevel(nestedOutlet, this);
+              this._rendered = true;
+            } else if (typeof tpl?.render === 'function') {
               tpl.render(nestedContext, this);
               this._rendered = true;
             } else if (typeof tpl === 'function') {
@@ -267,6 +240,64 @@ const EmberOutletElement: any =
           }
         }
       };
+
+// The `this` of a classic level's route template, rendered by an
+// `<ember-outlet>`: its controller's properties through the prototype chain,
+// with `@model`, `@controller` and `@outlet`.
+function classicLevelContext(nestedOutlet: GxtOutletState): any {
+  const { controller, model, owner } = nestedOutlet.render!;
+
+  // Build context from controller via prototype chain.
+  const nestedContext: any = controller ? Object.create(controller) : {};
+  nestedContext.model = model;
+  nestedContext.owner = owner || getAmbientOwner();
+  nestedContext.outletState = nestedOutlet;
+  nestedContext.args = withOutletArg({ model, controller, outletState: nestedOutlet });
+
+  // Fix for @tracked properties on controller prototype:
+  // Object.create(controller) makes prototype getters run with `this = nestedContext`
+  // instead of `this = controller`. The @tracked getter's storage is keyed by `this`,
+  // so it creates a fresh storage entry for nestedContext with the initial value
+  // (e.g., `false` for `@tracked isExpanded = false`), ignoring the actual current
+  // value on the controller (e.g., `true` after a toggle click).
+  //
+  // Fix: install GXT cells on nestedContext with the ACTUAL current values from controller.
+  if (controller) {
+    const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+    if (_cellFor) {
+      try {
+        const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, 'model']);
+        const visited = new Set<string>();
+        let proto = Object.getPrototypeOf(controller);
+        while (proto && proto !== Object.prototype) {
+          for (const key of Object.getOwnPropertyNames(proto)) {
+            if (visited.has(key)) continue;
+            visited.add(key);
+            if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+            const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+            if (!protoDesc?.get) continue;
+            if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
+            try {
+              // Read the actual value from controller (not through nestedContext prototype)
+              const actualValue = (controller as any)[key];
+              // Install GXT cell on nestedContext and set it to the actual value
+              _cellFor(nestedContext, key, /* skipDefine */ false);
+              const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
+              if (cell) cell.update(actualValue);
+            } catch {
+              /* ignore */
+            }
+          }
+          proto = Object.getPrototypeOf(proto);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  return nestedContext;
+}
 
 export function defineEmberOutletElement(): void {
   if (typeof customElements !== 'undefined' && !customElements.get('ember-outlet')) {
@@ -354,18 +385,28 @@ export function createOutletTemplate(_owner: any) {
     }
 
     try {
-      if (nestedTemplate && typeof nestedTemplate.render === 'function') {
+      if (nestedOutlet?.render?.wrapped !== undefined) {
+        // A level whose route manager provides its own wrapper renders through
+        // it, with the level as the current outlet state of its `{{outlet}}`s.
+        const previousOutletState = getCurrentOutletState();
+        setCurrentOutletState(nestedOutlet);
+        try {
+          renderWrappedLevel(nestedOutlet, parentElement);
+        } finally {
+          setCurrentOutletState(previousOutletState);
+        }
+      } else if (nestedTemplate && typeof nestedTemplate.render === 'function') {
         // Build context using controller DIRECTLY to preserve identity
         const nestedCtrl = nestedOutlet?.render?.controller;
         const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
         nestedCtx.model = nestedOutlet?.render?.model;
         nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
         nestedCtx.outletState = nestedOutlet;
-        nestedCtx.args = {
+        nestedCtx.args = withOutletArg({
           model: nestedOutlet?.render?.model,
           controller: nestedOutlet?.render?.controller,
           outletState: nestedOutlet,
-        };
+        });
         nestedTemplate.render(nestedCtx, parentElement);
       } else if (nestedTemplate && typeof nestedTemplate === 'function') {
         const tpl = nestedTemplate(context?.owner);
@@ -375,11 +416,11 @@ export function createOutletTemplate(_owner: any) {
           nestedCtx.model = nestedOutlet?.render?.model;
           nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
           nestedCtx.outletState = nestedOutlet;
-          nestedCtx.args = {
+          nestedCtx.args = withOutletArg({
             model: nestedOutlet?.render?.model,
             controller: nestedOutlet?.render?.controller,
             outletState: nestedOutlet,
-          };
+          });
           tpl.render(nestedCtx, parentElement);
         }
       }
@@ -396,8 +437,12 @@ export function createOutletTemplate(_owner: any) {
     return { nodes: [], ctx: context };
   };
 
+  OUTLET_TEMPLATES.add(factory);
   return factory;
 }
+
+/** The `-outlet` templates: the template of a route that has none. */
+const OUTLET_TEMPLATES = new WeakSet<object>();
 
 // ---------------------------------------------------------------------------
 // The `{ render, outlets }` outlet-state chain
@@ -415,6 +460,30 @@ export interface GxtRenderState {
   model: unknown;
   /** A GXT template, a component, or the `-outlet` template. */
   template: object | undefined;
+  /** Set when the route's manager provides its own wrapper: what renders the level. */
+  wrapped?: GxtWrappedLevel;
+}
+
+/**
+ * A level whose route manager provides its own wrapper (`getRouteWrapper()`).
+ * Upstream's outlet invokes the wrapper with the level's state curried on
+ * (routing/route-managers/root-outlet.ts `OutletArgProvider`); `state` is the
+ * `this` of that invocation here.
+ */
+export interface GxtWrappedLevel {
+  /** The manager's module-stable wrapper component. */
+  wrapper: object;
+  state: {
+    /** The route's invokable. */
+    Component: object;
+    /** The route manager's bucket. */
+    bucket: object;
+    /** The route's context (its model); updated with `set`. */
+    context: unknown;
+    /** The next level (`outletComponent`). */
+    outlet: object;
+    owner: InternalOwner;
+  };
 }
 
 /** One outlet level (the pre-route-manager `OutletState`). */
@@ -634,6 +703,27 @@ function managedRenderState(
     return cached;
   }
 
+  let invokable = resolvedInvokable(router, manager, bucket);
+  if (invokable === undefined) return undefined;
+
+  let owner = getOwner(router) as InternalOwner;
+  let state: GxtRenderState = {
+    owner,
+    name: routeInfo.name,
+    controller: undefined,
+    model: routeInfo.context,
+    template: invokable,
+  };
+  BUCKET_RENDER_STATES.set(bucket, state);
+  return state;
+}
+
+/**
+ * The route manager's invokable for `bucket` (`getInvokable`, read once per
+ * bucket), or `undefined` while it is not resolved: the outlets render again
+ * once it is.
+ */
+function resolvedInvokable(router: object, manager: object, bucket: object): object | undefined {
   let invokable = invokableFor(
     manager as { getInvokable(bucket: object): Promise<object> },
     bucket
@@ -648,17 +738,192 @@ function managedRenderState(
     );
     return undefined;
   }
+  return invokable;
+}
 
-  let owner = getOwner(router) as InternalOwner;
-  let state: GxtRenderState = {
+// ---------------------------------------------------------------------------
+// Levels whose route manager provides its own wrapper
+// ---------------------------------------------------------------------------
+
+/** route-manager bucket → the render state of its wrapped level. */
+const WRAPPED_RENDER_STATES = new WeakMap<object, GxtRenderState>();
+
+/**
+ * The render state of a route whose manager provides its own wrapper. It is
+ * the same object while the bucket is active, so a new context re-renders only
+ * what reads `@context`.
+ */
+function wrappedRenderState(
+  router: object,
+  routeInfo: { name: string; context?: unknown; manager: object; bucket: { route?: object } },
+  wrapper: object
+): GxtRenderState | undefined {
+  let { name, context, manager, bucket } = routeInfo;
+  let route = bucket.route;
+
+  // A classic route renders once `Route#setup` has recorded it.
+  if (route !== undefined && !ROUTE_RENDER_STATES.has(route)) return undefined;
+
+  let render = WRAPPED_RENDER_STATES.get(bucket);
+  if (render !== undefined && render.wrapped!.wrapper === wrapper) {
+    let state = render.wrapped!.state;
+    if (state.context !== context) {
+      render.model = context;
+      set(state, 'context', context);
+    }
+    return render;
+  }
+
+  let Component =
+    route !== undefined
+      ? classicRouteInvokable(route as ClassicRouteLike)
+      : resolvedInvokable(router, manager, bucket);
+  if (Component === undefined) return undefined;
+
+  let owner = getOwner(route ?? router) as InternalOwner;
+  render = {
     owner,
-    name: routeInfo.name,
+    name,
     controller: undefined,
-    model: routeInfo.context,
-    template: invokable,
+    model: context,
+    template: Component,
+    wrapped: {
+      wrapper,
+      state: { Component, bucket, context, outlet: outletComponent(), owner },
+    },
   };
-  BUCKET_RENDER_STATES.set(bucket, state);
-  return state;
+  WRAPPED_RENDER_STATES.set(bucket, render);
+  return render;
+}
+
+/** classic route → the invokable a route manager's wrapper receives for it. */
+const CLASSIC_ROUTE_INVOKABLES = new WeakMap<object, object>();
+
+/** invokable class → its classic route. */
+const INVOKABLE_ROUTES = new WeakMap<object, ClassicRouteLike>();
+
+/**
+ * Upstream's `RouteTemplate`: the route's template rendered with its
+ * controller as `this` and the arguments the wrapper passes. A route whose
+ * template is a component is invoked as that component.
+ */
+class ClassicRouteTemplate {}
+
+let classicRouteTemplateManager: object | undefined;
+
+function classicRouteInvokable(route: ClassicRouteLike): object {
+  let template = ROUTE_RENDER_STATES.get(route)?.template;
+  if (template !== undefined && hasInternalComponentManager(template)) return template;
+
+  let invokable = CLASSIC_ROUTE_INVOKABLES.get(route);
+  if (invokable !== undefined) return invokable;
+
+  if (classicRouteTemplateManager === undefined) {
+    let manager = {
+      capabilities: componentCapabilities('3.13', {}),
+      createComponent(definition: object): unknown {
+        return INVOKABLE_ROUTES.get(definition)?.controller;
+      },
+      getContext(controller: unknown): unknown {
+        return controller;
+      },
+    };
+    classicRouteTemplateManager = manager;
+    setComponentManager(() => manager, ClassicRouteTemplate);
+  }
+
+  invokable = class extends ClassicRouteTemplate {};
+  INVOKABLE_ROUTES.set(invokable, route);
+  // The template `Route#setup` recorded last; a route without one renders the
+  // next level, as `{{outlet}}`.
+  setComponentTemplate((owner: InternalOwner) => {
+    let current = ROUTE_RENDER_STATES.get(route)?.template;
+    if (current === undefined) return undefined;
+    return resolveTemplate(OUTLET_TEMPLATES.has(current) ? outletTemplate() : current, owner);
+  }, invokable);
+  CLASSIC_ROUTE_INVOKABLES.set(route, invokable);
+  return invokable;
+}
+
+/** A template factory's template for `owner`; a template is its own. */
+function resolveTemplate(template: object, owner: InternalOwner): unknown {
+  return typeof (template as { render?: unknown }).render !== 'function' &&
+    typeof template === 'function'
+    ? (template as (owner: InternalOwner) => unknown)(owner)
+    : template;
+}
+
+function compileTemplate(source: string, options: object): object {
+  let compile = getGxtRenderer()?.compilePipeline.compileTemplate;
+  assert('[gxt] the GXT template compiler is not installed', typeof compile === 'function');
+  return compile(source, options) as object;
+}
+
+let outletTemplateFactory: object | undefined;
+
+/** `{{outlet}}`: GXT compiles it to `<ember-outlet />`, which renders the next level. */
+function outletTemplate(): object {
+  outletTemplateFactory ??= compileTemplate('<ember-outlet />', {
+    strictMode: true,
+    moduleName: 'gxt-route-outlet',
+  });
+  return outletTemplateFactory;
+}
+
+let outletComponentDefinition: object | undefined;
+
+/**
+ * A classic level's arguments with `@outlet`, which its template invokes as
+ * `<@outlet />`. The component is made when `@outlet` is first read.
+ */
+function withOutletArg<T extends object>(args: T): T {
+  return Object.defineProperty(args, 'outlet', {
+    get: outletComponent,
+    enumerable: true,
+    configurable: true,
+  });
+}
+
+/**
+ * What `<@outlet />` invokes. It renders the next level of the current outlet
+ * state and ignores the arguments of the call site: a parent cannot
+ * parameterize the outlet it places.
+ */
+function outletComponent(): object {
+  outletComponentDefinition ??= setComponentTemplate(outletTemplate(), templateOnlyComponent());
+  return outletComponentDefinition!;
+}
+
+/** wrapper → the template that invokes it with a level's state. */
+const WRAPPER_TEMPLATES = new WeakMap<object, object>();
+
+let wrapperTemplateCount = 0;
+
+function wrapperTemplate(wrapper: object): object {
+  let template = WRAPPER_TEMPLATES.get(wrapper);
+  if (template === undefined) {
+    let tag = `GxtRouteWrapper${++wrapperTemplateCount}`;
+    template = compileTemplate(
+      `<${tag} @Component={{this.Component}} @bucket={{this.bucket}} @context={{this.context}} @outlet={{this.outlet}} />`,
+      { strictMode: true, scopeValues: { [tag]: wrapper }, moduleName: 'gxt-route-wrapper' }
+    );
+    WRAPPER_TEMPLATES.set(wrapper, template);
+  }
+  return template;
+}
+
+/**
+ * Render a wrapped level into `target`: its manager's wrapper with the level's
+ * `@Component`, `@bucket`, `@context` and `@outlet`. The `{{outlet}}`s it
+ * renders read the current outlet state, which the caller sets to `level`.
+ */
+function renderWrappedLevel(level: GxtOutletState, target: Element): void {
+  let { owner, wrapped } = level.render!;
+  assert('[gxt] expected a level whose route manager provides a wrapper', wrapped !== undefined);
+  let template = resolveTemplate(wrapperTemplate(wrapped.wrapper), owner) as {
+    render(context: object, target: Element): void;
+  };
+  template.render(wrapped.state, target);
 }
 
 function sameChain(a: GxtOutletState | undefined, b: GxtOutletState | undefined): boolean {
@@ -673,19 +938,24 @@ function sameChain(a: GxtOutletState | undefined, b: GxtOutletState | undefined)
 function setOutlets(router: object, routeInfos: readonly object[]): void {
   let root: GxtOutletState | null = null;
   let parent: GxtOutletState | null = null;
+  let classicWrapper = getClassicRouteWrapper();
+  assert('[gxt] the classic route wrapper is not registered', classicWrapper !== null);
 
   for (let info of routeInfos) {
     let routeInfo = info as {
       name: string;
       context?: unknown;
-      manager?: object;
+      manager?: { getRouteWrapper?(): object };
       bucket?: { route?: object };
     };
     let route = routeInfo.bucket?.route;
+    let wrapper = routeInfo.manager?.getRouteWrapper?.();
     let render =
-      route !== undefined
-        ? ROUTE_RENDER_STATES.get(route)
-        : managedRenderState(router, routeInfo as never);
+      wrapper !== undefined && wrapper !== classicWrapper && routeInfo.bucket !== undefined
+        ? wrappedRenderState(router, routeInfo as never, wrapper)
+        : route !== undefined
+          ? ROUTE_RENDER_STATES.get(route)
+          : managedRenderState(router, routeInfo as never);
 
     if (render === undefined) {
       // A parent route that did not render leaves its child routes nowhere to
@@ -747,4 +1017,8 @@ setRouteOutletHooks({
     ROUTE_RENDER_STATES.delete(route);
   },
   setOutlets,
+  renderWrappedLevel(level: object, target: Element): void {
+    renderWrappedLevel(level as GxtOutletState, target);
+  },
+  withOutletArg,
 });

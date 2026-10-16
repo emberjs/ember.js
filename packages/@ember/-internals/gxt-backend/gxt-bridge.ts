@@ -1062,11 +1062,39 @@ export interface GxtRouteOutletHooks {
   renderRoute(route: object): void;
   /** `Route#teardownViews`: drop the route's render state. */
   teardownRoute(route: object): void;
-  /** `EmberRouter#_setOutlets`: render the active route infos. */
+  /**
+   * `EmberRouter#_setOutlets`: render the active route infos. A route whose
+   * manager's `getRouteWrapper()` is the classic route manager's wrapper
+   * (`getClassicRouteWrapper`) renders through the GXT outlet machinery; any
+   * other wrapper renders with the level's state curried onto it.
+   */
   setOutlets(router: object, routeInfos: readonly object[]): void;
+  /**
+   * Render a level whose route manager provides its own wrapper into `target`.
+   * The caller sets the current outlet state and the owner, as for a classic
+   * level.
+   */
+  renderWrappedLevel(level: object, target: Element): void;
+  /**
+   * `args` with `@outlet`, what a classic route template's `<@outlet />`
+   * invokes: the next level (`{{outlet}}`).
+   */
+  withOutletArg<T extends object>(args: T): T;
 }
 
 let _routeOutletHooks: GxtRouteOutletHooks | null = null;
+
+// The classic route manager's wrapper (`CLASSIC_OUTLET`), registered by
+// routing/route-managers/classic/outlet-component.ts in GXT builds.
+let _classicRouteWrapper: object | null = null;
+
+export function getClassicRouteWrapper(): object | null {
+  return _classicRouteWrapper;
+}
+
+export function setClassicRouteWrapper(wrapper: object): void {
+  _classicRouteWrapper = wrapper;
+}
 
 export function getRouteOutletHooks(): GxtRouteOutletHooks | null {
   return _routeOutletHooks;

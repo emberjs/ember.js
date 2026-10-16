@@ -8,6 +8,7 @@ import { getComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import {
   getGxtRenderer,
+  getRouteOutletHooks,
   setCurrentOutletState,
   setAmbientOwner,
   setControllerOutletRerender,
@@ -563,12 +564,46 @@ function createRootTemplate(_owner: any) {
         outletOwner = nestedOutlet.render.owner || outletOwner;
       }
 
-      // Build the render context's `args`: @model and @controller.
-      const argsObj: any = {
+      // A level whose route manager provides its own wrapper renders through
+      // it (gxt-backend/outlet.ts), with the level as the current outlet state
+      // of its `{{outlet}}`s, as a classic level below.
+      if (outletState.render.wrapped !== undefined) {
+        const level = outletState;
+        const target = targetElement || parentElement;
+        setAmbientOwner(outletOwner);
+        ensureGxtContext();
+        setCurrentOutletState(level);
+        const _renderPass = getGxtRenderer()?.renderPass;
+        _renderPass?.beginRenderPass();
+        const renderWrapped = (): void => {
+          getRouteOutletHooks()!.renderWrappedLevel(level, target);
+        };
+        const _cp = getGxtRenderer()?.compilePipeline;
+        try {
+          if (_cp?.withInOutletRender) {
+            _cp.withInOutletRender(renderWrapped);
+          } else {
+            renderWrapped();
+          }
+        } finally {
+          _renderPass?.endRenderPass();
+        }
+        // No classic render context: a route change re-renders the level.
+        lastRenderContext = null;
+        lastArgsObj = null;
+        lastRouteName = level.render.name;
+        lastPropagatedModel = model;
+        lastRouteTemplate = routeTemplate;
+        lastNestedSnapshot = snapshotOutletTree(level);
+        return;
+      }
+
+      // Build the render context's `args`: @model, @controller and @outlet.
+      const argsObj: any = getRouteOutletHooks()!.withOutletArg({
         model: model,
         controller: controller,
         outletState: outletState,
-      };
+      });
 
       // Check if routeTemplate is a component (e.g., from template('First'))
       // rather than a regular template factory. Components have templates
