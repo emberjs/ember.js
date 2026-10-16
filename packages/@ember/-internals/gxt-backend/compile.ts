@@ -29,6 +29,7 @@ import {
 import {
   initChildViews as _emberInitChildViews,
   getElementView as _emberGetElementView,
+  getViewElement as _emberGetViewElement,
 } from '@ember/-internals/views/lib/system/utils';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from '@ember/-internals/environment';
@@ -5145,12 +5146,8 @@ function _orderIfWatcherFlush(
     // Candidate list: obj + its prototype + render-context proxies that wrap
     // obj. Notification fires on each.
     const candidates: object[] = [obj];
-    try {
-      const proto = Object.getPrototypeOf(obj);
-      if (proto && proto !== Object.prototype) candidates.push(proto);
-    } catch {
-      /* ignore */
-    }
+    const proto = Object.getPrototypeOf(obj);
+    if (proto && proto !== Object.prototype) candidates.push(proto);
     const ctxsMap = _getOrCreateGxtComponentContexts();
     if (ctxsMap) {
       const ctxs = ctxsMap.get(obj);
@@ -5188,6 +5185,8 @@ function _orderIfWatcherFlush(
           try {
             nextBool = cb.__getNextBool(obj);
           } catch {
+            // The order is only a preference: the watcher reads the value
+            // again when it runs, and reports what that read throws.
             nextBool = null;
           }
         }
@@ -5222,36 +5221,30 @@ function _gxtDestroyHelperScope(scope: Set<any>): void {
   if (!scope || scope.size === 0) return;
   const copy = Array.from(scope);
   scope.clear();
+  // The caches are Maps.
   const evictFromCache = (cache: any) => {
-    try {
-      if (cache && typeof cache.forEach === 'function') {
-        // Cache values may be a raw instance, a manager-path wrapper
-        // `{__managerBucket, bucket:{instance}}`, or a compile-time
-        // `{ instance, recomputeTag }` shape.
-        const toDelete: any[] = [];
-        cache.forEach((v: any, k: any) => {
-          let instCandidate: any = v;
-          if (v && v.__managerBucket) instCandidate = v.bucket?.instance;
-          else if (v && v.instance) instCandidate = v.instance;
-          if (instCandidate && copy.indexOf(instCandidate) !== -1) {
-            toDelete.push(k);
-          }
-        });
-        for (const k of toDelete) cache.delete(k);
-      }
-    } catch {
-      /* ignore */
+    if (cache && typeof cache.forEach === 'function') {
+      // Cache values may be a raw instance, a manager-path wrapper
+      // `{__managerBucket, bucket:{instance}}`, or a compile-time
+      // `{ instance, recomputeTag }` shape.
+      const toDelete: any[] = [];
+      cache.forEach((v: any, k: any) => {
+        let instCandidate: any = v;
+        if (v && v.__managerBucket) instCandidate = v.bucket?.instance;
+        else if (v && v.instance) instCandidate = v.instance;
+        if (instCandidate && copy.indexOf(instCandidate) !== -1) {
+          toDelete.push(k);
+        }
+      });
+      for (const k of toDelete) cache.delete(k);
     }
   };
   evictFromCache(getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.());
   evictFromCache(_tagHelperInstanceCache);
+  // What a helper's destruction throws (its `willDestroy`) propagates.
   for (const inst of copy) {
-    try {
-      if (inst && typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
-        inst.destroy();
-      }
-    } catch {
-      /* ignore */
+    if (inst && typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+      inst.destroy();
     }
   }
 }
@@ -5260,40 +5253,29 @@ function _gxtDestroyHelperScope(scope: Set<any>): void {
 // formula (outside `wrapBranch`'s dynamic scope, so absent from the per-branch
 // Set). Fallback for the old `snapshotCacheKeys`/`destroyNewCacheEntriesSince`.
 function _gxtSnapshotClassHelperCacheKeys(): Set<string> {
-  try {
-    const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
-    if (cache && typeof cache.forEach === 'function') {
-      const s = new Set<string>();
-      cache.forEach((_v: any, k: string) => s.add(k));
-      return s;
-    }
-  } catch {
-    /* ignore */
+  const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
+  if (cache && typeof cache.forEach === 'function') {
+    const s = new Set<string>();
+    cache.forEach((_v: any, k: string) => s.add(k));
+    return s;
   }
   return new Set<string>();
 }
 function _gxtDestroyNewClassHelperCacheEntriesSince(prev: Set<string> | null): void {
-  try {
-    const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
-    if (!cache || typeof cache.forEach !== 'function') return;
-    const toDelete: string[] = [];
-    cache.forEach((_v: any, k: string) => {
-      if (!prev || !prev.has(k)) toDelete.push(k);
-    });
-    for (const k of toDelete) {
-      const entry = cache.get(k);
-      cache.delete(k);
-      const inst = entry && entry.__managerBucket ? entry.bucket?.instance : entry;
-      if (inst && typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
-        try {
-          inst.destroy();
-        } catch {
-          /* ignore */
-        }
-      }
+  const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
+  if (!cache || typeof cache.forEach !== 'function') return;
+  const toDelete: string[] = [];
+  cache.forEach((_v: any, k: string) => {
+    if (!prev || !prev.has(k)) toDelete.push(k);
+  });
+  // What a helper's destruction throws (its `willDestroy`) propagates.
+  for (const k of toDelete) {
+    const entry = cache.get(k);
+    cache.delete(k);
+    const inst = entry && entry.__managerBucket ? entry.bucket?.instance : entry;
+    if (inst && typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+      inst.destroy();
     }
-  } catch {
-    /* ignore */
   }
 }
 
@@ -5364,20 +5346,16 @@ function patchGlobalIf() {
     // via renderState → trueBranch) so toggled-in sub-components get the right
     // parentView (curly `newly-added sub-components get correct parentView`).
     const _capturedIfParentView: any = (() => {
-      try {
-        const vu = getGxtRenderer()?.viewUtils;
-        const pv = vu?.getCurrentParentView?.();
-        if (
-          pv &&
-          typeof pv === 'object' &&
-          ((pv as any).isView === true ||
-            'elementId' in (pv as any) ||
-            typeof (pv as any).trigger === 'function')
-        ) {
-          return pv;
-        }
-      } catch {
-        /* viewUtils may be unavailable */
+      const vu = getGxtRenderer()?.viewUtils;
+      const pv = vu?.getCurrentParentView?.();
+      if (
+        pv &&
+        typeof pv === 'object' &&
+        ((pv as any).isView === true ||
+          'elementId' in (pv as any) ||
+          typeof (pv as any).trigger === 'function')
+      ) {
+        return pv;
       }
       return null;
     })();
@@ -5411,7 +5389,7 @@ function patchGlobalIf() {
         // foo-bar et al. from instantiating into a dead subtree (regression:
         // "child conditional should not render children if parent conditional
         // becomes false").
-        try {
+        {
           const ifc = ifConditionRef.ifCondition;
           const myDeadCycle = ifc && (ifc as any).__gxtParentDeadCycle;
           const cycleId = _gxtGetSyncCycleId();
@@ -5424,8 +5402,6 @@ function patchGlobalIf() {
             // node-insertion downstream just appends the children of [].
             return [];
           }
-        } catch {
-          /* ignore — fall through to normal eval */
         }
         // The block of the branch rendering now: gxt passes the IfCondition,
         // whose branch ctx the `onConditionBranchSwap` hook recorded.
@@ -5452,38 +5428,24 @@ function patchGlobalIf() {
         // `$_GET_ARGS` with the original `ctx` on top of the parent-context
         // stack; that routes through `addToTree(ctx, ifCondition)` which reinstates
         // the TREE entry.
+        // (gxt's parent-context stack, its tree registration and the flag it
+        // assigns on the IfCondition cannot fail.)
         const ifcRef = ifConditionRef.ifCondition;
         if (ifcRef && ctx) {
-          try {
-            gxtSetParentContext(ifcRef as any);
-            const resolved = _gxtGetParentContext();
-            gxtSetParentContext(null);
-            if (resolved !== ifcRef) {
-              // IfCondition was unregistered — restore TREE entry.
-              const attSym = Object.getOwnPropertySymbols(ifcRef).find(
-                (s) => (ifcRef as any)[s] === false
-              );
-              if (attSym) {
-                try {
-                  delete (ifcRef as any)[attSym];
-                } catch {
-                  /* ignore */
-                }
-              }
-              try {
-                gxtSetParentContext(ctx as any);
-                try {
-                  (_gxtGetArgs as any)(ifcRef, [] as any);
-                } catch {
-                  /* ignore */
-                }
-                gxtSetParentContext(null);
-              } catch {
-                /* ignore */
-              }
+          gxtSetParentContext(ifcRef as any);
+          const resolved = _gxtGetParentContext();
+          gxtSetParentContext(null);
+          if (resolved !== ifcRef) {
+            // IfCondition was unregistered — restore TREE entry.
+            const attSym = Object.getOwnPropertySymbols(ifcRef).find(
+              (s) => (ifcRef as any)[s] === false
+            );
+            if (attSym) {
+              delete (ifcRef as any)[attSym];
             }
-          } catch {
-            /* ignore */
+            gxtSetParentContext(ctx as any);
+            (_gxtGetArgs as any)(ifcRef, [] as any);
+            gxtSetParentContext(null);
           }
         }
         // CRITICAL: Re-check placeholder connectivity AFTER destroyBranchSync
@@ -5502,27 +5464,20 @@ function patchGlobalIf() {
         // placeholder may have been intentionally detached (e.g. nested
         // IfCondition teardown under a parent collapse) and reattaching to an
         // unrelated element would leak content into the wrong DOM subtree.
+        // (A comment placeholder can be appended to any element.)
         if (ifcRef) {
-          try {
-            const ph = (ifcRef as any).placeholder;
-            if (ph) {
-              if ((ph as any).parentNode && (ph as any).parentNode.isConnected) {
-                // Remember the current live parent for future teardown cycles.
-                ifConditionRef.lastKnownPlaceholderParent = (ph as any).parentNode;
-              } else if (!(ph as any).isConnected) {
-                // Disconnected — try to reattach to last known live parent.
-                const lkp: Node | null = ifConditionRef.lastKnownPlaceholderParent;
-                if (lkp && (lkp as any).isConnected) {
-                  try {
-                    (lkp as any).appendChild(ph);
-                  } catch {
-                    /* ignore */
-                  }
-                }
+          const ph = (ifcRef as any).placeholder;
+          if (ph) {
+            if ((ph as any).parentNode && (ph as any).parentNode.isConnected) {
+              // Remember the current live parent for future teardown cycles.
+              ifConditionRef.lastKnownPlaceholderParent = (ph as any).parentNode;
+            } else if (!(ph as any).isConnected) {
+              // Disconnected — try to reattach to last known live parent.
+              const lkp: Node | null = ifConditionRef.lastKnownPlaceholderParent;
+              if (lkp && (lkp as any).isConnected) {
+                (lkp as any).appendChild(ph);
               }
             }
-          } catch {
-            /* ignore */
           }
         }
         // Push the captured owning view (fine-grained only) so components
@@ -5533,12 +5488,8 @@ function patchGlobalIf() {
         const _vuPush = _capturedIfParentView ? getGxtRenderer()?.viewUtils : null;
         let _pushedIfParent = false;
         if (_vuPush && typeof _vuPush.pushParentView === 'function') {
-          try {
-            _vuPush.pushParentView(_capturedIfParentView);
-            _pushedIfParent = true;
-          } catch {
-            /* ignore */
-          }
+          _vuPush.pushParentView(_capturedIfParentView);
+          _pushedIfParent = true;
         }
         try {
           const result = _gxtRenderBlockContent(branchBlock, _blockOfIf, _debugParentOfIf, () =>
@@ -5559,12 +5510,8 @@ function patchGlobalIf() {
               const ifcRef2 = ifConditionRef.ifCondition;
               let pushedPc2 = false;
               if (ifcRef2) {
-                try {
-                  gxtSetParentContext(ifcRef2 as any);
-                  pushedPc2 = true;
-                } catch {
-                  /* ignore */
-                }
+                gxtSetParentContext(ifcRef2 as any);
+                pushedPc2 = true;
               }
               // Re-push the captured owning view for the DEFERRED branch body
               // (the `$_ucw` inner arrow that actually instantiates the toggled
@@ -5572,12 +5519,8 @@ function patchGlobalIf() {
               const _vuPush2 = _capturedIfParentView ? getGxtRenderer()?.viewUtils : null;
               let _pushedIfParent2 = false;
               if (_vuPush2 && typeof _vuPush2.pushParentView === 'function') {
-                try {
-                  _vuPush2.pushParentView(_capturedIfParentView);
-                  _pushedIfParent2 = true;
-                } catch {
-                  /* ignore */
-                }
+                _vuPush2.pushParentView(_capturedIfParentView);
+                _pushedIfParent2 = true;
               }
               try {
                 return _gxtRenderBlockContent(branchBlock, _blockOfIf, _debugParentOfIf, () =>
@@ -5585,18 +5528,10 @@ function patchGlobalIf() {
                 );
               } finally {
                 if (_pushedIfParent2 && _vuPush2) {
-                  try {
-                    _vuPush2.popParentView();
-                  } catch {
-                    /* ignore */
-                  }
+                  _vuPush2.popParentView();
                 }
                 if (pushedPc2) {
-                  try {
-                    gxtSetParentContext(null);
-                  } catch {
-                    /* ignore */
-                  }
+                  gxtSetParentContext(null);
                 }
                 _gxtCurrentHelperScope = prev2;
                 _gxtCurrentParentIfRef = prev3;
@@ -5607,11 +5542,7 @@ function patchGlobalIf() {
           return result;
         } finally {
           if (_pushedIfParent && _vuPush) {
-            try {
-              _vuPush.popParentView();
-            } catch {
-              /* ignore */
-            }
+            _vuPush.popParentView();
           }
           _gxtCurrentHelperScope = prev;
           _gxtCurrentParentIfRef = prevParentIf;
@@ -5668,14 +5599,10 @@ function patchGlobalIf() {
       (ifCondition as any).__emberHelperCleanupInstalled = true;
       (ifCondition as any).__gxtTrueBranchHelpers = trueBranchHelpers;
       (ifCondition as any).__gxtFalseBranchHelpers = falseBranchHelpers;
-      try {
-        _gxtRegisterDestructor(ifCondition as unknown as object, () => {
-          _gxtDestroyHelperScope(trueBranchHelpers);
-          _gxtDestroyHelperScope(falseBranchHelpers);
-        });
-      } catch {
-        /* ignore — best-effort prompt teardown */
-      }
+      _gxtRegisterDestructor(ifCondition as unknown as object, () => {
+        _gxtDestroyHelperScope(trueBranchHelpers);
+        _gxtDestroyHelperScope(falseBranchHelpers);
+      });
     }
 
     if (watchTarget && watchKey && ifCondition) {
@@ -5714,11 +5641,7 @@ function patchGlobalIf() {
           // Also stash on the shared ref so wrapBranch can reattach the
           // placeholder on a true→false toggle when destroyBranchSync's
           // RENDERED_NODES snapshot destruction detaches it as a side effect.
-          try {
-            ifConditionRef.lastKnownPlaceholderParent = ph.parentNode;
-          } catch {
-            /* ignore */
-          }
+          ifConditionRef.lastKnownPlaceholderParent = ph.parentNode;
           return;
         }
         // Disconnected — try to reattach
@@ -5764,25 +5687,20 @@ function patchGlobalIf() {
             }
           }
         }
-        // Strategy 5: walk up from ctx (the component instance) to find its element
+        // Strategy 5: walk up from ctx (the component instance) to find its
+        // element. The view's element is looked up directly: a view's `element`
+        // getter throws in a non-interactive renderer.
         if (!parent && ctx) {
-          try {
-            const ctxAny: any = ctx;
-            const ctxElem: any = ctxAny.element || ctxAny.__gxtRawTarget?.element;
-            if (ctxElem && ctxElem.isConnected) {
-              parent = ctxElem;
-            }
-          } catch {
-            /* ignore */
+          const ctxAny: any = ctx;
+          const raw = ctxAny.__gxtRawTarget;
+          const ctxElem: any = _emberGetViewElement(ctxAny) || (raw && _emberGetViewElement(raw));
+          if (ctxElem && ctxElem.isConnected) {
+            parent = ctxElem;
           }
         }
         if (parent) {
-          try {
-            parent.appendChild(ph);
-            lastKnownParent = parent;
-          } catch {
-            /* ignore */
-          }
+          parent.appendChild(ph);
+          lastKnownParent = parent;
         }
       };
 
@@ -5797,16 +5715,12 @@ function patchGlobalIf() {
       // controller), and re-rendered yield content is added as a child
       // of the controller instead of the component invoking yield.
       const ifOwnerView = (() => {
-        try {
-          const ctxAny: any = ctx;
-          const raw = ctxAny?.__gxtRawTarget || ctxAny;
-          // Only treat real Component-like instances as parents (have elementId
-          // or are Ember view instances).
-          if (raw && (raw.isView || raw.elementId || raw.id)) {
-            return raw;
-          }
-        } catch {
-          /* ignore */
+        const ctxAny: any = ctx;
+        const raw = ctxAny?.__gxtRawTarget || ctxAny;
+        // Only treat real Component-like instances as parents (have elementId
+        // or are Ember view instances).
+        if (raw && (raw.isView || raw.elementId || raw.id)) {
+          return raw;
         }
         return null;
       })();
@@ -5822,49 +5736,38 @@ function patchGlobalIf() {
           // `gxtSyncDom` and execute the trueBranch — creating transient
           // components that the parent already collapsed (regression: "child
           // conditional should not render children if parent conditional
-          // becomes false").
-          try {
-            const cycleId = _gxtGetSyncCycleId();
-            const nextBoolEarly = emberToBool(v);
-            const myDeadCycle = (ifCondition as any).__gxtParentDeadCycle;
-            // Hard suppression: parent {{#if}} already collapsed this branch
-            // earlier in the same sync cycle (set in the parent's syncState
-            // wrapper when it received `false`).
-            if (nextBoolEarly === true && myDeadCycle === cycleId) {
-              return undefined;
+          // becomes false"). What the condition's truthiness throws
+          // (`emberToBool`, which the sync runs too) propagates.
+          const cycleId = _gxtGetSyncCycleId();
+          const nextBoolEarly = emberToBool(v);
+          const myDeadCycle = (ifCondition as any).__gxtParentDeadCycle;
+          // Hard suppression: parent {{#if}} already collapsed this branch
+          // earlier in the same sync cycle (set in the parent's syncState
+          // wrapper when it received `false`).
+          if (nextBoolEarly === true && myDeadCycle === cycleId) {
+            return undefined;
+          }
+          // If we're transitioning to FALSE, mark every recorded child
+          // IfCondition as dead-this-cycle so a downstream gxtSyncDom pass
+          // (which fires GXT's native syncState listeners on each dirty
+          // condition cell, INCLUDING our children) becomes a no-op for them.
+          if (nextBoolEarly === false) {
+            const children = (ifCondition as any).__gxtChildIfConditions;
+            if (children && typeof children.forEach === 'function') {
+              children.forEach((child: any) => {
+                child.__gxtParentDeadCycle = cycleId;
+                // Recurse: a grandchild's parent is this child, but if this
+                // child were already collapsed, GXT may still hold its
+                // syncState listener on a dirty cond cell. Mark grandchildren
+                // too so their TRUE renders are suppressed.
+                const grand = child && child.__gxtChildIfConditions;
+                if (grand && typeof grand.forEach === 'function') {
+                  grand.forEach((g2: any) => {
+                    g2.__gxtParentDeadCycle = cycleId;
+                  });
+                }
+              });
             }
-            // If we're transitioning to FALSE, mark every recorded child
-            // IfCondition as dead-this-cycle so a downstream gxtSyncDom pass
-            // (which fires GXT's native syncState listeners on each dirty
-            // condition cell, INCLUDING our children) becomes a no-op for them.
-            if (nextBoolEarly === false) {
-              const children = (ifCondition as any).__gxtChildIfConditions;
-              if (children && typeof children.forEach === 'function') {
-                children.forEach((child: any) => {
-                  try {
-                    child.__gxtParentDeadCycle = cycleId;
-                  } catch {
-                    /* ignore */
-                  }
-                  // Recurse: a grandchild's parent is this child, but if this
-                  // child were already collapsed, GXT may still hold its
-                  // syncState listener on a dirty cond cell. Mark grandchildren
-                  // too so their TRUE renders are suppressed.
-                  const grand = child && child.__gxtChildIfConditions;
-                  if (grand && typeof grand.forEach === 'function') {
-                    grand.forEach((g2: any) => {
-                      try {
-                        g2.__gxtParentDeadCycle = cycleId;
-                      } catch {
-                        /* ignore */
-                      }
-                    });
-                  }
-                });
-              }
-            }
-          } catch {
-            /* ignore — fall through to legacy path */
           }
           repairPlaceholder();
           // Push the owner view so any components created by syncState's
@@ -5877,22 +5780,14 @@ function patchGlobalIf() {
           const viewUtils = getGxtRenderer()?.viewUtils;
           let pushed = false;
           if (ifOwnerView && viewUtils) {
-            try {
-              viewUtils.pushParentView(ifOwnerView);
-              pushed = true;
-            } catch {
-              /* ignore */
-            }
+            viewUtils.pushParentView(ifOwnerView);
+            pushed = true;
           }
           try {
             return origSyncState(v);
           } finally {
             if (pushed && viewUtils) {
-              try {
-                viewUtils.popParentView();
-              } catch {
-                /* ignore */
-              }
+              viewUtils.popParentView();
             }
           }
         };
@@ -5920,13 +5815,9 @@ function patchGlobalIf() {
             // is the live controller that the click-handler's set() hit, so
             // reading watchKey on it gives the real current value.
             let freshBoolVal = boolVal;
-            try {
-              if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
-                const v2 = (notifiedTarget as any)[watchKey];
-                freshBoolVal = emberToBool(v2);
-              }
-            } catch {
-              /* ignore */
+            if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
+              const v2 = (notifiedTarget as any)[watchKey];
+              freshBoolVal = emberToBool(v2);
             }
             const ph = ifCondition.placeholder;
             const par: any = ph && (ph as any).parentNode;
@@ -5956,19 +5847,11 @@ function patchGlobalIf() {
         // (live source of truth) and falls back to the captured condition.
         _ifWatchCb.__ifCondition = ifCondition;
         _ifWatchCb.__getNextBool = (notifiedTarget: object) => {
-          try {
-            if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
-              const v2 = (notifiedTarget as any)[watchKey];
-              return !!emberToBool(v2);
-            }
-          } catch {
-            /* ignore */
+          if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
+            const v2 = (notifiedTarget as any)[watchKey];
+            return !!emberToBool(v2);
           }
-          try {
-            return !!emberToBool(conditionOrCell());
-          } catch {
-            return false;
-          }
+          return !!emberToBool(conditionOrCell());
         };
         registerIfWatcher(watchTarget, watchKey, _ifWatchCb);
       }
@@ -6001,87 +5884,73 @@ patchGlobalIf();
 // this is the earliest synchronous point where the parent fragment is
 // committed to the live document.
 function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
-  try {
-    if (_wrapperIfUserFalse.size > 0) {
-      // Collect registries to search: the explicit arg (if any) and the
-      // current global owner's view registry.
-      const registries: any[] = [];
-      if (explicitRegistry) registries.push(explicitRegistry);
-      try {
-        const go: any = getAmbientOwner();
-        const reg2 = go && go.lookup && go.lookup('-view-registry:main');
-        if (reg2 && !registries.includes(reg2)) registries.push(reg2);
-      } catch {
-        /* ignore */
-      }
-      const staleIds: string[] = [];
-      for (const wrapperId of _wrapperIfUserFalse) {
-        // Re-check the condition at read time. The ifWatcher may have
-        // observed a stale click-false on a pool-reused IfCondition whose
-        // closure points at a discarded controller, while the live condition
-        // for this wrapper is now true (e.g., after visit('/') recreates the
-        // route controller and a subsequent click toggles isExpanded true
-        // via a different watcher path). Trust the live condition evaluator.
-        // Check whether the branch is ACTUALLY in its "false" state right
-        // now. We recorded IfCondition instances when the user toggled
-        // false. Pool reuse can leave stale entries whose condFn closures
-        // read old controller state. The most reliable signal of the real
-        // current state is whether the live DOM between the if-placeholder
-        // and the next view element contains any rendered content. Use
-        // IfCondition.isTrue/prevComponent if present, else fall back to
-        // scanning siblings of the placeholder for non-ancestor view
-        // descendants.
-        const entries = _wrapperIfCondLookup.get(wrapperId);
-        if (entries && entries.size > 0) {
-          const liveEl: any = typeof document !== 'undefined' && document.getElementById(wrapperId);
-          let anyExpanded = false;
-          for (const e of entries) {
-            const ph = e.placeholder;
-            if (!ph || !ph.parentNode) continue;
-            if (!liveEl || !liveEl.contains(ph)) continue;
-            const ic = e.ifCondition;
-            // IfCondition tracks its currently rendered branch via prevComponent.
-            // Non-empty prevComponent => branch currently rendered (true state).
-            const pc = ic && (ic.prevComponent ?? ic._prevComponent);
-            const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
-            if (pcHasContent) {
-              anyExpanded = true;
-              break;
-            }
-          }
-          if (anyExpanded) {
-            staleIds.push(wrapperId);
-            continue;
+  if (_wrapperIfUserFalse.size > 0) {
+    // Collect registries to search: the explicit arg (if any) and the
+    // current global owner's view registry. A destroyed owner (one that
+    // lingers as the ambient owner) resolves nothing.
+    const registries: any[] = [];
+    if (explicitRegistry) registries.push(explicitRegistry);
+    const go: any = getAmbientOwner();
+    const reg2 =
+      go && !go.isDestroyed && !go.isDestroying && go.lookup && go.lookup('-view-registry:main');
+    if (reg2 && !registries.includes(reg2)) registries.push(reg2);
+    const staleIds: string[] = [];
+    for (const wrapperId of _wrapperIfUserFalse) {
+      // Re-check the condition at read time. The ifWatcher may have
+      // observed a stale click-false on a pool-reused IfCondition whose
+      // closure points at a discarded controller, while the live condition
+      // for this wrapper is now true (e.g., after visit('/') recreates the
+      // route controller and a subsequent click toggles isExpanded true
+      // via a different watcher path). Trust the live condition evaluator.
+      // Check whether the branch is ACTUALLY in its "false" state right
+      // now. We recorded IfCondition instances when the user toggled
+      // false. Pool reuse can leave stale entries whose condFn closures
+      // read old controller state. The most reliable signal of the real
+      // current state is whether the live DOM between the if-placeholder
+      // and the next view element contains any rendered content. Use
+      // IfCondition.isTrue/prevComponent if present, else fall back to
+      // scanning siblings of the placeholder for non-ancestor view
+      // descendants.
+      const entries = _wrapperIfCondLookup.get(wrapperId);
+      if (entries && entries.size > 0) {
+        const liveEl: any = typeof document !== 'undefined' && document.getElementById(wrapperId);
+        let anyExpanded = false;
+        for (const e of entries) {
+          const ph = e.placeholder;
+          if (!ph || !ph.parentNode) continue;
+          if (!liveEl || !liveEl.contains(ph)) continue;
+          const ic = e.ifCondition;
+          // IfCondition tracks its currently rendered branch via prevComponent.
+          // Non-empty prevComponent => branch currently rendered (true state).
+          const pc = ic && (ic.prevComponent ?? ic._prevComponent);
+          const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
+          if (pcHasContent) {
+            anyExpanded = true;
+            break;
           }
         }
-        // Candidate views to reset: registry entries + whatever view is
-        // currently associated with the live DOM element for this id.
-        const views = new Set<any>();
-        for (const reg of registries) {
-          const v = reg && reg[wrapperId];
-          if (v && !v.isDestroyed && !v.isDestroying) views.add(v);
-        }
-        try {
-          const el = typeof document !== 'undefined' && document.getElementById(wrapperId);
-          if (el) {
-            const v2 = _emberGetElementView(el);
-            if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
-          }
-        } catch {
-          /* ignore */
-        }
-        for (const v of views) {
-          try {
-            _emberInitChildViews(v);
-          } catch {
-            /* ignore */
-          }
+        if (anyExpanded) {
+          staleIds.push(wrapperId);
+          continue;
         }
       }
-      for (const id of staleIds) _wrapperIfUserFalse.delete(id);
+      // Candidate views to reset: registry entries + whatever view is
+      // currently associated with the live DOM element for this id.
+      const views = new Set<any>();
+      for (const reg of registries) {
+        const v = reg && reg[wrapperId];
+        if (v && !v.isDestroyed && !v.isDestroying) views.add(v);
+      }
+      const el = typeof document !== 'undefined' && document.getElementById(wrapperId);
+      if (el) {
+        const v2 = _emberGetElementView(el);
+        if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
+      }
+      for (const v of views) {
+        _emberInitChildViews(v);
+      }
     }
-  } catch {
-    /* ignore */
+    for (const id of staleIds) _wrapperIfUserFalse.delete(id);
   }
   // Drain the in-element deferred-render queue now. By the time the
   // manager's flushAfterInsertQueue has processed all didInsertElement
@@ -6091,13 +5960,10 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
   // in-element targets whose host div was rendered in the same pass.
   //
   // The `_drainInElementDeferQueue` pointer is undefined until the setup block
-  // runs at module-load, so the guard is preserved for ordering safety.
-  try {
-    const drain = _drainInElementDeferQueue;
-    if (typeof drain === 'function') drain();
-  } catch {
-    /* ignore */
-  }
+  // runs at module-load, so the guard is preserved for ordering safety. What
+  // a deferred render throws propagates.
+  const drain = _drainInElementDeferQueue;
+  if (typeof drain === 'function') drain();
 }
 
 // ---- $_eachSync: normalize Ember collections for GXT ----
