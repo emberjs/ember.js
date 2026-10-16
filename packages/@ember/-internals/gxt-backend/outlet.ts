@@ -26,7 +26,7 @@
 // hooks (`setRouteOutletHooks`), installed when compile.ts loads it.
 import { getOwner, type InternalOwner } from '@ember/-internals/owner';
 import { set } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
@@ -181,20 +181,16 @@ const EmberOutletElement: any =
           // so an engine route's components also get the enclosing app
           // component as their parentView.
           let _parentViewPushed = false;
-          try {
-            const viewUtils = getGxtRenderer()?.viewUtils;
-            if (viewUtils) {
-              const directParent = this.parentElement;
-              if (directParent) {
-                const v = viewUtils.getElementView(directParent) as any;
-                if (v && !v.isDestroyed && !v.isDestroying) {
-                  viewUtils.pushParentView(v);
-                  _parentViewPushed = true;
-                }
+          const viewUtils = getGxtRenderer()?.viewUtils;
+          if (viewUtils) {
+            const directParent = this.parentElement;
+            if (directParent) {
+              const v = viewUtils.getElementView(directParent) as any;
+              if (v && !v.isDestroyed && !v.isDestroying) {
+                viewUtils.pushParentView(v);
+                _parentViewPushed = true;
               }
             }
-          } catch {
-            /* ignore */
           }
 
           // Engine support: when the nested outlet's render owner is an engine
@@ -231,11 +227,7 @@ const EmberOutletElement: any =
             }
             setCurrentOutletState(previousOutletState);
             if (_parentViewPushed) {
-              try {
-                getGxtRenderer()?.viewUtils.popParentView();
-              } catch {
-                /* ignore */
-              }
+              getGxtRenderer()?.viewUtils.popParentView();
             }
           }
         }
@@ -265,33 +257,36 @@ function classicLevelContext(nestedOutlet: GxtOutletState): any {
   if (controller) {
     const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
     if (_cellFor) {
-      try {
-        const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, 'model']);
-        const visited = new Set<string>();
-        let proto = Object.getPrototypeOf(controller);
-        while (proto && proto !== Object.prototype) {
-          for (const key of Object.getOwnPropertyNames(proto)) {
-            if (visited.has(key)) continue;
-            visited.add(key);
-            if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
-            const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
-            if (!protoDesc?.get) continue;
-            if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
-            try {
-              // Read the actual value from controller (not through nestedContext prototype)
-              const actualValue = (controller as any)[key];
-              // Install GXT cell on nestedContext and set it to the actual value
-              _cellFor(nestedContext, key, /* skipDefine */ false);
-              const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
-              if (cell) cell.update(actualValue);
-            } catch {
-              /* ignore */
+      const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, 'model']);
+      const visited = new Set<string>();
+      let proto = Object.getPrototypeOf(controller);
+      while (proto && proto !== Object.prototype) {
+        for (const key of Object.getOwnPropertyNames(proto)) {
+          if (visited.has(key)) continue;
+          visited.add(key);
+          if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+          const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+          if (!protoDesc?.get) continue;
+          if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
+          try {
+            // Read the actual value from controller (not through nestedContext prototype)
+            const actualValue = (controller as any)[key];
+            // Install GXT cell on nestedContext and set it to the actual value
+            _cellFor(nestedContext, key, /* skipDefine */ false);
+            const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
+            if (cell) cell.update(actualValue);
+          } catch (error) {
+            // Every getter of the controller is read here, also ones the
+            // template never reads (Glimmer runs none of them). A getter that
+            // throws keeps no cell; a template read of it throws to the render.
+            if (DEBUG) {
+              warn(`Reading \`${key}\` of a route's controller threw: ${String(error)}`, false, {
+                id: 'ember-gxt.route-controller-getter',
+              });
             }
           }
-          proto = Object.getPrototypeOf(proto);
         }
-      } catch {
-        /* ignore */
+        proto = Object.getPrototypeOf(proto);
       }
     }
   }
@@ -353,35 +348,31 @@ export function createOutletTemplate(_owner: any) {
     // enclosing classic component as their parentView (and therefore
     // don't show up as root views).
     let _factoryParentPushed = false;
-    try {
-      const viewUtils = getGxtRenderer()?.viewUtils;
-      if (viewUtils && parentElement) {
-        // parentElement here is the rendering target (typically the
-        // ember-outlet custom element or its direct parent div).
-        // Walk up a couple of levels looking for the enclosing wrapper.
-        // Only push a view if its element is still connected to the live
-        // document — stale wrappers from a previous route (whose elements
-        // were removed by parentElement.innerHTML = '') must not be pushed,
-        // or else the new route's components inherit the wrong parentView.
-        let node: Element | null = parentElement as Element;
-        let steps = 0;
-        while (node && steps++ < 3) {
-          const v = viewUtils.getElementView(node) as any;
-          if (v && !v.isDestroyed && !v.isDestroying) {
-            // Verify the view's element is in the live DOM
-            const viewEl = viewUtils.getViewElement(v);
-            const isLive = viewEl ? viewEl.isConnected : node.isConnected;
-            if (isLive) {
-              viewUtils.pushParentView(v);
-              _factoryParentPushed = true;
-            }
-            break;
+    const viewUtils = getGxtRenderer()?.viewUtils;
+    if (viewUtils && parentElement) {
+      // parentElement here is the rendering target (typically the
+      // ember-outlet custom element or its direct parent div).
+      // Walk up a couple of levels looking for the enclosing wrapper.
+      // Only push a view if its element is still connected to the live
+      // document — stale wrappers from a previous route (whose elements
+      // were removed by parentElement.innerHTML = '') must not be pushed,
+      // or else the new route's components inherit the wrong parentView.
+      let node: Element | null = parentElement as Element;
+      let steps = 0;
+      while (node && steps++ < 3) {
+        const v = viewUtils.getElementView(node) as any;
+        if (v && !v.isDestroyed && !v.isDestroying) {
+          // Verify the view's element is in the live DOM
+          const viewEl = viewUtils.getViewElement(v);
+          const isLive = viewEl ? viewEl.isConnected : node.isConnected;
+          if (isLive) {
+            viewUtils.pushParentView(v);
+            _factoryParentPushed = true;
           }
-          node = node.parentElement;
+          break;
         }
+        node = node.parentElement;
       }
-    } catch {
-      /* ignore */
     }
 
     try {
@@ -426,11 +417,7 @@ export function createOutletTemplate(_owner: any) {
       }
     } finally {
       if (_factoryParentPushed) {
-        try {
-          getGxtRenderer()?.viewUtils.popParentView();
-        } catch {
-          /* ignore */
-        }
+        getGxtRenderer()?.viewUtils.popParentView();
       }
     }
     // If no nested template, just return empty - outlet has nothing to show
