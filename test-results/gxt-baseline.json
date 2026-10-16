@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T10:27:30.473Z",
+    "capturedAt": "2026-10-16T12:00:59.750Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "227a04d2a4",
-    "totalTests": 10161,
-    "totalModules": 998,
+    "emberCommit": "13e838982c",
+    "totalTests": 10166,
+    "totalModules": 999,
     "quarantinedTests": 0,
-    "totalAssertions": 60589,
-    "totalAssertionsPassing": 60125,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after the integration harness ignores GXT's curried-component boundary comments and anchor comments (equalTokens, assertComponent, qunit-dom hasHtml), the jit delegate makes curried components the way the GXT component helper does, the GXT rehydration delegate renders its server side without interaction and registers modifiers, and a content binding that rendered a curried component renders its value after it becomes text; written by runner.mjs in the GitHub Actions GXT full workflow (run 38887215533, on the code of 227a04d2a4). 9829/10161 green (was 9781/10161), 998 modules, no timeouts, no harness errors, no green->red. 36 tests no longer fail (42 rows with the parent modules' re-reports): 12 green through the harness and product changes, 24 now skipped under GXT as checks of Glimmer VM internals (listed in the commit). The passing assertions of the 6 modules with new skips drop by the assertions the skipped tests no longer run; no other module has fewer passing assertions."
+    "totalAssertions": 60890,
+    "totalAssertionsPassing": 60469,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after compat components and modifiers became nodes of a renderComponent render's debug render tree (names, arguments read at capture, instances, bounds, getDebugCustomRenderTree nodes, argument capture errors), a component resolved by name whose internal manager creates no instance renders its template, and the debug render tree test takes an element's last rendered node before GXT's block anchor comment; written by runner.mjs in the GitHub Actions GXT full workflow (run 38897484628, on the code of 13e838982c). 9845/10166 green (was 9829/10161), 999 modules, no timeouts, no harness errors, no green->red. 11 tests no longer fail (2 Strict Mode - RenderComponentTestCase captureRenderTree tests and 9 of the debug render tree module); the new module GXT debug render tree passes 5/5; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2597,6 +2597,13 @@
       "assertionsPassing": 3,
       "failingTests": []
     },
+    "GXT debug render tree": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 38,
+      "assertionsPassing": 38,
+      "failingTests": []
+    },
     "GXT dynamic components follow their definition": {
       "total": 4,
       "passing": 4,
@@ -4501,19 +4508,10 @@
     },
     "Strict Mode - RenderComponentTestCase": {
       "total": 4,
-      "passing": 2,
+      "passing": 4,
       "assertionsTotal": 15,
-      "assertionsPassing": 13,
-      "failingTests": [
-        {
-          "name": " captureRenderTree includes the rendered components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " captureRenderTree includes components rendered with any owner",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 15,
+      "failingTests": []
     },
     "Strict Mode - Runtime Template Compiler (explicit)": {
       "total": 12,
@@ -5414,18 +5412,10 @@
     },
     "[integration] jit :: Application test: debug render tree": {
       "total": 13,
-      "passing": 1,
-      "assertionsTotal": 140,
-      "assertionsPassing": 96,
+      "passing": 10,
+      "assertionsTotal": 403,
+      "assertionsPassing": 400,
       "failingTests": [
-        {
-          "name": "strict-mode components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "strict-mode components preserve names from scope",
-          "category": "gxt:triage"
-        },
         {
           "name": "dynamic component via <this.dynamicComponent>",
           "category": "gxt:triage"
@@ -5435,35 +5425,7 @@
           "category": "gxt:triage"
         },
         {
-          "name": "strict-mode modifiers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "template-only components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "glimmerish components with an argument that throws",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "glimmerish components",
-          "category": "gxt:triage"
-        },
-        {
           "name": "in-element in tree",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "modifiers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "getDebugCustomRenderTree works",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "empty getDebugCustomRenderTree works",
           "category": "gxt:triage"
         }
       ]
@@ -8608,6 +8570,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 332
+    "gxt:triage": 321
   }
 }
