@@ -2160,6 +2160,69 @@ function _removeNodesBetween(parent: Node, start: Node, end: Node): Node[] {
   return removed;
 }
 
+// Shows `value` in the curried-component region of `info` (between its
+// `startMarker` and `endMarker`) when the value is text, trusted HTML or a
+// node: the binding of `{{this.foo}}` that rendered a curried component renders
+// what its value is after it changes, as Glimmer appends a dynamic value whose
+// content type changed. What the region already shows stays: its text node
+// (with the new text), the same node, the nodes of the same HTML. The
+// components of replaced content are destroyed. Returns false, and changes
+// nothing, for a component (a curried one, a definition or a component name),
+// a function, and null or undefined: the caller renders those as before.
+function _gxtShowCurriedRegionContent(info: any, value: unknown): boolean {
+  if (value === null || value === undefined || typeof value === 'function') return false;
+  const kind = _gxtContentKind(value);
+  if (kind === 'component') return false;
+  if (typeof value === 'string' && _gxtIsComponentDefinition(value)) return false;
+  const start: Node = info.startMarker;
+  const end: Node = info.endMarker;
+  const parent = start.parentNode;
+  if (parent === null) return true;
+
+  const text = kind === 'text' ? _gxtCoerceText(value) : '';
+  const html = kind === 'html' ? _gxtCoerceText((value as any).toHTML()) : '';
+  const key = kind === 'html' ? html : kind === 'node' ? value : undefined;
+  const shown: { kind: _GxtContentKind; key: unknown; first: Node; last: Node } | null =
+    info.shownContent ?? null;
+  if (
+    shown !== null &&
+    shown.kind === kind &&
+    start.nextSibling === shown.first &&
+    shown.last.nextSibling === end
+  ) {
+    if (kind === 'text') {
+      if (shown.first.nodeValue !== text) shown.first.nodeValue = text;
+      return true;
+    }
+    if (shown.key === key) return true;
+  }
+
+  const removed = _removeNodesBetween(parent, start, end);
+  if (removed.length > 0) {
+    getGxtRenderer()?.destruction.destroyInstancesInNodes(removed);
+  }
+  let content: Node[];
+  if (kind === 'text') {
+    content = [document.createTextNode(text)];
+  } else if (kind === 'node') {
+    const node = value as Node;
+    content = node.nodeType === 11 ? Array.from(node.childNodes) : [node];
+  } else {
+    content = _gxtParseTrustedHtml(
+      html,
+      parent instanceof Element ? _gxtContentContextOf(parent) : null
+    );
+  }
+  // An empty comment holds the place of content with no nodes.
+  if (content.length === 0) content = [document.createComment('')];
+  for (const node of content) parent.insertBefore(node, end);
+  info.shownContent = { kind, key, first: content[0]!, last: content[content.length - 1]! };
+  // The region no longer shows a curried component: the next one renders.
+  info.lastRenderedName = undefined;
+  info.__lastSnapshot = null;
+  return true;
+}
+
 // Render a curried component through the Ember component manager. A reactive
 // re-render runs outside the original render, so the owner captured at template
 // evaluation is restored when no owner is ambient. Non-node results go through
@@ -7980,6 +8043,9 @@ function _gxtSyncDomNow(): void {
               const newFinal =
                 typeof newResult === 'function' ? _gxtContentFunctionValue(newResult) : newResult;
 
+              // A value that is not a component: its text, HTML or node.
+              if (_gxtShowCurriedRegionContent(info, newFinal)) continue;
+
               // Skip teardown if same component with unchanged args (preserves DOM stability)
               if (
                 newFinal &&
@@ -13595,6 +13661,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
 
               const parent = startMarker.parentNode;
               if (!parent) return;
+
+              // A value that is not a component: its text, HTML or node.
+              if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
 
               // Skip teardown if same component with unchanged args (preserves DOM stability)
               if (
