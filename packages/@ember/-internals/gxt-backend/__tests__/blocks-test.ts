@@ -10,7 +10,11 @@
  *   component, whatever its case (`<Yielder as |greet|><greet /></Yielder>`);
  * - a block param in a quoted attribute is the variable's value: falsy values
  *   included (`class="index-{{index}}"` is `index-0` in the first `{{#each}}`
- *   row), and it updates when the row moves.
+ *   row), and it updates when the row moves;
+ * - block params are lexical and bound per invocation of the block: each
+ *   `{{yield}}` of a block renders it with its own params, and a block nested
+ *   in another one reads the outer block's params as the outer invocation
+ *   bound them. That holds for a named block's params too (`<:item as |x|>`).
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -19,6 +23,7 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import GlimmerComponent from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 
 // A layout rendering its default block with `@value` when `@predicate` is
 // true, and its else block (yielded to `to`) otherwise.
@@ -138,6 +143,72 @@ moduleFor(
       runTask(() => set(this.context, 'items', [b, a]));
       this.assert.deepEqual(classes(), ['index-0 b', 'index-1 a'], 'after the rows move');
       this.assertText('01');
+    }
+  }
+);
+
+moduleFor(
+  'GXT block params of an invocation',
+  class extends RenderingTestCase {
+    registerLayout(name: string, layout: string): void {
+      this.owner.register(
+        `component:${name}`,
+        setComponentTemplate(precompileTemplate(layout), class extends GlimmerComponent {})
+      );
+    }
+
+    ['@test each {{yield}} of a block renders it with its own params']() {
+      this.registerLayout('x-twice', '{{yield "foo" 1}}|{{yield "" 2}}');
+      this.render(
+        '<XTwice as |s n|>[{{s}}-{{s.length}}-{{n}}<b title={{s}}>{{concat s n}}</b>]</XTwice>'
+      );
+      this.assertText('[foo-3-1foo1]|[-0-22]');
+      let titles = Array.from(this.element.querySelectorAll('b'), (b) => b.getAttribute('title'));
+      this.assert.deepEqual(titles, ['foo', ''], 'each invocation binds its own attribute value');
+    }
+
+    ['@test a block nested in another block reads the outer block params']() {
+      this.registerLayout('x-outer', '{{yield "out"}}');
+      this.registerLayout('x-inner', '{{yield "in"}}');
+      this.render('<XOuter as |o|><XInner as |i|>{{o}}-{{i}}</XInner>/{{o}}</XOuter>');
+      this.assertText('out-in/out');
+    }
+
+    ['@test each invocation of a block keeps its own reactive params']() {
+      class Pair extends GlimmerComponent {
+        @tracked first = 'a';
+        @tracked second = 'b';
+        update = () => {
+          this.first = 'c';
+          this.second = 'd';
+        };
+      }
+      this.owner.register(
+        'component:x-pair',
+        setComponentTemplate(
+          precompileTemplate('{{yield this.first this.update}}{{yield this.second this.update}}'),
+          Pair
+        )
+      );
+      this.render('<XPair as |v update|><button onclick={{update}}>{{v}}</button></XPair>');
+      this.assertText('ab');
+
+      runTask(() => (this.element.querySelector('button') as HTMLButtonElement).click());
+      this.assertText('cd');
+    }
+
+    ['@test a block of an invocation by tag binds its params next to a curly invocation']() {
+      // The template's curly block makes gxt compile `<XTwice>` as a component
+      // with a slot function of its own.
+      this.registerLayout('x-twice', '{{yield "foo"}}|{{yield ""}}');
+      this.render('{{#x-twice as |s|}}A{{s}}{{/x-twice}}/<XTwice as |s|>B{{s}}</XTwice>');
+      this.assertText('Afoo|A/Bfoo|B');
+    }
+
+    ['@test each {{yield}} to a named block renders it with its own params']() {
+      this.registerLayout('x-list', '{{yield "a" to="item"}}{{yield "b" to="item"}}');
+      this.render('<XList><:item as |x|>[{{x}}]</:item></XList>');
+      this.assertText('[a][b]');
     }
   }
 );

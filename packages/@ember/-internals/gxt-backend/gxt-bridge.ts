@@ -467,18 +467,9 @@ export interface GxtCompilePipelineCapabilities {
   /** compile.ts's block-params stack, by reference. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getBlockParamsStack?(): any[][];
-  /** compile.ts's per-context block-params map, by reference. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getContextBlockParams?(): WeakMap<object, any[]>;
   /** compile.ts's slots-context stack, by reference. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getSlotsContextStack?(): any[];
-  /**
-   * Remember the last rendered slot's block params, so re-renders can read
-   * them after the slot's frame was popped.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setCurrentSlotParams?(params: any[] | null): void;
   /** compile.ts's table of Ember built-in helpers, by reference. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getBuiltinHelpers?(): Record<string, any>;

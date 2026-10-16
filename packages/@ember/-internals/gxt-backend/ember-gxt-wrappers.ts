@@ -1687,7 +1687,7 @@ function createEmberTag(original: Function) {
           const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
             const hasBlockParams = explicitHasBlockParams ?? false;
 
-            const slotFn = (slotCtx: any, ...params: any[]) => {
+            const slotFn = (_slotCtx: any, ...params: any[]) => {
               const unwrappedParams = params.map((param) => {
                 // Unwrap GXT reactive formulas (objects with fn/isConst)
                 if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
@@ -1702,15 +1702,9 @@ function createEmberTag(original: Function) {
                 return param;
               });
 
-              // Block-params structures live module-locally in compile.ts and are
+              // The block-params stack lives module-locally in compile.ts and is
               // reached through the compilePipeline bridge.
               const _slotPipeline = getGxtRenderer()?.compilePipeline;
-              const contextParams = _slotPipeline?.getContextBlockParams?.();
-              if (contextParams && slotCtx && typeof slotCtx === 'object') {
-                contextParams.set(slotCtx, [...unwrappedParams]);
-              }
-              _slotPipeline?.setCurrentSlotParams?.(unwrappedParams);
-
               const stack = _slotPipeline?.getBlockParamsStack?.() as any[][];
               stack.push(unwrappedParams);
               try {
@@ -2001,7 +1995,7 @@ function dcStringDefinitionError(name: string, gxtArgs: any): Error | null {
 /**
  * Wraps GXT's $_dc to support Ember's CurriedComponent.
  * $_dc is called when GXT encounters a dynamic component invocation like
- * {{#thing.ctxCmp}}content{{/thing.ctxCmp}} or <this.$_bp0 />.
+ * {{#thing.ctxCmp}}content{{/thing.ctxCmp}} or <x.Foo />.
  * GXT compiles these as $_dc(componentGetter, args, ctx).
  *
  * When the componentGetter returns a CurriedComponent, we render it through

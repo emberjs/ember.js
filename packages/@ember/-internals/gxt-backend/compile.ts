@@ -427,6 +427,7 @@ import {
 import {
   buildGxtDialectTransforms,
   lookupGxtComment,
+  GXT_BLOCK_SCOPE_KEY,
   _GXT_ON_EXT_ALIAS,
   type GxtAssertFindings,
 } from './ast-transforms';
@@ -2666,6 +2667,10 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           if ((target as any).__emberHashObject) {
             // Read through the live, source-entangling member getter.
             return target[key];
+          }
+          // A block param reads the param of its block invocation.
+          if (target instanceof GxtBlockParams) {
+            return target[key as keyof GxtBlockParams];
           }
           // A `@tracked` key reads through its accessor, which reads (and
           // subscribes to) the same gxt cell; gxt's `cellFor` would define its
@@ -8185,8 +8190,6 @@ function _gxtCleanupActiveComponents(): void {
   getGxtRenderer()?.destruction.destroyTrackedInstances();
   // Reset block params stack
   blockParamsStack.length = 0;
-  // Reset current slot params
-  currentSlotParams = null;
   // Reset slots context stack
   slotsContextStack.length = 0;
   // NOTE: Do NOT clear templateCache between tests. Each clear forces
@@ -9329,23 +9332,13 @@ function _ensureOnExtAlias(): void {
 // overhead. See the `templateFnCode` builder (search for
 // `__gxtAssertNotResolvedHelperAsNamedArg`) for the inlined definition.
 
-// Global block params stack for yielded values
-// When a slot is rendered with block params, they're pushed here; the `$_bp<N>`
-// getters below read the top of the stack.
-// Other files (ember-gxt-wrappers' slot-render frames, manager.ts's has-block
-// frames) reach these by REFERENCE through the compilePipeline bridge accessors
-// (getBlockParamsStack / getContextBlockParams / getSlotsContextStack).
+// The block params of the slot invocations being rendered, innermost last:
+// pushed by a by-name component's slot function around the render of its
+// block. A component tag rendered inside such a block returns its render thunk
+// (see `$_tag_ember`). Other files (ember-gxt-wrappers' slot-render frames)
+// reach it by REFERENCE through the compilePipeline bridge accessor
+// (getBlockParamsStack).
 const blockParamsStack: any[][] = [];
-
-// Per-context block params storage for persistence across re-renders
-// WeakMap allows garbage collection when context is no longer referenced
-const contextBlockParams = new WeakMap<object, any[]>();
-
-// Current slot params - persists until next slot is called
-// This is used for re-renders where the stack has been popped
-// Key insight: for simple non-nested slot cases, keeping the "last" params
-// allows re-renders to access them even after the slot function returns
-let currentSlotParams: any[] | null = null;
 
 // The current render's `$slots` / `$fw`. Compiled template Function() bodies
 // read them through the injected `__gxtGetSlots` / `__gxtGetFw` accessor
@@ -9372,8 +9365,9 @@ const _gxtGetFwFn = () => _gxtCurrentFw;
 const _gxtScopeStore = new Map<string, any>();
 const _gxtGetScopeFn = (key: string) => _gxtScopeStore.get(key);
 
-// Helper to unwrap a potentially reactive value
-// This is called each time a block param is accessed to ensure fresh values
+// A block param's value: a reactive param (a GXT formula, as `$_slot` passes a
+// yielded value that reads cells) is re-evaluated on each read, so the read
+// depends on the cells it reads.
 function unwrapReactiveValue(value: any): any {
   if (value === undefined || value === null) return value;
 
@@ -9391,47 +9385,41 @@ function unwrapReactiveValue(value: any): any {
   return value;
 }
 
-const bpDescriptors: Record<string, PropertyDescriptor> = {};
-for (let i = 0; i < 10; i++) {
-  const bpName = `$_bp${i}`;
-  bpDescriptors[bpName] = {
-    get() {
-      let rawValue: any;
-
-      // First check if this context has persistent block params
-      // This handles re-renders after the slot function has returned
-      const persistentParams = contextBlockParams.get(this);
-      if (persistentParams && persistentParams[i] !== undefined) {
-        rawValue = persistentParams[i];
-      } else {
-        // Check the global stack (during initial slot execution)
-        const stack = blockParamsStack;
-        const stackParams = stack && stack[stack.length - 1];
-        if (stackParams && stackParams[i] !== undefined) {
-          rawValue = stackParams[i];
-        } else {
-          // Fall back to current slot params (for re-renders after slot returned)
-          const current = currentSlotParams;
-          if (current && current[i] !== undefined) {
-            rawValue = current[i];
-          }
-        }
-      }
-
-      // CRITICAL: Unwrap reactive values each time to support reactivity
-      // When the component's property changes, this getter will return the new value
-      return unwrapReactiveValue(rawValue);
-    },
-    configurable: true,
-    enumerable: false,
-  };
+// The params of ONE invocation of a by-name component's block (see
+// `gxtBlockParamsTransform`, ast-transforms.ts): the block reads its i-th param
+// as `<binder>.$_bp<i>`, which reads that invocation's param.
+class GxtBlockParams {
+  constructor(readonly params: readonly unknown[]) {
+    _gxtDefineBlockParamGetters(params.length);
+  }
 }
-try {
-  Object.defineProperties(Object.prototype, bpDescriptors);
-} catch (e) {
-  // If we can't define on Object.prototype, fall back to globalThis
-  for (let i = 0; i < 10; i++) {
-    Object.defineProperty(globalThis, `$_bp${i}`, bpDescriptors[`$_bp${i}`]);
+let _gxtBlockParamGetterCount = 0;
+function _gxtDefineBlockParamGetters(count: number): void {
+  for (; _gxtBlockParamGetterCount < count; _gxtBlockParamGetterCount++) {
+    const i = _gxtBlockParamGetterCount;
+    Object.defineProperty(GxtBlockParams.prototype, `$_bp${i}`, {
+      get(this: GxtBlockParams) {
+        return unwrapReactiveValue(this.params[i]);
+      },
+      configurable: true,
+      enumerable: false,
+    });
+  }
+}
+
+// The block of a by-name component invocation (`gxtBlockParamsTransform`): the
+// slot function gxt compiled for it and the context of the template it is in.
+// The component's slot function renders it once per invocation of the block,
+// with that invocation's params.
+class GxtBlockScope {
+  constructor(
+    private readonly block: (ctx: unknown, params: GxtBlockParams) => unknown,
+    private readonly ctx: unknown
+  ) {}
+
+  render(params: readonly unknown[]): unknown[] {
+    const result = this.block(this.ctx, new GxtBlockParams(params));
+    return Array.isArray(result) ? result : [result];
   }
 }
 
@@ -11035,17 +11023,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
               const hasBlockParams = explicitHasBlockParams ?? false;
 
-              const slotFn = (slotCtx: any, ...params: any[]) => {
+              const slotFn = (_slotCtx: any, ...params: any[]) => {
                 // KEEP the live GXT formula for a reactive block param instead of
                 // eagerly snapshotting it with `param.fn()`. Eager unwrap reduces
                 // `{{yield this.full ...}}` (a getter over @tracked props) to a
-                // static string at slot-invocation time, so the consumer's
-                // `$_bp0` read returns the snapshot, the text effect captures NO
+                // static string at slot-invocation time, so the block's read of
+                // the param returns the snapshot, the text effect captures NO
                 // cell, and a later change never re-fires (yield-test `yielded
                 // getters update correctly`, AngleBracket `yield positionally`).
-                // Passing the raw formula lets `$_bp${i}` → `unwrapReactiveValue`
-                // re-evaluate it inside the consumer's tracker frame each read,
-                // subscribing to the underlying cells.
+                // Passing the raw formula lets the block's `$_bp${i}` read
+                // (`GxtBlockParams`) re-evaluate it inside the consumer's
+                // tracker frame each read, subscribing to the underlying cells.
                 const unwrappedParams = params.map((param) => {
                   // Unwrap GXT reactive formulas (objects with fn/isConst)
                   if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
@@ -11072,17 +11060,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   return param;
                 });
 
-                // Store on slotCtx for context-based lookup
-                const contextParams = contextBlockParams as WeakMap<object, any[]>;
-                if (contextParams && slotCtx && typeof slotCtx === 'object') {
-                  contextParams.set(slotCtx, [...unwrappedParams]);
-                }
-
-                // Also store as current slot params for re-renders
-                // This persists until the next slot call, allowing reactivity
-                // to access block params even after the slot function returns
-                currentSlotParams = unwrappedParams;
-
                 const stack = blockParamsStack;
                 stack.push(unwrappedParams);
 
@@ -11092,7 +11069,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   // cell dependencies and create reactive text nodes via gxtEffect.
                   // Without this, yielded {{this.message}} becomes a static string
                   // and won't update when the outer context changes via set().
-                  return slotChildren.map((child: any) => {
+                  // A block that declared params is a `GxtBlockScope` (the
+                  // value of its `$_dc`): it renders here, for this
+                  // invocation, with this invocation's params.
+                  const rendered: any[] = [];
+                  for (const child of slotChildren) {
+                    let item = child;
                     if (
                       typeof child === 'function' &&
                       !child.__isCurriedComponent &&
@@ -11102,25 +11084,26 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       // (`$_nt` sets `$_isNode` on every component-child DOM
                       // producer, AST-driven — including `$_each*` children, whose
                       // component rows match the wrap predicate recursively). Unmarked
-                      // functions are reactive text getters. The marker, unlike a
+                      // functions are reactive text getters (returned as functions
+                      // for GXT reactive tracking). The marker, unlike a
                       // `.toString()` source check, survives minification.
                       if ((child as any).$_isNode === true) {
                         try {
-                          return child();
+                          item = child();
                         } catch {
-                          return child;
+                          item = child;
                         }
                       }
-                      // Reactive text getters — return as functions for GXT reactive tracking
-                      return child;
                     }
-                    return child;
-                  });
+                    if (item instanceof GxtBlockScope) {
+                      rendered.push(...item.render(unwrappedParams));
+                    } else {
+                      rendered.push(item);
+                    }
+                  }
+                  return rendered;
                 } finally {
                   stack.pop();
-                  // NOTE: We do NOT clear __currentSlotParams here
-                  // This allows re-renders (via GXT reactivity) to access
-                  // the params even after the slot function has returned
                 }
               };
 
@@ -12255,10 +12238,18 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // that re-invokes $_dc once the getter resolves. (The manager fw for
 // splattributes is derived in `$_dc_ember.renderComponent`,
 // ember-gxt-wrappers.ts, from the invocation props tuple.)
+//
+// The block of a by-name component invocation that declared block params is a
+// `$_dc` with the `GXT_BLOCK_SCOPE_KEY` argument (`gxtBlockParamsTransform`,
+// ast-transforms.ts), not a component: its value is the `GxtBlockScope` the
+// component's slot function renders once per invocation of the block.
 if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   const __origDc = g.$_dc;
 
   g.$_dc = function $_dc_deferThrow(componentGetter: any, gxtArgs: any, ctx: any, fw?: any): any {
+    if (gxtArgs && gxtArgs[GXT_BLOCK_SCOPE_KEY] === true) {
+      return new GxtBlockScope(gxtArgs[$SLOTS_SYMBOL].default, ctx);
+    }
     if (typeof componentGetter === 'function') {
       let getterThrew = false;
       try {
@@ -14700,11 +14691,7 @@ installCompilePipelinePart({
   getPendingSync: _gxtGetPendingSync,
   setPendingSync: _gxtSetPendingSync,
   getBlockParamsStack: () => blockParamsStack,
-  getContextBlockParams: () => contextBlockParams,
   getSlotsContextStack: () => slotsContextStack,
-  setCurrentSlotParams: (params) => {
-    currentSlotParams = params;
-  },
   getBuiltinHelpers: () => _emberBuiltinHelpers,
   subscribeCell: _gxtSubscribeCellFn,
   eachItemRawFor: _gxtEachItemRawFor,

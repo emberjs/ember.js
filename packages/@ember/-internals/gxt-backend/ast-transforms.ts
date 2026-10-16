@@ -106,6 +106,7 @@ interface GxtAstEnv {
       hash(pairs?: unknown[]): unknown;
       pair(key: string, value: unknown): unknown;
       string(value: string): unknown;
+      boolean(value: boolean): unknown;
       blockItself(body?: unknown[], params?: Array<unknown | string>, chained?: boolean): unknown;
       elementModifier(path: unknown, params?: unknown[], hash?: unknown, loc?: unknown): unknown;
       attr(name: string, value: unknown, loc?: unknown): unknown;
@@ -853,14 +854,13 @@ function gxtBodyBareHelperTransform(scopeValues?: Record<string, unknown>) {
   };
 }
 
-// Tag-name shapes the former `transformBlockParamsInTemplate` string scanner
-// matched (its `tagPattern` first capture group): a PascalCase tag (possibly
-// dotted/dashed) OR a kebab-case tag (a dash-containing lowercase name). The AST
-// transform fires the `$_bp` rewrite ONLY for these tags so it affects exactly
-// the same elements — dynamic tags (`<this.Foo …>`, `<@foo …>`) and bare
-// lowercase tags were left to glimmer-next's native block-param handling by the
-// string version, and stay native here (their block params still SHADOW, see the
-// scope stack, but are not rewritten).
+// The tags whose block params this transform binds (`gxtBlockParamsTransform`):
+// a PascalCase tag (possibly dotted/dashed) OR a kebab-case tag (a
+// dash-containing lowercase name), i.e. a component invoked by name, which gxt
+// compiles to `$_tag('Name', …)` with its block as plain children. Dynamic tags
+// (`<this.Foo …>`, `<@foo …>`, `<x.Foo …>`) and bare lowercase tags are left to
+// glimmer-next, which compiles their blocks as slot functions with the block
+// params as arguments.
 const _GXT_BP_PASCAL_TAG_RE = /^[A-Z][a-zA-Z0-9.-]*$/;
 const _GXT_BP_KEBAB_TAG_RE = /^[a-z][a-z0-9]*-[a-z0-9-]*$/;
 function _gxtBpTagMatches(tag: string): boolean {
@@ -868,122 +868,192 @@ function _gxtBpTagMatches(tag: string): boolean {
 }
 
 /**
- * Angle-bracket component block params:
- *   `<Foo as |x y|>{{x}} {{y.prop}}</Foo>`
- *     → `<Foo @__hasBlockParams__="default">{{this.$_bp0}} {{this.$_bp1.prop}}</Foo>`
- *   `<Foo as |x|><x.Trigger .../></Foo>` → `<Foo …><this.$_bp0.Trigger .../></Foo>`
- *
- * `$_bp{N}` is a pure ember-runtime convention: ember installs `$_bp{i}` getters
- * (see `Object.defineProperty(globalThis, '$_bp'+i, …)` ~9263/9301) that return
- * the current yielded block-param at render time; glimmer-next compiles
- * `this.$_bp0` as an ordinary `this`-path. The marker arg
- * `@__hasBlockParams__="default"` tells the slot machinery the component declared
- * a default block with params (consumed at ~10439 / ~11482).
- *
- * Replaces the former `transformBlockParamsInTemplate` string scanner. Operating
- * on the AST adds SHADOW-AWARENESS the string version lacked: it scope-stacks
- * every block-param binder (element AND `{{#block as |..|}}`), so an inner binder
- * re-declaring a name correctly shadows the outer component param — the string
- * version blind-replaced every `{{name}}` in the component's text span, even
- * inside a nested `{{#each items as |name|}}` (where the name is a native
- * glimmer-next block param, not a `$_bp`). Only ELEMENT-binder references resolve
- * to `$_bp`; block-statement binders shadow without rewriting (glimmer-next owns
- * those natively).
- *
- * Faithfulness: for non-shadowing templates the emitted JS is byte-identical to
- * the string version, EXCEPT a dotted block-param tail (`{{x.prop}}`) emits
- * `this.$_bp0.prop` rather than the string version's `this.$_bp0?.prop`. The
- * `?.` was an artifact of injecting `this.$_bp0.prop` as literal SOURCE (the
- * compiler's loc-based parts add `?.` for ≥3 segments); glimmer-next's own value
- * serializer explicitly SUPPRESSES `?.` for `$_`-prefixed paths
- * (`if (e.includes("$_")) return e`), so the AST output is the intended shape.
- * The two are semantically equivalent except when a block param is nullish and a
- * property is read off it.
- *
- * The PathExpression head rewrite MUTATES the parsed node in place (head → `this`,
- * prepend `$_bp{N}` to the tail) rather than building a fresh node, so the
- * node's `loc` (and thus codegen) stays consistent with a parsed `this`-path.
+ * The named-argument marker of a block scope (`gxtBlockParamsTransform`): the
+ * `$_dc` invocation whose arguments carry it is the block of a by-name
+ * component invocation, not a component (compile.ts `$_dc` returns a
+ * `GxtBlockScope` for it).
  */
-function gxtBlockParamsTransform(env: GxtAstEnv) {
-  const b = env.syntax.builders;
-  // Scope stack of frames; each frame is an array of { name, bp? }. A `bp`
-  // (e.g. `$_bp0`) marks an ELEMENT block-param (rewrite refs to `this.$_bp{N}`);
-  // a bp-less entry is a shadowing-only binder (a `{{#block as |..|}}` param, or
-  // a native element param whose tag didn't match the string-rewrite shape).
-  const scopes: Array<Array<{ name: string; bp?: string }>> = [];
-  const resolve = (name: string): { name: string; bp?: string } | null => {
-    for (let i = scopes.length - 1; i >= 0; i--) {
-      const hit = scopes[i]!.find((e) => e.name === name);
-      if (hit) return hit; // nearest binder wins
-    }
-    return null;
-  };
-  // Rewrite a yielded contextual-component tag `<param.Foo …>` → `<this.$_bp0.Foo …>`,
-  // and a tag that is the param itself, `<param …>` → `<this.$_bp0 …>` (only
-  // when `param` is an in-scope ELEMENT binder): as in Glimmer, a tag naming a
-  // block param in scope invokes the param's value as a component, whatever its
-  // case. Resolved against the ENCLOSING scope (called before this element
-  // pushes its own params).
-  const rewriteTag = (node: any): void => {
-    const tag: string = node.tag;
-    if (!tag) return;
-    const dot = tag.indexOf('.');
-    const head = dot === -1 ? tag : tag.slice(0, dot);
-    const hit = resolve(head);
-    if (!hit || hit.bp === undefined) return;
-    node.tag = dot === -1 ? `this.${hit.bp}` : `this.${hit.bp}.${tag.slice(dot + 1)}`;
-  };
-  return {
-    name: 'ember-gxt-block-params',
-    visitor: {
-      ElementNode: {
-        enter(node: any): void {
-          rewriteTag(node);
-          const bp: string[] = node.blockParams || [];
-          if (bp.length && _gxtBpTagMatches(node.tag)) {
-            scopes.push(bp.map((n, i) => ({ name: n, bp: `$_bp${i}` })));
-            node.attributes.push(b.attr('@__hasBlockParams__', b.text('default')));
-            node.__gxtBpRewrite = true;
-          } else if (bp.length) {
-            // Native (dynamic/bare) tag with block params — left to glimmer-next,
-            // but its params still shadow outer element params.
+export const GXT_BLOCK_SCOPE_KEY = '__gxtBlockScope__';
+
+/**
+ * Angle-bracket block params of a component invoked by name, bound per block
+ * invocation:
+ *   `<Foo as |x y|>{{x}} {{y.prop}}</Foo>`
+ *     → `<Foo @__hasBlockParams__="default">{{#this.$_gxtBlockScope __gxtBlockScope__=true as |__gxtBp1|}}{{__gxtBp1.$_bp0}} {{__gxtBp1.$_bp1.prop}}{{/this.$_gxtBlockScope}}</Foo>`
+ *   `<Foo as |x|><x.Trigger .../></Foo>` → `… <__gxtBp1.$_bp0.Trigger .../> …`
+ *   `<Foo><:item as |x|>{{x}}</:item></Foo>` → the same, inside `<:item>`.
+ *
+ * gxt compiles a by-name component tag to `$_tag('Foo', …)` with its block as
+ * plain children: the block params are not bound by anything. As Glimmer binds
+ * a block's params lexically, per invocation of the block (each `{{yield}}`
+ * renders the block with its own params), the block becomes a block statement
+ * that gxt compiles to a slot function taking ONE param, `__gxtBp<depth>` (a
+ * distinct name per nesting level, so an inner block never shadows an outer
+ * block's params), and every read of a block param `x` becomes a read of
+ * `__gxtBp<depth>.$_bp<i>`. compile.ts renders that slot function once per
+ * invocation of the component's block with a `GxtBlockParams` of that
+ * invocation's params, whose `$_bp<i>` getters read the i-th param (a reactive
+ * one re-read on every read). The marker argument `__gxtBlockScope__` tells
+ * compile.ts's `$_dc` that the block statement is that block, and
+ * `@__hasBlockParams__` tells the slot machinery the block declared params.
+ *
+ * A component whose name is in scope (a strict-mode local, a block param)
+ * compiles to `$_c` / `$_dc` with its block as a slot function whose arguments
+ * are the block params: its params (and its named blocks') are left to gxt. So
+ * are those of a tag gxt compiles to `$_c('Name', …)` because the template's
+ * top level has a curly block of that component (`{{#foo-bar}}` makes every
+ * `<FooBar>` of the template a `$_c('FooBar', …)`: gxt binds the name, as a
+ * compat component, in the scope the curly block is in, which is still there
+ * when the template's code is generated only for the top level).
+ *
+ * Every block-param binder is scope-stacked (element AND `{{#block as |..|}}`),
+ * so an inner binder re-declaring a name shadows the outer one; only the
+ * element binders of a bound block are rewritten.
+ *
+ * Path rewrites MUTATE the parsed node in place (head → `__gxtBp<depth>`,
+ * `$_bp<i>` prepended to the tail), so the node's `loc` stays.
+ */
+function gxtBlockParamsTransform(scopeValues: Record<string, unknown> | undefined) {
+  return (env: GxtAstEnv) => {
+    const b = env.syntax.builders;
+    // Scope stack of frames; each frame is an array of { name, ref? }. A `ref`
+    // (e.g. `['__gxtBp1', '$_bp0']`) marks a param of a bound block (reads are
+    // rewritten to it); a ref-less entry is a binder gxt binds itself.
+    type Binding = { name: string; ref?: [string, string] };
+    const scopes: Binding[][] = [];
+    let depth = 0;
+    const resolve = (name: string): Binding | null => {
+      for (let i = scopes.length - 1; i >= 0; i--) {
+        const hit = scopes[i]!.find((e) => e.name === name);
+        if (hit) return hit; // nearest binder wins
+      }
+      return null;
+    };
+    // The tags gxt compiles to `$_c('Name', …)`: the PascalCase names of the
+    // template's top-level curly component blocks (see the doc comment).
+    const compatComponents = new Set<string>();
+    // A tag naming a component in scope: a scope value, a block param, or a
+    // component gxt binds for the template's curly blocks.
+    const isLexicalTag = (tag: string): boolean => {
+      const dot = tag.indexOf('.');
+      const head = dot === -1 ? tag : tag.slice(0, dot);
+      if (scopeValues && Object.prototype.hasOwnProperty.call(scopeValues, head)) return true;
+      return resolve(head) !== null || compatComponents.has(tag);
+    };
+    // Rewrite a yielded contextual-component tag `<param.Foo …>` → `<__gxtBp1.$_bp0.Foo …>`,
+    // and a tag that is the param itself, `<param …>` → `<__gxtBp1.$_bp0 …>`: as in
+    // Glimmer, a tag naming a block param in scope invokes the param's value as
+    // a component, whatever its case. Resolved against the ENCLOSING scope
+    // (called before this element pushes its own params).
+    const rewriteTag = (node: any): void => {
+      const tag: string = node.tag;
+      if (!tag) return;
+      const dot = tag.indexOf('.');
+      const head = dot === -1 ? tag : tag.slice(0, dot);
+      const hit = resolve(head);
+      if (!hit || hit.ref === undefined) return;
+      const ref = hit.ref.join('.');
+      node.tag = dot === -1 ? ref : `${ref}.${tag.slice(dot + 1)}`;
+    };
+    // Bind `node`'s block params: its children become the block of a block
+    // scope with one param, `__gxtBp<depth>`, and its params' reads become reads
+    // of that param's `$_bp<i>`.
+    const bindBlock = (node: any, params: string[]): void => {
+      depth++;
+      const binder = `__gxtBp${depth}`;
+      scopes.push(params.map((name, i) => ({ name, ref: [binder, `$_bp${i}`] })));
+      node.attributes.push(b.attr('@__hasBlockParams__', b.text('default')));
+      node.children = [
+        b.block(
+          b.path('this.$_gxtBlockScope'),
+          [],
+          b.hash([b.pair(GXT_BLOCK_SCOPE_KEY, b.boolean(true))]),
+          b.blockItself(node.children, [binder])
+        ),
+      ];
+      node.__gxtBpBound = true;
+    };
+    return {
+      name: 'ember-gxt-block-params',
+      visitor: {
+        Template(node: any): void {
+          for (const statement of node.body || []) {
+            if (statement.type !== 'BlockStatement') continue;
+            const p = statement.path;
+            if (!p || p.type !== 'PathExpression' || !p.head || p.head.type !== 'VarHead') {
+              continue;
+            }
+            const name: string = p.head.name;
+            if (p.tail.length !== 0 || !name.includes('-')) continue;
+            compatComponents.add(
+              name
+                .split('-')
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('')
+            );
+          }
+        },
+        ElementNode: {
+          enter(node: any, path: any): void {
+            rewriteTag(node);
+            const tag: string = node.tag || '';
+            const bp: string[] = node.blockParams || [];
+            if (tag.startsWith(':')) {
+              // A named block: bound when its component is invoked by name.
+              const parent = path && path.parent && path.parent.node;
+              if (bp.length && parent && parent.__gxtByName === true) {
+                bindBlock(node, bp);
+              } else {
+                scopes.push(bp.map((n) => ({ name: n })));
+              }
+              return;
+            }
+            if (_gxtBpTagMatches(tag) && !isLexicalTag(tag)) {
+              node.__gxtByName = true;
+              if (bp.length) {
+                bindBlock(node, bp);
+                return;
+              }
+            }
+            // Block params gxt binds (a dynamic or lexical component's), or none:
+            // its params shadow outer ones.
             scopes.push(bp.map((n) => ({ name: n })));
-          } else {
-            scopes.push([]);
+          },
+          exit(node: any): void {
+            scopes.pop();
+            if (node.__gxtBpBound) {
+              depth--;
+              node.blockParams = [];
+              delete node.__gxtBpBound;
+            }
+            delete node.__gxtByName;
+          },
+        },
+        // `{{#each items as |item|}}` / `{{#let … as |x|}}` etc. — the program /
+        // inverse `Block` carries the binder. These shadow but are NEVER rewritten
+        // (glimmer-next resolves them as native block params).
+        Block: {
+          enter(node: any): void {
+            const bp: string[] = node.blockParams || [];
+            scopes.push(bp.map((n) => ({ name: n })));
+          },
+          exit(): void {
+            scopes.pop();
+          },
+        },
+        PathExpression(node: any): void {
+          if (!node.head || node.head.type !== 'VarHead') return;
+          const hit = resolve(node.head.name);
+          if (!hit || hit.ref === undefined) return;
+          // Mutate in place (preserve `loc`): head → the block's param, prepend `$_bp{N}`.
+          node.head = (b.path(hit.ref[0]) as any).head;
+          node.tail = [hit.ref[1], ...(node.tail || [])];
+          if (typeof node.original === 'string') {
+            node.original = `${hit.ref[0]}.${(node.tail as string[]).join('.')}`;
           }
         },
-        exit(node: any): void {
-          scopes.pop();
-          if (node.__gxtBpRewrite) {
-            node.blockParams = [];
-            delete node.__gxtBpRewrite;
-          }
-        },
       },
-      // `{{#each items as |item|}}` / `{{#let … as |x|}}` etc. — the program /
-      // inverse `Block` carries the binder. These shadow but are NEVER rewritten
-      // (glimmer-next resolves them as native block params).
-      Block: {
-        enter(node: any): void {
-          const bp: string[] = node.blockParams || [];
-          scopes.push(bp.length ? bp.map((n) => ({ name: n })) : []);
-        },
-        exit(): void {
-          scopes.pop();
-        },
-      },
-      PathExpression(node: any): void {
-        if (!node.head || node.head.type !== 'VarHead') return;
-        const hit = resolve(node.head.name);
-        if (!hit || hit.bp === undefined) return;
-        // Mutate in place (preserve `loc`): head → `this`, prepend `$_bp{N}`.
-        node.head = (b.path('this') as any).head;
-        node.tail = [hit.bp, ...(node.tail || [])];
-        if (typeof node.original === 'string') {
-          node.original = `this.${(node.tail as string[]).join('.')}`;
-        }
-      },
-    },
+    };
   };
 }
 
@@ -1351,6 +1421,7 @@ const GXT_REQUIRED_BUILDERS = [
   'hash',
   'pair',
   'string',
+  'boolean',
   'blockItself',
   'elementModifier',
   'attr',
@@ -1734,7 +1805,7 @@ export function buildGxtDialectTransforms(
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
     gxtEachInTransform as unknown as GxtAstTransform,
     gxtDynamicVarsTransform(findings) as unknown as GxtAstTransform,
-    gxtBlockParamsTransform as unknown as GxtAstTransform,
+    gxtBlockParamsTransform(scopeValues) as unknown as GxtAstTransform,
     gxtBodyBareHelperTransform(scopeValues) as unknown as GxtAstTransform,
   ];
   if (includeOnExt) {
