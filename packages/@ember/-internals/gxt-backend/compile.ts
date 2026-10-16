@@ -9747,10 +9747,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const gxtRootCtx = _gxtRootContext;
       const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
       if (rootId !== undefined && rootId !== null) {
-        try {
+        // A frozen context keeps its id.
+        if (_gxtCanAssign(ctx, COMPONENT_ID_PROPERTY)) {
           ctx[COMPONENT_ID_PROPERTY as any] = rootId;
-        } catch {
-          /* frozen, ignore */
         }
       } else if (!ctx[COMPONENT_ID_PROPERTY as any]) {
         ctx[COMPONENT_ID_PROPERTY as any] = ++_contextId;
@@ -9929,15 +9928,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // and may expose the active element via the RENDERING_CONTEXT_PROPERTY
       // symbol.
       let callerParent: Element | null = null;
-      try {
-        if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
-          const rc = (ctx as any)[RENDERING_CONTEXT_PROPERTY as any];
-          if (rc && rc.element && rc.element.nodeType === 1) {
-            callerParent = rc.element as Element;
-          }
+      if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
+        const rc = (ctx as any)[RENDERING_CONTEXT_PROPERTY as any];
+        if (rc && rc.element && rc.element.nodeType === 1) {
+          callerParent = rc.element as Element;
         }
-      } catch {
-        /* ignore */
       }
 
       // The content of `{{{value}}}`: a DOM node renders as that node (Glimmer's
@@ -10114,18 +10109,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // (mirrors the content-position null-object fix at the text effect),
         // and (b) materialize a leaf cell when the bound path resolves off an
         // ABSENT property (initial-undefined `{{{this.name}}}` reads no cell, so
-        // the effect would subscribe to nothing).
-        try {
-          _gxtCaptureLeafOwnersForGetter(valueGetter);
-        } catch {
-          /* best-effort */
-        }
+        // the effect would subscribe to nothing). What the getter throws
+        // propagates (`getContent` above read it already).
+        _gxtCaptureLeafOwnersForGetter(valueGetter);
         // Register the subscribed effect.
-        try {
-          gxtEffect(_htmlRawUpdate);
-        } catch {
-          /* effect setup may fail during shutdown */
-        }
+        gxtEffect(_htmlRawUpdate);
         // Register a teardown destructor that removes the LIVE content nodes +
         // anchors. Without it, the HtmlRaw content this
         // effect inserted between the anchors is NOT in any RENDERED_NODES
@@ -10158,35 +10146,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
           contentNodes = [];
-          try {
-            if ((startAnchor as Node).parentNode)
-              (startAnchor as Node).parentNode!.removeChild(startAnchor);
-            if ((endAnchor as Node).parentNode)
-              (endAnchor as Node).parentNode!.removeChild(endAnchor);
-          } catch {
-            /* already detached — ignore */
-          }
+          if ((startAnchor as Node).parentNode)
+            (startAnchor as Node).parentNode!.removeChild(startAnchor);
+          if ((endAnchor as Node).parentNode)
+            (endAnchor as Node).parentNode!.removeChild(endAnchor);
         };
         // (2) Make the fragment a destroyable unit so a keyed each-row destroy
         // reclaims this html-raw's live nodes. `destroyElementSync` checks
         // RENDERED_NODES_PROPERTY first; rendering is unaffected because GXT's
         // `api.isNode(fragment)` short-circuits before the RENDERED_NODES path.
-        try {
-          if (RENDERED_NODES_PROPERTY) {
-            (fragment as any)[RENDERED_NODES_PROPERTY] = [startAnchor, endAnchor];
-          }
-          _gxtRegisterDestructor(fragment as unknown as object, _htmlRawTeardown);
-        } catch {
-          /* registration unavailable — owner-context teardown still applies */
+        if (RENDERED_NODES_PROPERTY) {
+          (fragment as any)[RENDERED_NODES_PROPERTY] = [startAnchor, endAnchor];
         }
+        _gxtRegisterDestructor(fragment as unknown as object, _htmlRawTeardown);
         // (1) Enclosing-context teardown (outer {{#if}} collapse, etc.).
-        try {
-          const owner = _gxtGetParentContext();
-          if (owner && owner !== (fragment as unknown as object)) {
-            _gxtRegisterDestructor(owner, _htmlRawTeardown);
-          }
-        } catch {
-          /* parent-context unavailable — effect still cleans on next run */
+        const owner = _gxtGetParentContext();
+        if (owner && owner !== (fragment as unknown as object)) {
+          _gxtRegisterDestructor(owner, _htmlRawTeardown);
         }
       }
 
@@ -10346,11 +10322,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     // lifecycle test).
                     const ifScopeTag = _gxtCurrentHelperScope;
                     if (ifScopeTag && typeof ifScopeTag.add === 'function') {
-                      try {
-                        ifScopeTag.add(helperInstance);
-                      } catch {
-                        /* ignore */
-                      }
+                      ifScopeTag.add(helperInstance);
                     }
                   } catch (e) {
                     if (_isAssertionLike(e)) throw e;
@@ -10394,8 +10366,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     : 0;
                 try {
                   argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal });
-                } catch {
-                  /* skip dedup */
+                } catch (error) {
+                  // A cyclic or BigInt argument cannot be serialized (a
+                  // TypeError): the helper then computes on every evaluation.
+                  // Any other error (a `toJSON` of an argument) is thrown.
+                  if (!(error instanceof TypeError)) throw error;
                 }
                 if (
                   argsSerialized !== null &&
@@ -10728,13 +10703,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 !(child instanceof Node) &&
                 _gxtGetNamedBlockName(child) !== null
               ) {
-                try {
-                  const evaluated = child();
-                  if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
-                    child = evaluated;
-                  }
-                } catch {
-                  /* not a named block factory — keep as-is */
+                // A marked factory: what its block throws propagates.
+                const evaluated = child();
+                if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
+                  child = evaluated;
                 }
               }
               // Check if it's a named block marker
@@ -11044,33 +11016,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   // Clear the pool-reuse flag so subsequent invocations don't
                   // re-fire the hooks in the same cycle.
                   _inst.__gxtPoolReuseWithChangesCycleId = 0;
-                  try {
-                    _inst.trigger('didUpdateAttrs');
-                  } catch {
-                    /* ignore */
-                  }
-                  try {
-                    _inst.trigger('didReceiveAttrs');
-                  } catch {
-                    /* ignore */
-                  }
-                  try {
-                    _inst.trigger('willUpdate');
-                  } catch {
-                    /* ignore */
-                  }
-                  try {
-                    _inst.trigger('willRender');
-                  } catch {
-                    /* ignore */
-                  }
+                  // What the hooks throw propagates, as from the render.
+                  _inst.trigger('didUpdateAttrs');
+                  _inst.trigger('didReceiveAttrs');
+                  _inst.trigger('willUpdate');
+                  _inst.trigger('willRender');
                   // willRender may call `set()` which dirties cells. Flush so
                   // freshly-dirtied cells propagate to the DOM within this pass.
-                  try {
-                    gxtSyncDom();
-                  } catch {
-                    /* ignore */
-                  }
+                  gxtSyncDom();
                 }
               }
             }
@@ -11263,11 +11216,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
             // GXT reactive cell w/ fn getter
             if (typeof (item as any).fn === 'function' && 'isConst' in (item as any)) {
-              try {
-                appendCustomChild((item as any).fn());
-              } catch {
-                /* ignore */
-              }
+              appendCustomChild((item as any).fn());
               return;
             }
             // GXT IfCondition / list component: node storage lives under a
@@ -11295,11 +11244,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             }
             if (foundFromSym) return;
-            // Fallback: stringify
-            try {
+            // Fallback: stringify (an object without `toString` renders as
+            // nothing, as Glimmer's `normalizeStringValue`).
+            if (typeof (item as any).toString === 'function') {
               ceEl.appendChild(document.createTextNode(String(item)));
-            } catch {
-              /* ignore */
             }
           };
           for (const child of children) _appendChildValue(ceEl, child, appendCustomObject, ctx);
@@ -11600,19 +11548,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               applyNsAttr(key, val);
               // Set up reactive updates for dynamic props
               if (typeof value === 'function') {
-                try {
-                  gxtEffect(() => {
-                    const v = boundNsValue(key, value());
-                    if (v == null || v === false) {
-                      const removeKey = key === '' || key === 'className' ? 'class' : key;
-                      el.removeAttribute(removeKey);
-                    } else {
-                      applyNsAttr(key, v);
-                    }
-                  });
-                } catch {
-                  /* ignore effect setup errors */
-                }
+                gxtEffect(() => {
+                  const v = boundNsValue(key, value());
+                  if (v == null || v === false) {
+                    const removeKey = key === '' || key === 'className' ? 'class' : key;
+                    el.removeAttribute(removeKey);
+                  } else {
+                    applyNsAttr(key, v);
+                  }
+                });
               }
             }
           }
@@ -11626,18 +11570,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               applyNsAttr(key, val);
               // Reactive attrs
               if (typeof value === 'function') {
-                try {
-                  gxtEffect(() => {
-                    const v = boundNsValue(key, value());
-                    if (v == null || v === false) {
-                      el.removeAttribute(key);
-                    } else {
-                      applyNsAttr(key, v);
-                    }
-                  });
-                } catch {
-                  /* ignore */
-                }
+                gxtEffect(() => {
+                  const v = boundNsValue(key, value());
+                  if (v == null || v === false) {
+                    el.removeAttribute(key);
+                  } else {
+                    applyNsAttr(key, v);
+                  }
+                });
               }
             }
           }
@@ -11685,15 +11625,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
       const rcKey = RENDERING_CONTEXT_PROPERTY as any;
       const existing = (ctx as any)[rcKey];
-      if (existing == null) {
-        try {
-          const gxtRoot = _gxtRootContext;
-          const rootRc = gxtRoot && gxtRoot[rcKey];
-          if (rootRc && rootRc.element !== null) {
-            (ctx as any)[rcKey] = rootRc;
-          }
-        } catch {
-          /* ignore — let GXT raise the real error below */
+      // (A frozen context gets none: GXT raises the real error below.)
+      if (existing == null && _gxtCanAssign(ctx, rcKey)) {
+        const gxtRoot = _gxtRootContext;
+        const rootRc = gxtRoot && gxtRoot[rcKey];
+        if (rootRc && rootRc.element !== null) {
+          (ctx as any)[rcKey] = rootRc;
         }
       }
     }
@@ -11844,12 +11781,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         for (const child of Array.from(result.childNodes)) {
           if (child.nodeType === 8 /* COMMENT */ && (child as any).__gxtHtmlRawStart) {
             const reparse = (child as any).__gxtHtmlRawReparse;
+            // (A reparse moves parsed nodes between the anchors.)
             if (typeof reparse === 'function') {
-              try {
-                reparse(result);
-              } catch {
-                /* ignore reparse errors */
-              }
+              reparse(result);
             }
           }
         }
@@ -11920,28 +11854,28 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
           try {
             result.setAttribute(key, serialized);
-          } catch {
-            // Ignore attribute-application errors (e.g. invalid name);
-            // this is a best-effort fallback, not a strict render.
+          } catch (error) {
+            // This pass applies whatever names reach the props position: a
+            // name that is no valid attribute name (an InvalidCharacterError)
+            // is skipped. Any other error is thrown.
+            if ((error as any)?.name !== 'InvalidCharacterError') throw error;
+            continue;
           }
           // Set up a reactive effect for dynamic values so the attribute
           // updates on cell changes. Only when the source value is a
-          // function — static strings don't need re-tracking.
+          // function — static strings don't need re-tracking. What the
+          // binding throws propagates.
           if (typeof value === 'function') {
-            try {
-              gxtEffect(() => {
-                const v = sanitizedAttrValue(result, key, value());
-                if (v == null || v === false) {
-                  result.removeAttribute(key);
-                } else {
-                  // Dynamic path: keep String(v) so `selected={{true}}`
-                  // serializes as `selected="true"` (matches classic).
-                  result.setAttribute(key, String(v));
-                }
-              });
-            } catch {
-              /* effect setup may fail during shutdown */
-            }
+            gxtEffect(() => {
+              const v = sanitizedAttrValue(result, key, value());
+              if (v == null || v === false) {
+                result.removeAttribute(key);
+              } else {
+                // Dynamic path: keep String(v) so `selected={{true}}`
+                // serializes as `selected="true"` (matches classic).
+                result.setAttribute(key, String(v));
+              }
+            });
           }
         }
       }
