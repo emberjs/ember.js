@@ -14,7 +14,7 @@
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import { dirtyTagFor } from '@glimmer/validator';
+import { dirtyTagFor, tagFor } from '@glimmer/validator';
 import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
 
@@ -98,6 +98,41 @@ moduleFor(
 
       runTask(() => write(this.context, 'name', 'b'));
       this.assertHTML('<p title="b">b</p>');
+    }
+
+    ['@test a property of the template context whose tag was created before the first render renders the value it is dirtied with']() {
+      this.render('<p title={{this.name}}>{{this.name}}</p>', {
+        name: 'a',
+        init(this: Record<string, unknown> & { _super(...args: unknown[]): void }) {
+          this._super(...arguments);
+          tagFor(this, 'name');
+        },
+      });
+      this.assertHTML('<p title="a">a</p>');
+
+      runTask(() => write(this.context, 'name', 'b'));
+      this.assertHTML('<p title="b">b</p>');
+    }
+
+    ['@test a component field whose tag was created before the first render renders the value it is dirtied with']() {
+      let probe!: Probe;
+      class Probe extends Component {
+        src = 'a.png';
+        constructor(owner: object, args: object) {
+          super(owner as never, args as never);
+          tagFor(this, 'src');
+          probe = this;
+        }
+      }
+      this.owner.register(
+        'component:tag-probe',
+        setComponentTemplate(this.compile('<img src={{this.src}}>{{this.src}}'), Probe)
+      );
+      this.render('<TagProbe />');
+      this.assertHTML('<img src="a.png">a.png');
+
+      runTask(() => write(probe as unknown as Record<string, unknown>, 'src', 'b.png'));
+      this.assertHTML('<img src="b.png">b.png');
     }
 
     ['@test a component field dirtied before the first render renders the value it is dirtied with after it']() {

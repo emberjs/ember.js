@@ -13,6 +13,7 @@ import {
   cell as _gxtNativeCell,
   dirtyCell as _gxtDirtyCell,
   peekTagFor as _gxtPeekTagFor,
+  tagFor as _gxtHostTagFor,
   syncDom as _gxtSyncDom,
   // The tracking frame gxt records the cells a computation reads in
   // (`createCache` below).
@@ -51,7 +52,6 @@ export const { tagMetaFor } = validator;
 
 // The gxt validator primitives the shim builds on.
 const {
-  tagFor: gxtTagFor,
   isTracking: gxtIsTracking,
   // trackedData - a custom implementation is provided below to avoid infinite loops
   untrack: gxtUntrack,
@@ -203,7 +203,7 @@ const _manualTrackFrameStack: Set<any>[] = [];
 
 // Wrap tagFor to handle Symbol keys properly
 // GXT's tagFor might try to convert the key to a string for debugging
-export function tagFor(obj: object, key?: string | symbol, meta?: any) {
+export function tagFor(obj: object, key?: string | symbol, _meta?: any) {
   try {
     // Convert symbol keys to their description or a string representation
     const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
@@ -217,14 +217,16 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
         enumerable: false,
       });
     }
-    // A property's tag, once it exists, is returned as is. A build-time
-    // template's read of the property creates it without a value
-    // (`$__tag(obj, key)`, Glimmer's getProp), and glimmer-compat's `tagFor`
-    // would fill that value by reading the property: a getter that asks for
-    // its own tag (a computed property) would re-enter it without end.
-    const existing = _gxtPeekTagFor(obj, safeKey as string);
-    if (existing !== undefined) return existing;
-    return gxtTagFor(obj, safeKey, meta);
+    // A property's tag is gxt's cell of the property, and creating it does not
+    // read the property, as Glimmer's `tagFor` does not: a new tag holds no
+    // value (`UNSET`) until a reader of the cell (`cellFor`) seeds it. A
+    // build-time template's read of the property (`$__tag(obj, key)`) creates
+    // the same tag. glimmer-compat's `tagFor` creates a lazy cell that reads
+    // the property when the cell is first read: a getter that asks for its own
+    // tag (a computed property) re-entered itself without end, and so did the
+    // cell accessor a template installs over a data property (`cellFor`): its
+    // first read read the property through itself.
+    return _gxtHostTagFor(obj, safeKey as string);
   } catch (err: any) {
     if (
       err?.message?.includes('Symbol') ||
