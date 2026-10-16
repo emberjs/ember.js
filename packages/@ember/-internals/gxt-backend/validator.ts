@@ -977,6 +977,10 @@ export function dirtyTagFor(obj: any, key: any) {
   const propertyTag = _gxtPeekTagFor(obj, safeKey);
   if (propertyTag !== undefined) {
     _gxtDirtyCell(propertyTag);
+    // A modifier's install or update (Glimmer's commit) dirtying it while the
+    // sync re-executes the changed bindings: the sync renders it in another
+    // pass (compile.ts `_gxtRevalidate`).
+    getGxtRenderer()?.compilePipeline.noteDirtiedCell?.(propertyTag);
   }
 
   // Mark GXT sync as pending so the next `_gxtSyncDomNow` processes this

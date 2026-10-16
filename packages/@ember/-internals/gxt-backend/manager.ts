@@ -7754,6 +7754,14 @@ export function getOwnerWithFallback(): any {
 // compile.ts imports getOwnerWithFallback directly to use the shared owner
 // cache during reactive re-evaluations when the ambient owner is null.
 
+// Run a modifier manager's install or update hook. They are Glimmer's commit:
+// a cell they write while the sync re-executes the changed bindings is
+// rendered by another pass of that sync (compile.ts `_gxtRevalidate`).
+function _modifierCommit<T>(fn: () => T): T {
+  const withCommit = getGxtRenderer()?.compilePipeline.withModifierCommit;
+  return withCommit ? withCommit(fn) : fn();
+}
+
 // The cache slot of one modifier invocation on an element (see
 // `$_MANAGERS.modifier._cache`). Every invocation of a modifier owns a slot:
 // the first one of `name` on the element is `name`, the next ones are
@@ -8963,7 +8971,7 @@ const $_MANAGERS = {
               }
             }
             if (cached.manager.update) {
-              cached.manager.update(cached.instance);
+              _modifierCommit(() => cached.manager.update(cached.instance));
             }
           } else {
             // Custom modifier manager update path.
@@ -9044,7 +9052,7 @@ const $_MANAGERS = {
               self._updatedInstances.add(cached.instance);
               // Use lazy args for the actual update call so GXT tracks per-consumed-arg
               const lazyArgs = buildLazyArgs(argSource);
-              cached.manager.updateModifier(cached.instance, lazyArgs);
+              _modifierCommit(() => cached.manager.updateModifier(cached.instance, lazyArgs));
             }
             // Snapshot for next comparison
             cached._lastPositional = [...freshArgs.positional];
@@ -9192,8 +9200,8 @@ const $_MANAGERS = {
         const state = manager.create(owner, element, ModifierClass, capturedArgs);
         // Glimmer installs a modifier at commit, after the render's tracking
         // transaction (see `outsideRenderPassReads`).
-        if (DEBUG) outsideRenderPassReads(() => manager.install(state));
-        else manager.install(state);
+        if (DEBUG) _modifierCommit(() => outsideRenderPassReads(() => manager.install(state)));
+        else _modifierCommit(() => manager.install(state));
 
         // Cache the state for subsequent update calls
         let cache = self._cache.get(element);
@@ -9378,11 +9386,13 @@ const $_MANAGERS = {
             // Glimmer installs a modifier at commit, after the render's
             // tracking transaction (see `outsideRenderPassReads`).
             if (DEBUG) {
-              outsideRenderPassReads(() =>
-                manager.installModifier(instance, element, trackedInstallArgs)
+              _modifierCommit(() =>
+                outsideRenderPassReads(() =>
+                  manager.installModifier(instance, element, trackedInstallArgs)
+                )
               );
             } else {
-              manager.installModifier(instance, element, trackedInstallArgs);
+              _modifierCommit(() => manager.installModifier(instance, element, trackedInstallArgs));
             }
           } finally {
             if (instance) installWatchers.delete(instance);
@@ -9397,8 +9407,13 @@ const $_MANAGERS = {
           if (_selfSetDuringInstall && instance && typeof manager.updateModifier === 'function') {
             try {
               const lazyArgs = buildLazyArgs(installArgSource);
-              if (DEBUG) outsideRenderPassReads(() => manager.updateModifier(instance, lazyArgs));
-              else manager.updateModifier(instance, lazyArgs);
+              if (DEBUG) {
+                _modifierCommit(() =>
+                  outsideRenderPassReads(() => manager.updateModifier(instance, lazyArgs))
+                );
+              } else {
+                _modifierCommit(() => manager.updateModifier(instance, lazyArgs));
+              }
             } catch (err) {
               // Surface the error through the render-error channel so it is
               // visible to tests and users, but do NOT rethrow — the install

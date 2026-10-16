@@ -356,6 +356,20 @@ export interface GxtCompilePipelineCapabilities {
   withSyncing?<T>(value: boolean, fn: () => T): T;
 
   /**
+   * Run `fn` as a modifier manager's install or update, which is Glimmer's
+   * commit: a cell it writes while the sync re-executes the changed bindings
+   * is rendered by another pass of that sync. manager.ts wraps the install and
+   * update hooks in it.
+   */
+  withModifierCommit?<T>(fn: () => T): T;
+
+  /**
+   * validator.ts's `dirtyTagFor` dirtied the gxt cell `cell`: inside
+   * `withModifierCommit`, the sync renders it like a written cell.
+   */
+  noteDirtiedCell?(cell: object): void;
+
+  /**
    * Run `fn` with the currently-rendering flag set, restoring the previous
    * value afterwards. manager.ts wraps event handlers in it; `@tracked`
    * setters do not trigger their own re-render while it is set.

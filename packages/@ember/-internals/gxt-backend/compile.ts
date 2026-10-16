@@ -31,6 +31,7 @@ import {
   getElementView as _emberGetElementView,
 } from '@ember/-internals/views/lib/system/utils';
 import { DEBUG } from '@glimmer/env';
+import { ENV } from '@ember/-internals/environment';
 
 // Utility functions (regex-free)
 
@@ -495,6 +496,12 @@ import {
   // revision cell; ember forwards the two signals it has.
   entangleObjectKeys as _gxtEntangleObjectKeys,
   notifyObjectKeyAdded as _gxtNotifyObjectKeyAdded,
+  // Recording the cells a modifier commit writes during a pass, and queueing
+  // them again after it (`_gxtRevalidate`).
+  setCellUpdateDeferralHook as _gxtSetCellUpdateDeferralHook,
+  applyDeferredCellUpdate as _gxtApplyDeferredCellUpdate,
+  dirtyCell as _gxtDirtyCell,
+  type Cell as GxtCell,
 } from '@lifeart/gxt';
 // Module-local seam for Ember truthiness: the canonical `emberToBool` is
 // defined inside the wrapper-installer scope below; this ref lets other
@@ -3135,6 +3142,9 @@ const _gxtFlags = {
   pendingSyncFromPropertyChange: false,
   // `_gxtTriggerReRender` is a no-op (`withTriggerSuppressed`).
   triggerSuppressed: false,
+  // Inside a modifier manager's install or update run by a pass of
+  // `_gxtRevalidate` (`withModifierCommit`): the cells it writes are recorded.
+  modifierCommit: false,
 };
 type GxtFlag = keyof typeof _gxtFlags;
 
@@ -3980,15 +3990,16 @@ function _gxtSetRootOutletRerenderWrap(wrap: (fn: any) => any): void {
   }
 }
 
-// Holds an error captured during `_gxtSyncDomNow`'s force-rerender phase (the
-// rerender error and the `destroyUnclaimedPoolEntries` destroy error) so that it
+// Holds an error captured during `_gxtSyncDomNow` (a revalidation's rerender
+// limit, `_gxtRevalidate`, then the force-rerender phase's rerender error and
+// `destroyUnclaimedPoolEntries` destroy error) so that it
 // is re-thrown AFTER the `finally`-block sync-state cleanup
 // (`_gxtSetSyncing(false)` + `_gxtSetSyncIsPropertyDriven(false)`). Throwing
 // earlier would skip that reset and leave `_gxtFlags.syncing` true, turning
 // every later `_gxtSyncDomNow` into a no-op through its re-entrancy guard.
 //
-// The two writers keep the first error (`existing || newErr`), so the rerender
-// throw isn't shadowed by a later destroy throw; after the `finally` the slot
+// The writers keep the first error (`existing || newErr`), so an earlier
+// phase's error isn't shadowed by a later one; after the `finally` the slot
 // is cleared and the error re-thrown to `runTask`'s caller (typically
 // `assert.throws` in tests). `unknown`, because any value can be thrown.
 let _gxtDeferredSyncError: unknown = null;
@@ -4111,6 +4122,62 @@ function _gxtSetPendingSyncFromPropertyChange(on: boolean): void {
 // the body and is comfortably above any reasonable wrapper-aliased-getter chain.
 let _innerSiblingRescanDepth = 0;
 const _INNER_SIBLING_RESCAN_MAX_DEPTH = 3;
+
+// The cells the modifier commits (`_gxtWithModifierCommit`) of the current
+// pass of `_gxtRevalidate` wrote, `null` outside a pass. A cell maps to `true`
+// when it was written (`Cell.update`), to `false` when it was only dirtied
+// (`dirtyTagFor`, `_gxtNoteDirtiedCell`).
+let _gxtPassCommitWrites: Map<GxtCell, boolean> | null = null;
+
+// The render-pass depth (`_renderPassDepth`) the current commit runs at. A
+// render the commit starts (a modifier's install that calls `renderComponent`)
+// runs deeper: what that render writes is part of rendering, not of the commit,
+// and is not recorded.
+let _gxtCommitRenderDepth = 0;
+
+// A cell the current commit wrote or dirtied.
+function _gxtRecordCommitCell(cell: GxtCell, written: boolean): void {
+  if (_gxtPassCommitWrites === null || _renderPassDepth !== _gxtCommitRenderDepth) return;
+  if (written || !_gxtPassCommitWrites.has(cell)) _gxtPassCommitWrites.set(cell, written);
+}
+
+// gxt's cell-update deferral hook while a commit runs: record the cell, and
+// decline the deferral, so the write applies as usual.
+function _gxtRecordCommitWrite(cell: GxtCell): boolean {
+  _gxtRecordCommitCell(cell, true);
+  return false;
+}
+
+// Run `fn` as a modifier manager's install or update, which is Glimmer's
+// commit (manager.ts `_modifierCommit`). Inside a pass of `_gxtRevalidate`,
+// the cells it writes are recorded for the next pass. Exposed as the
+// `compilePipeline.withModifierCommit` bridge method.
+function _gxtWithModifierCommit<T>(fn: () => T): T {
+  if (_gxtPassCommitWrites === null) return fn();
+  const outermost = !_gxtFlags.modifierCommit;
+  const prevDepth = _gxtCommitRenderDepth;
+  _gxtCommitRenderDepth = _renderPassDepth;
+  if (outermost) {
+    _gxtFlags.modifierCommit = true;
+    _gxtSetCellUpdateDeferralHook(_gxtRecordCommitWrite);
+  }
+  try {
+    return fn();
+  } finally {
+    _gxtCommitRenderDepth = prevDepth;
+    if (outermost) {
+      _gxtSetCellUpdateDeferralHook(null);
+      _gxtFlags.modifierCommit = false;
+    }
+  }
+}
+
+// validator.ts's `dirtyTagFor` dirtied `cell` (gxt `dirtyCell`, which does not
+// go through `Cell.update`): inside a commit, record it like a write. Exposed
+// as the `compilePipeline.noteDirtiedCell` bridge method.
+function _gxtNoteDirtiedCell(cell: GxtCell): void {
+  if (_gxtFlags.modifierCommit) _gxtRecordCommitCell(cell, false);
+}
 
 const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unknown) {
   // The optional `value` (passed through `notifyPropertyChange(obj, keyName,
@@ -7248,6 +7315,59 @@ function _gxtCaptureUpdateError(error: unknown): void {
   getGxtRenderer()!.compilePipeline.captureRenderError(error);
 }
 
+// One gxt pass: re-execute the bindings whose cells changed. Returns the cells
+// the pass's modifier commits wrote.
+function _gxtRevalidationPass(): Map<GxtCell, boolean> {
+  const prev = _gxtPassCommitWrites;
+  const writes = new Map<GxtCell, boolean>();
+  _gxtPassCommitWrites = writes;
+  try {
+    gxtSyncDom();
+  } finally {
+    _gxtPassCommitWrites = prev;
+  }
+  return writes;
+}
+
+// Re-execute the bindings whose cells changed, and again while the modifier
+// commits of a pass wrote cells.
+//
+// Glimmer renders, then commits: it installs and updates the modifiers. A
+// tracked write in the commit invalidates the renderer, which renders again
+// before the run loop ends, at most `ENV._RERENDER_LOOP_LIMIT` times in a row,
+// and then throws "infinite rendering invalidation detected" (base-renderer.ts
+// `loopEnd`). A write made while it renders does not make it render again.
+//
+// gxt runs a modifier's install or update inside the pass that creates or
+// re-executes the modifier's binding, and gxt's `syncDom()` clears its queue
+// of changed cells at the end of the pass, so such a write was dropped: an
+// `{{#if}}` reading the state a modifier update set kept its branch. The cells
+// a modifier commit wrote during the pass are queued again after it, with
+// their current values, and another pass renders them. Other writes made
+// during a pass are dropped as before.
+//
+// Past the limit the passes stop and the sync throws Glimmer's error at its end
+// (`_gxtDeferredSyncError`) to the code that asked for it. Returns false then.
+function _gxtRevalidate(): boolean {
+  let writes = _gxtRevalidationPass();
+  let renders = 0;
+  while (writes.size > 0) {
+    if (++renders > ENV._RERENDER_LOOP_LIMIT) {
+      _gxtDeferredSyncError =
+        _gxtDeferredSyncError || new Error('infinite rendering invalidation detected');
+      return false;
+    }
+    for (const [cell, written] of writes) {
+      // A written cell is queued with the value it holds (no new revision); a
+      // dirtied one is dirtied again, which queues it when something reads it.
+      if (written) _gxtApplyDeferredCellUpdate(cell, cell._value);
+      else _gxtDirtyCell(cell);
+    }
+    writes = _gxtRevalidationPass();
+  }
+  return true;
+}
+
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 //
@@ -7340,6 +7460,9 @@ function _gxtSyncDomNow(): void {
           _deferredCascadeIndex = new WeakMap();
         }
       }
+      // False when a revalidation stopped at the rerender limit: the sync then
+      // revalidates no more.
+      let settled = true;
       // Only run gxtSyncDom when a real property change triggered the sync.
       // Cell creation during initial render also sets the pending-sync flag, but
       // those cells may have stale values (e.g., each-formula re-evaluates with []
@@ -7348,7 +7471,7 @@ function _gxtSyncDomNow(): void {
       // first render.
       if (_gxtGetHadPendingSync()) {
         try {
-          gxtSyncDom();
+          settled = _gxtRevalidate();
         } catch (syncError) {
           _gxtCaptureUpdateError(syncError);
         }
@@ -7376,9 +7499,9 @@ function _gxtSyncDomNow(): void {
           // clear, before this pass) or it would be wiped. Inert when no rebinds
           // are queued (no keyed-reuse ref-swap).
           _gxtDrainPendingEachRebinds();
-          if (_gxtGetHadPendingSync() || _gxtGetPendingSync()) {
+          if (settled && (_gxtGetHadPendingSync() || _gxtGetPendingSync())) {
             try {
-              gxtSyncDom();
+              _gxtRevalidate();
             } catch (syncError) {
               _gxtCaptureUpdateError(syncError);
             }
@@ -7730,13 +7853,13 @@ function _gxtSyncDomNow(): void {
       // initial-render sync starts in a clean state.
       _gxtSetSyncIsPropertyDriven(false);
     }
-    // Re-throw any deferred errors from the force-rerender or lifecycle phases
-    // so they propagate to assert.throws() in tests. The read happens AFTER the
-    // outer try/finally above has already reset `_gxtFlags.syncing` and
-    // `_gxtFlags.syncIsPropertyDriven`, so the throw escapes with a clean sync
-    // state — the next `_gxtSyncDomNow` call will not short-circuit on the
-    // re-entrancy guard. Clear before throwing so the slot starts the next sync
-    // cycle empty.
+    // Re-throw any deferred error (the rerender limit, the force-rerender or
+    // lifecycle phases) so it propagates to assert.throws() in tests. The read
+    // happens AFTER the outer try/finally above has already reset
+    // `_gxtFlags.syncing` and `_gxtFlags.syncIsPropertyDriven`, so the throw
+    // escapes with a clean sync state — the next `_gxtSyncDomNow` call will not
+    // short-circuit on the re-entrancy guard. Clear before throwing so the slot
+    // starts the next sync cycle empty.
     const deferredSyncErr = _gxtDeferredSyncError;
     if (deferredSyncErr) {
       _gxtDeferredSyncError = null;
@@ -14252,6 +14375,11 @@ installCompilePipelinePart({
   // with `value=false` to bypass the re-entrancy guard on the nested
   // `_gxtSyncDomNow` invocation.
   withSyncing: _gxtWithSyncing,
+  // Run a modifier manager's install or update as Glimmer's commit (manager.ts
+  // `_modifierCommit`): `_gxtRevalidate` renders the cells it writes, and the
+  // cells validator.ts's `dirtyTagFor` dirties in it.
+  withModifierCommit: _gxtWithModifierCommit,
+  noteDirtiedCell: _gxtNoteDirtiedCell,
   // Save-restore wrapper + read predicate for the "currently rendering" flag
   // (distinct from the render-pass depth counter). The writer is manager.ts's
   // `wrapHandler`; the reader is validator.ts's `_scheduleNativeCollectionFlush`.
