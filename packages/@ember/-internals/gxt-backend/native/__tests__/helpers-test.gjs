@@ -1,8 +1,8 @@
 // gxt NATIVE layer: helpers through the native helper manager
-// (native/helper-manager.ts, gxt G4) — plain functions (Ember's default helper
+// (native/helper-manager.ts) — plain functions (Ember's default helper
 // manager), class `Helper` (+ recompute / destroy / owner), `helper()`,
 // `setHelperManager` custom managers, `invokeHelper`, the `@ember/helper`
-// built-ins and the keyword helpers (Ember toBool / value semantics, G-kw).
+// built-ins and the keyword helpers (Ember toBool / value semantics).
 import { DEBUG } from '@glimmer/env';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';

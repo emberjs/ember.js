@@ -1,5 +1,5 @@
 /**
- * RFC §6 Option-2 identity test.
+ * Symbol identity of the GXT-backed `@glimmer/component` sibling.
  *
  * Proves the reactive fork is CLOSED on the GXT side: the `Tag`-related
  * symbols (`createTag`, `CURRENT_TAG`) and the cache primitives reachable
@@ -13,8 +13,8 @@
  * The last case demonstrates the fork this package exists to close: the
  * classic `@glimmer/validator` copy (left un-aliased here, standing in for the
  * second runtime an un-swapped npm `@glimmer/component` would import) is a
- * DIFFERENT object, which is exactly the symbol-identity duplication RFC §6
- * warns about.
+ * DIFFERENT object, which is exactly the symbol-identity duplication this
+ * package avoids.
  *
  * This vitest suite (like gxt-backend's __tests__/utils.test.ts) ran through
  * the removed packages/demo workspace's vitest config; no workspace installs
@@ -60,7 +60,7 @@ import {
   CURRENT_TAG as classicCURRENT_TAG,
 } from '@glimmer/validator';
 
-describe('@glimmer/component-gxt reactive identity (RFC §6 Option 2)', () => {
+describe('@glimmer/component-gxt reactive identity', () => {
   it('createTag is identity-equal through the package and through the shim', () => {
     expect(typeof pkgCreateTag).toBe('function');
     expect(pkgCreateTag).toBe(shimCreateTag);

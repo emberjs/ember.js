@@ -15,8 +15,8 @@ runtime vehicle for the consumable-package work (see
 | template compilation | build-time wire-format (`babel-plugin-ember-template-compilation`) | **both**: `.gjs`/`.gts` `<template>` compiled at BUILD time by the GXT compiler (`app/components/counter.gjs`), route templates compiled at RUNTIME through the GXT `@ember/template-compilation` shim (`app/templates/application.js`) |
 | babel | template + decorator transforms | only what the GXT compiler runs internally over `.gjs` (`decorator-transforms`, whose output `vite.config.mjs` makes import `decorator-transforms/runtime`, as an Embroider app's babel config does); plain app modules need none |
 
-The Embroider template pipeline and GXT's compiler are mutually exclusive
-(RFC §5.5), so this template demonstrates the supported non-Embroider path:
+The Embroider template pipeline and GXT's compiler are mutually exclusive,
+so this template demonstrates the supported non-Embroider path:
 bare `@ember/*` / `@glimmer/*` imports resolve straight into the prebuilt
 `ember-source` dist via the package `exports` map, and route templates are
 authored as `precompileTemplate('...')` modules compiled in the browser by

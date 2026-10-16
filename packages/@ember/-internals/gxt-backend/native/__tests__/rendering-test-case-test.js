@@ -1,9 +1,9 @@
-// gxt NATIVE layer: the classic test harness running natively (Inc 7) —
+// gxt NATIVE layer: the classic test harness running natively —
 // RenderingTestCase#render(templateString, context) through the native runtime
 // compiler (native/runtime-compile.ts, NATIVE_FLAGS) and the native renderer,
-// property-tag reads (G8: set() / notifyPropertyChange() on untracked
-// properties re-render), the template self (G6: the context is the self, never
-// a gxt render node), loose ApplicationTestCase route templates (`this` = the
+// property-tag reads (set() / notifyPropertyChange() on untracked properties
+// re-render), the template self (the context is the self, never a gxt render
+// node), loose ApplicationTestCase route templates (`this` = the
 // controller) and the runtime `template()` of @ember/template-compiler/runtime.
 import Controller from '@ember/controller';
 import { A as emberA } from '@ember/array';
@@ -15,7 +15,7 @@ import { tracked } from '@glimmer/tracking';
 import { COMPONENT_ID_PROPERTY, RENDERED_NODES_PROPERTY } from '@lifeart/gxt';
 import { ApplicationTestCase, RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
-// G6: gxt records a render node's tree id, rendered nodes and args on the
+// gxt records a render node's tree id, rendered nodes and args on the
 // NODE — never on the template's self.
 function assertNotARenderNode(assert, self) {
   const own = (key) => Object.prototype.hasOwnProperty.call(self, key);
@@ -39,7 +39,7 @@ moduleFor(
       this.assertText('Hi, Ember!');
     }
 
-    ['@test set() on a nested POJO path re-renders (property tags, G8)']() {
+    ['@test set() on a nested POJO path re-renders (property tags)']() {
       this.render('{{this.model.first}}-{{this.model.second}}', {
         model: { first: 'one', second: 'two' },
       });
@@ -76,7 +76,7 @@ moduleFor(
       this.assertText('<anything> <other>');
     }
 
-    ['@test the context is the template self, never a gxt render node (G6)'](assert) {
+    ['@test the context is the template self, never a gxt render node'](assert) {
       this.render('{{this.label}}{{#if this.show}}<b>{{this.label}}</b>{{/if}}', {
         label: 'x',
         show: true,

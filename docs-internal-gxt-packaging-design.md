@@ -1,7 +1,8 @@
 # Consumable `ember-source-gxt` — Packaging Design
 
-Design owner: packaging design expert (originally a read-only investigation pass)
-Repo: `/Users/lifeart/Repos/ember.js` · Branch `gxt-rebase-main`
+Section references to the RFC (§5.5, §6, …) are to the GXT dual-backend RFC
+draft, which is not part of this repository.
+
 Status: **MVP implemented.** This was the design for the M-item from RFC §5.5
 (blocker matrix row 1); the recommended mechanism (b) has since landed —
 `scripts/build-gxt-package.mjs` assembles the git-ignored `dist-gxt-package/`,

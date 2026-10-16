@@ -1,4 +1,4 @@
-// gxt NATIVE layer: curried components (gxt G9 curried values, resolved by the
+// gxt NATIVE layer: curried components (gxt curried values, resolved by the
 // native component manager) — `(component X a=1)` with later arguments,
 // nested currying, Glimmer component classes, reactive curried arguments,
 // contextual components yielded through `hash`, and arguments as dynamic

@@ -4,7 +4,7 @@
 // change; once / capture / passive; argument asserts; removed with the element.
 // Port of the classic `{{on}} Modifier` rendering tests to strict `.gjs`.
 //
-// P0a regression: under the compat bridge `{{on "click" this.increment}}` with a
+// A regression of the compat bridge: there `{{on "click" this.increment}}` with a
 // class-field arrow handler fired DURING render (+2 per click). Here the
 // handler must never run during render and run exactly once per click.
 import Component from '@glimmer/component';
@@ -36,7 +36,7 @@ module('gxt-native | {{on}}', function (hooks) {
     this.click = (selector = 'button') => run(() => this.element.querySelector(selector).click());
   });
 
-  test('P0a: a class-field arrow handler fires exactly once per click, never during render', function (assert) {
+  test('a class-field arrow handler fires exactly once per click, never during render', function (assert) {
     let counter;
     class Counter extends Component {
       @tracked count = 0;

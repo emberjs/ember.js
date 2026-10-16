@@ -1,8 +1,8 @@
 // gxt NATIVE layer: Glimmer template semantics the native build gets from gxt
-// (Inc 9) — dynamic content (G15: a `{{value}}` renders text / trusted HTML /
-// a DOM node / a component by what the value IS, switching on change), kept
-// whitespace, `{{#each}}` primitive rows keyed by value, `{{#each-in}}` (G5),
-// `{{#let}}` shadowing its own initializer, `{{#in-element}}` at mount.
+// — dynamic content (a `{{value}}` renders text / trusted HTML / a DOM node /
+// a component by what the value IS, switching on change), kept whitespace,
+// `{{#each}}` primitive rows keyed by value, `{{#each-in}}`, `{{#let}}`
+// shadowing its own initializer, `{{#in-element}}` at mount.
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { htmlSafe } from '@ember/template';

@@ -1,5 +1,5 @@
 /**
- * `@glimmer/component-gxt` — RFC §6 Option-2 fallback (sibling package).
+ * `@glimmer/component-gxt` — a GXT-backed sibling of `@glimmer/component`.
  *
  * ## Why this package exists
  *
@@ -9,13 +9,13 @@
  * copies of the reactive runtime co-exist and the symbol identity of
  * `Tag` / `createTag` / `CURRENT_TAG` / `getCustomTagFor` forks across the
  * two copies (the npm package bypasses the GXT shims that the gxt build
- * alias-injects). See RFC `0000-gxt-dual-backend.md` §6.
+ * alias-injects).
  *
- * RFC §6 lists two remedies. Option 1 (extract a Glimmer-team-owned
- * protocol package) is the committed target. Option 2 — implemented here —
- * is the documented fallback: ship a sibling that "re-exports the same
- * named symbols but implements them against GXT's reactive core" so its
- * symbols are identity-equal with the GXT build's shims.
+ * There are two remedies. The target is to extract a Glimmer-team-owned
+ * protocol package. The fallback — implemented here — is to ship a sibling
+ * that "re-exports the same named symbols but implements them against GXT's
+ * reactive core" so its symbols are identity-equal with the GXT build's
+ * shims.
  *
  * ## Public surface
  *
@@ -33,8 +33,8 @@
  * package whose `@glimmer/manager` / `@glimmer/reference` / `@glimmer/tracking`
  * imports are alias-injected to `@ember/-internals/gxt-backend/*`. So
  * re-exporting its default here yields a `Component` already wired to the
- * GXT reactive core. When the real `ember-source-gxt` packaging exists
- * (RFC §5.5), this re-export targets the GXT-wired component bundled there
+ * GXT reactive core. When the real `ember-source-gxt` packaging exists,
+ * this re-export targets the GXT-wired component bundled there
  * instead of the npm copy.
  */
 export { default } from '@glimmer/component';

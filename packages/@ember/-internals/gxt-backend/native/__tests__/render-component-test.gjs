@@ -1,9 +1,9 @@
 // gxt NATIVE layer: the public `renderComponent` from `@ember/renderer`
 // (RFC 1099). Ports of the `Strict Mode - renderComponent` cases in
-// glimmer/tests/integration/components/render-component-test.ts that need no
-// runtime template compilation (`precompileTemplate` is G10/Inc 8) and no
-// helpers/modifiers (Inc 5): `<template>` values are compiled by the gxt vite
-// plugin instead.
+// glimmer/tests/integration/components/render-component-test.ts that need
+// neither runtime template compilation nor helpers or modifiers (other modules
+// cover those): `<template>` values are compiled by the gxt vite plugin
+// instead.
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { trackedObject } from '@ember/reactive/collections';

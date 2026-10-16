@@ -15,7 +15,7 @@
  * (`__tests__/identity.test.ts`) asserts: the reactive fork is closed on the
  * GXT side.
  *
- * Note on the named-symbol surface: of the four symbols the RFC §6 calls out
+ * Note on the named-symbol surface: of the four symbols whose identity forks
  * (`Tag`, `createTag`, `CURRENT_TAG`, `getCustomTagFor`), `createTag` and
  * `CURRENT_TAG` are exported by the lightweight `@glimmer/validator` shim and
  * re-exported here. `Tag` is a TypeScript interface, not a runtime value.
@@ -32,7 +32,7 @@
  * specifiers only resolve under the GXT alias map (see `rollup.config.mjs`).
  */
 
-// Tag-related reactive primitives (RFC §6 named symbols reachable via the
+// Tag-related reactive primitives (the forking symbols reachable via the
 // lightweight shim).
 export { createTag, CURRENT_TAG } from '@ember/-internals/gxt-backend/validator';
 

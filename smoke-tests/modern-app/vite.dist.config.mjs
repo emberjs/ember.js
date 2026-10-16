@@ -10,7 +10,7 @@
 //               `ember-template-compiler` entry (wire format).
 //   gxt-native  the `EMBER_RENDER_BACKEND=gxt-native` rollup dist; templates
 //               compiled by the gxt vite plugin under the SAME NATIVE_FLAGS the
-//               dist itself was built with (.gjs + G10 build-time
+//               dist itself was built with (.gjs + build-time
 //               `precompileTemplate`); `@lifeart/gxt` resolved from node_modules
 //               (the app's own dependency, deduped).
 //

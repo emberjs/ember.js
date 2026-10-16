@@ -1,7 +1,7 @@
 // gxt NATIVE layer: the router's outlet tree (native/outlet.ts) — a real
 // Application booted through ApplicationTestCase (`visit`), STRICT route
 // templates (`.gjs` <template> / component classes receiving @model /
-// @controller), `{{outlet}}` compiled to `$_outlet(ctx)` (G3, EMBER_OUTLET).
+// @controller), `{{outlet}}` compiled to `$_outlet(ctx)` (EMBER_OUTLET).
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import Controller from '@ember/controller';
@@ -325,12 +325,12 @@ moduleFor(
       assert.strictEqual(destructors, 1, 'route components destroyed');
     }
 
-    async ['@test a build-time (G10) loose precompileTemplate route template renders with this = the controller'](
+    async ['@test a build-time loose precompileTemplate route template renders with this = the controller'](
       assert
     ) {
-      // `precompileTemplate(…)` is compiled by gxt at build time (G10); loose by
-      // default, so `this` is the controller (G6) and free names resolve by name
-      // (G11): `<Greeting>` is `component:greeting`.
+      // `precompileTemplate(…)` is compiled by gxt at build time; loose by
+      // default, so `this` is the controller and free names resolve by name:
+      // `<Greeting>` is `component:greeting`.
       this.add(
         'controller:index',
         class extends Controller {

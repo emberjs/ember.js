@@ -1,7 +1,7 @@
 // gxt NATIVE layer: the runtime `template()` (@ember/template-compiler/runtime →
 // native/runtime-compile.ts) — strict-mode templates compiled at runtime under
-// NATIVE_FLAGS, rendered by gxt exactly like AOT `<template>`s — and the Inc 4b
-// quirk it fixes: a runtime-compiled TEMPLATE-ONLY component is a real gxt
+// NATIVE_FLAGS, rendered by gxt exactly like AOT `<template>`s — and that a
+// runtime-compiled TEMPLATE-ONLY component is a real gxt
 // render-tree node, so render contexts (the Ember owner) reach its yielded
 // blocks (a manager component inside them finds its owner).
 import Component from '@glimmer/component';

@@ -1,5 +1,5 @@
 {
-  "$comment": "Allow-list of test modules loaded by native.html (EMBER_RENDER_BACKEND=gxt-native dev server, port 5181). Root-relative globs expanded by vite import.meta.glob (vite.config.mjs gxtNativeTestModules). Grown per increment (design \u00a76). Rendering tests start in Inc 4. 'legacy-tolerated' entries (computed/alias/observers/property events) are recorded for status only; failures there may be skipped with a reason in native-skip.json.",
+  "$comment": "Allow-list of test modules loaded by native.html (EMBER_RENDER_BACKEND=gxt-native dev server, port 5181). Root-relative globs expanded by vite import.meta.glob (vite.config.mjs gxtNativeTestModules). 'legacy-tolerated' entries (computed/alias/observers/property events) are recorded for status only; failures there may be skipped with a reason in native-skip.json.",
   "modules": [
     "packages/@ember/-internals/gxt-backend/native/__tests__/**/*.{js,ts,gjs,gts}",
     "packages/@glimmer/validator/test/**/*-test.ts",

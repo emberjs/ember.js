@@ -1,7 +1,7 @@
-// gxt NATIVE layer: loose-mode (resolver-mode) resolution (Inc 8; gxt G10 +
-// G11, native/resolver.ts). Loose templates — runtime-compiled
-// (RenderingTestCase#render) and build-time `precompileTemplate(…)` compiled by
-// gxt (G10) — resolve free names BY NAME through the owner, with Glimmer's
+// gxt NATIVE layer: loose-mode (resolver-mode) resolution (native/resolver.ts).
+// Loose templates — runtime-compiled (RenderingTestCase#render) and build-time
+// `precompileTemplate(…)` compiled by gxt — resolve free names BY NAME through
+// the owner, with Glimmer's
 // syntax rules: `<FooBar>` / `<Foo::Bar>` / `{{#foo-bar}}` / `{{component
 // "foo-bar"}}` are components, a content `{{foo-bar …}}` is a component or a
 // helper, sub-expressions are helpers, element modifiers are modifiers.
@@ -137,7 +137,7 @@ moduleFor(
       this.assertHTML('<div title="t"></div>');
     }
 
-    ['@test a by-name template-only component reached through a G10 precompileTemplate loose template']() {
+    ['@test a by-name template-only component reached through a build-time loose precompileTemplate template']() {
       this.owner.register(
         'component:inner-one',
         setComponentTemplate(precompileTemplate('inner'), templateOnly())

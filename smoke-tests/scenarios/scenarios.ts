@@ -89,8 +89,9 @@ export const strictAppScenarios = Scenarios.fromProject(() =>
 // Swap `ember-source` for the assembled consumable GXT package
 // (`dist-gxt-package/`, produced by scripts/build-gxt-package.mjs) in place, so
 // the v2 app consumes the GXT-backend build with zero app-code change. This is
-// the acceptance vehicle for the `ember-source-gxt` packaging MVP (RFC §5.5,
-// design doc §5). Requires `node scripts/build-gxt-package.mjs` to have run.
+// the acceptance vehicle for the `ember-source-gxt` packaging MVP
+// (docs-internal-gxt-packaging-design.md §5). Requires
+// `node scripts/build-gxt-package.mjs` to have run.
 function emberSourceGxt(project: Project) {
   project.linkDevDependency('ember-source', {
     target: resolve(__dirname, '../../dist-gxt-package'),
