@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-15T19:58:48.635Z",
+    "capturedAt": "2026-10-16T10:27:23.701Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "94e7de8766",
+    "emberCommit": "227a04d2a4",
     "totalTests": 7191,
     "totalModules": 683,
     "quarantinedTests": 0,
     "totalAssertions": 35847,
-    "totalAssertionsPassing": 35795
+    "totalAssertionsPassing": 35799
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2148,16 +2148,12 @@
     },
     "Helpers test: {{element}}": {
       "total": 14,
-      "passing": 12,
+      "passing": 13,
       "assertionsTotal": 18,
-      "assertionsPassing": 13,
+      "assertionsPassing": 17,
       "failingTests": [
         {
           "name": "it works with element modifiers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it renders when the tag name changes",
           "category": "gxt:triage"
         }
       ]
@@ -5411,6 +5407,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 34
+    "gxt:triage": 33
   }
 }

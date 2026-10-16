@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T09:09:09.847Z",
+    "capturedAt": "2026-10-16T10:27:30.473Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "841bbaba0a",
+    "emberCommit": "227a04d2a4",
     "totalTests": 10161,
     "totalModules": 998,
     "quarantinedTests": 0,
-    "totalAssertions": 60622,
-    "totalAssertionsPassing": 60102,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after an {{#each}} row that renders a component removes the component's nodes when it goes, a modifier is destroyed with its block however it was installed or updated (also when a render result is destroyed in a run loop), writes in didUpdate/didRender render until stable up to ENV._RERENDER_LOOP_LIMIT, and a content binding owns the helper it renders; written by runner.mjs in the GitHub Actions GXT full workflow (run 38878342335, on the code of 841bbaba0a). 9781/10161 green (was 9762/10155), 998 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 13 known reds green (each rows of components in the curly, dynamic-component and 'updating and setting within #each' suites, a dynamic modifier destroyed with its render result, a dynamic helper with a changing definition) and 6 new tests green (GXT {{#each}} rows; GXT writes during an update)."
+    "totalAssertions": 60589,
+    "totalAssertionsPassing": 60125,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after the integration harness ignores GXT's curried-component boundary comments and anchor comments (equalTokens, assertComponent, qunit-dom hasHtml), the jit delegate makes curried components the way the GXT component helper does, the GXT rehydration delegate renders its server side without interaction and registers modifiers, and a content binding that rendered a curried component renders its value after it becomes text; written by runner.mjs in the GitHub Actions GXT full workflow (run 38887215533, on the code of 227a04d2a4). 9829/10161 green (was 9781/10161), 998 modules, no timeouts, no harness errors, no green->red. 36 tests no longer fail (42 rows with the parent modules' re-reports): 12 green through the harness and product changes, 24 now skipped under GXT as checks of Glimmer VM internals (listed in the commit). The passing assertions of the 6 modules with new skips drop by the assertions the skipped tests no longer run; no other module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2868,9 +2868,9 @@
     },
     "Helpers test: {{element}}": {
       "total": 14,
-      "passing": 11,
+      "passing": 12,
       "assertionsTotal": 18,
-      "assertionsPassing": 12,
+      "assertionsPassing": 16,
       "failingTests": [
         {
           "name": "it works with element modifiers",
@@ -2878,10 +2878,6 @@
         },
         {
           "name": "it can be rendered multiple times",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it renders when the tag name changes",
           "category": "gxt:triage"
         }
       ]
@@ -5370,50 +5366,25 @@
     },
     "[integration] jit :: #each": {
       "total": 25,
-      "passing": 15,
-      "assertionsTotal": 1878,
-      "assertionsPassing": 1868,
+      "passing": 24,
+      "assertionsTotal": 1842,
+      "assertionsPassing": 1841,
       "failingTests": [
         {
           "name": "it does not update items if their key has not changed, and the items are not tracked",
           "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #1, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #2, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #3, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #4, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #5, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #6, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #7, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #8, the original references are updated",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "When re-iterated via swap #9, the original references are updated",
-          "category": "gxt:triage"
         }
+      ],
+      "skippedTests": [
+        "When re-iterated via swap #1, the original references are updated",
+        "When re-iterated via swap #2, the original references are updated",
+        "When re-iterated via swap #3, the original references are updated",
+        "When re-iterated via swap #4, the original references are updated",
+        "When re-iterated via swap #5, the original references are updated",
+        "When re-iterated via swap #6, the original references are updated",
+        "When re-iterated via swap #7, the original references are updated",
+        "When re-iterated via swap #8, the original references are updated",
+        "When re-iterated via swap #9, the original references are updated"
       ]
     },
     "[integration] jit :: #in-element": {
@@ -5511,106 +5482,56 @@
     },
     "[integration] jit :: Components :: -with-dynamic-vars and -get-dynamic-var": {
       "total": 9,
-      "passing": 0,
-      "assertionsTotal": 27,
-      "assertionsPassing": 18,
-      "failingTests": [
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        }
+      "passing": 9,
+      "assertionsTotal": 0,
+      "assertionsPassing": 0,
+      "failingTests": [],
+      "skippedTests": [
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable",
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable",
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable"
       ]
     },
     "[integration] jit :: Components :: -with-dynamic-vars and -get-dynamic-var > [integration] Curly": {
       "total": 3,
-      "passing": 0,
-      "assertionsTotal": 9,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        }
+      "passing": 3,
+      "assertionsTotal": 0,
+      "assertionsPassing": 0,
+      "failingTests": [],
+      "skippedTests": [
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable"
       ]
     },
     "[integration] jit :: Components :: -with-dynamic-vars and -get-dynamic-var > [integration] Dynamic": {
       "total": 3,
-      "passing": 0,
-      "assertionsTotal": 9,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        }
+      "passing": 3,
+      "assertionsTotal": 0,
+      "assertionsPassing": 0,
+      "failingTests": [],
+      "skippedTests": [
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable"
       ]
     },
     "[integration] jit :: Components :: -with-dynamic-vars and -get-dynamic-var > [integration] Glimmer": {
       "total": 3,
-      "passing": 0,
-      "assertionsTotal": 9,
-      "assertionsPassing": 6,
-      "failingTests": [
-        {
-          "name": "Can shadow existing dynamic variable",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable with bound names",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Can get and set dynamic variable",
-          "category": "gxt:triage"
-        }
+      "passing": 3,
+      "assertionsTotal": 0,
+      "assertionsPassing": 0,
+      "failingTests": [],
+      "skippedTests": [
+        "Can shadow existing dynamic variable",
+        "Can get and set dynamic variable with bound names",
+        "Can get and set dynamic variable"
       ]
     },
     "[integration] jit :: Components :: Debugger": {
@@ -5671,14 +5592,10 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 38,
+      "passing": 39,
       "assertionsTotal": 199,
-      "assertionsPassing": 193,
+      "assertionsPassing": 195,
       "failingTests": [
-        {
-          "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
-          "category": "gxt:triage"
-        },
         {
           "name": "throwing an error during rendering gives a readable error stack",
           "category": "gxt:triage"
@@ -5695,15 +5612,10 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] Glimmer": {
       "total": 38,
-      "passing": 37,
+      "passing": 38,
       "assertionsTotal": 178,
-      "assertionsPassing": 176,
-      "failingTests": [
-        {
-          "name": "[BUG] Gracefully handles application of curried args when invoke starts with 0 args",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 178,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Glimmer > [integration] TemplateOnly": {
       "total": 4,
@@ -5837,15 +5749,10 @@
     },
     "[integration] jit :: Components :: has-block": {
       "total": 69,
-      "passing": 68,
-      "assertionsTotal": 539,
-      "assertionsPassing": 538,
-      "failingTests": [
-        {
-          "name": "has-block works within a yielded curried component invoked within mustaches",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 69,
+      "assertionsTotal": 544,
+      "assertionsPassing": 544,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block > [integration] Curly": {
       "total": 21,
@@ -5863,27 +5770,17 @@
     },
     "[integration] jit :: Components :: has-block > [integration] Glimmer": {
       "total": 27,
-      "passing": 26,
-      "assertionsTotal": 203,
-      "assertionsPassing": 202,
-      "failingTests": [
-        {
-          "name": "has-block works within a yielded curried component invoked within mustaches",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 27,
+      "assertionsTotal": 208,
+      "assertionsPassing": 208,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block-params": {
       "total": 76,
-      "passing": 75,
+      "passing": 76,
       "assertionsTotal": 604,
-      "assertionsPassing": 603,
-      "failingTests": [
-        {
-          "name": "has-block-params from within a yielded + invoked curried component",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 604,
+      "failingTests": []
     },
     "[integration] jit :: Components :: has-block-params > [integration] Curly": {
       "total": 25,
@@ -5901,15 +5798,10 @@
     },
     "[integration] jit :: Components :: has-block-params > [integration] Glimmer": {
       "total": 26,
-      "passing": 25,
+      "passing": 26,
       "assertionsTotal": 204,
-      "assertionsPassing": 203,
-      "failingTests": [
-        {
-          "name": "has-block-params from within a yielded + invoked curried component",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 204,
+      "failingTests": []
     },
     "[integration] jit :: Components :: yield": {
       "total": 45,
@@ -5971,20 +5863,12 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 61,
+      "passing": 63,
       "assertionsTotal": 834,
-      "assertionsPassing": 809,
+      "assertionsPassing": 814,
       "failingTests": [
         {
-          "name": "helpers passed as arguments to {{component}} are not torn down when switching between blocks",
-          "category": "gxt:triage"
-        },
-        {
           "name": "block arguments should have higher precedence than helpers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "block helpers whose template has a morph at the edge",
           "category": "gxt:triage"
         },
         {
@@ -6029,31 +5913,10 @@
     },
     "[integration] jit :: [components] appendable components": {
       "total": 5,
-      "passing": 0,
-      "assertionsTotal": 5,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": "it does not work on optimized appends",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it works on unoptimized appends (dot paths)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it works on unoptimized appends (this paths)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it works on unoptimized appends when initially not a component (dot paths)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it works on unoptimized appends when initially not a component (this paths)",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 5,
+      "assertionsTotal": 57,
+      "assertionsPassing": 57,
+      "failingTests": []
     },
     "[integration] jit :: [components] closure components": {
       "total": 4,
@@ -7303,9 +7166,9 @@
     },
     "[integration] jit serialization :: Server-side rendering in Node.js (serialize)": {
       "total": 7,
-      "passing": 1,
-      "assertionsTotal": 15,
-      "assertionsPassing": 9,
+      "passing": 2,
+      "assertionsTotal": 12,
+      "assertionsPassing": 7,
       "failingTests": [
         {
           "name": "modifiers do not run in a serialize render",
@@ -7320,10 +7183,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": "Null literals do not have representation in DOM",
-          "category": "gxt:triage"
-        },
-        {
           "name": "Elements inside a yielded block",
           "category": "gxt:triage"
         },
@@ -7331,6 +7190,9 @@
           "name": "A simple block helper can return text",
           "category": "gxt:triage"
         }
+      ],
+      "skippedTests": [
+        "Null literals do not have representation in DOM"
       ]
     },
     "[integration] node jit :: Components :: Server Side Components": {
@@ -7663,31 +7525,10 @@
     },
     "[integration] rehydration :: rehydration": {
       "total": 126,
-      "passing": 121,
-      "assertionsTotal": 665,
-      "assertionsPassing": 660,
-      "failingTests": [
-        {
-          "name": "modifiers do not run in the server render but run in the client render",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "curly invocation of a classic Component: multiple invocations",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "curly invocation of a classic Component: mismatched multiple invocations",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{component}} invocation: component invocations",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "{{component}} invocation: interacting with builtins",
-          "category": "gxt:triage"
-        }
-      ],
+      "passing": 126,
+      "assertionsTotal": 664,
+      "assertionsPassing": 664,
+      "failingTests": [],
       "skippedTests": [
         "rehydrates into element with pre-existing content",
         "table with omitted tbody",
@@ -7719,6 +7560,10 @@
         "clearing bounds",
         "top-level clearing bounds",
         "#each rehydration",
+        "curly invocation of a classic Component: multiple invocations",
+        "curly invocation of a classic Component: mismatched multiple invocations",
+        "{{component}} invocation: component invocations",
+        "{{component}} invocation: interacting with builtins",
         "Dynamic selected options",
         "Dynamic multi-select"
       ]
@@ -8177,14 +8022,12 @@
     },
     "integration - [glimmer-compiler] Compile options": {
       "total": 1,
-      "passing": 0,
-      "assertionsTotal": 1,
+      "passing": 1,
+      "assertionsTotal": 0,
       "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": "moduleName option is passed into meta",
-          "category": "gxt:triage"
-        }
+      "failingTests": [],
+      "skippedTests": [
+        "moduleName option is passed into meta"
       ]
     },
     "integration - [glimmer-compiler] precompile": {
@@ -8765,6 +8608,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 380
+    "gxt:triage": 332
   }
 }
