@@ -43,6 +43,17 @@ function _gxtReportDroppedRead(what: string, error: unknown): void {
   }
 }
 
+// Whether `obj[key] = value` can assign: the property (own or inherited) is a
+// writable data property or an accessor with a setter, or is absent from an
+// extensible object.
+function _gxtCanAssign(obj: object, key: PropertyKey): boolean {
+  for (let o: object | null = obj; o !== null; o = Object.getPrototypeOf(o)) {
+    const desc = Object.getOwnPropertyDescriptor(o, key);
+    if (desc !== undefined) return desc.writable === true || desc.set !== undefined;
+  }
+  return Object.isExtensible(obj);
+}
+
 // Utility functions (regex-free)
 
 /**
@@ -8524,11 +8535,11 @@ const _emberBuiltinHelpers: Record<string, any> = {
               // Force a full re-render of the parent component.
               // This is needed when the property path isn't cell-tracked
               // (e.g., model is a plain prototype property from Component.extend).
+              // A view that is being destroyed cannot re-render (its state's
+              // `rerender` throws); it renders nothing again anyway.
               if (typeof parentCtx.rerender === 'function') {
-                try {
+                if (!parentCtx.isDestroying && !parentCtx.isDestroyed) {
                   parentCtx.rerender();
-                } catch {
-                  /* ignore */
                 }
               } else if (typeof parentCtx.notifyPropertyChange === 'function') {
                 parentCtx.notifyPropertyChange(parts[0]!);
@@ -8554,20 +8565,16 @@ const _emberBuiltinHelpers: Record<string, any> = {
           // when mandatory-setter-style interception short-circuits the write.
           // Fall back to direct assignment (invokes the descriptor's setter)
           // and then to manual setter invocation if even that doesn't take.
+          // A getter-only or read-only property is not assigned; what a setter
+          // throws propagates.
           if (capturedCtx[propName] !== newValue) {
-            try {
+            if (_gxtCanAssign(capturedCtx, propName)) {
               capturedCtx[propName] = newValue;
-            } catch {
-              /* ignore */
             }
             if (capturedCtx[propName] !== newValue) {
-              try {
-                const ownDesc = Object.getOwnPropertyDescriptor(capturedCtx, propName);
-                const setter = ownDesc?.set;
-                if (setter) setter.call(capturedCtx, newValue);
-              } catch {
-                /* ignore */
-              }
+              const ownDesc = Object.getOwnPropertyDescriptor(capturedCtx, propName);
+              const setter = ownDesc?.set;
+              if (setter) setter.call(capturedCtx, newValue);
             }
             // Fire a re-render trigger so GXT's trackedArgCells sync runs
             // for dependent children (important when the fallback path
@@ -8576,11 +8583,7 @@ const _emberBuiltinHelpers: Record<string, any> = {
             // suppression is honored by its entry short-circuit.
             const triggerReRender = _gxtTriggerReRender;
             if (triggerReRender) {
-              try {
-                triggerReRender(capturedCtx, propName);
-              } catch {
-                /* ignore */
-              }
+              triggerReRender(capturedCtx, propName);
             }
           }
         } else {
@@ -8959,16 +8962,12 @@ const _emberBuiltinHelpers: Record<string, any> = {
     // `<Child @callback={{fn greet "hello"}} />` ended up calling the
     // closure at args-read time, propagating `undefined` (greet's return)
     // as `@callback` to Child — so `{{on "click" @callback}}` received
-    // undefined and threw.
-    try {
-      Object.defineProperty(out, '__isFnHelper', {
-        value: true,
-        enumerable: false,
-        configurable: true,
-      });
-    } catch {
-      /* frozen — skip */
-    }
+    // undefined and threw. (`out` is a new function.)
+    Object.defineProperty(out, '__isFnHelper', {
+      value: true,
+      enumerable: false,
+      configurable: true,
+    });
     return out;
   },
   // modifier: The (modifier) keyword for currying modifiers.
