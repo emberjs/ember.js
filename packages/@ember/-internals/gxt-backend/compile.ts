@@ -43,17 +43,6 @@ function _gxtReportDroppedRead(what: string, error: unknown): void {
   }
 }
 
-// Whether `obj[key] = value` can assign: the property (own or inherited) is a
-// writable data property or an accessor with a setter, or is absent from an
-// extensible object.
-function _gxtCanAssign(obj: object, key: PropertyKey): boolean {
-  for (let o: object | null = obj; o !== null; o = Object.getPrototypeOf(o)) {
-    const desc = Object.getOwnPropertyDescriptor(o, key);
-    if (desc !== undefined) return desc.writable === true || desc.set !== undefined;
-  }
-  return Object.isExtensible(obj);
-}
-
 // Utility functions (regex-free)
 
 /**
@@ -4926,7 +4915,7 @@ function _gxtTriggerReRenderSyncCore(
         try {
           freshVal = protoGetter.call(obj);
         } catch (error) {
-          _gxtReportDroppedRead(`The \`${ownKey}\` getter`, error);
+          if (DEBUG) _gxtReportDroppedRead(`The \`${ownKey}\` getter`, error);
           continue;
         }
         const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
@@ -8554,12 +8543,10 @@ const _emberBuiltinHelpers: Record<string, any> = {
           // when mandatory-setter-style interception short-circuits the write.
           // Fall back to direct assignment (invokes the descriptor's setter)
           // and then to manual setter invocation if even that doesn't take.
-          // A getter-only or read-only property is not assigned; what a setter
-          // throws propagates.
+          // The assignment writes as `set()` just did (a read-only property
+          // made `set()` throw); what a setter throws propagates.
           if (capturedCtx[propName] !== newValue) {
-            if (_gxtCanAssign(capturedCtx, propName)) {
-              capturedCtx[propName] = newValue;
-            }
+            capturedCtx[propName] = newValue;
             if (capturedCtx[propName] !== newValue) {
               const ownDesc = Object.getOwnPropertyDescriptor(capturedCtx, propName);
               const setter = ownDesc?.set;
@@ -9728,10 +9715,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const gxtRootCtx = _gxtRootContext;
       const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
       if (rootId !== undefined && rootId !== null) {
-        // A frozen context keeps its id.
-        if (_gxtCanAssign(ctx, COMPONENT_ID_PROPERTY)) {
-          ctx[COMPONENT_ID_PROPERTY as any] = rootId;
-        }
+        // (A template's context is the render context, which the render
+        // assigns its own properties.)
+        ctx[COMPONENT_ID_PROPERTY as any] = rootId;
       } else if (!ctx[COMPONENT_ID_PROPERTY as any]) {
         ctx[COMPONENT_ID_PROPERTY as any] = ++_contextId;
       }
@@ -11602,8 +11588,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
       const rcKey = RENDERING_CONTEXT_PROPERTY as any;
       const existing = (ctx as any)[rcKey];
-      // (A frozen context gets none: GXT raises the real error below.)
-      if (existing == null && _gxtCanAssign(ctx, rcKey)) {
+      if (existing == null) {
         const gxtRoot = _gxtRootContext;
         const rootRc = gxtRoot && gxtRoot[rcKey];
         if (rootRc && rootRc.element !== null) {
@@ -13850,11 +13835,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           const __gxtNativeTpl = (compilationResult as any).__gxtNativePath === true;
           if (COMPONENT_ID_PROPERTY && __gxtNativeTpl) {
             if (_gxtIsForceRerender()) {
-              // A frozen context keeps its id; the flag is gxt's assignment.
-              const idDesc = Object.getOwnPropertyDescriptor(renderContext, COMPONENT_ID_PROPERTY);
-              if (idDesc === undefined || idDesc.configurable) {
-                delete renderContext[COMPONENT_ID_PROPERTY as any];
-              }
+              // (The id and the flag are plain assignments, by this function
+              // and by gxt.)
+              delete renderContext[COMPONENT_ID_PROPERTY as any];
               const _attSym = _gxtFindAddedToTreeSym(renderContext);
               if (_attSym) {
                 delete (renderContext as any)[_attSym];
@@ -13863,10 +13846,8 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           } else if (COMPONENT_ID_PROPERTY) {
             const rootId = gxtRoot && (gxtRoot as any)[COMPONENT_ID_PROPERTY as any];
             if (rootId !== undefined && rootId !== null) {
-              // A frozen context keeps its id.
-              if (_gxtCanAssign(renderContext, COMPONENT_ID_PROPERTY)) {
-                renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
-              }
+              // (The render context is assigned its rendering context above.)
+              renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
             } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
               // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
               renderContext[COMPONENT_ID_PROPERTY as any] = ++_contextId;
@@ -13894,11 +13875,11 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // so symbol writes are transparent.)
           if (__gxtNativeTpl) {
             const __argsObj = renderContext['args'];
-            // (Frozen args, a legacy-only shape, get neither.)
+            // (The arguments object is the component's, which is assigned
+            // `$_scope` below.)
             if (__argsObj && typeof __argsObj === 'object') {
-              if (_gxtCanAssign(__argsObj, $SLOTS_SYMBOL))
-                __argsObj[$SLOTS_SYMBOL] = _gxtCurrentSlots;
-              if (_gxtCanAssign(__argsObj, $PROPS_SYMBOL)) __argsObj[$PROPS_SYMBOL] = _gxtCurrentFw;
+              __argsObj[$SLOTS_SYMBOL] = _gxtCurrentSlots;
+              __argsObj[$PROPS_SYMBOL] = _gxtCurrentFw;
             }
           }
 
