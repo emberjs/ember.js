@@ -700,8 +700,30 @@ const __gxtPureGetterCache: WeakMap<object, Map<string, any>> = new WeakMap();
 
 interface CustomManagedEntry {
   node: Node; // A DOM node belonging to the component (for disconnect detection)
+  // The dynamic content the component's nodes start with, when they start
+  // with one: the component is in the document while that content is.
+  region: DynamicRegion | null;
   destroyFn: () => void;
   destroyed: boolean;
+}
+
+// The content of a dynamic component invocation (ember-gxt-wrappers.ts
+// `followDefinition`): `first()` is the first node of what it renders now. A
+// change of definition replaces its nodes, so a component whose template
+// starts with it (its first node was the content's first node) is not gone
+// when that node is.
+interface DynamicRegion {
+  first(): Node;
+}
+
+// The dynamic content each first node starts. Read when a component is
+// tracked, right after its render, so it maps the first node to the
+// outermost content starting there that the component's template rendered.
+const _dynamicRegionByFirstNode = new WeakMap<Node, DynamicRegion>();
+
+// Exposed via the gxt-bridge as `destruction.registerDynamicRegion`.
+function _gxtRegisterDynamicRegion(first: Node, region: DynamicRegion): void {
+  _dynamicRegionByFirstNode.set(first, region);
 }
 
 const _customManagedInstances: CustomManagedEntry[] = [];
@@ -713,15 +735,16 @@ const _customManagedInstances: CustomManagedEntry[] = [];
 function _gxtDestroyCustomManagedInstances(): void {
   for (let i = _customManagedInstances.length - 1; i >= 0; i--) {
     const entry = _customManagedInstances[i]!;
-    if (!entry.destroyed && !entry.node.isConnected) {
-      entry.destroyed = true;
-      try {
-        entry.destroyFn();
-      } catch {
-        /* ignore destroy errors */
-      }
-      _customManagedInstances.splice(i, 1);
+    if (entry.destroyed) continue;
+    const node = entry.region !== null ? entry.region.first() : entry.node;
+    if (node.isConnected) continue;
+    entry.destroyed = true;
+    try {
+      entry.destroyFn();
+    } catch {
+      /* ignore destroy errors */
     }
+    _customManagedInstances.splice(i, 1);
   }
 }
 
@@ -10586,7 +10609,12 @@ function handleCustomManagedComponent(
       };
       const firstChild = container.firstChild;
       if (firstChild) {
-        _customManagedInstances.push({ node: firstChild, destroyFn, destroyed: false });
+        _customManagedInstances.push({
+          node: firstChild,
+          region: _dynamicRegionByFirstNode.get(firstChild) ?? null,
+          destroyFn,
+          destroyed: false,
+        });
       }
     }
 
@@ -13967,6 +13995,7 @@ setGxtRenderer({
     destroyTrackedInstances: _gxtDestroyTrackedInstances,
     destroyEmberComponentInstance: _gxtDestroyEmberComponentInstance,
     finalizeInverseOldRows: _gxtFinalizeInverseOldRows,
+    registerDynamicRegion: _gxtRegisterDynamicRegion,
   },
   backtracking: {
     beginFrame: beginBacktrackingFrame,

@@ -87,6 +87,14 @@ export interface GxtDestructionCapabilities {
    * content's insert hooks have fired, matching classic Ember's order.
    */
   finalizeInverseOldRows?(rows: ReadonlyArray<object>, cycle: number): void;
+
+  /**
+   * Register the content of a dynamic component invocation that starts at
+   * `first`: `region.first()` is the first node of what it renders now. A
+   * component with a custom manager whose nodes start with that content is in
+   * the document while the content is, whatever definition it renders.
+   */
+  registerDynamicRegion?(first: Node, region: { first(): Node }): void;
 }
 
 /**

@@ -2340,6 +2340,12 @@ function createEmberDc(original: Function) {
     // gxt removes the nodes of the result it got when the enclosing block
     // goes; the nodes of a later value are this binding's to remove.
     const initialNodes = nodes;
+    // A component whose template starts with this content is in the document
+    // while the content is, whatever it renders after a change (its first
+    // node is replaced then).
+    getGxtRenderer()?.destruction.registerDynamicRegion?.(nodes[0]!, {
+      first: () => nodes[0]!,
+    });
     const capturedOwner = getAmbientOwner();
     let stopped = false;
     let wasConnected = false;
