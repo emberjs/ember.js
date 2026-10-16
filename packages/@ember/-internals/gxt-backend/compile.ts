@@ -7795,46 +7795,12 @@ function _gxtSyncDomNow(): void {
       // the same element, which Glimmer destroys the old modifier for.
       // This must happen BEFORE post-render hooks so willDestroyElement fires
       // before didInsertElement of the replacement element.
-      // The pending-modifier-destroys queue lives in `gxt-backend/manager.ts`;
-      // this cross-file reader routes through the read-only Array-getter
-      // `compilePipeline.getPendingModifierDestroys?.()` and mutates the returned
-      // array reference directly (`splice(0)` drains here).
+      // The pending-modifier-destroys queue and its drain live in
+      // `gxt-backend/manager.ts` (`compilePipeline.destroyPendingModifiers`).
       try {
-        const pendingDestroys = getGxtRenderer()?.compilePipeline.getPendingModifierDestroys?.();
-        if (pendingDestroys && pendingDestroys.length > 0) {
-          const toFlush = pendingDestroys.splice(0) as any[];
-          for (const entry of toFlush) {
-            if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
-            try {
-              if (
-                entry.isCustom &&
-                entry.cached.manager?.destroyModifier &&
-                !entry.cached.instance?.__gxtModDestroyed
-              ) {
-                entry.cached.manager.destroyModifier(entry.cached.instance);
-                if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
-              }
-              if (entry.destroyable) {
-                // The destroyable returned from manager.getDestroyable(state) holds
-                // the internal manager's destructors (e.g. OnModifierManager's
-                // removeEventListener). Use the canonical destroy bridge so that
-                // registered destructors fire synchronously when the element has
-                // been removed from the DOM.
-                getGxtRenderer()?.destruction.destroyDestroyable(entry.destroyable);
-              }
-            } catch {
-              /* ignore individual modifier destroy errors */
-            }
-            // Remove from cache
-            const elCache = entry.cache?.get(entry.element);
-            if (elCache) {
-              elCache.delete(entry.modKey);
-              if (elCache.size === 0) entry.cache.delete(entry.element);
-            }
-          }
-        }
-      } catch {
-        /* ignore */
+        getGxtRenderer()?.compilePipeline.destroyPendingModifiers?.();
+      } catch (destroyErr) {
+        _gxtDeferredSyncError = _gxtDeferredSyncError || destroyErr;
       }
       // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
       // is fully updated by the force-rerender. Routes through the typed

@@ -56,7 +56,7 @@ import {
   getViewId,
 } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
-import { join } from '@ember/runloop';
+import { _getCurrentRunLoop, join, scheduleOnce } from '@ember/runloop';
 
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
@@ -260,13 +260,11 @@ function setInstanceCapture(inst: any) {
 export function peekInstanceCapture(): any {
   return _lastCreatedEmberInstance;
 }
-// Exposed as `destruction.destroyDestroyable` through the gxt-bridge at the
-// bottom of this module. Synchronous variant: the slot's sole consumer is the
-// pending-modifier-destroys drain (compile.ts phase 2d), which only fires for
-// modifiers whose element is already out of the DOM — classic Ember removes
-// the listener synchronously with the element there (see destroySyncNow's doc
-// in destroyable.ts).
-const _gxtBridgeDestroyDestroyable = _destroySyncNow;
+// Synchronous destroy of a modifier's destroyable, for the pending-modifier
+// destroys (`_gxtDestroyPendingModifiers`): classic Ember removes an `{{on}}`
+// listener synchronously with its element (see destroySyncNow's doc in
+// destroyable.ts).
+const _gxtDestroyModifierDestroyable = _destroySyncNow;
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE, TrackedDescriptor } from '@ember/-internals/metal';
@@ -1426,6 +1424,51 @@ interface PendingModifierDestroyEntry {
 const _pendingModifierDestroys: PendingModifierDestroyEntry[] = [];
 function _gxtGetPendingModifierDestroys(): PendingModifierDestroyEntry[] {
   return _pendingModifierDestroys;
+}
+
+// Queues the destroy of a modifier whose destructor gxt ran. gxt runs it
+// before it evaluates the modifier's invocation again, whose update takes the
+// modifier back (it clears `pendingDestroy`), and when the element's block is
+// destroyed. A sync destroys what is still queued at its end (compile.ts
+// Phase 2d). A destructor that runs in a run loop outside a sync (a render
+// result destroyed in `run`) is the block's destruction: the queue is
+// destroyed when that run loop flushes its actions, as Glimmer schedules the
+// destructors of a destroyed block's modifiers there.
+function _queueModifierDestroy(entry: PendingModifierDestroyEntry): void {
+  entry.cached.pendingDestroy = true;
+  _pendingModifierDestroys.push(entry);
+  if (!getGxtRenderer()?.compilePipeline.isSyncing?.() && _getCurrentRunLoop() !== null) {
+    scheduleOnce('actions', _gxtDestroyPendingModifiers);
+  }
+}
+
+// Destroys the queued modifiers that no evaluation of their invocation took
+// back since their destructor ran: their element was removed, or their
+// invocation renders another modifier definition, or none, which Glimmer
+// destroys the old modifier for. Empties the queue. A destroy that throws is
+// queued as a render error, and the others still run.
+function _gxtDestroyPendingModifiers(): void {
+  if (_pendingModifierDestroys.length === 0) return;
+  for (const entry of _pendingModifierDestroys.splice(0)) {
+    if (!entry.cached.pendingDestroy) continue;
+    try {
+      const instance = entry.cached.instance;
+      if (entry.isCustom && entry.cached.manager?.destroyModifier && !instance?.__gxtModDestroyed) {
+        entry.cached.manager.destroyModifier(instance);
+        if (instance) instance.__gxtModDestroyed = true;
+      }
+      // The destroyable of an internal manager's modifier (the listener of an
+      // `{{on}}`), destroyed at once.
+      if (entry.destroyable) _gxtDestroyModifierDestroyable(entry.destroyable);
+    } catch (error) {
+      captureRenderError(error);
+    }
+    const elementCache = entry.cache?.get(entry.element);
+    if (elementCache) {
+      elementCache.delete(entry.modKey);
+      if (elementCache.size === 0) entry.cache!.delete(entry.element);
+    }
+  }
 }
 
 // Sentinel object for root-level components (no parent view)
@@ -9181,18 +9224,25 @@ const $_MANAGERS = {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
           cached.pendingDestroy = false;
+          // The destructor of this evaluation: the modifier's destroy is
+          // queued, and the next evaluation of the invocation takes it back.
+          const destructor = () =>
+            _queueModifierDestroy({
+              cached,
+              destroyable: cached.isInternal
+                ? cached.manager.getDestroyable?.(cached.instance)
+                : null,
+              element,
+              modKey,
+              cache: self._cache,
+              isCustom: !cached.isInternal,
+            });
           // Check if this modifier was already updated in the current sync cycle.
           // GXT formulas can fire multiple times per sync (e.g., when tracked cells
           // are re-bound during the first evaluation). Skip duplicate updates.
           const currentSyncCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
           if (cached.__gxtUpdatedInSyncCycle === currentSyncCycle && currentSyncCycle > 0) {
-            // Already updated — return a lightweight destructor that only marks
-            // pendingDestroy for the next handle() call. Do NOT push to the
-            // pending destroys queue — that would cause Phase 2d to actually
-            // destroy the modifier, breaking subsequent formula re-evaluations.
-            return () => {
-              cached.pendingDestroy = true;
-            };
+            return destructor;
           }
           // Mark that this modifier was updated in Phase 1 (GXT native reactivity)
           // for the current render pass. The force-rerender (Phase 2b) checks this
@@ -9330,21 +9380,7 @@ const $_MANAGERS = {
             cached._lastNamed = { ...freshArgs.named };
           }
 
-          // Return a destructor that marks pending destroy
-          return () => {
-            cached.pendingDestroy = true;
-            const destroyable = cached.isInternal
-              ? cached.manager.getDestroyable?.(cached.instance)
-              : null;
-            _pendingModifierDestroys.push({
-              cached,
-              destroyable,
-              element,
-              modKey,
-              cache: self._cache,
-              isCustom: !cached.isInternal,
-            });
-          };
+          return destructor;
         }
       }
 
@@ -9499,17 +9535,10 @@ const $_MANAGERS = {
         // detect element removal synchronously.
         //
         // Strategy: mark pendingDestroy, then at end of current GXT sync
-        // cycle, flush any still-pending destroys synchronously.
-        return () => {
-          cached.pendingDestroy = true;
-          _pendingModifierDestroys.push({
-            cached,
-            destroyable,
-            element,
-            modKey,
-            cache: self._cache,
-          });
-        };
+        // cycle, flush any still-pending destroys synchronously
+        // (`_queueModifierDestroy`).
+        return () =>
+          _queueModifierDestroy({ cached, destroyable, element, modKey, cache: self._cache });
       }
 
       // Custom modifier manager path
@@ -9758,9 +9787,8 @@ const $_MANAGERS = {
       // Return a destructor. GXT calls this before re-evaluating the formula
       // (for updates) and also during final teardown.
       return () => {
-        cached.pendingDestroy = true;
         cached.__gxtDestructorCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-        _pendingModifierDestroys.push({
+        _queueModifierDestroy({
           cached,
           destroyable: null,
           element,
@@ -14320,7 +14348,6 @@ setGxtRenderer({
     internalModifierManagers: INTERNAL_MODIFIER_MANAGERS,
   },
   destruction: {
-    destroyDestroyable: _gxtBridgeDestroyDestroyable,
     destroyUnclaimedPoolEntries: _gxtDestroyUnclaimedPoolEntries,
     destroyInstancesInNodes: _gxtDestroyInstancesInNodes,
     destroyTrackedInstances: _gxtDestroyTrackedInstances,
@@ -14394,6 +14421,7 @@ setGxtRenderer({
     // reader is compile.ts's Phase-2d drain (and test-helpers at teardown);
     // consumers mutate the returned Array in place.
     getPendingModifierDestroys: _gxtGetPendingModifierDestroys,
+    destroyPendingModifiers: _gxtDestroyPendingModifiers,
     // Sole reader is compile.ts's `_gxtSyncDomNow` (before the PHASE 0
     // if-watcher pre-flush).
     newRenderPass: _gxtNewRenderPass,

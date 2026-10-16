@@ -60,9 +60,6 @@ export const GXT_VIEW_SKIP_KEYS: readonly string[] = [
  * Teardown of component instances and destroyables. Implemented by manager.ts.
  */
 export interface GxtDestructionCapabilities {
-  /** Synchronously destroy a single destroyable. */
-  destroyDestroyable(destroyable: object): void;
-
   /**
    * Destroy pooled component instances that were rendered before the latest
    * re-render but not reclaimed by it, firing their teardown hooks.
@@ -427,11 +424,17 @@ export interface GxtCompilePipelineCapabilities {
   getModifierInstallWatchers?(): Map<object, () => void> | undefined;
 
   /**
-   * The live queue of deferred modifier destroys. Entries are destroyed at
-   * the end of a sync cycle only if their element left the DOM, so a modifier
+   * The live queue of deferred modifier destroys. An entry is destroyed unless
+   * an evaluation of its modifier's invocation took it back, so a modifier
    * that is merely re-evaluated survives. Callers drain it in place.
    */
   getPendingModifierDestroys?(): unknown[] | undefined;
+
+  /**
+   * Destroy the queued modifiers that no evaluation of their invocation took
+   * back, and empty the queue (the end of a sync). Implemented by manager.ts.
+   */
+  destroyPendingModifiers?(): void;
 
   /**
    * Whether the current `syncDomNow` flush was started by a property change.

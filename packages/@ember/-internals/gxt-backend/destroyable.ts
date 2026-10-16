@@ -435,9 +435,9 @@ if (DEBUG) {
 /**
  * Synchronous variant of `destroy()` for callers that must observe completed
  * destruction within the current runloop turn. Sole consumer: the
- * pending-modifier-destroys drain (phase 2d of compile.ts `_gxtSyncDomNow`,
- * via the `destruction.destroyDestroyable` bridge slot). The drain only fires
- * for modifiers whose element has already been removed from the DOM, where
+ * pending-modifier-destroys drain (manager.ts `_gxtDestroyPendingModifiers`,
+ * at the end of a sync and in the run loop a block is destroyed in). It
+ * destroys the modifiers whose element has been removed from the DOM, where
  * classic Ember removes the event listener synchronously with the removal and
  * tests assert that immediately after the runTask. The default `destroy()`
  * defers destructors via scheduleDestroy when called inside a runloop, so that
