@@ -161,15 +161,11 @@ export function associateDestroyableChild<T extends Destroyable>(parent: Destroy
 
   // Also mirror the association on GXT's side so its own destroy graph
   // traversal can reach the child.
-  try {
-    (
-      gxtDestroyable as unknown as {
-        associateDestroyableChild?: (p: object, c: object) => void;
-      }
-    )?.associateDestroyableChild?.(parent, child);
-  } catch {
-    // Ignore; the relationship is still tracked here.
-  }
+  (
+    gxtDestroyable as unknown as {
+      associateDestroyableChild?: (p: object, c: object) => void;
+    }
+  )?.associateDestroyableChild?.(parent, child);
 
   return child;
 }
