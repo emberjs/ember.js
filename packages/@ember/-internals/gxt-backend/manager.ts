@@ -812,7 +812,7 @@ interface BlockContent {
   blocks: Set<object>;
   destroyed: boolean;
 }
-const _blockContents = new WeakMap<object, BlockContent>();
+let _blockContents = new WeakMap<object, BlockContent>();
 // The block each block was created in.
 const _blockParents = new WeakMap<object, object>();
 // The blocks rendered with `gxtRenderInBlock`: a component invoked with one as
@@ -981,6 +981,27 @@ function _gxtDestroyComponentsOfDestroyedBlocksOutsideSync(): void {
   if (!getGxtRenderer()?.compilePipeline.isSyncing?.()) {
     _gxtDestroyComponentsOfDestroyedBlocks();
   }
+}
+
+// At teardown the custom-managed components still alive are destroyed, as
+// destroying a render destroys its components. Meanwhile the run loop does
+// not sync (as during a `runTask`): what their destructors change is in a
+// render that is going away.
+function _gxtDestroyRemainingCustomManagedInstances(): void {
+  for (const entry of _customManagedInstances) _queueComponentOfDestroyedBlock(entry);
+  const pipeline = getGxtRenderer()?.compilePipeline;
+  const runTaskActive = pipeline?.getRunTaskActive?.() ?? false;
+  pipeline?.setRunTaskActive?.(true);
+  try {
+    _gxtDestroyComponentsOfDestroyedBlocks();
+  } catch (error) {
+    // Queued, as the classic components' teardown errors are
+    // (`_gxtDestroyTrackedInstances`).
+    captureRenderError(error);
+  } finally {
+    pipeline?.setRunTaskActive?.(runTaskActive);
+  }
+  _blockContents = new WeakMap();
 }
 
 // =============================================================================
@@ -1444,8 +1465,10 @@ setTimeout(_patchEachSyncForRowKeying, 0);
 // point in the file; the forward reference is safe because
 // `_gxtClearInstancePools` is never called during module init (it's a
 // test-teardown hook), so the body only runs long after both declarations
-// have been evaluated (no TDZ hazard).
+// have been evaluated (no TDZ hazard). The custom-managed components still
+// alive are destroyed first, as destroying the render destroys them.
 function _gxtClearInstancePools(): void {
+  _gxtDestroyRemainingCustomManagedInstances();
   for (const pool of _allPoolArrays) {
     pool.length = 0;
   }
