@@ -73,8 +73,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.731.0
@@ -1410,8 +1410,8 @@ importers:
         specifier: ^2.24.1
         version: 2.26.0
       simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@ember/-internals':
         specifier: workspace:*
@@ -2200,8 +2200,8 @@ importers:
   packages/@glimmer/syntax:
     dependencies:
       simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -2790,8 +2790,8 @@ importers:
         specifier: ^4.8.5
         version: 4.8.5
       simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
+        specifier: ^1.0.0
+        version: 1.0.0
 
   packages/router_js:
     dependencies:
@@ -11614,6 +11614,10 @@ packages:
 
   simple-html-tokenizer@0.5.11:
     resolution: {integrity: sha512-C2WEK/Z3HoSFbYq8tI7ni3eOo/NneSPRoPpcM7WdLjFOArFuyXEjAoCdOC3DgMfRyziZQ1hCNR4mrNdWEvD0og==}
+
+  simple-html-tokenizer@1.0.0:
+    resolution: {integrity: sha512-ydo9dHOcttfRxVWBglPk7jcBucsuva2zN+5SmUO5eXgUBlxFCZ9CwYEpF30ESzfKsckimVQE+GIbfsgM3mgSdQ==}
+    engines: {node: '>= 20.19'}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -23705,6 +23709,8 @@ snapshots:
       '@simple-dom/void-map': 1.4.0
 
   simple-html-tokenizer@0.5.11: {}
+
+  simple-html-tokenizer@1.0.0: {}
 
   slash@3.0.0: {}
 

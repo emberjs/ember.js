@@ -98,7 +98,7 @@
     "route-recognizer": "^0.3.4",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
-    "simple-html-tokenizer": "^0.5.11"
+    "simple-html-tokenizer": "^1.0.0"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.731.0",
