@@ -1,4 +1,4 @@
-import { renderComponent } from '@ember/renderer';
+import { renderComponent } from '@glimmer/dom';
 
 renderComponent(
   <template>hi </template>,
