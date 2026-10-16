@@ -660,6 +660,9 @@ import {
   isTrackedAccessor,
   getInternalComponentManager,
   getInternalModifierManager,
+  gxtCurrentBlock,
+  gxtRenderInBlock,
+  gxtDestroyBlock,
 } from './manager';
 
 // JS reserved words cannot be used as JS variable names, so scope-binding
@@ -1264,13 +1267,15 @@ function _afterFlushAfterInsertQueue(): void {
 //    destroyed.
 {
   // One render of an in-element block into a destination: the nodes it put
-  // there, the effects that keep its text current, and the block it belongs
-  // to (null for a deferred render).
+  // there, the effects that keep its text current, the block it belongs to
+  // (null for a deferred render), and the block of the components it renders
+  // (manager.ts `gxtRenderInBlock`), destroyed with the render.
   interface InElementRender {
     destination: Element;
     nodes: Node[];
     stops: Array<() => void>;
     block: InElementBlock | null;
+    content: object;
   }
   // One `{{#in-element}}` block (one `$_inElement` call): the destination it
   // renders into, its current render there, and the effect that follows its
@@ -1289,10 +1294,11 @@ function _afterFlushAfterInsertQueue(): void {
   // Track which elements are in append mode (insertBefore=null)
   const _inElementAppendModeElements = new WeakSet<Element>();
 
-  // Remove a render from its destination: its nodes leave it and its text
-  // effects stop. `retire` (the destination is being rendered into by
-  // another `$_inElement` call, which replaces this render) also stops the
-  // render's block from following its destination: the newer call owns it.
+  // Remove a render from its destination: its nodes leave it, its text
+  // effects stop and its components are destroyed. `retire` (the destination
+  // is being rendered into by another `$_inElement` call, which replaces this
+  // render) also stops the render's block from following its destination: the
+  // newer call owns it.
   const _inElementRemoveRender = (render: InElementRender, retire: boolean): void => {
     if (_inElementRenders.get(render.destination) === render) {
       _inElementRenders.delete(render.destination);
@@ -1310,6 +1316,7 @@ function _afterFlushAfterInsertQueue(): void {
     for (const node of render.nodes) {
       if (node.parentNode) node.parentNode.removeChild(node);
     }
+    gxtDestroyBlock(render.content);
   };
 
   (globalThis as any).$_inElement = function _emberInElement(
@@ -1334,6 +1341,9 @@ function _afterFlushAfterInsertQueue(): void {
       return elementRef;
     };
     const destinationCells: _GxtTrackerFrame = new Set();
+    // The block the `{{#in-element}}` is created in: its renders' components
+    // are destroyed with it too (manager.ts `gxtRenderInBlock`).
+    const blockOfInElement = gxtCurrentBlock();
     let appendRef: HTMLElement | null;
     {
       const outerTracker = _gxtGetTracker();
@@ -1485,11 +1495,13 @@ function _afterFlushAfterInsertQueue(): void {
         }
 
         retryRef.appendChild(deferredFragment);
+        // Its nodes rendered with the call, in the block around it.
         _inElementRenders.set(retryRef, {
           destination: retryRef,
           nodes: deferredRenderedNodes,
           stops: [],
           block: null,
+          content: {},
         });
       };
 
@@ -1564,7 +1576,13 @@ function _afterFlushAfterInsertQueue(): void {
         for (const n of stale) (n as ChildNode).remove();
       }
 
-      const render: InElementRender = { destination: target, nodes: [], stops: [], block };
+      const render: InElementRender = {
+        destination: target,
+        nodes: [],
+        stops: [],
+        block,
+        content: {},
+      };
 
       // Mark the in-element destination as a "live host". The destination may be
       // a DETACHED element (e.g. `document.createElement('div')` that's never
@@ -1603,12 +1621,12 @@ function _afterFlushAfterInsertQueue(): void {
         if (typeof _push === 'function' && typeof _pop === 'function') {
           _push(target as any);
           try {
-            return roots(ctx);
+            return gxtRenderInBlock(render.content, blockOfInElement, () => roots(ctx));
           } finally {
             _pop();
           }
         }
-        return roots(ctx);
+        return gxtRenderInBlock(render.content, blockOfInElement, () => roots(ctx));
       };
       const nodes = _ieRenderRoots();
       const fragment = document.createDocumentFragment();
@@ -5164,6 +5182,22 @@ function _gxtDestroyNewClassHelperCacheEntriesSince(prev: Set<string> | null): v
   }
 }
 
+// The ctx gxt made for the branch an `{{#if}}` (an IfCondition) renders now
+// (the `onConditionBranchSwap` host hook): gxt destroys it when the branch
+// goes, so it is the block of the components the branch renders (manager.ts
+// `gxtRenderInBlock`).
+const _gxtIfBranchBlocks = new WeakMap<object, object>();
+
+// Render a block's content as the content of `block` (a branch's or a row's,
+// created in `parent`), or as it is when the content has no block of its own.
+function _gxtRenderBlockContent<T>(
+  block: object | null,
+  parent: object | null,
+  render: () => T
+): T {
+  return block === null ? render() : gxtRenderInBlock(block, parent, render);
+}
+
 // Patch $_if to capture IfCondition instances and fix placeholder connectivity.
 function patchGlobalIf() {
   const g = globalThis as any;
@@ -5233,6 +5267,9 @@ function patchGlobalIf() {
     // Likewise the owner it renders in (`_gxtRenderInBlockOwner`).
     const _capturedNamespace = _gxtNamespace;
     const _capturedOwner = getAmbientOwner();
+    // The block the `{{#if}}` is created in: its branches are blocks created
+    // in it.
+    const _blockOfIf = gxtCurrentBlock();
     const inCapturedNamespace = (render: (...args: any[]) => any) =>
       function renderInCapturedNamespace(this: any, ...renderArgs: any[]) {
         const prevNamespace = _gxtNamespace;
@@ -5269,6 +5306,9 @@ function patchGlobalIf() {
         } catch {
           /* ignore — fall through to normal eval */
         }
+        // The block of the branch rendering now: gxt passes the IfCondition,
+        // whose branch ctx the `onConditionBranchSwap` hook recorded.
+        const branchBlock = _gxtIfBranchBlocks.get(branchArgs[0]) ?? null;
         // Save-restore frame on `_gxtCurrentHelperScope` (see its declaration).
         const prev = _gxtCurrentHelperScope;
         _gxtCurrentHelperScope = scope;
@@ -5380,7 +5420,9 @@ function patchGlobalIf() {
           }
         }
         try {
-          const result = fn.apply(this, branchArgs);
+          const result = _gxtRenderBlockContent(branchBlock, _blockOfIf, () =>
+            fn.apply(this, branchArgs)
+          );
           // If the branch returns a function (common pattern:
           // `ctx0 => $_ucw(ctx1 => [...], ctx0)` where $_ucw may invoke the
           // inner arrow later), wrap the inner call so that scope is active
@@ -5417,7 +5459,9 @@ function patchGlobalIf() {
                 }
               }
               try {
-                return inner.apply(this, innerArgs);
+                return _gxtRenderBlockContent(branchBlock, _blockOfIf, () =>
+                  inner.apply(this, innerArgs)
+                );
               } finally {
                 if (_pushedIfParent2 && _vuPush2) {
                   try {
@@ -6825,6 +6869,9 @@ function patchGlobalEachSync() {
     // A row created on update renders in the owner the list was created in
     // (`_gxtRenderInBlockOwner`).
     const capturedOwner = getAmbientOwner();
+    // The block the `{{#each}}` is created in: its rows are blocks created in
+    // it.
+    const blockOfEach = gxtCurrentBlock();
     const withParent = (cb: any): any =>
       _gxtRenderInBlockOwner(capturedOwner, () => {
         if (!canWrap) return cb();
@@ -6870,22 +6917,27 @@ function patchGlobalEachSync() {
       // pre-destroy destructor. Save/restore keeps nested `{{#each}}` correct.
       const _prevRowCtx = _gxtCurrentRowCtx;
       _gxtCurrentRowCtx = ctx0 || null;
+      // The row ctx, which gxt destroys with the row, is the block of the
+      // components the row renders (manager.ts `gxtRenderInBlock`).
+      const rowBlock = ctx0 && _gxtEachRowCtxSet.has(ctx0) ? (ctx0 as object) : null;
       try {
-        return withParent(() => {
-          // If index is a plain number (not a cell), wrap it in a cell-like object
-          if (typeof index === 'number') {
-            const cellLike: any = { id: index };
-            Object.defineProperty(cellLike, 'value', {
-              get() {
-                return index;
-              },
-              enumerable: true,
-              configurable: true,
-            });
-            return origFn(bodyItem, cellLike, ctx0);
-          }
-          return origFn(bodyItem, index, ctx0);
-        });
+        return _gxtRenderBlockContent(rowBlock, blockOfEach, () =>
+          withParent(() => {
+            // If index is a plain number (not a cell), wrap it in a cell-like object
+            if (typeof index === 'number') {
+              const cellLike: any = { id: index };
+              Object.defineProperty(cellLike, 'value', {
+                get() {
+                  return index;
+                },
+                enumerable: true,
+                configurable: true,
+              });
+              return origFn(bodyItem, cellLike, ctx0);
+            }
+            return origFn(bodyItem, index, ctx0);
+          })
+        );
       } finally {
         _gxtCurrentRowCtx = _prevRowCtx;
       }
@@ -7843,6 +7895,15 @@ function _gxtSyncDomNow(): void {
         }
       } catch {
         /* ignore */
+      }
+      // PHASE 4: Destroy the components (with a custom manager) of the blocks
+      // this sync tore down, once it changed the DOM and ran the insert hooks,
+      // in the run loop of the change: their `willDestroy` runs before the
+      // sync returns (manager.ts `_gxtDestroyComponentsOfDestroyedBlocks`).
+      try {
+        getGxtRenderer()?.destruction.destroyComponentsOfDestroyedBlocks?.();
+      } catch (destroyErr) {
+        _gxtDeferredSyncError = _gxtDeferredSyncError || destroyErr;
       }
     } finally {
       // CRITICAL: Always reset the syncing flag even if an error escapes.
@@ -13713,7 +13774,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         // root.
         // Such a render starts in the namespace of the element it renders into
         // (`_gxtRootNamespace`), as Glimmer's element builder creates elements
-        // in the namespace of their parent.
+        // in the namespace of their parent. Its root is the block of the
+        // components it renders in no other block (manager.ts
+        // `gxtRenderInBlock`): destroying the render destroys them.
         if (renderRoot !== undefined) {
           const prevRootContext = _gxtRootContext;
           const prevParentContext = _gxtGetParentContext();
@@ -13721,7 +13784,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           _gxtRootContext = renderRoot;
           _gxtNamespace = _gxtRootNamespace(parentElement);
           try {
-            return this.render(context, parentElement);
+            return gxtRenderInBlock(renderRoot, null, () => this.render(context, parentElement));
           } finally {
             _gxtRootContext = prevRootContext;
             _gxtNamespace = prevNamespace;
@@ -14326,6 +14389,9 @@ _gxtRegisterHostHooks({
   onConditionBranchSwap: (branchCtx: object, meta: { if?: object; value?: boolean }) => {
     const ifc = meta?.if as any;
     const isTrue = !!meta?.value;
+    // The branch about to render is the block of the components it renders
+    // (`wrapBranch`).
+    if (ifc !== null && typeof ifc === 'object') _gxtIfBranchBlocks.set(ifc, branchCtx);
     const snap = isTrue ? _gxtSnapshotClassHelperCacheKeys() : null;
     _gxtRegisterDestructor(branchCtx, () => {
       const scope = ifc && (isTrue ? ifc.__gxtTrueBranchHelpers : ifc.__gxtFalseBranchHelpers);

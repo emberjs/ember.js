@@ -2309,22 +2309,26 @@ function createEmberDc(original: Function) {
     // constant. A name or a curried component is read after every sync.
     let reads = initialReads;
     // The Ember component instance of the current content, destroyed when the
-    // content is replaced. A component with a custom manager is destroyed
-    // when its nodes leave the document (manager.ts
-    // `_gxtDestroyCustomManagedInstances`).
+    // content is replaced.
     let instance: any = null;
     const captureInstance = (created: any) => {
       instance = created;
     };
+    // The current content is a block created in the block the invocation is
+    // in: the components with a custom manager it renders are destroyed when
+    // it is replaced, or with that block (manager.ts `gxtRenderInBlock`).
+    const destruction = getGxtRenderer()?.destruction;
+    const blockOfDc = destruction?.currentBlock?.() ?? null;
+    let contentBlock: object = {};
+    const renderContent = (value: any): any => {
+      const render = () =>
+        renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance);
+      return destruction?.renderInBlock
+        ? destruction.renderInBlock(contentBlock, blockOfDc, render)
+        : render();
+    };
 
-    const initialResult = renderDcValue(
-      initial,
-      kind,
-      componentGetter,
-      gxtArgs,
-      ctx,
-      captureInstance
-    );
+    const initialResult = renderContent(initial);
     let place: Comment | null = null;
     let nodes = renderedNodesOf(initialResult);
     let result = initialResult;
@@ -2364,6 +2368,13 @@ function createEmberDc(original: Function) {
           captureDcError(error);
         }
       }
+      const oldContent = contentBlock;
+      contentBlock = {};
+      try {
+        destruction?.destroyBlock?.(oldContent);
+      } catch (error) {
+        captureDcError(error);
+      }
 
       let rendered: any = null;
       const prevOwner = getAmbientOwner();
@@ -2371,7 +2382,7 @@ function createEmberDc(original: Function) {
         setAmbientOwner(capturedOwner);
       }
       try {
-        rendered = renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance);
+        rendered = renderContent(value);
       } catch (error) {
         captureDcError(error);
       } finally {
@@ -2447,6 +2458,7 @@ function createEmberDc(original: Function) {
             if (node.parentNode) node.parentNode.removeChild(node);
           }
         }
+        destruction?.destroyBlock?.(contentBlock);
       });
     }
     return result;

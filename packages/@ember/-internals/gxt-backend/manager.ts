@@ -56,6 +56,7 @@ import {
   getViewId,
 } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
+import { join } from '@ember/runloop';
 
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
@@ -699,12 +700,24 @@ const __gxtPureGetterCache: WeakMap<object, Map<string, any>> = new WeakMap();
 // =============================================================================
 
 interface CustomManagedEntry {
-  node: Node; // A DOM node belonging to the component (for disconnect detection)
+  // A DOM node belonging to the component (for disconnect detection); null
+  // when it rendered no nodes.
+  node: Node | null;
   // The dynamic content the component's nodes start with, when they start
   // with one: the component is in the document while that content is.
   region: DynamicRegion | null;
+  // Runs the manager's `destroyComponent` (and `release`).
   destroyFn: () => void;
+  // Takes the component out of its instance pool, so no render reuses it.
+  release: () => void;
   destroyed: boolean;
+  // The order the components were created in, which is the order Glimmer
+  // destroys the components of a block in.
+  order: number;
+  // The block the component was rendered in (`_gxtBlockOf`).
+  block: object | null;
+  // Its block was destroyed: it waits in `_componentsOfDestroyedBlocks`.
+  blockDestroyed: boolean;
 }
 
 // The content of a dynamic component invocation (ember-gxt-wrappers.ts
@@ -746,11 +759,16 @@ function _isInLiveInElementDestination(node: Node): boolean {
 /**
  * Destroy any custom-managed component instances whose DOM nodes are no longer connected.
  * Called during the destroy phase (e.g., after a conditional block removes content).
+ *
+ * The components of a destroyed block are destroyed with the block
+ * (`_gxtDestroyComponentsOfDestroyedBlocks`); this covers the ones whose block
+ * is not known to have gone (content a block this file does not track, such
+ * as an outlet's, replaced).
  */
 function _gxtDestroyCustomManagedInstances(): void {
   for (let i = _customManagedInstances.length - 1; i >= 0; i--) {
     const entry = _customManagedInstances[i]!;
-    if (entry.destroyed) continue;
+    if (entry.destroyed || entry.blockDestroyed || entry.node === null) continue;
     const node = entry.region !== null ? entry.region.first() : entry.node;
     if (node.isConnected || _isInLiveInElementDestination(node)) continue;
     entry.destroyed = true;
@@ -760,6 +778,208 @@ function _gxtDestroyCustomManagedInstances(): void {
       /* ignore destroy errors */
     }
     _customManagedInstances.splice(i, 1);
+  }
+}
+
+// =============================================================================
+// The block a component renders in
+// =============================================================================
+//
+// Glimmer makes a component a destroyable child of the block it renders in
+// (`@glimmer/runtime` `associateDestroyable`). Tearing the block down (an
+// `{{#if}}` branch, an `{{#each}}` row, a dynamic component's content, a
+// render) destroys the components rendered in it and in the blocks created in
+// it, in the order they were created, and their managers' scheduled
+// destructors (a Glimmer component's `willDestroy`) run before the run loop
+// that tore it down ends.
+//
+// compile.ts renders an `{{#if}}` branch with the ctx gxt destroys when the
+// branch goes (its `onConditionBranchSwap` ctx) as the current block, and an
+// `{{#each}}` row with its row ctx (`gxtRenderInBlock`). A dynamic component's
+// content (ember-gxt-wrappers.ts) and an `{{#in-element}}` render are blocks
+// of their own, destroyed with `gxtDestroyBlock`. A render's root is the block
+// of what renders in no other. A block is linked to the block it was created
+// in: gxt does not tear a block created in a component's template, or in a
+// yielded block, down with the block around the component (compat renders
+// each template with the shared root as gxt's parent context), so linked
+// blocks are destroyed together here.
+
+// What a block holds: the custom-managed components rendered in it and the
+// blocks created in it. Made when a component rendered in it, or in a block
+// created in it, is tracked.
+interface BlockContent {
+  components: Set<CustomManagedEntry>;
+  blocks: Set<object>;
+  destroyed: boolean;
+}
+const _blockContents = new WeakMap<object, BlockContent>();
+// The block each block was created in.
+const _blockParents = new WeakMap<object, object>();
+// The blocks rendered with `gxtRenderInBlock`: a component invoked with one as
+// its ctx (an `{{#each}}` row's) is in that block.
+const _knownBlocks = new WeakSet<object>();
+// The blocks for which gxt runs `gxtDestroyBlock` when it tears them down.
+const _blocksWithDestructor = new WeakSet<object>();
+// The block whose content is rendering.
+let _gxtCurrentBlock: object | null = null;
+// The components of destroyed blocks, until
+// `_gxtDestroyComponentsOfDestroyedBlocks` destroys them.
+const _componentsOfDestroyedBlocks: CustomManagedEntry[] = [];
+let _customManagedOrder = 0;
+
+/**
+ * The block a component rendered now is in: the block whose content is
+ * rendering, else the root of the render.
+ */
+export function gxtCurrentBlock(): object | null {
+  return _gxtCurrentBlock ?? getGxtRenderer()?.compilePipeline.getRootContext?.() ?? null;
+}
+
+/**
+ * Render `render` as the content of `block`, a block created in `parent` (the
+ * `gxtCurrentBlock()` where it was created): the components it renders are
+ * destroyed when `block` or `parent` is.
+ */
+export function gxtRenderInBlock<T>(block: object, parent: object | null, render: () => T): T {
+  _knownBlocks.add(block);
+  if (parent !== null && parent !== block && !_blockParents.has(block)) {
+    _blockParents.set(block, parent);
+  }
+  const prev = _gxtCurrentBlock;
+  _gxtCurrentBlock = block;
+  try {
+    return render();
+  } finally {
+    _gxtCurrentBlock = prev;
+  }
+}
+
+/**
+ * Destroy the custom-managed components rendered in `block` and in the blocks
+ * created in it. Inside a sync they are destroyed at its end, once it changed
+ * the DOM and ran the insert hooks; outside a sync, now.
+ */
+export function gxtDestroyBlock(block: object): void {
+  _markBlockDestroyed(block);
+  _gxtDestroyComponentsOfDestroyedBlocksOutsideSync();
+}
+
+// The block of a component invoked with `ctx`: the row an `{{#each}}` row ctx
+// stands for (a component in a row's body may render after the body returned),
+// else the block rendering now.
+function _gxtBlockOf(ctx: unknown): object | null {
+  return ctx !== null && typeof ctx === 'object' && _knownBlocks.has(ctx) ? ctx : gxtCurrentBlock();
+}
+
+function _blockContent(block: object): BlockContent {
+  let content = _blockContents.get(block);
+  if (content === undefined) {
+    content = { components: new Set(), blocks: new Set(), destroyed: false };
+    _blockContents.set(block, content);
+    if (!_blocksWithDestructor.has(block)) {
+      _blocksWithDestructor.add(block);
+      // gxt runs it when it tears the block down: an `{{#if}}` branch's ctx
+      // when the branch goes, a row's ctx when the row goes, a render's root
+      // when the render is destroyed.
+      _gxtRegisterDestructor(block, () => gxtDestroyBlock(block));
+    }
+  }
+  return content;
+}
+
+// A new custom-managed component, destroyed with its block.
+function _trackBlockComponent(entry: CustomManagedEntry): void {
+  const block = entry.block;
+  if (block === null) return;
+  const content = _blockContent(block);
+  // Link the block to the blocks it was created in, up to one already linked.
+  let dead = content.destroyed;
+  let child = block;
+  let parent = _blockParents.get(child);
+  while (!dead && parent !== undefined) {
+    const parentContent = _blockContent(parent);
+    if (parentContent.destroyed) {
+      dead = true;
+    } else if (parentContent.blocks.has(child)) {
+      break;
+    } else {
+      parentContent.blocks.add(child);
+      child = parent;
+      parent = _blockParents.get(child);
+    }
+  }
+  if (dead) {
+    // Rendered in a block already destroyed.
+    _queueComponentOfDestroyedBlock(entry);
+  } else {
+    content.components.add(entry);
+  }
+}
+
+function _queueComponentOfDestroyedBlock(entry: CustomManagedEntry): void {
+  if (entry.destroyed || entry.blockDestroyed) return;
+  entry.blockDestroyed = true;
+  entry.release();
+  _componentsOfDestroyedBlocks.push(entry);
+}
+
+function _markBlockDestroyed(block: object): void {
+  const content = _blockContents.get(block);
+  if (content === undefined) {
+    // Nothing is tracked in it yet: a component rendered in it later is in a
+    // destroyed block.
+    _blockContents.set(block, { components: new Set(), blocks: new Set(), destroyed: true });
+    return;
+  }
+  if (content.destroyed) return;
+  content.destroyed = true;
+  for (const entry of content.components) _queueComponentOfDestroyedBlock(entry);
+  content.components.clear();
+  const blocks = Array.from(content.blocks);
+  content.blocks.clear();
+  for (const child of blocks) _markBlockDestroyed(child);
+  const parent = _blockParents.get(block);
+  if (parent !== undefined) _blockContents.get(parent)?.blocks.delete(block);
+}
+
+/**
+ * Destroy the components of the destroyed blocks, in the order they were
+ * created, in one run loop: Glimmer destroys a block's components as it tears
+ * the block down, and their managers' scheduled destructors run before that
+ * run loop ends. With no run loop open (the sync after a `runTask`) this is
+ * that run loop; inside one, they run when it ends. The blocks their
+ * destruction tears down are destroyed in turn. Throws the first error once
+ * every component was destroyed.
+ */
+function _gxtDestroyComponentsOfDestroyedBlocks(): void {
+  const errors: unknown[] = [];
+  while (_componentsOfDestroyedBlocks.length > 0) {
+    const entries = _componentsOfDestroyedBlocks.splice(0).sort((a, b) => a.order - b.order);
+    try {
+      join(() => {
+        for (const entry of entries) {
+          if (entry.destroyed) continue;
+          entry.destroyed = true;
+          const index = _customManagedInstances.indexOf(entry);
+          if (index !== -1) _customManagedInstances.splice(index, 1);
+          try {
+            entry.destroyFn();
+          } catch (error) {
+            errors.push(error);
+          }
+        }
+      });
+    } catch (error) {
+      // A scheduled destructor (`willDestroy`) threw when the run loop ended.
+      errors.push(error);
+    }
+  }
+  if (errors.length > 0) throw errors[0];
+}
+
+function _gxtDestroyComponentsOfDestroyedBlocksOutsideSync(): void {
+  if (!getGxtRenderer()?.compilePipeline.isSyncing?.()) {
+    _gxtDestroyComponentsOfDestroyedBlocks();
   }
 }
 
@@ -9759,7 +9979,9 @@ function _renderClassBodyComponent(
 // The gxt render-tree node of a component its manager (`delegate`) created:
 // the manager's context, with a gxt tree id, the component's class-body
 // template (else Glimmer's default `{{yield}}`) as its `[$template]`, and a gxt
-// destructor that runs the manager's `destroyComponent`.
+// destructor that destroys the component as the components of a destroyed
+// block are (`_gxtDestroyComponentsOfDestroyedBlocks`): its manager's
+// `destroyComponent` runs in the run loop that tore the node down.
 function _gxtComponentNode(delegate: any, component: any): any {
   const context =
     typeof delegate.getContext === 'function' ? delegate.getContext(component) : component;
@@ -9778,7 +10000,20 @@ function _gxtComponentNode(delegate: any, component: any): any {
     });
   }
   if (delegate.capabilities?.destructor && typeof delegate.destroyComponent === 'function') {
-    _gxtRegisterDestructor(node, () => delegate.destroyComponent(component));
+    const entry: CustomManagedEntry = {
+      node: null,
+      region: null,
+      destroyFn: () => delegate.destroyComponent(component),
+      release: () => {},
+      destroyed: false,
+      order: ++_customManagedOrder,
+      block: null,
+      blockDestroyed: false,
+    };
+    _gxtRegisterDestructor(node, () => {
+      _queueComponentOfDestroyedBlock(entry);
+      _gxtDestroyComponentsOfDestroyedBlocksOutsideSync();
+    });
   }
   return node;
 }
@@ -10320,6 +10555,10 @@ function handleCustomManagedComponent(
     let context: any;
     let isRerender = false;
     const asyncCaps = actualManager.capabilities;
+    // When the component is created: its place in the creation order, before
+    // the components its template renders, and the block it renders in.
+    let order = 0;
+    let block: object | null = null;
 
     if (cachedEntry) {
       // Reuse existing instance — call updateComponent
@@ -10385,6 +10624,8 @@ function handleCustomManagedComponent(
           : null;
       const capturedArgs = { named: classBodyArgs ?? liveNamed, positional: livePositional };
       instance = actualManager.createComponent(ComponentClass, capturedArgs);
+      order = ++_customManagedOrder;
+      block = _gxtBlockOf(ctx);
 
       if (classBodyArgs !== null && _hasClassBodyTemplate(instance)) {
         const component = instance;
@@ -10626,26 +10867,35 @@ function handleCustomManagedComponent(
     if (context && context !== renderContext && context !== instance)
       hideGxtInternalPropsOn(context);
 
-    // Set up destructor on initial render only
+    // Set up destructor on initial render only: the component is destroyed with
+    // the block it rendered in (`_trackBlockComponent`), or once its nodes left
+    // the document (`_gxtDestroyCustomManagedInstances`), whichever comes first.
     if (
       !isRerender &&
       asyncCaps?.destructor &&
       typeof actualManager.destroyComponent === 'function'
     ) {
-      const destroyFn = () => {
-        actualManager.destroyComponent(instance);
+      const release = () => {
         const idx = pool!.findIndex((e) => e.instance === instance);
         if (idx >= 0) pool!.splice(idx, 1);
       };
+      const destroyFn = () => {
+        actualManager.destroyComponent(instance);
+        release();
+      };
       const firstChild = container.firstChild;
-      if (firstChild) {
-        _customManagedInstances.push({
-          node: firstChild,
-          region: _dynamicRegionByFirstNode.get(firstChild) ?? null,
-          destroyFn,
-          destroyed: false,
-        });
-      }
+      const entry: CustomManagedEntry = {
+        node: firstChild,
+        region: firstChild !== null ? (_dynamicRegionByFirstNode.get(firstChild) ?? null) : null,
+        destroyFn,
+        release,
+        destroyed: false,
+        order,
+        block,
+        blockDestroyed: false,
+      };
+      _customManagedInstances.push(entry);
+      _trackBlockComponent(entry);
     }
 
     // Custom-managed arg reactivity.
@@ -14026,6 +14276,10 @@ setGxtRenderer({
     destroyEmberComponentInstance: _gxtDestroyEmberComponentInstance,
     finalizeInverseOldRows: _gxtFinalizeInverseOldRows,
     registerDynamicRegion: _gxtRegisterDynamicRegion,
+    currentBlock: gxtCurrentBlock,
+    renderInBlock: gxtRenderInBlock,
+    destroyBlock: gxtDestroyBlock,
+    destroyComponentsOfDestroyedBlocks: _gxtDestroyComponentsOfDestroyedBlocks,
   },
   backtracking: {
     beginFrame: beginBacktrackingFrame,

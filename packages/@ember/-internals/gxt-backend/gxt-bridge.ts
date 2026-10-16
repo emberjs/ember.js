@@ -95,6 +95,31 @@ export interface GxtDestructionCapabilities {
    * the document while the content is, whatever definition it renders.
    */
   registerDynamicRegion?(first: Node, region: { first(): Node }): void;
+
+  /**
+   * The block a component rendered now is in: the block whose content is
+   * rendering (`renderInBlock`), else the root of the render.
+   */
+  currentBlock?(): object | null;
+
+  /**
+   * Render `render` as the content of `block`, a block created in `parent`
+   * (the `currentBlock()` where it was created): the components with a custom
+   * manager that it renders are destroyed when `block` or `parent` is.
+   */
+  renderInBlock?<T>(block: object, parent: object | null, render: () => T): T;
+
+  /**
+   * Destroy the components with a custom manager rendered in `block` and in the
+   * blocks created in it: at the end of the sync, or now outside one.
+   */
+  destroyBlock?(block: object): void;
+
+  /**
+   * Destroy the components with a custom manager of the blocks destroyed so
+   * far, in one run loop (the end of the sync).
+   */
+  destroyComponentsOfDestroyedBlocks?(): void;
 }
 
 /**
