@@ -4641,36 +4641,32 @@ function _gxtSnapshotLiveInstances(): void {
 // and finally drops the instance from the tracking sets. They differ in which
 // instances they skip (deferred each→empty rows, rows whose willDestroyElement
 // already fired) and in what they do with an error thrown by `destroy()`:
-// the unclaimed-pool sweep rethrows the first one after the sweep (unless the
-// sync was not property-driven), the test-teardown sweep queues it for
-// `flushRenderErrors`, and the dynamic-component swap, the each→empty
-// finalizer and the removed-nodes sweep drop it (the callers of the first two
-// drop errors anyway; a throw out of the removed-nodes sweep would abort the
-// curried re-render that called it).
+// the unclaimed-pool sweep and the each→empty finalizer rethrow the first one
+// after the sweep (the former unless the sync was not property-driven), the
+// test-teardown sweep and the removed-nodes sweep queue it for
+// `flushRenderErrors` (a throw out of the removed-nodes sweep would abort the
+// curried re-render that called it), and the dynamic-component swap throws it
+// to the swap, which records it as the dynamic component's error.
 
+// The ambient owner's view registry; none once the owner is destroyed (its
+// container's `lookup` asserts then).
 function _lookupViewRegistry(): any {
-  try {
-    return getAmbientOwner()?.lookup?.('-view-registry:main');
-  } catch {
-    return undefined;
-  }
+  const owner: any = getAmbientOwner();
+  if (!owner || owner.isDestroyed || owner.isDestroying) return undefined;
+  return owner.lookup?.('-view-registry:main');
 }
 
 // Phase 1 for one instance: move it to 'inDOM' (an instance rendered without
 // the insert transition may still be 'hasElement'/'preRender', and
 // willDestroyElement hooks assert the state), then fire the hooks.
+// triggerLifecycleHook queues an Error the hooks throw; anything else
+// (expectAssertion's sentinel) propagates.
 function _firePreDestroyHooks(instance: any): void {
-  try {
-    if (instance._transitionTo && instance._state !== 'inDOM') {
-      try {
-        instance._transitionTo('inDOM');
-      } catch {}
-    }
-    triggerLifecycleHook(instance, 'willDestroyElement');
-    triggerLifecycleHook(instance, 'willClearRender');
-  } catch {
-    /* ignore */
+  if (instance._transitionTo && instance._state !== 'inDOM') {
+    instance._transitionTo('inDOM');
   }
+  triggerLifecycleHook(instance, 'willDestroyElement');
+  triggerLifecycleHook(instance, 'willClearRender');
 }
 
 // Re-attach each instance's detached element to `#qunit-fixture` (or `body`)
@@ -4679,14 +4675,10 @@ function _reattachDetachedElements(instances: Iterable<any>): HTMLElement[] {
   const container = document.getElementById('qunit-fixture') || document.body;
   const reattached: HTMLElement[] = [];
   for (const instance of instances) {
-    try {
-      const el = getViewElement(instance);
-      if (el instanceof HTMLElement && !el.isConnected) {
-        container.appendChild(el);
-        reattached.push(el);
-      }
-    } catch {
-      /* ignore */
+    const el = getViewElement(instance);
+    if (el instanceof HTMLElement && !el.isConnected) {
+      container.appendChild(el);
+      reattached.push(el);
     }
   }
   return reattached;
@@ -4694,34 +4686,18 @@ function _reattachDetachedElements(instances: Iterable<any>): HTMLElement[] {
 
 function _detachElements(elements: readonly HTMLElement[]): void {
   for (const element of elements) {
-    try {
-      if (element.parentNode) element.parentNode.removeChild(element);
-    } catch {
-      /* ignore */
-    }
+    if (element.parentNode) element.parentNode.removeChild(element);
   }
 }
 
 // Phase 2 up to didDestroyElement: 'destroying', `this.element` cleared,
 // view-registry entry removed.
 function _clearViewForDestroy(instance: any, viewRegistry: any): void {
-  try {
-    if (instance._transitionTo) instance._transitionTo('destroying');
-  } catch {
-    /* ignore */
-  }
-  try {
-    setViewElement(instance, null);
-  } catch {
-    /* ignore */
-  }
-  try {
-    if (viewRegistry) {
-      const viewId = getViewId(instance);
-      if (viewId) delete viewRegistry[viewId];
-    }
-  } catch {
-    /* ignore */
+  if (instance._transitionTo) instance._transitionTo('destroying');
+  setViewElement(instance, null);
+  if (viewRegistry) {
+    const viewId = getViewId(instance);
+    if (viewId) delete viewRegistry[viewId];
   }
 }
 
@@ -4776,186 +4752,171 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
     if (!instance || seen.has(instance)) continue;
     seen.add(instance);
 
-    try {
-      // After a force-rerender, the instance's element may point to a new
-      // wrapper (in a temp container, not connected) even though the old
-      // element is preserved and still connected. Use getElementById as the
-      // authoritative check: if there's a live element with this instance's
-      // elementId, the component is alive.
-      const el = getViewElement(instance);
-      let isAlive = false;
+    // After a force-rerender, the instance's element may point to a new
+    // wrapper (in a temp container, not connected) even though the old
+    // element is preserved and still connected. Use getElementById as the
+    // authoritative check: if there's a live element with this instance's
+    // elementId, the component is alive.
+    const el = getViewElement(instance);
+    let isAlive = false;
 
-      // Primary check: is the instance's element still in the DOM?
-      //
-      // NOTE: we deliberately do NOT treat "hosted inside a detached
-      // {{#in-element}} destination" as alive here. On a `{{#if}}` collapse
-      // the in-element block is no longer rendered, but its previously-emitted
-      // DOM is still sitting inside the (possibly detached) destination
-      // element — so a host-membership test would wrongly keep the component
-      // alive forever and never tear it down. Liveness for in-element-hosted
-      // components is instead established by the pass-gated claimed-in-pool
-      // check below (only true when the block was actually re-rendered THIS
-      // pass).
-      if (el && el.isConnected) {
+    // Primary check: is the instance's element still in the DOM?
+    //
+    // NOTE: we deliberately do NOT treat "hosted inside a detached
+    // {{#in-element}} destination" as alive here. On a `{{#if}}` collapse
+    // the in-element block is no longer rendered, but its previously-emitted
+    // DOM is still sitting inside the (possibly detached) destination
+    // element — so a host-membership test would wrongly keep the component
+    // alive forever and never tear it down. Liveness for in-element-hosted
+    // components is instead established by the pass-gated claimed-in-pool
+    // check below (only true when the block was actually re-rendered THIS
+    // pass).
+    if (el && el.isConnected) {
+      isAlive = true;
+    }
+
+    // In-element-hosted liveness.
+    //
+    // A component rendered inside `{{#if cond}}{{#in-element detachedDiv}}
+    // {{my-component}}{{/in-element}}{{/if}}` is `el.isConnected === false`
+    // (the destination div is never appended to the document), so the
+    // primary check above misses it. The pass-gated claimed-in-pool check
+    // below ALSO misses it: the in-element block is rendered DURING
+    // `gxtSyncDom` (Phase 1, render-pass id N), but the root template's
+    // force-rerender (Phase 2b) increments the render-pass id to N+1 — so by
+    // the Phase 2c sweep the modal's pool carries `__lastPassId === N` while
+    // `sweepPassId === N+1`, the pool is `continue`d, the still-claimed entry
+    // is never seen → the modal is wrongly swept (willDestroyElement fires,
+    // content is removed from the host, didInsertElement is skipped).
+    //
+    // We recognize the modal as alive when (a) its element is still a
+    // descendant of an `{{#in-element}}` host (tagged `__gxtIsInElementHost`)
+    // AND (b) that host's current block placeholder is STILL CONNECTED to the
+    // live document. Condition (b) is the precise reuse-vs-collapse
+    // discriminator: the placeholder is the comment node `$_inElement`
+    // returns into the live template tree at the block's `{{#in-element}}`
+    // position. On a reactive update that does NOT toggle the enclosing
+    // `{{#if}}` (e.g. `set(text, ...)`), the placeholder stays connected and
+    // the modal must survive. On a `{{#if}}` collapse the branch teardown
+    // tears the placeholder out of the live DOM (placeholder.isConnected
+    // becomes false) BEFORE the modal's own destroy runs — but the modal's
+    // detached-host DOM lingers, so host-membership alone would wrongly keep
+    // it alive forever. The placeholder-connectivity gate lets the sweep
+    // correctly tear the modal down on collapse while preserving it across
+    // value-only re-renders.
+    if (
+      !isAlive &&
+      el &&
+      !instance.isDestroyed &&
+      !instance.isDestroying &&
+      isElementLiveOrInElementHosted(el)
+    ) {
+      // Walk up to the tagged in-element host and check its block
+      // placeholder's live-DOM connectivity.
+      let host: any = el;
+      let depth = 0;
+      while (host && depth < 200) {
+        if ((host as any).__gxtIsInElementHost) break;
+        host = (host as Node).parentNode;
+        depth++;
+      }
+      const ph = host && (host as any).__gxtInElementPlaceholder;
+      if (ph && (ph as Node & { isConnected: boolean }).isConnected) {
         isAlive = true;
       }
+    }
 
-      // In-element-hosted liveness.
-      //
-      // A component rendered inside `{{#if cond}}{{#in-element detachedDiv}}
-      // {{my-component}}{{/in-element}}{{/if}}` is `el.isConnected === false`
-      // (the destination div is never appended to the document), so the
-      // primary check above misses it. The pass-gated claimed-in-pool check
-      // below ALSO misses it: the in-element block is rendered DURING
-      // `gxtSyncDom` (Phase 1, render-pass id N), but the root template's
-      // force-rerender (Phase 2b) increments the render-pass id to N+1 — so by
-      // the Phase 2c sweep the modal's pool carries `__lastPassId === N` while
-      // `sweepPassId === N+1`, the pool is `continue`d, the still-claimed entry
-      // is never seen → the modal is wrongly swept (willDestroyElement fires,
-      // content is removed from the host, didInsertElement is skipped).
-      //
-      // We recognize the modal as alive when (a) its element is still a
-      // descendant of an `{{#in-element}}` host (tagged `__gxtIsInElementHost`)
-      // AND (b) that host's current block placeholder is STILL CONNECTED to the
-      // live document. Condition (b) is the precise reuse-vs-collapse
-      // discriminator: the placeholder is the comment node `$_inElement`
-      // returns into the live template tree at the block's `{{#in-element}}`
-      // position. On a reactive update that does NOT toggle the enclosing
-      // `{{#if}}` (e.g. `set(text, ...)`), the placeholder stays connected and
-      // the modal must survive. On a `{{#if}}` collapse the branch teardown
-      // tears the placeholder out of the live DOM (placeholder.isConnected
-      // becomes false) BEFORE the modal's own destroy runs — but the modal's
-      // detached-host DOM lingers, so host-membership alone would wrongly keep
-      // it alive forever. The placeholder-connectivity gate lets the sweep
-      // correctly tear the modal down on collapse while preserving it across
-      // value-only re-renders.
-      if (
-        !isAlive &&
-        el &&
-        !instance.isDestroyed &&
-        !instance.isDestroying &&
-        isElementLiveOrInElementHosted(el)
-      ) {
-        // Walk up to the tagged in-element host and check its block
-        // placeholder's live-DOM connectivity.
-        let host: any = el;
-        let depth = 0;
-        while (host && depth < 200) {
-          if ((host as any).__gxtIsInElementHost) break;
-          host = (host as Node).parentNode;
-          depth++;
-        }
-        const ph = host && (host as any).__gxtInElementPlaceholder;
-        if (ph && (ph as Node & { isConnected: boolean }).isConnected) {
-          isAlive = true;
-        }
-      }
-
-      // Claimed-in-pool check: an instance that was claimed (reused) in the
-      // current render pass is alive regardless of DOM connectivity. This
-      // matters for components rendered inside an `{{#in-element}}` whose
-      // target is a detached element (e.g. `document.createElement('div')`
-      // never appended to the document) — their `el.isConnected` is always
-      // `false`, but they are legitimately alive and reused across
-      // re-renders. Without this, the sweep destroys+recreates the
-      // in-element component on every reactive change, firing
-      // willDestroyElement repeatedly and never letting didInsertElement
-      // flush.
-      //
-      // We gate on the pool's `__lastPassId === currentPassId`: the `claimed`
-      // flag is only reset to `false` when a new render pass touches the pool
-      // (getCachedOrCreateInstance). When the `{{#if}}` collapses and the
-      // in-element block is not re-rendered, its pool keeps a stale
-      // `claimed=true` from the prior pass — we must not treat that as alive,
-      // otherwise the component never gets torn down on collapse. Gating on
-      // the current pass id ensures only genuinely-reused-this-pass instances
-      // survive the sweep.
-      if (!isAlive) {
-        const sweepPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-        for (const pool of _allPoolArrays) {
-          if ((pool as any).__lastPassId !== sweepPassId) continue;
-          let claimedHere = false;
-          for (const entry of pool) {
-            if (
-              entry.instance === instance &&
-              entry.claimed &&
-              !instance.isDestroyed &&
-              !instance.isDestroying
-            ) {
-              claimedHere = true;
-              break;
-            }
-          }
-          if (claimedHere) {
-            isAlive = true;
+    // Claimed-in-pool check: an instance that was claimed (reused) in the
+    // current render pass is alive regardless of DOM connectivity. This
+    // matters for components rendered inside an `{{#in-element}}` whose
+    // target is a detached element (e.g. `document.createElement('div')`
+    // never appended to the document) — their `el.isConnected` is always
+    // `false`, but they are legitimately alive and reused across
+    // re-renders. Without this, the sweep destroys+recreates the
+    // in-element component on every reactive change, firing
+    // willDestroyElement repeatedly and never letting didInsertElement
+    // flush.
+    //
+    // We gate on the pool's `__lastPassId === currentPassId`: the `claimed`
+    // flag is only reset to `false` when a new render pass touches the pool
+    // (getCachedOrCreateInstance). When the `{{#if}}` collapses and the
+    // in-element block is not re-rendered, its pool keeps a stale
+    // `claimed=true` from the prior pass — we must not treat that as alive,
+    // otherwise the component never gets torn down on collapse. Gating on
+    // the current pass id ensures only genuinely-reused-this-pass instances
+    // survive the sweep.
+    if (!isAlive) {
+      const sweepPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+      for (const pool of _allPoolArrays) {
+        if ((pool as any).__lastPassId !== sweepPassId) continue;
+        let claimedHere = false;
+        for (const entry of pool) {
+          if (
+            entry.instance === instance &&
+            entry.claimed &&
+            !instance.isDestroyed &&
+            !instance.isDestroying
+          ) {
+            claimedHere = true;
             break;
           }
         }
-      }
-
-      // Tagless components (tagName === '') use DocumentFragments which are
-      // never "connected" after insertion. Consider them alive if they were
-      // rendered in the current pass or if they are claimed in a pool.
-      if (!isAlive && instance.tagName === '' && !instance.isDestroyed && !instance.isDestroying) {
-        const passId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-        if (
-          instance.__gxtRenderedInPass === passId ||
-          _currentPassRenderedInstances.has(instance)
-        ) {
+        if (claimedHere) {
           isAlive = true;
+          break;
         }
       }
+    }
 
-      // Secondary check: is there a live DOM element with this elementId?
-      // (a force-rerender may have preserved the old element while the instance
-      // points to the new one)
-      if (!isAlive && instance.elementId) {
-        const liveEl = document.getElementById(String(instance.elementId));
-        if (liveEl && liveEl.isConnected) {
-          // Re-point the instance to the live element
-          try {
-            setViewElement(instance, liveEl);
-          } catch {
-            /* ignore */
-          }
-          try {
-            setElementView(liveEl, instance);
-          } catch {
-            /* ignore */
-          }
-          isAlive = true;
-        }
+    // Tagless components (tagName === '') use DocumentFragments which are
+    // never "connected" after insertion. Consider them alive if they were
+    // rendered in the current pass or if they are claimed in a pool.
+    if (!isAlive && instance.tagName === '' && !instance.isDestroyed && !instance.isDestroying) {
+      const passId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+      if (instance.__gxtRenderedInPass === passId || _currentPassRenderedInstances.has(instance)) {
+        isAlive = true;
       }
+    }
 
-      // Check for instances explicitly marked for destruction during the
-      // force-rerender (e.g., dynamic component switching via {{component}}).
-      // These are added to `_instancesMarkedForDestruction` by the rendering
-      // code when a new instance replaces an old one at the same position.
-      if (isAlive) {
-        if (_instancesMarkedForDestruction.has(instance)) {
-          isAlive = false;
-          _instancesMarkedForDestruction.delete(instance);
-        }
+    // Secondary check: is there a live DOM element with this elementId?
+    // (a force-rerender may have preserved the old element while the instance
+    // points to the new one)
+    if (!isAlive && instance.elementId) {
+      const liveEl = document.getElementById(String(instance.elementId));
+      if (liveEl && liveEl.isConnected) {
+        // Re-point the instance to the live element
+        setViewElement(instance, liveEl);
+        setElementView(liveEl, instance);
+        isAlive = true;
       }
+    }
 
-      if (!isAlive) {
-        unclaimed.push(instance);
-        // Clean up tracked sets
-        for (const entry of trackedArgCells) {
-          if (entry.instance === instance) {
-            trackedArgCells.delete(entry);
-            break;
-          }
-        }
-        for (const entry of trackedWrapperInstances) {
-          if (entry.instance === instance) {
-            trackedWrapperInstances.delete(entry);
-            break;
-          }
+    // Check for instances explicitly marked for destruction during the
+    // force-rerender (e.g., dynamic component switching via {{component}}).
+    // These are added to `_instancesMarkedForDestruction` by the rendering
+    // code when a new instance replaces an old one at the same position.
+    if (isAlive) {
+      if (_instancesMarkedForDestruction.has(instance)) {
+        isAlive = false;
+        _instancesMarkedForDestruction.delete(instance);
+      }
+    }
+
+    if (!isAlive) {
+      unclaimed.push(instance);
+      // Clean up tracked sets
+      for (const entry of trackedArgCells) {
+        if (entry.instance === instance) {
+          trackedArgCells.delete(entry);
+          break;
         }
       }
-    } catch {
-      /* ignore element access errors */
+      for (const entry of trackedWrapperInstances) {
+        if (entry.instance === instance) {
+          trackedWrapperInstances.delete(entry);
+          break;
+        }
+      }
     }
   }
   _preRerenderSnapshot.clear();
@@ -4992,38 +4953,39 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
     _suppressDestroyCapture = true;
   }
 
-  // Phase 1: willDestroyElement + willClearRender.
-  // The elements have been detached from the DOM by innerHTML=''.
-  // Temporarily re-attach them so tests that check
-  // document.body.contains(this.element) during these hooks see true.
-
-  // Set a flag so that an <ember-outlet> connectedCallback fired by the
-  // temporary reattachment does not render content. Otherwise an inner
-  // <ember-outlet> element reconnects to the live DOM, reads the current
-  // (new) outlet state, and renders the new route's template with the old
-  // component still on the parentView stack — so new-route components get
-  // the wrong parentView and disappear from getRootViews.
-  //
-  // The flag lives in compile.ts and is set through the bridge.
-  getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(true);
-  let reattached: HTMLElement[];
+  let firstPhase3Error: Error | null = null;
   try {
-    reattached = _reattachDetachedElements(unclaimed);
-  } finally {
-    getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(false);
-  }
+    // Phase 1: willDestroyElement + willClearRender.
+    // The elements have been detached from the DOM by innerHTML=''.
+    // Temporarily re-attach them so tests that check
+    // document.body.contains(this.element) during these hooks see true.
 
-  for (const instance of unclaimed) {
-    _firePreDestroyHooks(instance);
-  }
-
-  _detachElements(reattached);
-
-  // Phase 2: transition to destroying, clear element, didDestroyElement
-  const _dde2cCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-  for (const instance of unclaimed) {
-    _clearViewForDestroy(instance, viewRegistry);
+    // Set a flag so that an <ember-outlet> connectedCallback fired by the
+    // temporary reattachment does not render content. Otherwise an inner
+    // <ember-outlet> element reconnects to the live DOM, reads the current
+    // (new) outlet state, and renders the new route's template with the old
+    // component still on the parentView stack — so new-route components get
+    // the wrong parentView and disappear from getRootViews.
+    //
+    // The flag lives in compile.ts and is set through the bridge.
+    getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(true);
+    let reattached: HTMLElement[];
     try {
+      reattached = _reattachDetachedElements(unclaimed);
+    } finally {
+      getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(false);
+    }
+
+    for (const instance of unclaimed) {
+      _firePreDestroyHooks(instance);
+    }
+
+    _detachElements(reattached);
+
+    // Phase 2: transition to destroying, clear element, didDestroyElement
+    const _dde2cCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+    for (const instance of unclaimed) {
+      _clearViewForDestroy(instance, viewRegistry);
       // Skip didDestroyElement here when the each→empty inverse-branch finalizer
       // (compile.ts `_gxtSyncDomNow` Phase 3c) OWNS this row's async teardown —
       // it must fire AFTER the new inverse content's didInsertElement (Phase 3b)
@@ -5036,47 +4998,42 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       if (!_isDeferred && !_alreadyFired) {
         triggerLifecycleHook(instance, 'didDestroyElement');
       }
-    } catch {
-      /* ignore */
     }
-  }
 
-  // Phase 3: destroy (fires willDestroy)
-  //
-  // During gxtSyncDomNow an outer Ember run loop is usually active (opened
-  // by the force-rerender path via classicRoot.render()). `instance.destroy()`
-  // schedules the willDestroy destructor onto backburner's 'actions' queue;
-  // that queue only flushes when the outermost run loop ends — which happens
-  // after gxtSyncDomNow returns, after runTask's finally clauses, and after
-  // the test's next synchronous assertion has inspected the hooks, so each-row
-  // willDestroys would be attributed to the wrong assertion.
-  //
-  // Fire the user's `willDestroy` synchronously here, immediately after
-  // `instance.destroy()` has transitioned the instance to DESTROYING state.
-  // The wrapper installed in createComponentInstance guards double-fire via
-  // __gxtWillDestroyFired, so the backburner-scheduled destructor call later
-  // is a safe no-op.
-  //
-  // Scope the sync-fire to instances that existed before this sync cycle
-  // (`__gxtCreatedInSyncCycle !== currentCycle`). In-cycle instances are
-  // either phantoms superseded by a force-rerender or newly-rendered
-  // inverse-branch components; their willDestroy timing should match the
-  // stock deferred flow because the test either (a) doesn't count them in
-  // the current assertion (phantoms are filtered by the everInserted gate
-  // in the wrapper) or (b) expects them to survive to the afterEach
-  // teardown where the deferred destructor fires normally.
-  const currentCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-  // First-error-wins for Phase 3 destroy/willDestroy throws. Loop iterates to
-  // completion so every unclaimed instance gets a destroy attempt, then we
-  // re-throw the first error at the end. The throw escapes `_gxtSyncDomNow`
-  // (compile.ts stores it in the module-local `_gxtDeferredSyncError` and
-  // re-throws it at the tail of `_gxtSyncDomNow` after the outer try/finally
-  // has reset the sync-state flags), which lets runTask propagate the error
-  // to assert.throws naturally — without needing a post-task
-  // flushRenderErrors() drain of _renderErrors.
-  let firstPhase3Error: Error | null = null;
-  for (const instance of unclaimed) {
-    try {
+    // Phase 3: destroy (fires willDestroy)
+    //
+    // During gxtSyncDomNow an outer Ember run loop is usually active (opened
+    // by the force-rerender path via classicRoot.render()). `instance.destroy()`
+    // schedules the willDestroy destructor onto backburner's 'actions' queue;
+    // that queue only flushes when the outermost run loop ends — which happens
+    // after gxtSyncDomNow returns, after runTask's finally clauses, and after
+    // the test's next synchronous assertion has inspected the hooks, so each-row
+    // willDestroys would be attributed to the wrong assertion.
+    //
+    // Fire the user's `willDestroy` synchronously here, immediately after
+    // `instance.destroy()` has transitioned the instance to DESTROYING state.
+    // The wrapper installed in createComponentInstance guards double-fire via
+    // __gxtWillDestroyFired, so the backburner-scheduled destructor call later
+    // is a safe no-op.
+    //
+    // Scope the sync-fire to instances that existed before this sync cycle
+    // (`__gxtCreatedInSyncCycle !== currentCycle`). In-cycle instances are
+    // either phantoms superseded by a force-rerender or newly-rendered
+    // inverse-branch components; their willDestroy timing should match the
+    // stock deferred flow because the test either (a) doesn't count them in
+    // the current assertion (phantoms are filtered by the everInserted gate
+    // in the wrapper) or (b) expects them to survive to the afterEach
+    // teardown where the deferred destructor fires normally.
+    const currentCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+    // First-error-wins for Phase 3 destroy/willDestroy throws. Loop iterates to
+    // completion so every unclaimed instance gets a destroy attempt, then we
+    // re-throw the first error at the end. The throw escapes `_gxtSyncDomNow`
+    // (compile.ts stores it in the module-local `_gxtDeferredSyncError` and
+    // re-throws it at the tail of `_gxtSyncDomNow` after the outer try/finally
+    // has reset the sync-state flags), which lets runTask propagate the error
+    // to assert.throws naturally — without needing a post-task
+    // flushRenderErrors() drain of _renderErrors.
+    for (const instance of unclaimed) {
       // Skip rows whose async teardown is DEFERRED to the each→empty
       // inverse-branch finalizer (compile.ts `_gxtSyncDomNow` Phase 3c). Firing
       // destroy()/willDestroy here would emit willDestroy BEFORE the new
@@ -5112,33 +5069,31 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
           }
         }
       }
-    } catch {
-      /* ignore unexpected non-destroy/willDestroy errors */
     }
-  }
 
-  // Remove from tracked sets
-  for (const instance of unclaimed) {
-    _allLiveInstances.delete(instance);
-    _allCreatedInstances.delete(instance);
-    for (const entry of trackedArgCells) {
-      if (entry.instance === instance) {
-        trackedArgCells.delete(entry);
+    // Remove from tracked sets
+    for (const instance of unclaimed) {
+      _allLiveInstances.delete(instance);
+      _allCreatedInstances.delete(instance);
+      for (const entry of trackedArgCells) {
+        if (entry.instance === instance) {
+          trackedArgCells.delete(entry);
+        }
+      }
+      for (const entry of trackedWrapperInstances) {
+        if (entry.instance === instance) {
+          trackedWrapperInstances.delete(entry);
+        }
       }
     }
-    for (const entry of trackedWrapperInstances) {
-      if (entry.instance === instance) {
-        trackedWrapperInstances.delete(entry);
-      }
+  } finally {
+    // Restore the prior suppress-capture flag (only if we set it ourselves),
+    // also when a hook threw. When `_hadPriorSuppress` is false (the
+    // entry-arm condition), the flag was `false` before we set it to `true`,
+    // so restoring to `false` is equivalent to a snapshot-restore.
+    if (_outerSuppressCapture && !_hadPriorSuppress) {
+      _suppressDestroyCapture = false;
     }
-  }
-
-  // Restore the prior suppress-capture flag (only if we set it ourselves).
-  // When `_hadPriorSuppress` is false (the entry-arm condition), the flag was
-  // `false` before we set it to `true`, so restoring to `false` is equivalent
-  // to a snapshot-restore.
-  if (_outerSuppressCapture && !_hadPriorSuppress) {
-    _suppressDestroyCapture = false;
   }
 
   // Surface the first Phase 3 destroy/willDestroy error after all cleanup so
@@ -5200,29 +5155,23 @@ function _gxtDestroyTrackedInstances(): void {
 
   // Phase 1: willDestroyElement + willClearRender (top-down, element still present)
   for (const instance of instances) {
-    try {
-      // Ensure instance is in inDOM state before destroy hooks.
-      // Tagless components that never had an element set can still be
-      // logically in the DOM (their content nodes are live), but the
-      // internal _state may still be 'hasElement' if the after-insert
-      // queue didn't flush (e.g., during test teardown). The test's
-      // willDestroyElement hook asserts _state === 'inDOM', so we force
-      // the transition here to mirror the classic manager's behavior.
-      if (
-        instance._transitionTo &&
-        instance._state !== 'inDOM' &&
-        instance._state !== 'destroying' &&
-        instance._state !== 'preRender'
-      ) {
-        try {
-          instance._transitionTo('inDOM');
-        } catch {}
-      }
-      triggerLifecycleHook(instance, 'willDestroyElement');
-      triggerLifecycleHook(instance, 'willClearRender');
-    } catch {
-      /* ignore */
+    // Ensure instance is in inDOM state before destroy hooks.
+    // Tagless components that never had an element set can still be
+    // logically in the DOM (their content nodes are live), but the
+    // internal _state may still be 'hasElement' if the after-insert
+    // queue didn't flush (e.g., during test teardown). The test's
+    // willDestroyElement hook asserts _state === 'inDOM', so we force
+    // the transition here to mirror the classic manager's behavior.
+    if (
+      instance._transitionTo &&
+      instance._state !== 'inDOM' &&
+      instance._state !== 'destroying' &&
+      instance._state !== 'preRender'
+    ) {
+      instance._transitionTo('inDOM');
     }
+    triggerLifecycleHook(instance, 'willDestroyElement');
+    triggerLifecycleHook(instance, 'willClearRender');
   }
 
   // Phase 1b: Custom modifier teardown sweep.
@@ -5259,11 +5208,8 @@ function _gxtDestroyTrackedInstances(): void {
           // so they propagate to assert.throws — do not silently swallow.
           captureRenderError(err);
         }
-        try {
-          modInstance.__gxtModDestroyed = true;
-        } catch {
-          /* sealed instance */
-        }
+        // Stamped as its `__gxtModManager` was at install.
+        modInstance.__gxtModDestroyed = true;
       }
     }
   } catch (err) {
@@ -5275,11 +5221,7 @@ function _gxtDestroyTrackedInstances(): void {
   const viewRegistry = _lookupViewRegistry();
   for (const instance of instances) {
     _clearViewForDestroy(instance, viewRegistry);
-    try {
-      triggerLifecycleHook(instance, 'didDestroyElement');
-    } catch {
-      /* ignore */
-    }
+    triggerLifecycleHook(instance, 'didDestroyElement');
   }
 
   // Phase 3: destroy (fires willDestroy)
@@ -5340,20 +5282,15 @@ function _gxtDestroyEmberComponentInstance(instance: any): void {
 
   // Phase 2: transition to destroying, clear element, didDestroyElement
   _clearViewForDestroy(instance, viewRegistry);
-  try {
-    triggerLifecycleHook(instance, 'didDestroyElement');
-  } catch {
-    /* ignore */
-  }
+  triggerLifecycleHook(instance, 'didDestroyElement');
 
-  // Phase 3: destroy (fires willDestroy)
+  // Phase 3: destroy (fires willDestroy). What it throws reaches the swap,
+  // which records it as the dynamic component's error.
   try {
     _destroyIfAlive(instance);
-  } catch {
-    /* ignore */
+  } finally {
+    _untrackDestroyedInstance(instance, true);
   }
-
-  _untrackDestroyedInstance(instance, true);
 }
 
 /**
@@ -5380,16 +5317,19 @@ function _gxtDestroyEmberComponentInstance(instance: any): void {
 function _gxtFinalizeInverseOldRows(rows: ReadonlyArray<any>, cycle: number): void {
   if (!rows || rows.length === 0) return;
   const viewRegistry = _lookupViewRegistry();
+  // What the rows' hooks and destroy throw is thrown once every row was
+  // finalized (the first error).
+  const errors: unknown[] = [];
   // Phase 2: didDestroyElement (element cleared first).
   for (const instance of rows) {
     if (!instance || instance.isDestroyed) continue;
+    if ((instance as any).__gxtDDEFiredCycle === cycle) continue;
+    (instance as any).__gxtDDEFiredCycle = cycle;
+    _clearViewForDestroy(instance, viewRegistry);
     try {
-      if ((instance as any).__gxtDDEFiredCycle === cycle) continue;
-      (instance as any).__gxtDDEFiredCycle = cycle;
-      _clearViewForDestroy(instance, viewRegistry);
       triggerLifecycleHook(instance, 'didDestroyElement');
-    } catch {
-      /* user override may throw */
+    } catch (error) {
+      errors.push(error);
     }
   }
   // Phase 3: willDestroy (via destroy(); double-fire-guarded).
@@ -5400,8 +5340,8 @@ function _gxtFinalizeInverseOldRows(rows: ReadonlyArray<any>, cycle: number): vo
       if (typeof instance.willDestroy === 'function' && !(instance as any).__gxtWillDestroyFired) {
         instance.willDestroy();
       }
-    } catch {
-      /* user override may throw */
+    } catch (error) {
+      errors.push(error);
     }
     // Drop from ALL tracking sets so the test-teardown sweep
     // (`_gxtDestroyTrackedInstances`) does not re-fire didDestroyElement /
@@ -5411,6 +5351,7 @@ function _gxtFinalizeInverseOldRows(rows: ReadonlyArray<any>, cycle: number): vo
     // Phase 2c path).
     _untrackDestroyedInstance(instance, false);
   }
+  if (errors.length > 0) throw errors[0];
 }
 
 /**
@@ -5465,18 +5406,16 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
 
   for (const inst of instToDestroy) {
     _clearViewForDestroy(inst, viewReg);
-    try {
-      triggerLifecycleHook(inst, 'didDestroyElement');
-    } catch {
-      /* */
-    }
+    triggerLifecycleHook(inst, 'didDestroyElement');
   }
 
+  // What a destroy throws is queued as a render error, thrown when the update
+  // that removed the nodes ends: the re-render that called the sweep goes on.
   for (const inst of instToDestroy) {
     try {
       _destroyIfAlive(inst);
-    } catch {
-      /* */
+    } catch (error) {
+      captureRenderError(error);
     }
   }
 
