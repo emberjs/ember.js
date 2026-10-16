@@ -502,6 +502,10 @@ import {
   setCellUpdateDeferralHook as _gxtSetCellUpdateDeferralHook,
   applyDeferredCellUpdate as _gxtApplyDeferredCellUpdate,
   dirtyCell as _gxtDirtyCell,
+  // A content binding's effect is created before its evaluation and
+  // subscribed to what the evaluation read afterwards (`itemToNode`).
+  cell as _gxtCell,
+  entangleSubscribers as _gxtEntangleSubscribers,
   type Cell as GxtCell,
 } from '@lifeart/gxt';
 // Module-local seam for Ember truthiness: the canonical `emberToBool` is
@@ -3717,6 +3721,10 @@ interface _GxtDynamicContentOptions {
   // The helper the caller's evaluation rendered the value of, which the
   // binding owns from then on.
   helper?: _GxtContentHelper;
+  // The binding's effect, when the caller created it before its evaluation
+  // (`initial`): it is given what to run on a change, and returns its
+  // destroy. The caller subscribes it to `initial.cells`.
+  effect?: (rerun: () => void) => () => void;
 }
 
 // Renders a content mustache whose binding is `read`, and renders it again
@@ -3820,6 +3828,10 @@ function _gxtDynamicContent(
       _gxtSetTracker(outer);
     }
     show(value);
+    const rerun = (): void => show(_gxtContentText(_gxtContentValue(read, helper)));
+    if (options.effect !== undefined) {
+      return { fragment, destroy: options.effect(rerun) };
+    }
     let replay = true;
     const destroy = gxtEffect(() => {
       if (replay) {
@@ -3828,7 +3840,7 @@ function _gxtDynamicContent(
         if (cells) initial.cells.forEach((cell) => cells.add(cell));
         return;
       }
-      show(_gxtContentText(_gxtContentValue(read, helper)));
+      rerun();
     }, options.owner);
     return { fragment, destroy };
   }
@@ -13532,14 +13544,32 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         }
       }
 
-      // Capture-replay: the text-binding effect below is the sole updater, so
-      // it has to SUBSCRIBE to the cells the outer `item()` reads. We can't
-      // simply call `item()` inside the effect's first run (side-effecting
-      // helpers like `{{capture (hash …)}}` would dispatch twice). Instead we
-      // capture the cells `item()` reads here, under a fresh tracker frame, and
-      // replay them into the effect's tracking frame on its first run (see the
-      // `_firstRun` branch below). We forward captured cells into any AMBIENT
-      // tracker so an enclosing formula still depends on them.
+      // The binding's effect is created before the binding is evaluated, as
+      // Glimmer evaluates a reference where the render reaches it: gxt re-runs
+      // the formulas a change invalidated in the order they were created, so
+      // the binding re-runs before the bindings its evaluation creates (a
+      // `renderComponent` a `@cached` getter renders), whose re-run would
+      // otherwise come first and render the stale component once more before
+      // the binding's re-run replaces it. Its first run reads only `subscribed`
+      // and renders nothing; once the binding renders dynamic content, it is
+      // subscribed to the cells the evaluation read
+      // (`_gxtEntangleSubscribers`), and each later run renders the content
+      // again (`rerun`). Content of any other kind renders and updates through
+      // its own path, and the effect is destroyed.
+      const subscribed = _gxtCell(0);
+      let rerun: (() => void) | null = null;
+      const destroyBinding = _gxtTemplateEffect(() => {
+        subscribed.value;
+        if (rerun !== null) rerun();
+      });
+
+      // Capture: the binding's effect is the sole updater, so it has to
+      // SUBSCRIBE to the cells the outer `item()` reads. We can't simply call
+      // `item()` inside the effect's first run (side-effecting helpers like
+      // `{{capture (hash …)}}` would dispatch twice). Instead we capture the
+      // cells `item()` reads here, under a fresh tracker frame, and subscribe
+      // the effect to them. We forward captured cells into any AMBIENT tracker
+      // so an enclosing formula still depends on them.
       const _capturedDeps = new Set<any>();
       let result: any;
       let finalResult: any;
@@ -13619,251 +13649,270 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         });
       }
 
-      // Curried dynamic helper in content position: {{@value}} where
-      // @value = {{helper foo "..."}}. The curried helper is a function
-      // marked with __isEmberCurriedHelper; invoke it (with no extra
-      // args) to get the resolved text/value and recurse.
-      while (typeof finalResult === 'function' && (finalResult as any).__isEmberCurriedHelper) {
-        try {
-          finalResult = (finalResult as any)();
-        } catch {
-          break;
-        }
-      }
-
-      if (finalResult instanceof Node) {
-        return finalResult;
-      }
-
-      // Check if the result is a CurriedComponent — render it as a component
-      // Use marker-based reactive rendering so that when curried args change
-      // (e.g., set('model.greeting', 'Hola')), the DOM is replaced. A
-      // component definition called with arguments (`isComponentInvocation`)
-      // renders as dynamic content below instead.
-      if (finalResult && finalResult.__isCurriedComponent && !isComponentInvocation(finalResult)) {
-        const managers = (globalThis as any).$_MANAGERS;
-        if (managers?.component?.canHandle?.(finalResult)) {
-          // Capture owner at template evaluation time for reactive updates
-          const capturedOwner = getAmbientOwner();
-          const renderCurriedComponent = (curried: any): Node | null => {
-            if (!curried) return null;
-            // Empty curried component marker — renders nothing but preserves
-            // the reactive rendering infrastructure for future transitions.
-            if (curried.__isEmpty) return null;
-            return _renderCurriedNode(managers, curried, capturedOwner, itemToNode, depth + 1);
-          };
-
-          const startMarker = document.createComment('curried-start');
-          const endMarker = document.createComment('curried-end');
-          const fragment = document.createDocumentFragment();
-          fragment.appendChild(startMarker);
-
-          // Initial render
-          const initialNode = renderCurriedComponent(finalResult);
-          if (initialNode) {
-            fragment.appendChild(initialNode);
-          }
-          fragment.appendChild(endMarker);
-
-          // Reactive update — when the getter re-evaluates to a new/different
-          // CurriedComponent, replace the content between markers.
-          // The effect tracks cell reads inside item() so it fires when
-          // any dependency (e.g., this.model.greeting) changes.
+      try {
+        // Curried dynamic helper in content position: {{@value}} where
+        // @value = {{helper foo "..."}}. The curried helper is a function
+        // marked with __isEmberCurriedHelper; invoke it (with no extra
+        // args) to get the resolved text/value and recurse.
+        while (typeof finalResult === 'function' && (finalResult as any).__isEmberCurriedHelper) {
           try {
-            // Store the getter so we can manually trigger re-renders
-            const curriedRenderInfo: any = {
-              item,
-              startMarker,
-              endMarker,
-              renderCurriedComponent,
-              managers,
-              lastRenderedName: finalResult.__name,
+            finalResult = (finalResult as any)();
+          } catch {
+            break;
+          }
+        }
+
+        if (finalResult instanceof Node) {
+          return finalResult;
+        }
+
+        // Check if the result is a CurriedComponent — render it as a component
+        // Use marker-based reactive rendering so that when curried args change
+        // (e.g., set('model.greeting', 'Hola')), the DOM is replaced. A
+        // component definition called with arguments (`isComponentInvocation`)
+        // renders as dynamic content below instead.
+        if (
+          finalResult &&
+          finalResult.__isCurriedComponent &&
+          !isComponentInvocation(finalResult)
+        ) {
+          const managers = (globalThis as any).$_MANAGERS;
+          if (managers?.component?.canHandle?.(finalResult)) {
+            // Capture owner at template evaluation time for reactive updates
+            const capturedOwner = getAmbientOwner();
+            const renderCurriedComponent = (curried: any): Node | null => {
+              if (!curried) return null;
+              // Empty curried component marker — renders nothing but preserves
+              // the reactive rendering infrastructure for future transitions.
+              if (curried.__isEmpty) return null;
+              return _renderCurriedNode(managers, curried, capturedOwner, itemToNode, depth + 1);
             };
-            // Snapshot initial curried args for change detection
-            _snapshotCurriedArgs(curriedRenderInfo, finalResult);
-            // Register for manual re-rendering on property changes.
-            _curriedRenderInfos.push(curriedRenderInfo);
 
-            _gxtTemplateEffect(() => {
-              // Determine the current curried component.
-              // If item IS a curried component (not a getter), use it directly.
-              // If item is a getter function, call it to get the curried component.
-              let newFinal: any;
-              if (item.__isCurriedComponent) {
-                // item is the curried component itself — use it directly
-                // (it was eagerly evaluated from the template, not a getter)
-                newFinal = item;
-              } else {
-                const newResult = item();
-                newFinal =
-                  typeof newResult === 'function' ? _gxtContentFunctionValue(newResult) : newResult;
-              }
-              // Evaluate curried arg getters to establish tracking —
-              // when a curried arg changes (e.g., this.model.expectedText),
-              // this effect must re-fire so we can update the component.
-              if (newFinal && newFinal.__isCurriedComponent) {
-                _touchCurriedArgGetters(newFinal);
-              }
+            const startMarker = document.createComment('curried-start');
+            const endMarker = document.createComment('curried-end');
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(startMarker);
 
-              const parent = startMarker.parentNode;
-              if (!parent) return;
+            // Initial render
+            const initialNode = renderCurriedComponent(finalResult);
+            if (initialNode) {
+              fragment.appendChild(initialNode);
+            }
+            fragment.appendChild(endMarker);
 
-              // A value that is not a component: its text, HTML or node.
-              if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
+            // Reactive update — when the getter re-evaluates to a new/different
+            // CurriedComponent, replace the content between markers.
+            // The effect tracks cell reads inside item() so it fires when
+            // any dependency (e.g., this.model.greeting) changes.
+            try {
+              // Store the getter so we can manually trigger re-renders
+              const curriedRenderInfo: any = {
+                item,
+                startMarker,
+                endMarker,
+                renderCurriedComponent,
+                managers,
+                lastRenderedName: finalResult.__name,
+              };
+              // Snapshot initial curried args for change detection
+              _snapshotCurriedArgs(curriedRenderInfo, finalResult);
+              // Register for manual re-rendering on property changes.
+              _curriedRenderInfos.push(curriedRenderInfo);
 
-              // Skip teardown if same component with unchanged args (preserves DOM stability)
-              if (
-                newFinal &&
-                newFinal.__isCurriedComponent &&
-                startMarker.nextSibling !== endMarker &&
-                !_curriedComponentChanged(curriedRenderInfo, newFinal)
-              ) {
-                return;
-              }
-
-              // Check if the component type changed (not just args)
-              const _componentSwapped =
-                !newFinal ||
-                !newFinal.__isCurriedComponent ||
-                newFinal.__name !== curriedRenderInfo.lastRenderedName;
-              // Collect and remove existing content between markers
-              const _removedNodes = _removeNodesBetween(parent, startMarker, endMarker);
-              // Destroy old component instances when the component TYPE changed
-              if (_componentSwapped && _removedNodes.length > 0) {
-                getGxtRenderer()?.destruction.destroyInstancesInNodes(_removedNodes);
-              }
-
-              // Insert new content if we have a valid curried component
-              if (
-                newFinal &&
-                newFinal.__isCurriedComponent &&
-                managers.component.canHandle(newFinal)
-              ) {
-                const newNode = renderCurriedComponent(newFinal);
-                if (newNode) {
-                  parent.insertBefore(newNode, endMarker);
+              _gxtTemplateEffect(() => {
+                // Determine the current curried component.
+                // If item IS a curried component (not a getter), use it directly.
+                // If item is a getter function, call it to get the curried component.
+                let newFinal: any;
+                if (item.__isCurriedComponent) {
+                  // item is the curried component itself — use it directly
+                  // (it was eagerly evaluated from the template, not a getter)
+                  newFinal = item;
+                } else {
+                  const newResult = item();
+                  newFinal =
+                    typeof newResult === 'function'
+                      ? _gxtContentFunctionValue(newResult)
+                      : newResult;
                 }
-                curriedRenderInfo.lastRenderedName = newFinal.__name;
-                _snapshotCurriedArgs(curriedRenderInfo, newFinal);
-              } else if (newFinal && typeof newFinal === 'string') {
-                // Component name resolved to string — try rendering directly
-                if (managers.component.canHandle(newFinal)) {
-                  const handleResult = managers.component.handle(newFinal, {}, null, null);
-                  if (typeof handleResult === 'function') {
-                    const rendered = handleResult();
-                    if (rendered instanceof Node) {
-                      parent.insertBefore(rendered, endMarker);
-                    }
-                  } else if (handleResult instanceof Node) {
-                    parent.insertBefore(handleResult, endMarker);
+                // Evaluate curried arg getters to establish tracking —
+                // when a curried arg changes (e.g., this.model.expectedText),
+                // this effect must re-fire so we can update the component.
+                if (newFinal && newFinal.__isCurriedComponent) {
+                  _touchCurriedArgGetters(newFinal);
+                }
+
+                const parent = startMarker.parentNode;
+                if (!parent) return;
+
+                // A value that is not a component: its text, HTML or node.
+                if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
+
+                // Skip teardown if same component with unchanged args (preserves DOM stability)
+                if (
+                  newFinal &&
+                  newFinal.__isCurriedComponent &&
+                  startMarker.nextSibling !== endMarker &&
+                  !_curriedComponentChanged(curriedRenderInfo, newFinal)
+                ) {
+                  return;
+                }
+
+                // Check if the component type changed (not just args)
+                const _componentSwapped =
+                  !newFinal ||
+                  !newFinal.__isCurriedComponent ||
+                  newFinal.__name !== curriedRenderInfo.lastRenderedName;
+                // Collect and remove existing content between markers
+                const _removedNodes = _removeNodesBetween(parent, startMarker, endMarker);
+                // Destroy old component instances when the component TYPE changed
+                if (_componentSwapped && _removedNodes.length > 0) {
+                  getGxtRenderer()?.destruction.destroyInstancesInNodes(_removedNodes);
+                }
+
+                // Insert new content if we have a valid curried component
+                if (
+                  newFinal &&
+                  newFinal.__isCurriedComponent &&
+                  managers.component.canHandle(newFinal)
+                ) {
+                  const newNode = renderCurriedComponent(newFinal);
+                  if (newNode) {
+                    parent.insertBefore(newNode, endMarker);
                   }
+                  curriedRenderInfo.lastRenderedName = newFinal.__name;
+                  _snapshotCurriedArgs(curriedRenderInfo, newFinal);
+                } else if (newFinal && typeof newFinal === 'string') {
+                  // Component name resolved to string — try rendering directly
+                  if (managers.component.canHandle(newFinal)) {
+                    const handleResult = managers.component.handle(newFinal, {}, null, null);
+                    if (typeof handleResult === 'function') {
+                      const rendered = handleResult();
+                      if (rendered instanceof Node) {
+                        parent.insertBefore(rendered, endMarker);
+                      }
+                    } else if (handleResult instanceof Node) {
+                      parent.insertBefore(handleResult, endMarker);
+                    }
+                  }
+                  curriedRenderInfo.lastRenderedName = newFinal;
                 }
-                curriedRenderInfo.lastRenderedName = newFinal;
-              }
-            });
-          } catch {
-            /* effect setup may fail */
-          }
+              });
+            } catch {
+              /* effect setup may fail */
+            }
 
-          return fragment;
+            return fragment;
+          }
         }
-      }
 
-      // The dynamic content of the binding (`_gxtDynamicContent`): it shows
-      // the value of the evaluation above and subscribes to the cells that
-      // evaluation read. A component definition renders through the
-      // component manager, its result through `itemToNode`.
-      const renderComponentNodes = (definition: object): Node[] => {
-        const _gMgrs = (globalThis as any).$_MANAGERS;
-        const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
-        const _compRes = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
-        const _compNode =
-          _compRes instanceof Node ? _compRes : _compRes ? itemToNode(_compRes, depth + 1) : null;
-        if (_compNode === null) return [];
-        return _compNode.nodeType === 11 ? Array.from(_compNode.childNodes) : [_compNode];
-      };
-      const dynamicContent = (): DocumentFragment =>
-        _gxtDynamicContent(item, {
-          owner: _gxtTemplateOwner(),
-          context: _gxtNamespaceContext(),
-          renderComponent: renderComponentNodes,
-          initial: { value: finalResult, cells: _capturedDeps },
-          helper: contentHelper,
-        }).fragment;
-
-      // A SafeString renders its HTML, as dynamic content.
-      if (
-        finalResult &&
-        typeof finalResult === 'object' &&
-        typeof finalResult.toHTML === 'function'
-      ) {
-        return dynamicContent();
-      }
-
-      // A raw HTML value (`__htmlRaw`, from triple-stache markup) renders as
-      // HTML.
-      if (finalResult && typeof finalResult === 'object' && finalResult.__htmlRaw) {
-        const getHtml = () => {
-          const v = item();
-          const fv = typeof v === 'function' ? v() : v;
-          if (fv == null) return '';
-          if (fv.toHTML) return fv.toHTML();
-          // Object.create(null) and similar have no toString — normalize to ''
-          if (typeof fv === 'object' && typeof (fv as any).toString !== 'function') return '';
-          try {
-            return String(fv);
-          } catch {
-            return '';
-          }
+        // The dynamic content of the binding (`_gxtDynamicContent`): it shows
+        // the value of the evaluation above and subscribes to the cells that
+        // evaluation read. A component definition renders through the
+        // component manager, its result through `itemToNode`.
+        const renderComponentNodes = (definition: object): Node[] => {
+          const _gMgrs = (globalThis as any).$_MANAGERS;
+          const _handleRes = _gMgrs.component.handle(definition, {}, null, null);
+          const _compRes = typeof _handleRes === 'function' ? _handleRes() : _handleRes;
+          const _compNode =
+            _compRes instanceof Node ? _compRes : _compRes ? itemToNode(_compRes, depth + 1) : null;
+          if (_compNode === null) return [];
+          return _compNode.nodeType === 11 ? Array.from(_compNode.childNodes) : [_compNode];
         };
-        return renderReactiveHtml(getHtml);
-      }
+        const dynamicContent = (): DocumentFragment => {
+          const { fragment } = _gxtDynamicContent(item, {
+            owner: _gxtTemplateOwner(),
+            context: _gxtNamespaceContext(),
+            renderComponent: renderComponentNodes,
+            initial: { value: finalResult, cells: _capturedDeps },
+            helper: contentHelper,
+            effect: (update) => {
+              rerun = update;
+              return destroyBinding;
+            },
+          });
+          // What the evaluation read, the text of its value included.
+          _gxtEntangleSubscribers(subscribed, _capturedDeps);
+          return fragment;
+        };
 
-      // If result is an object with GXT node structure, process it.
-      // But plain objects (Date, {foo:'bar'}, etc.) should be stringified for text rendering.
-      if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
-        // Check if it looks like a GXT component (has RENDERED_NODES_PROPERTY)
-        const _RNPROP = RENDERED_NODES_PROPERTY;
-        // Arrays: only recurse if they contain Node or function items (GXT node arrays).
-        // Plain value arrays (e.g., from rest positionalParams) should be stringified.
-        const isGxtArray =
-          Array.isArray(finalResult) &&
-          finalResult.length > 0 &&
-          finalResult.some(
-            (v: any) =>
-              v instanceof Node ||
-              typeof v === 'function' ||
-              (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date))
-          );
-        if (_RNPROP && _RNPROP in finalResult && !isGxtArray) {
-          // Extract DOM nodes from GXT ComponentReturnType objects (e.g., from $_dc).
-          // These objects have RENDERED_NODES_PROPERTY containing the actual DOM nodes.
-          const renderedNodes = finalResult[_RNPROP];
-          if (Array.isArray(renderedNodes) && renderedNodes.length > 0) {
-            if (renderedNodes.length === 1 && renderedNodes[0] instanceof Node) {
-              return renderedNodes[0];
+        // A SafeString renders its HTML, as dynamic content.
+        if (
+          finalResult &&
+          typeof finalResult === 'object' &&
+          typeof finalResult.toHTML === 'function'
+        ) {
+          return dynamicContent();
+        }
+
+        // A raw HTML value (`__htmlRaw`, from triple-stache markup) renders as
+        // HTML.
+        if (finalResult && typeof finalResult === 'object' && finalResult.__htmlRaw) {
+          const getHtml = () => {
+            const v = item();
+            const fv = typeof v === 'function' ? v() : v;
+            if (fv == null) return '';
+            if (fv.toHTML) return fv.toHTML();
+            // Object.create(null) and similar have no toString — normalize to ''
+            if (typeof fv === 'object' && typeof (fv as any).toString !== 'function') return '';
+            try {
+              return String(fv);
+            } catch {
+              return '';
             }
-            const frag = document.createDocumentFragment();
-            for (const rn of renderedNodes) {
-              if (rn instanceof Node) frag.appendChild(rn);
+          };
+          return renderReactiveHtml(getHtml);
+        }
+
+        // If result is an object with GXT node structure, process it.
+        // But plain objects (Date, {foo:'bar'}, etc.) should be stringified for text rendering.
+        if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
+          // Check if it looks like a GXT component (has RENDERED_NODES_PROPERTY)
+          const _RNPROP = RENDERED_NODES_PROPERTY;
+          // Arrays: only recurse if they contain Node or function items (GXT node arrays).
+          // Plain value arrays (e.g., from rest positionalParams) should be stringified.
+          const isGxtArray =
+            Array.isArray(finalResult) &&
+            finalResult.length > 0 &&
+            finalResult.some(
+              (v: any) =>
+                v instanceof Node ||
+                typeof v === 'function' ||
+                (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date))
+            );
+          if (_RNPROP && _RNPROP in finalResult && !isGxtArray) {
+            // Extract DOM nodes from GXT ComponentReturnType objects (e.g., from $_dc).
+            // These objects have RENDERED_NODES_PROPERTY containing the actual DOM nodes.
+            const renderedNodes = finalResult[_RNPROP];
+            if (Array.isArray(renderedNodes) && renderedNodes.length > 0) {
+              if (renderedNodes.length === 1 && renderedNodes[0] instanceof Node) {
+                return renderedNodes[0];
+              }
+              const frag = document.createDocumentFragment();
+              for (const rn of renderedNodes) {
+                if (rn instanceof Node) frag.appendChild(rn);
+              }
+              return frag;
             }
-            return frag;
+            // Empty rendered nodes — return a placeholder comment
+            return document.createComment('');
           }
-          // Empty rendered nodes — return a placeholder comment
-          return document.createComment('');
+          if (isGxtArray) {
+            return itemToNode(finalResult, depth + 1);
+          }
+          // Any other object renders as dynamic content: a component definition
+          // (`{{this.Foo}}`) its component, any other object (a Date,
+          // `{ toString() {…} }`) its text.
+          return dynamicContent();
         }
-        if (isGxtArray) {
-          return itemToNode(finalResult, depth + 1);
-        }
-        // Any other object renders as dynamic content: a component definition
-        // (`{{this.Foo}}`) its component, any other object (a Date,
-        // `{ toString() {…} }`) its text.
-        return dynamicContent();
-      }
 
-      // Any other value (a primitive, a symbol) renders as text, as dynamic
-      // content: it renders what the value is after every change.
-      return dynamicContent();
+        // Any other value (a primitive, a symbol) renders as text, as dynamic
+        // content: it renders what the value is after every change.
+        return dynamicContent();
+      } finally {
+        // Content that is not dynamic content renders through its own path.
+        if (rerun === null) destroyBinding();
+      }
     }
     if (typeof item === 'string') {
       return document.createTextNode(item);
