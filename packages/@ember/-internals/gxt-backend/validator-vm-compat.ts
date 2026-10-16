@@ -696,11 +696,7 @@ export function trackedObject<T extends object>(
       dirtyStorageFor(prop);
       dirtyCollection();
       // Also fire classic dirtyTagFor for any legacy observers.
-      try {
-        dirtyTagFor(target as any, prop);
-      } catch {
-        /* noop */
-      }
+      dirtyTagFor(target as any, prop);
       return true;
     },
     deleteProperty(target, prop) {
