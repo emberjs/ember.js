@@ -382,13 +382,9 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
           for (let i = 0; i < _consumedTags.length; i++) {
             const tag = _consumedTags[i];
             if (tag == null) continue;
-            try {
-              // consumeTag() pushes into the top cache-tag tracker AND also
-              // forwards to gxt's validator.consumeTag() for the gxt frame.
-              consumeTag(tag);
-            } catch {
-              /* noop */
-            }
+            // consumeTag() pushes into the top cache-tag tracker AND also
+            // forwards to gxt's validator.consumeTag() for the gxt frame.
+            consumeTag(tag);
           }
         }
       }
@@ -745,11 +741,7 @@ export function trackedData<T, K extends string | symbol>(
       // through dirtyTagFor which handles this — this covers the
       // test-only path that uses trackedData() directly.
       globalRevisionCounter++;
-      try {
-        currentTagCell.value = globalRevisionCounter;
-      } catch {
-        /* noop */
-      }
+      currentTagCell.value = globalRevisionCounter;
       // Mark this cell's tag dirty so any track() frame that consumed it
       // via the getter will see `validateTag(tag, snapshot) === false`.
       markTagDirty(_trackedDataTagFor(obj, key));
@@ -782,21 +774,13 @@ const _classicBridgeCell = _gxtNativeCell(0, 'classic-validator-bridge');
 let _classicBridgeCounter = 0;
 function _bumpClassicBridge() {
   _classicBridgeCounter++;
-  try {
-    _classicBridgeCell.update(_classicBridgeCounter);
-  } catch {
-    /* noop */
-  }
+  _classicBridgeCell.update(_classicBridgeCounter);
 }
 // Touch from inside an effect to subscribe: read .value.
 // Export a helper so manager.ts can call it without caring about Cell shape.
 export function touchClassicBridge(): void {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    _classicBridgeCell.value;
-  } catch {
-    /* noop */
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  _classicBridgeCell.value;
 }
 
 // Side-channel registry for effects that must re-fire on ANY classic tag
@@ -839,13 +823,8 @@ const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
 const _classicReactors = new Set<() => void>();
 
 function _currentTestName(): string {
-  try {
-    const Q = (globalThis as any).QUnit;
-    const t = Q?.config?.current;
-    if (t) return `${t.module?.name || ''} :: ${t.testName || ''}`;
-  } catch {
-    /* ignore */
-  }
+  const t = (globalThis as any).QUnit?.config?.current;
+  if (t) return `${t.module?.name || ''} :: ${t.testName || ''}`;
   return '<no-test>';
 }
 
@@ -928,11 +907,9 @@ function _fireClassicReactors() {
         meta.foreignFires = 0;
       }
     }
-    try {
-      cb();
-    } catch {
-      /* ignore individual reactor errors */
-    }
+    // A reactor re-reads a component's reactive values (user code); what it
+    // throws reaches the code that dirtied the tag.
+    cb();
   }
 }
 
@@ -1021,30 +998,24 @@ export function dirtyTagFor(obj: any, key: any) {
     // @tracked setter → dirtyTagFor outside an explicit run() never starts a
     // run loop, so async observers watching dependentKeyCompat getters never
     // get flushed.
-    try {
-      const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
-      if (typeof sr === 'function') sr();
-    } catch {
-      /* noop */
-    }
+    const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
+    if (typeof sr === 'function') sr();
   }
 
-  // Then call the original dirtyTagFor with the safe key
-  let result: any;
-  try {
-    // Ensure obj has a constructor for GXT's debug label
-    if (obj && typeof obj === 'object' && !obj.constructor) {
-      Object.defineProperty(obj, 'constructor', {
-        value: Object,
-        writable: true,
-        configurable: true,
-        enumerable: false,
-      });
-    }
-    result = gxtDirtyTagFor(obj, safeKey);
-  } catch {
-    // GXT's dirtyTagFor may fail for objects without constructor
+  // Then call the original dirtyTagFor with the safe key. It reads the
+  // property to seed the tag's value, so an error a getter throws reaches the
+  // code that changed the property.
+  // Ensure obj has a constructor for GXT's debug label (not on an object that
+  // cannot take new properties).
+  if (obj && typeof obj === 'object' && !obj.constructor && Object.isExtensible(obj)) {
+    Object.defineProperty(obj, 'constructor', {
+      value: Object,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
   }
+  const result: any = gxtDirtyTagFor(obj, safeKey);
   // Fire side-channel classic reactors. These are callbacks registered by
   // GXT-rendered classic components (e.g. LinkTo) whose template getters
   // call consumeTag() from classic @glimmer/validator — a code path that
@@ -1072,34 +1043,31 @@ export function dirtyTagFor(obj: any, key: any) {
   // The natural cell-propagation path (the tracked setter writes the
   // underlying cell via trackedData) handles re-rendering; the only job here
   // is to make sure the cache doesn't serve stale data to that re-render.
-  try {
-    // Read through the get-only typed-bridge accessor
-    // `compilePipeline.getClassHelperInstanceCache?.()` (registered by
-    // `ember-gxt-wrappers.ts`'s `installCompilePipelinePart`). The optional
-    // chain returns undefined when `ember-gxt-wrappers.ts` has not yet
-    // executed its bridge install (extremely-early classic-tag-dirty firing
-    // during module init), in which case the `if (helperCache && ...)` guard
-    // short-circuits. See `getClassHelperInstanceCache` doc in gxt-bridge.ts.
-    const helperCache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.() as
-      | Map<string, any>
-      | undefined;
-    if (helperCache && helperCache.size > 0) {
-      // forEach, NOT for…of: the gxt runtime patches Map.prototype's
-      // Symbol.iterator/entries/keys/values for Map reactivity, so a for…of
-      // here — which can run inside a render formula frame (any set() during
-      // render lands in dirtyTagFor) — lazily creates a reactivity cell for
-      // this bookkeeping Map. Every later cache.set() inside a helper effect
-      // then subscribes that effect to the cache, and any subsequent cache
-      // mutation re-fires all such effects — including stale ones from
-      // already-collapsed {{#if}} branches. Native forEach is not patched and
-      // keeps this infrastructure Map invisible to tracking.
-      helperCache.forEach((cached) => {
-        if (!cached || cached.__managerBucket !== true) return;
-        cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
-      });
-    }
-  } catch {
-    /* noop */
+  //
+  // Read through the get-only typed-bridge accessor
+  // `compilePipeline.getClassHelperInstanceCache?.()` (registered by
+  // `ember-gxt-wrappers.ts`'s `installCompilePipelinePart`). The optional
+  // chain returns undefined when `ember-gxt-wrappers.ts` has not yet
+  // executed its bridge install (extremely-early classic-tag-dirty firing
+  // during module init), in which case the `if (helperCache && ...)` guard
+  // short-circuits. See `getClassHelperInstanceCache` doc in gxt-bridge.ts.
+  const helperCache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.() as
+    | Map<string, any>
+    | undefined;
+  if (helperCache && helperCache.size > 0) {
+    // forEach, NOT for…of: the gxt runtime patches Map.prototype's
+    // Symbol.iterator/entries/keys/values for Map reactivity, so a for…of
+    // here — which can run inside a render formula frame (any set() during
+    // render lands in dirtyTagFor) — lazily creates a reactivity cell for
+    // this bookkeeping Map. Every later cache.set() inside a helper effect
+    // then subscribes that effect to the cache, and any subsequent cache
+    // mutation re-fires all such effects — including stale ones from
+    // already-collapsed {{#if}} branches. Native forEach is not patched and
+    // keeps this infrastructure Map invisible to tracking.
+    helperCache.forEach((cached) => {
+      if (!cached || cached.__managerBucket !== true) return;
+      cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
+    });
   }
   return result;
 }
@@ -1634,22 +1602,14 @@ export function beginTrackFrame() {
   // Also keep gxt's frame stack in sync for any gxt callers.
   if (!_trackingTagStack) _trackingTagStack = [];
   _trackingTagStack.push(_manualTrackFrameStack[_manualTrackFrameStack.length - 1]!);
-  try {
-    gxtBeginTrackFrame();
-  } catch {
-    /* noop */
-  }
+  gxtBeginTrackFrame();
 }
 
 export function endTrackFrame() {
   if (_manualTrackFrameStack.length === 0) {
     throw new Error('attempted to close a tracking frame, but one was not open');
   }
-  try {
-    gxtEndTrackFrame();
-  } catch {
-    /* noop */
-  }
+  gxtEndTrackFrame();
   const consumed = _manualTrackFrameStack.pop()!;
   // Also pop from the tracking tag stack
   if (_trackingTagStack && _trackingTagStack.length > 0) _trackingTagStack.pop();
@@ -1723,19 +1683,11 @@ export function dirtyTag(tag: any) {
     globalRevisionCounter++;
     // Keep CURRENT_TAG's cell in sync so renderer/observer observing it
     // via valueForTag/validateTag see the bump.
-    try {
-      currentTagCell.value = globalRevisionCounter;
-    } catch {
-      /* noop */
-    }
+    currentTagCell.value = globalRevisionCounter;
     _bumpClassicBridge();
     // Notify any scheduler registered via @glimmer/global-context
-    try {
-      const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
-      if (typeof sr === 'function') sr();
-    } catch {
-      /* noop */
-    }
+    const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
+    if (typeof sr === 'function') sr();
     // A plain `createUpdatableTag` (the tag backing a custom `cell()`, e.g.
     // `{{row.label.current}}` inside a keyed `{{#each}}`, and the storages of
     // the tracked collections: `trackedObject`, `trackedMap`, `trackedSet`, …)
@@ -1820,11 +1772,10 @@ export function _scheduleCollectionFlush(): void {
   _collectionFlushScheduled = true;
   queueMicrotask(() => {
     _collectionFlushScheduled = false;
-    try {
-      _gxtSyncDom();
-    } catch {
-      /* best-effort */
-    }
+    // The flush re-runs the bindings that read the collection (user code). An
+    // error one throws escapes the microtask, as an error of a revalidation
+    // the run loop schedules does.
+    _gxtSyncDom();
   });
 }
 
