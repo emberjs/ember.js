@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T12:00:59.750Z",
+    "capturedAt": "2026-10-16T13:21:23.556Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "13e838982c",
-    "totalTests": 10166,
-    "totalModules": 999,
+    "emberCommit": "5e6bced0b5",
+    "totalTests": 10171,
+    "totalModules": 1000,
     "quarantinedTests": 0,
-    "totalAssertions": 60890,
-    "totalAssertionsPassing": 60469,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after compat components and modifiers became nodes of a renderComponent render's debug render tree (names, arguments read at capture, instances, bounds, getDebugCustomRenderTree nodes, argument capture errors), a component resolved by name whose internal manager creates no instance renders its template, and the debug render tree test takes an element's last rendered node before GXT's block anchor comment; written by runner.mjs in the GitHub Actions GXT full workflow (run 38897484628, on the code of 13e838982c). 9845/10166 green (was 9829/10161), 999 modules, no timeouts, no harness errors, no green->red. 11 tests no longer fail (2 Strict Mode - RenderComponentTestCase captureRenderTree tests and 9 of the debug render tree module); the new module GXT debug render tree passes 5/5; no module has fewer passing assertions."
+    "totalAssertions": 60897,
+    "totalAssertionsPassing": 60488,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after angle-bracket block params became bound per invocation of the block (each {{yield}} of a by-name component's block, default or named, renders it with its own params; a nested block reads the outer block's params; a component in scope or compiled with gxt's own slot functions keeps them); written by runner.mjs in the GitHub Actions GXT full workflow (run 38907069880, on the code of 5e6bced0b5). 9861/10171 green (was 9845/10166), 1000 modules, no timeouts, no harness errors, no green->red. 11 tests no longer fail (the else/inverse named-block params tests, the Glimmer yield tests 'yield' and 'yielding a string and rendering its length', the strict-mode 'Can use template local in nested blocks with locals', and the each-in keyword yielded as a named block param in non-strict mode); the new module GXT block params of an invocation passes 5/5; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -452,15 +452,10 @@
     },
     "AngleBracket Invocation (classic component)": {
       "total": 18,
-      "passing": 17,
+      "passing": 18,
       "assertionsTotal": 217,
-      "assertionsPassing": 215,
-      "failingTests": [
-        {
-          "name": " it can yield a value to the else and inverse named blocks",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 217,
+      "failingTests": []
     },
     "AngleBracket Invocation (splattributes)": {
       "total": 5,
@@ -2523,6 +2518,13 @@
     "GXT block params": {
       "total": 3,
       "passing": 3,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
+      "failingTests": []
+    },
+    "GXT block params of an invocation": {
+      "total": 5,
+      "passing": 5,
       "assertionsTotal": 7,
       "assertionsPassing": 7,
       "failingTests": []
@@ -5601,18 +5603,10 @@
     },
     "[integration] jit :: Components :: Invocation": {
       "total": 19,
-      "passing": 16,
+      "passing": 18,
       "assertionsTotal": 169,
-      "assertionsPassing": 166,
+      "assertionsPassing": 168,
       "failingTests": [
-        {
-          "name": "inverse named block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "else named block",
-          "category": "gxt:triage"
-        },
         {
           "name": "Element modifier with hooks",
           "category": "gxt:triage"
@@ -5635,18 +5629,10 @@
     },
     "[integration] jit :: Components :: Invocation > [integration] Glimmer": {
       "total": 9,
-      "passing": 6,
+      "passing": 8,
       "assertionsTotal": 69,
-      "assertionsPassing": 66,
+      "assertionsPassing": 68,
       "failingTests": [
-        {
-          "name": "inverse named block",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "else named block",
-          "category": "gxt:triage"
-        },
         {
           "name": "Element modifier with hooks",
           "category": "gxt:triage"
@@ -5767,19 +5753,10 @@
     },
     "[integration] jit :: Components :: yield": {
       "total": 45,
-      "passing": 43,
+      "passing": 45,
       "assertionsTotal": 390,
-      "assertionsPassing": 388,
-      "failingTests": [
-        {
-          "name": "yielding a string and rendering its length",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 390,
+      "failingTests": []
     },
     "[integration] jit :: Components :: yield > [integration] Curly": {
       "total": 15,
@@ -5797,19 +5774,10 @@
     },
     "[integration] jit :: Components :: yield > [integration] Glimmer": {
       "total": 15,
-      "passing": 13,
+      "passing": 15,
       "assertionsTotal": 130,
-      "assertionsPassing": 128,
-      "failingTests": [
-        {
-          "name": "yielding a string and rendering its length",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "yield",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 130,
+      "failingTests": []
     },
     "[integration] jit :: Helper Managers": {
       "total": 9,
@@ -5972,9 +5940,9 @@
     },
     "[integration] jit :: `each-in` keyword syntax errors": {
       "total": 14,
-      "passing": 8,
+      "passing": 9,
       "assertionsTotal": 17,
-      "assertionsPassing": 11,
+      "assertionsPassing": 12,
       "failingTests": [
         {
           "name": "keyword can be used as a value in non-strict mode",
@@ -5982,10 +5950,6 @@
         },
         {
           "name": "keyword can be used as a value in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "keyword can be yielded as a parameter in component named blocks in non-strict mode",
           "category": "gxt:triage"
         },
         {
@@ -6924,14 +6888,10 @@
     },
     "[integration] jit :: strict mode: static template values": {
       "total": 23,
-      "passing": 12,
+      "passing": 13,
       "assertionsTotal": 82,
-      "assertionsPassing": 71,
+      "assertionsPassing": 72,
       "failingTests": [
-        {
-          "name": "Can use template local in nested blocks with locals",
-          "category": "gxt:triage"
-        },
         {
           "name": "Throws an error if component is not in scope",
           "category": "gxt:triage"
@@ -8570,6 +8530,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 321
+    "gxt:triage": 310
   }
 }
