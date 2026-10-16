@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T07:39:31.171Z",
+    "capturedAt": "2026-10-16T09:09:09.847Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "fd04350576",
-    "totalTests": 10155,
-    "totalModules": 997,
+    "emberCommit": "841bbaba0a",
+    "totalTests": 10161,
+    "totalModules": 998,
     "quarantinedTests": 0,
-    "totalAssertions": 60599,
-    "totalAssertionsPassing": 60063,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after components with a custom manager are destroyed with the block they render in (an {{#if}} branch, an {{#each}} row, a dynamic component's content, an {{#in-element}} render, a render's root, and the blocks created in them), in document order, in the run loop that removes the block, and the ones still rendered are destroyed at test teardown; written by runner.mjs in the GitHub Actions GXT full workflow (run 38868471993, on the code of fd04350576). 9762/10155 green (was 9748/10152), 997 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 11 known reds green (Glimmer component willDestroy timing, order and teardown in the curly, dynamic, if/each, in-element, error-recovery and jit teardown suites) and 3 new tests green (GXT components are destroyed with their block)."
+    "totalAssertions": 60622,
+    "totalAssertionsPassing": 60102,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after an {{#each}} row that renders a component removes the component's nodes when it goes, a modifier is destroyed with its block however it was installed or updated (also when a render result is destroyed in a run loop), writes in didUpdate/didRender render until stable up to ENV._RERENDER_LOOP_LIMIT, and a content binding owns the helper it renders; written by runner.mjs in the GitHub Actions GXT full workflow (run 38878342335, on the code of 841bbaba0a). 9781/10161 green (was 9762/10155), 998 modules, no timeouts, no harness errors, no green->red, no module with fewer passing assertions. 13 known reds green (each rows of components in the curly, dynamic-component and 'updating and setting within #each' suites, a dynamic modifier destroyed with its render result, a dynamic helper with a changing definition) and 6 new tests green (GXT {{#each}} rows; GXT writes during an update)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1540,9 +1540,9 @@
     },
     "Components test: curly components": {
       "total": 60,
-      "passing": 53,
+      "passing": 54,
       "assertionsTotal": 238,
-      "assertionsPassing": 230,
+      "assertionsPassing": 232,
       "failingTests": [
         {
           "name": " non-block with properties access via attrs is asserted against",
@@ -1565,10 +1565,6 @@
           "category": "gxt:triage"
         },
         {
-          "name": " non-block with each rendering child components",
-          "category": "gxt:triage"
-        },
-        {
           "name": " class is applied before modifiers are installed",
           "category": "gxt:triage"
         }
@@ -1588,16 +1584,12 @@
     },
     "Components test: dynamic components": {
       "total": 20,
-      "passing": 17,
+      "passing": 18,
       "assertionsTotal": 69,
-      "assertionsPassing": 65,
+      "assertionsPassing": 67,
       "failingTests": [
         {
           "name": " it throws a useful assertion for an invalid dynamic component value in strict mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " component helper properly invalidates hash params inside an {{each}} invocation #11044",
           "category": "gxt:triage"
         },
         {
@@ -2704,10 +2696,17 @@
       "failingTests": []
     },
     "GXT writes during an update": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 17,
+      "assertionsPassing": 17,
+      "failingTests": []
+    },
+    "GXT {{#each}} rows": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "HashLocation": {
@@ -4748,111 +4747,66 @@
     },
     "Syntax test: {{#each}} with array proxies, arrangedContent depends on external content": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array proxies, content is updated after init": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array proxies, modifying itself": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array proxies, replacing its content": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array-like objects implementing Symbol.iterator": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array-like objects implementing forEach": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with emberA-wrapped arrays": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with native Set": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 183,
-      "assertionsPassing": 182,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 183,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with native arrays": {
       "total": 23,
-      "passing": 22,
+      "passing": 23,
       "assertionsTotal": 198,
-      "assertionsPassing": 197,
-      "failingTests": [
-        {
-          "name": " updating and setting within #each",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 198,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with native arrays (classic component)": {
       "total": 1,
@@ -6605,16 +6559,12 @@
     },
     "[integration] jit :: dynamic modifiers in resolution mode": {
       "total": 14,
-      "passing": 12,
-      "assertionsTotal": 77,
-      "assertionsPassing": 75,
+      "passing": 13,
+      "assertionsTotal": 78,
+      "assertionsPassing": 77,
       "failingTests": [
         {
           "name": "Cannot invoke a modifier definition based on this fallback lookup in resolution mode",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "Destroys a dynamic modifier that was set after the initial render when the render result is destroyed",
           "category": "gxt:triage"
         }
       ]
@@ -7093,14 +7043,10 @@
     },
     "[integration] jit :: strict mode: dynamic template values": {
       "total": 45,
-      "passing": 39,
-      "assertionsTotal": 296,
-      "assertionsPassing": 288,
+      "passing": 40,
+      "assertionsTotal": 298,
+      "assertionsPassing": 292,
       "failingTests": [
-        {
-          "name": "Can use a dynamic helper with a changing definition",
-          "category": "gxt:triage"
-        },
         {
           "name": "Can use a dynamic helper with a changing definition (curried)",
           "category": "gxt:triage"
@@ -8819,6 +8765,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 393
+    "gxt:triage": 380
   }
 }
