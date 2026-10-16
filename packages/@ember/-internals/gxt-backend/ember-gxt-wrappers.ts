@@ -38,6 +38,7 @@ import {
   type EachInEntry,
 } from './utils';
 import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
+import { gxtDebugParent, gxtWithDebugParent } from './debug-render-tree';
 import {
   destroy as destroyDestroyable,
   isDestroying as isDestroyingDestroyable,
@@ -2317,15 +2318,19 @@ function createEmberDc(original: Function) {
     // The current content is a block created in the block the invocation is
     // in: the components with a custom manager it renders are destroyed when
     // it is replaced, or with that block (manager.ts `gxtRenderInBlock`).
+    // It renders under the debug render tree node current here.
     const destruction = getGxtRenderer()?.destruction;
     const blockOfDc = destruction?.currentBlock?.() ?? null;
+    const debugParentOfDc = gxtDebugParent();
     let contentBlock: object = {};
     const renderContent = (value: any): any => {
       const render = () =>
         renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance);
-      return destruction?.renderInBlock
-        ? destruction.renderInBlock(contentBlock, blockOfDc, render)
-        : render();
+      return gxtWithDebugParent(debugParentOfDc, () =>
+        destruction?.renderInBlock
+          ? destruction.renderInBlock(contentBlock, blockOfDc, render)
+          : render()
+      );
     };
 
     const initialResult = renderContent(initial);

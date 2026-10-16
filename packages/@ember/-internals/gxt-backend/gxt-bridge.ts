@@ -12,6 +12,7 @@
  * the renderer exists. In classic builds `getGxtRenderer()` returns `null`, so
  * callers use optional chaining: `getGxtRenderer()?.compilePipeline.foo?.()`.
  */
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 
 /**
  * Render-context key for the named args of the root, outlet, engine-mount and
@@ -829,11 +830,33 @@ export interface GxtRootComponentCapabilities {
 }
 
 /**
+ * The debug render tree of `renderComponent` renders (gxt-backend
+ * debug-render-tree.ts). Implemented by manager.ts. A node is opaque here.
+ */
+export interface GxtDebugRenderTreeCapabilities {
+  /** A new root node: the components a render renders are created under it. */
+  createRoot(): object;
+
+  /**
+   * Run `render` with `root` as the node what it renders is created under
+   * (`null`: nothing is recorded).
+   */
+  renderWith<T>(root: object | null, render: () => T): T;
+
+  /** The captured tree of `root`. */
+  capture(root: object): CapturedRenderNode;
+
+  /** Whether a captured argument is the error that reading it threw. */
+  isArgumentCaptureError(value: unknown): boolean;
+}
+
+/**
  * The capabilities object installed by manager.ts via `setGxtRenderer`, grouped
  * by namespace. Callers go through `getGxtRenderer()?.<namespace>`.
  */
 export interface GxtRenderer {
   readonly destruction: GxtDestructionCapabilities;
+  readonly debugRenderTree?: GxtDebugRenderTreeCapabilities;
   readonly backtracking: GxtBacktrackingCapabilities;
   readonly viewUtils: GxtViewUtilsCapabilities;
   readonly compilePipeline: GxtCompilePipelineCapabilities;

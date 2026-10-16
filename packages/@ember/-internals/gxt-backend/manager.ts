@@ -59,6 +59,17 @@ import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
 import { _getCurrentRunLoop, join, scheduleOnce } from '@ember/runloop';
 
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+import {
+  gxtCaptureDebugNodes,
+  gxtCreateDebugNode,
+  gxtDebugParent,
+  gxtIsArgumentCaptureError,
+  gxtLexicalName,
+  gxtReleaseDebugNode,
+  gxtWithDebugParent,
+  type GxtDebugArgs,
+  type GxtDebugNode,
+} from './debug-render-tree';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
 // BOTH the real validator and the GXT shim — the classic build resolves the
 // real package since the GXT alias only exists under GXT_MODE).
@@ -949,7 +960,33 @@ function _queueComponentOfDestroyedBlock(entry: CustomManagedEntry): void {
   _componentsOfDestroyedBlocks.push(entry);
 }
 
+// The debug render tree nodes (debug-render-tree.ts) of the components rendered
+// in each block. They leave the tree when the block is destroyed, as Glimmer's
+// debug render tree drops the components of a destroyed block.
+const _blockDebugNodes = new WeakMap<object, Set<GxtDebugNode>>();
+
+function _trackDebugNode(block: object | null, node: GxtDebugNode): void {
+  if (block === null) return;
+  let nodes = _blockDebugNodes.get(block);
+  if (nodes === undefined) {
+    nodes = new Set();
+    _blockDebugNodes.set(block, nodes);
+    // gxt runs it when it tears the block down (see `_blockContent`); a block
+    // destroyed with `gxtDestroyBlock` releases them in `_markBlockDestroyed`.
+    _gxtRegisterDestructor(block, () => _releaseDebugNodes(block));
+  }
+  nodes.add(node);
+}
+
+function _releaseDebugNodes(block: object): void {
+  const nodes = _blockDebugNodes.get(block);
+  if (nodes === undefined) return;
+  _blockDebugNodes.delete(block);
+  for (const node of nodes) gxtReleaseDebugNode(node);
+}
+
 function _markBlockDestroyed(block: object): void {
+  _releaseDebugNodes(block);
   const content = _blockContents.get(block);
   if (content === undefined) {
     // Nothing is tracked in it yet: a component rendered in it later is in a
@@ -1451,6 +1488,8 @@ function _gxtDestroyPendingModifiers(): void {
   if (_pendingModifierDestroys.length === 0) return;
   for (const entry of _pendingModifierDestroys.splice(0)) {
     if (!entry.cached.pendingDestroy) continue;
+    // A destroyed modifier leaves the debug render tree.
+    if (entry.cached.debugNode) gxtReleaseDebugNode(entry.cached.debugNode);
     try {
       const instance = entry.cached.instance;
       if (entry.isCustom && entry.cached.manager?.destroyModifier && !instance?.__gxtModDestroyed) {
@@ -7444,13 +7483,172 @@ function removeGxtArtifacts(container: Element | DocumentFragment): void {
 }
 
 /**
- * Render a template with parent view tracking and slots context.
+ * A component render as it appears in the debug render tree
+ * (debug-render-tree.ts), made by `_gxtDebugComponent`.
+ */
+interface GxtDebugComponent {
+  /** The block the component renders in: its node leaves the tree with it. */
+  block: object | null;
+  definition: unknown;
+  name: string;
+  /** The component (`null` for a template-only one). */
+  instance: unknown;
+  /** The arguments as the component reads them; else its render context's `args`. */
+  args: GxtDebugArgs | undefined;
+  /**
+   * The component's internal manager: one with `getDebugCustomRenderTree`
+   * lists the nodes that returns instead of the component.
+   */
+  manager: any;
+  /** The invocation: when it renders again, its previous node leaves the tree. */
+  invocation: unknown;
+}
+
+// The outermost node of each invocation's last render (`GxtDebugComponent.invocation`).
+const _invocationDebugNodes = new WeakMap<object, GxtDebugNode>();
+
+/**
+ * A component render for the debug render tree, `undefined` when nothing is
+ * recorded now (there is no current node). `ctx` is the invocation's render
+ * context (see `_gxtBlockOf`); `name` the name the component was resolved by,
+ * if it was (else see `_gxtDebugName`); `named` / `positional` its arguments,
+ * when the component does not read them from its render context's `args`.
+ */
+function _gxtDebugComponent(
+  ctx: unknown,
+  definition: unknown,
+  instance: unknown,
+  manager: any,
+  invocation: unknown,
+  name?: string,
+  named?: object,
+  positional?: ArrayLike<unknown>
+): GxtDebugComponent | undefined {
+  if (gxtDebugParent() === null) return undefined;
+  return {
+    block: _gxtBlockOf(ctx),
+    definition,
+    // The name it was registered by (`component:hello-world` for `<HelloWorld>`),
+    // as Glimmer's resolver names it.
+    name: name !== undefined ? _gxtRegistryName(name) : _gxtDebugName(definition),
+    instance,
+    args: named === undefined ? undefined : { positional: positional ?? [], named },
+    manager,
+    invocation,
+  };
+}
+
+// The registry name of a component invoked by name (see `resolveComponent`):
+// `foo::bar` is `foo/bar`, `FooBar` is `foo-bar`.
+function _gxtRegistryName(name: string): string {
+  const normalized = doubleColonToSlash(name);
+  return hasUpperCase(normalized) ? pascalToKebab(normalized) : normalized;
+}
+
+/**
+ * The name of a component or modifier definition in the debug render tree: the
+ * name a strict-mode template's scope gives it, else what its manager calls it
+ * (Glimmer's `getDebugName`), else its own name (a class's, a template-only
+ * definition's).
+ */
+function _gxtDebugName(definition: any, managerName?: unknown): string {
+  const lexical = gxtLexicalName(definition);
+  if (lexical !== undefined) return lexical;
+  if (typeof managerName === 'string' && managerName !== '') return managerName;
+  const name = definition?.name;
+  if (typeof name === 'string' && (name !== '' || typeof definition === 'function')) return name;
+  return definition !== null &&
+    typeof definition === 'object' &&
+    typeof definition.toString === 'function'
+    ? String(definition)
+    : '(unknown)';
+}
+
+/**
+ * A modifier as a node of the debug render tree, as Glimmer's `addModifier`
+ * records it: a child of the current node (the component whose template renders
+ * `element`), with `element` as its bounds. `invoked` is the definition as the
+ * template invoked it; `undefined` when nothing is recorded now.
+ */
+function _gxtDebugModifier(
+  invoked: unknown,
+  manager: any,
+  ModifierClass: any,
+  element: Element,
+  args: GxtDebugArgs,
+  instance: unknown
+): GxtDebugNode | undefined {
+  const parent = gxtDebugParent();
+  if (parent === null) return undefined;
+  const managerName =
+    typeof manager?.getDebugName === 'function'
+      ? manager.getDebugName(ModifierClass)
+      : ModifierClass?.name;
+  const node = gxtCreateDebugNode(
+    parent,
+    'modifier',
+    _gxtDebugName(invoked, managerName),
+    args,
+    instance
+  );
+  node.first = element;
+  node.last = element;
+  return node;
+}
+
+/**
+ * The nodes of a component render (see `GxtDebugComponent`), created under the
+ * current node: the component's node, or the chain of nodes its manager's
+ * `getDebugCustomRenderTree` returns (each under the one before, as Glimmer
+ * creates them). `current` is the node the template renders under: the last
+ * node, or the current node when the manager returned none. `null` when
+ * nothing is recorded now.
+ */
+function _gxtDebugComponentNodes(
+  debug: GxtDebugComponent,
+  renderContext: any
+): { nodes: GxtDebugNode[]; current: GxtDebugNode } | null {
+  const parent = gxtDebugParent();
+  if (parent === null) return null;
+  const invocation = debug.invocation;
+  const isInvocation =
+    invocation !== null && (typeof invocation === 'object' || typeof invocation === 'function');
+  if (isInvocation) {
+    const previous = _invocationDebugNodes.get(invocation as object);
+    if (previous !== undefined) gxtReleaseDebugNode(previous);
+  }
+  const args = debug.args ?? { positional: [], named: renderContext?.args ?? {} };
+  const nodes: GxtDebugNode[] = [];
+  let current = parent;
+  if (typeof debug.manager?.getDebugCustomRenderTree === 'function') {
+    for (const custom of debug.manager.getDebugCustomRenderTree(debug.definition, null, args)) {
+      current = gxtCreateDebugNode(current, custom.type, custom.name, custom.args, custom.instance);
+      nodes.push(current);
+    }
+  } else {
+    current = gxtCreateDebugNode(parent, 'component', debug.name, args, debug.instance);
+    nodes.push(current);
+  }
+  const outermost = nodes[0];
+  if (outermost !== undefined) {
+    _trackDebugNode(debug.block, outermost);
+    if (isInvocation) _invocationDebugNodes.set(invocation as object, outermost);
+  }
+  return { nodes, current };
+}
+
+/**
+ * Render a template with parent view tracking and slots context. With `debug`,
+ * the component is a node of the debug render tree while it renders
+ * (`_gxtDebugComponentNodes`), and the nodes the template rendered into
+ * `container` are its bounds.
  */
 function renderTemplateWithParentView(
   template: any,
   renderContext: any,
   container: Element | DocumentFragment,
-  instance: any
+  instance: any,
+  debug?: GxtDebugComponent
 ): any {
   // NOTE: We intentionally do NOT increment the render pass ID here.
   // The pass ID should only be incremented when starting a new top-level render transaction
@@ -7469,12 +7667,28 @@ function renderTemplateWithParentView(
     slotsStack.push(slots);
   }
 
+  const debugNodes = debug === undefined ? null : _gxtDebugComponentNodes(debug, renderContext);
+  let rendered = false;
   try {
-    const result = template.render(renderContext, container);
+    const result =
+      debugNodes === null
+        ? template.render(renderContext, container)
+        : gxtWithDebugParent(debugNodes.current, () => template.render(renderContext, container));
     // Clean up GXT placeholder comments for cleaner DOM
     removeGxtArtifacts(container);
+    if (debugNodes !== null) {
+      for (const node of debugNodes.nodes) {
+        node.first = container.firstChild;
+        node.last = container.lastChild;
+      }
+    }
+    rendered = true;
     return result;
   } finally {
+    // A render that threw rendered nothing.
+    if (!rendered && debugNodes !== null && debugNodes.nodes[0] !== undefined) {
+      gxtReleaseDebugNode(debugNodes.nodes[0]);
+    }
     if (slotsStack) {
       slotsStack.pop();
     }
@@ -8211,8 +8425,15 @@ function _renderElementHelperDefinition(
 
 // Render a template-only component's template (`tpl`, a template or a factory
 // of one for `owner`) with the invocation's `args` and forwarded attributes
-// (`fw`) into a fragment; `null` when there is no template to render.
-function _renderTemplateOnlyComponent(tpl: any, args: any, fw: any, owner: any): any {
+// (`fw`) into a fragment; `null` when there is no template to render. `debug`
+// is the render in the debug render tree (see `GxtDebugComponent`).
+function _renderTemplateOnlyComponent(
+  tpl: any,
+  args: any,
+  fw: any,
+  owner: any,
+  debug?: GxtDebugComponent
+): any {
   let resolvedTpl = tpl;
   if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
     resolvedTpl = resolvedTpl(owner);
@@ -8245,7 +8466,7 @@ function _renderTemplateOnlyComponent(tpl: any, args: any, fw: any, owner: any):
   renderCtx.$fw = (Array.isArray(fw) ? fw : null) ||
     (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
   const container = document.createDocumentFragment();
-  renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
+  renderTemplateWithParentView(resolvedTpl, renderCtx, container, null, debug);
   return container;
 }
 
@@ -8798,7 +9019,13 @@ const $_MANAGERS = {
           const tpl =
             COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
           if (tpl) {
-            const rendered = _renderTemplateOnlyComponent(tpl, args, fw, owner);
+            const rendered = _renderTemplateOnlyComponent(
+              tpl,
+              args,
+              fw,
+              owner,
+              _gxtDebugComponent(ctx, komp, null, manager, args)
+            );
             if (rendered !== null) return rendered;
           }
           // No template found and no create method — return empty
@@ -8815,7 +9042,13 @@ const $_MANAGERS = {
         const fallbackTpl =
           COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
         if (fallbackTpl) {
-          const rendered = _renderTemplateOnlyComponent(fallbackTpl, args, fw, owner);
+          const rendered = _renderTemplateOnlyComponent(
+            fallbackTpl,
+            args,
+            fw,
+            owner,
+            _gxtDebugComponent(ctx, komp, null, null, args)
+          );
           if (rendered !== null) return rendered;
         }
       }
@@ -9098,6 +9331,9 @@ const $_MANAGERS = {
         return undefined;
       }
 
+      // The definition as the template invoked it (its debug render tree name
+      // can be the template's name for it, see `_gxtDebugModifier`).
+      const invoked = modifier;
       const owner = getAmbientOwner();
       const self = this as any;
       // Built-in modifiers like `on` (registered in `_builtinModifiers`
@@ -9551,6 +9787,18 @@ const $_MANAGERS = {
           ModifierClass,
           pendingDestroy: false,
           isInternal: true,
+          // Its node in the debug render tree (released when it is destroyed).
+          debugNode:
+            gxtDebugParent() === null
+              ? undefined
+              : _gxtDebugModifier(
+                  invoked,
+                  manager,
+                  ModifierClass,
+                  element,
+                  capturedArgs,
+                  manager.getDebugInstance?.(state) ?? null
+                ),
         };
         cache.set(modKey, cached);
 
@@ -9792,12 +10040,30 @@ const $_MANAGERS = {
         cached.__gxtUpdatedInSyncCycle = currentCycle;
         cached.__gxtInstallCycle = currentCycle;
         cached.__gxtDestructorCycle = 0;
+        // Its debug render tree node is on the new element.
+        if (cached.debugNode) {
+          cached.debugNode.first = element;
+          cached.debugNode.last = element;
+        }
       } else {
         cached = {
           instance,
           manager,
           ModifierClass,
           pendingDestroy: false,
+          // Its node in the debug render tree (released when it is destroyed),
+          // with the arguments its manager reads.
+          debugNode:
+            gxtDebugParent() === null
+              ? undefined
+              : _gxtDebugModifier(
+                  invoked,
+                  manager,
+                  ModifierClass,
+                  element,
+                  lazyInstallArgs,
+                  instance
+                ),
           argSource: installArgSource,
           _consumedPositional,
           _consumedNamed,
@@ -9953,7 +10219,8 @@ function _classBodyComponentManager(definition: any): Function | undefined {
 // template for its name): its manager creates it from the invocation's
 // arguments and the template renders with the manager's context as `this`,
 // whether it is invoked by name or lexically. Returns the thunk the component
-// manager's callers run to render it.
+// manager's callers run to render it. `resolvedName` is the name it was
+// invoked by, if it was (its name in the debug render tree).
 function _renderCustomManagedComponent(
   definition: any,
   managerFactory: Function,
@@ -9961,7 +10228,8 @@ function _renderCustomManagedComponent(
   fw: any,
   ctx: any,
   owner: any,
-  template: any
+  template: any,
+  resolvedName?: string
 ): () => any {
   // RFC-213 custom component managers are classic-only. Native builds DCE
   // `handleCustomManagedComponent` + the eager-validate block below
@@ -9992,7 +10260,8 @@ function _renderCustomManagedComponent(
     managerFactory,
     owner,
     template,
-    eagerManager
+    eagerManager,
+    resolvedName
   );
 }
 
@@ -10235,7 +10504,16 @@ function handleStringComponent(
     // Check if this is a custom component manager (from setComponentManager)
     // These are factory functions, not internal manager objects
     if (typeof manager === 'function') {
-      return _renderCustomManagedComponent(factory.class, manager, args, fw, ctx, owner, template);
+      return _renderCustomManagedComponent(
+        factory.class,
+        manager,
+        args,
+        fw,
+        ctx,
+        owner,
+        template,
+        name
+      );
     }
     // Internal manager (Input, Textarea). One that creates no component (no
     // `create`: Glimmer's `createInstance` capability is off, as for a
@@ -10534,7 +10812,14 @@ function handleStringComponent(
           owner
         );
       } else {
-        result = renderGlimmerComponent(instance, resolvedTemplate, args, fw, owner);
+        result = renderGlimmerComponent(
+          instance,
+          resolvedTemplate,
+          args,
+          fw,
+          owner,
+          _gxtDebugComponent(ctx, factory?.class, instance, manager, args, name)
+        );
       }
 
       // Cache the result for this render pass to prevent duplicate renders
@@ -10633,7 +10918,8 @@ function handleCustomManagedComponent(
   managerFactory: Function,
   owner: any,
   template: any,
-  preCreatedManager?: any
+  preCreatedManager?: any,
+  resolvedName?: string
 ): () => any {
   return () => {
     // Use pre-created manager if available (from eager validation in handleStringComponent),
@@ -10967,7 +11253,24 @@ function handleCustomManagedComponent(
       }
     }
 
-    renderTemplateWithParentView(resolvedTemplate, renderContext, container, context);
+    // In the debug render tree the component is its manager's context, with the
+    // arguments its manager gave it (Glimmer's `getSelf` and captured args).
+    renderTemplateWithParentView(
+      resolvedTemplate,
+      renderContext,
+      container,
+      context,
+      _gxtDebugComponent(
+        ctx,
+        ComponentClass,
+        context ?? null,
+        null,
+        args,
+        resolvedName,
+        liveNamed,
+        livePositional
+      )
+    );
 
     // Re-run the internal-prop hide pass AFTER render. The render path (and the
     // args-revision cell) stamp further GXT-internal own keys (`__gxtArgsRev`,
@@ -13174,9 +13477,17 @@ function renderClassicComponent(
 }
 
 /**
- * Render a Glimmer component (tagless).
+ * Render a Glimmer component (tagless). `debug` is the render in the debug
+ * render tree (see `GxtDebugComponent`).
  */
-function renderGlimmerComponent(instance: any, template: any, args: any, fw: any, owner: any): any {
+function renderGlimmerComponent(
+  instance: any,
+  template: any,
+  args: any,
+  fw: any,
+  owner: any,
+  debug?: GxtDebugComponent
+): any {
   // Expose the current instance via stack-based capture for $_dc_ember tracking
   setInstanceCapture(instance);
 
@@ -13197,7 +13508,7 @@ function renderGlimmerComponent(instance: any, template: any, args: any, fw: any
   const container = document.createDocumentFragment();
   const renderContext = createRenderContext(instance, args, fw, owner);
 
-  renderTemplateWithParentView(template, renderContext, container, instance);
+  renderTemplateWithParentView(template, renderContext, container, instance, debug);
 
   return container;
 }
@@ -14392,6 +14703,14 @@ setGxtRenderer({
     renderInBlock: gxtRenderInBlock,
     destroyBlock: gxtDestroyBlock,
     destroyComponentsOfDestroyedBlocks: _gxtDestroyComponentsOfDestroyedBlocks,
+  },
+  // See debug-render-tree.ts. A root is the node a `renderComponent` render's
+  // components are created under (base-renderer.ts `_renderComponentGxt`).
+  debugRenderTree: {
+    createRoot: () => gxtCreateDebugNode(null, 'component', '{ROOT}', null, null),
+    renderWith: (root, render) => gxtWithDebugParent(root as GxtDebugNode | null, render),
+    capture: (root) => gxtCaptureDebugNodes([root as GxtDebugNode])[0]!,
+    isArgumentCaptureError: gxtIsArgumentCaptureError,
   },
   backtracking: {
     beginFrame: beginBacktrackingFrame,

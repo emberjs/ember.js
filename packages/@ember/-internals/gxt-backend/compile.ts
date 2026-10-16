@@ -665,6 +665,15 @@ import {
   gxtDestroyBlock,
   type GxtHelperInstance,
 } from './manager';
+// The debug render tree node a block renders under (see debug-render-tree.ts).
+import {
+  gxtDebugParent,
+  gxtRecordLexicalNames,
+  gxtReleaseDebugNode,
+  gxtRenderDebugContent,
+  gxtWithDebugParent,
+  type GxtDebugNode,
+} from './debug-render-tree';
 
 // JS reserved words cannot be used as JS variable names, so scope-binding
 // injection (strict-mode templates with scopeValues) prefixes any binding
@@ -1343,8 +1352,10 @@ function _afterFlushAfterInsertQueue(): void {
     };
     const destinationCells: _GxtTrackerFrame = new Set();
     // The block the `{{#in-element}}` is created in: its renders' components
-    // are destroyed with it too (manager.ts `gxtRenderInBlock`).
+    // are destroyed with it too (manager.ts `gxtRenderInBlock`), and are under
+    // the debug render tree node current here.
     const blockOfInElement = gxtCurrentBlock();
+    const debugParentOfInElement = gxtDebugParent();
     let appendRef: HTMLElement | null;
     {
       const outerTracker = _gxtGetTracker();
@@ -1629,7 +1640,7 @@ function _afterFlushAfterInsertQueue(): void {
         }
         return gxtRenderInBlock(render.content, blockOfInElement, () => roots(ctx));
       };
-      const nodes = _ieRenderRoots();
+      const nodes = gxtWithDebugParent(debugParentOfInElement, _ieRenderRoots);
       const fragment = document.createDocumentFragment();
       for (const node of nodes) {
         if (node instanceof Node) {
@@ -3709,6 +3720,10 @@ function _gxtDynamicContent(
   let kind: _GxtContentKind | null = null;
   let rendered: unknown;
   let nodes: Node[] = [];
+  // A component it renders is in the debug render tree under the node current
+  // here, until the content is replaced.
+  const debugParent = gxtDebugParent();
+  let debugNodes: GxtDebugNode[] = [];
 
   const render = (next: _GxtContentKind, value: any, html: string, parent: ParentNode): Node[] => {
     let content: Node[];
@@ -3720,7 +3735,11 @@ function _gxtDynamicContent(
       const context = parent instanceof Element ? _gxtContentContextOf(parent) : options.context;
       content = _gxtParseTrustedHtml(html, context);
     } else {
-      content = _gxtRenderInBlockOwner(blockOwner, () => renderComponent(value));
+      const component = gxtRenderDebugContent(debugParent, () =>
+        _gxtRenderInBlockOwner(blockOwner, () => renderComponent(value))
+      );
+      content = component.result;
+      debugNodes = component.nodes;
     }
     return content.length > 0 ? content : [document.createComment('')];
   };
@@ -3739,7 +3758,10 @@ function _gxtDynamicContent(
     const anchor = nodes.length > 0 ? nodes[0]! : null;
     const parent = anchor === null ? fragment : anchor.parentNode;
     if (parent === null) return;
+    const replacedDebugNodes = debugNodes;
+    debugNodes = [];
     const replacement = render(next, value, html, parent);
+    for (const node of replacedDebugNodes) gxtReleaseDebugNode(node);
     for (const node of replacement) parent.insertBefore(node, anchor);
     const replaced = nodes;
     for (const node of replaced) {
@@ -5335,13 +5357,18 @@ function _gxtDestroyNewClassHelperCacheEntriesSince(prev: Set<string> | null): v
 const _gxtIfBranchBlocks = new WeakMap<object, object>();
 
 // Render a block's content as the content of `block` (a branch's or a row's,
-// created in `parent`), or as it is when the content has no block of its own.
+// created in `parent`), or as it is when the content has no block of its own,
+// under `debugParent`, the debug render tree node that was current where the
+// block was created (`gxtDebugParent()`).
 function _gxtRenderBlockContent<T>(
   block: object | null,
   parent: object | null,
+  debugParent: GxtDebugNode | null,
   render: () => T
 ): T {
-  return block === null ? render() : gxtRenderInBlock(block, parent, render);
+  return gxtWithDebugParent(debugParent, () =>
+    block === null ? render() : gxtRenderInBlock(block, parent, render)
+  );
 }
 
 // Patch $_if to capture IfCondition instances and fix placeholder connectivity.
@@ -5414,8 +5441,9 @@ function patchGlobalIf() {
     const _capturedNamespace = _gxtNamespace;
     const _capturedOwner = getAmbientOwner();
     // The block the `{{#if}}` is created in: its branches are blocks created
-    // in it.
+    // in it, and render under the debug render tree node current here.
     const _blockOfIf = gxtCurrentBlock();
+    const _debugParentOfIf = gxtDebugParent();
     const inCapturedNamespace = (render: (...args: any[]) => any) =>
       function renderInCapturedNamespace(this: any, ...renderArgs: any[]) {
         const prevNamespace = _gxtNamespace;
@@ -5566,7 +5594,7 @@ function patchGlobalIf() {
           }
         }
         try {
-          const result = _gxtRenderBlockContent(branchBlock, _blockOfIf, () =>
+          const result = _gxtRenderBlockContent(branchBlock, _blockOfIf, _debugParentOfIf, () =>
             fn.apply(this, branchArgs)
           );
           // If the branch returns a function (common pattern:
@@ -5605,7 +5633,7 @@ function patchGlobalIf() {
                 }
               }
               try {
-                return _gxtRenderBlockContent(branchBlock, _blockOfIf, () =>
+                return _gxtRenderBlockContent(branchBlock, _blockOfIf, _debugParentOfIf, () =>
                   inner.apply(this, innerArgs)
                 );
               } finally {
@@ -7043,8 +7071,9 @@ function patchGlobalEachSync() {
     // (`_gxtRenderInBlockOwner`).
     const capturedOwner = getAmbientOwner();
     // The block the `{{#each}}` is created in: its rows are blocks created in
-    // it.
+    // it, and render under the debug render tree node current here.
     const blockOfEach = gxtCurrentBlock();
+    const debugParentOfEach = gxtDebugParent();
     const withParent = (cb: any): any =>
       _gxtRenderInBlockOwner(capturedOwner, () => {
         if (!canWrap) return cb();
@@ -7094,7 +7123,7 @@ function patchGlobalEachSync() {
       // components the row renders (manager.ts `gxtRenderInBlock`).
       const rowBlock = ctx0 && _gxtEachRowCtxSet.has(ctx0) ? (ctx0 as object) : null;
       try {
-        const row = _gxtRenderBlockContent(rowBlock, blockOfEach, () =>
+        const row = _gxtRenderBlockContent(rowBlock, blockOfEach, debugParentOfEach, () =>
           withParent(() => {
             // If index is a plain number (not a cell), wrap it in a cell-like object
             if (typeof index === 'number') {
@@ -7253,7 +7282,9 @@ function patchGlobalEachSync() {
         // Render the inverse ({{else}}) branch's new content. This enqueues the
         // new components' didInsertElement/didRender into the after-insert
         // queue (interactive mode).
-        const _inverseResult = withParent(() => origInverseFn(ctx0));
+        const _inverseResult = gxtWithDebugParent(debugParentOfEach, () =>
+          withParent(() => origInverseFn(ctx0))
+        );
         // Lifecycle teardown ORDERING: queue the old rows' async teardown so
         // `_gxtSyncDomNow` drains it AFTER Phase 3b (flushAfterInsertQueue)
         // has fired the NEW content's didInsertElement/didRender — matching
@@ -12624,6 +12655,13 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       templateString = rewritten;
       options = { ...options, scopeValues: patchedScope };
     }
+  }
+
+  // In DEBUG builds the debug render tree names a component or modifier the
+  // template invokes through its scope by its name there, as Glimmer names it
+  // by the variable it was invoked through (debug-render-tree.ts).
+  if (DEBUG && options?.scopeValues) {
+    gxtRecordLexicalNames(options.scopeValues);
   }
 
   // Check cache first — skip cache when scopeValues or AST plugins are provided

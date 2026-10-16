@@ -119,6 +119,12 @@ const GXT_ROOT_NODES = new WeakMap<RendererRoot, () => CapturedRenderNode>();
 // the classic roots.
 const GXT_RENDER_ROOTS = new WeakSet<object>();
 
+// GXT-only: Glimmer's `isArgumentError` for the arguments a debug render tree
+// capture could not read (the environment's `isArgumentCaptureError`).
+function gxtIsArgumentCaptureError(value: unknown): boolean {
+  return getGxtRenderer()?.debugRenderTree?.isArgumentCaptureError(value) ?? false;
+}
+
 // GXT-only: the DebugRenderTree of a renderer, backed by gxt's
 // `captureRenderTree`. Only `.capture()` is reachable in GXT mode — the
 // `begin`/`create`/`update`/`didRender`/`willDestroy`/`commit` bookkeeping
@@ -128,7 +134,10 @@ const GXT_RENDER_ROOTS = new WeakSet<object>();
 // `capture()` lists the trees of the renderer's roots, as Glimmer's debug
 // render tree lists the renders of its environment:
 //
-// - a `renderComponent` root is its `{ROOT}` node;
+// - a `renderComponent` root is its `{ROOT}` node. With the debug render tree
+//   on (the renderer's environment has one), its children are the components
+//   and modifiers the render recorded (gxt-backend debug-render-tree.ts);
+//   without it, the tree gxt captures under the render;
 // - the classic roots (application outlets, classic components) render in
 //   gxt's shared tree. gxt captures it from its own registry of render roots
 //   (no arguments), less the gxt roots of `renderComponent` renders. gxt
@@ -693,7 +702,19 @@ export class BaseRenderer {
       // across the cumulative GXT test run), and leaving the constructors
       // below unreferenced lets the opcode-eval core tree-shake out of the
       // GXT dist. `RendererState` only reads `context.env.isInteractive`.
-      let context = { env: { isInteractive: envOptions.isInteractive } };
+      //
+      // The environment has a debug render tree when `ENV._DEBUG_RENDER_TREE`
+      // is on as it is created (DEBUG builds, Ember Inspector), as Glimmer's
+      // environment builds one (see `_renderComponentGxt`), with the check for
+      // the arguments its capture could not read.
+      let debugRenderTree = ENV._DEBUG_RENDER_TREE;
+      let context = {
+        env: {
+          isInteractive: envOptions.isInteractive,
+          gxtDebugRenderTree: debugRenderTree,
+          isArgumentCaptureError: debugRenderTree ? gxtIsArgumentCaptureError : undefined,
+        },
+      };
       this.state = new RendererState(this, {
         owner,
         context: context as unknown as EvaluationContext,
@@ -1356,6 +1377,9 @@ function _renderComponentGxt(
   // render created (`null` for a template-only component).
   let root: RendererRoot | null = null;
   let rootInstance: unknown = null;
+  // The node the render's components and modifiers are recorded under in the
+  // debug render tree, when its renderer has one (set with `root`).
+  let debugRoot: object | null = null;
 
   // Remove all DOM nodes belonging to this entry's range (firstNode through
   // lastNode, inclusive). Used for both destroy and the re-render
@@ -1535,22 +1559,29 @@ function _renderComponentGxt(
   // The `{ROOT}` node of the render in its renderer's debug render tree, as
   // Glimmer names the root component of a `renderComponent` render: the
   // component the render created, the render's arguments and bounds, and the
-  // tree gxt captures under the render.
+  // nodes under it: those the render recorded (`debugRoot`), else the tree gxt
+  // captures under the render.
   const captureRootNode = (): CapturedRenderNode => {
     const named: Record<string, unknown> = {};
     if (args) {
       for (const key of Object.keys(args)) named[key] = args[key];
     }
-    const tree = entry.renderedTree ?? renderRoot;
-    const gxtNode =
-      tree !== null && tree !== undefined
-        ? (_gxtLib().captureRenderTree([tree]) as CapturedRenderNode[])[0]
-        : undefined;
+    const debugRenderTree = getGxtRenderer()?.debugRenderTree;
+    let captured: CapturedRenderNode | undefined;
+    if (debugRoot !== null && debugRenderTree !== undefined) {
+      captured = debugRenderTree.capture(debugRoot);
+    } else {
+      const tree = entry.renderedTree ?? renderRoot;
+      captured =
+        tree !== null && tree !== undefined
+          ? (_gxtLib().captureRenderTree([tree]) as CapturedRenderNode[])[0]
+          : undefined;
+    }
     const parentElement = entry.boundsParent;
     const firstNode = gxtEntryFirstNode(entry);
     const lastNode = gxtEntryLastNode(entry);
     return {
-      id: gxtNode?.id ?? '',
+      id: captured?.id ?? '',
       type: 'component',
       name: '{ROOT}',
       args: { positional: [], named },
@@ -1559,7 +1590,7 @@ function _renderComponentGxt(
         parentElement !== null && firstNode !== null && lastNode !== null
           ? ({ parentElement, firstNode, lastNode } as unknown as CapturedRenderNode['bounds'])
           : null,
-      children: gxtNode?.children ?? [],
+      children: captured?.children ?? [],
     };
   };
 
@@ -1596,7 +1627,14 @@ function _renderComponentGxt(
     };
     root = rendererRoot;
     GXT_ROOT_NODES.set(rendererRoot, captureRootNode);
-    rendererFor(owner, env).state.renderRoot(rendererRoot);
+    const renderer = rendererFor(owner, env);
+    // The render records its components and modifiers when its renderer has a
+    // debug render tree, as Glimmer's environment records them in one.
+    const rendererEnv = renderer.state.env as unknown as { gxtDebugRenderTree?: boolean };
+    if (rendererEnv.gxtDebugRenderTree === true) {
+      debugRoot = getGxtRenderer()?.debugRenderTree?.createRoot() ?? null;
+    }
+    renderer.state.renderRoot(rendererRoot);
     registerDestructor(rendererRoot, doDestroy);
   };
 
@@ -1866,11 +1904,19 @@ function _renderComponentGxt(
     // changes, as Glimmer's revalidation re-runs only the opcodes whose tags
     // changed. Nothing renders the root again, and a render made while another
     // one is in progress (a nested `renderComponent`) is as live as any other.
+    //
+    // What it renders is recorded under its own debug render tree node, or not
+    // at all (a render made during another one is not part of that one's tree).
     const _withRendering = getGxtRenderer()?.compilePipeline.withRendering;
+    const debugRenderTree = getGxtRenderer()?.debugRenderTree;
+    const renderRegion = () =>
+      debugRenderTree === undefined
+        ? renderIntoRegion(template, renderContext)
+        : debugRenderTree.renderWith(debugRoot, () => renderIntoRegion(template, renderContext));
     if (typeof _withRendering === 'function') {
-      _withRendering(() => renderIntoRegion(template, renderContext));
+      _withRendering(renderRegion);
     } else {
-      renderIntoRegion(template, renderContext);
+      renderRegion();
     }
 
     // Flush queued didInsertElement / didRender hooks
