@@ -4197,6 +4197,10 @@ function _gxtSetRootOutletRerenderWrap(wrap: (fn: any) => any): void {
 // is cleared and the error re-thrown to `runTask`'s caller (typically
 // `assert.throws` in tests). `unknown`, because any value can be thrown.
 let _gxtDeferredSyncError: unknown = null;
+// Keep `error` as the sync's error unless an earlier phase threw one.
+function _gxtDeferSyncError(error: unknown): void {
+  _gxtDeferredSyncError = _gxtDeferredSyncError || error;
+}
 
 function _gxtGetPendingSync(): boolean {
   return _gxtFlags.pendingSync;
@@ -5180,16 +5184,8 @@ function _orderIfWatcherFlush(
         }
         if (seen.has(id)) continue;
         seen.add(id);
-        let nextBool: boolean | null = null;
-        if (typeof cb.__getNextBool === 'function') {
-          try {
-            nextBool = cb.__getNextBool(obj);
-          } catch {
-            // The order is only a preference: the watcher reads the value
-            // again when it runs, and reports what that read throws.
-            nextBool = null;
-          }
-        }
+        const nextBool =
+          typeof cb.__getNextBool === 'function' ? _gxtIfWatcherNextBool(cb, obj) : null;
         if (nextBool === false) falseFirst.push({ cb, obj });
         else if (nextBool === true) trueLast.push({ cb, obj });
         else unknown.push({ cb, obj });
@@ -7321,11 +7317,20 @@ function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
 // `installRenderPassPart` and dispatched by manager.ts's `beginRenderPass`
 // before its main work.
 function _resetTemplateOnlyState() {
+  _gxtTemplateOnlyRenderedSet.clear();
+  _gxtTemplateOnlyStack.length = 0;
+}
+
+// An if-watcher's next value of its condition, for the order the watchers fire
+// in; null when unknown. The order is only a preference: a watcher reads the
+// condition again when it fires and reports what that read throws, and a read
+// that throws here is reported in DEBUG.
+function _gxtIfWatcherNextBool(cb: IfWatcherCb, obj: object): boolean | null {
   try {
-    _gxtTemplateOnlyRenderedSet.clear();
-    _gxtTemplateOnlyStack.length = 0;
-  } catch {
-    /* ignore */
+    return cb.__getNextBool!(obj);
+  } catch (error) {
+    _gxtReportDroppedRead('An {{#if}} condition', error);
+    return null;
   }
 }
 
@@ -7480,32 +7485,23 @@ function _gxtSyncDomNow(): void {
       // invoke its trueBranch, instantiating transient components that the outer
       // {{#if}} would only later have suppressed.
       if (_pendingIfWatcherNotifications.length > 0) {
-        try {
-          const pending0 = _pendingIfWatcherNotifications.slice();
-          const ordered0 = _orderIfWatcherFlush(pending0);
-          const fired0 = new Set<IfWatcherCb>();
-          for (const { cb, obj } of ordered0) {
-            if (fired0.has(cb)) continue;
-            if (typeof cb.__getNextBool !== 'function') continue;
-            let next: boolean | null = null;
-            try {
-              next = cb.__getNextBool(obj);
-            } catch {
-              /* ignore */
-            }
-            if (next !== false) continue;
-            fired0.add(cb);
-            try {
-              cb(obj);
-            } catch (e) {
-              console.warn('[GXT] ifWatcher pre-flush error:', e);
-            }
+        const pending0 = _pendingIfWatcherNotifications.slice();
+        const ordered0 = _orderIfWatcherFlush(pending0);
+        const fired0 = new Set<IfWatcherCb>();
+        for (const { cb, obj } of ordered0) {
+          if (fired0.has(cb)) continue;
+          if (typeof cb.__getNextBool !== 'function') continue;
+          const next = _gxtIfWatcherNextBool(cb, obj);
+          if (next !== false) continue;
+          fired0.add(cb);
+          try {
+            cb(obj);
+          } catch (e) {
+            console.warn('[GXT] ifWatcher pre-flush error:', e);
           }
-          // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
-          _gxtPreFlushFiredFalse = fired0;
-        } catch {
-          /* ignore */
         }
+        // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
+        _gxtPreFlushFiredFalse = fired0;
       }
       // PHASE 0.5: Drain the deferred cascade queue here (rather than at the end
       // of `_gxtTriggerReRender`) so the Deferred half (modifier-install watcher
@@ -7551,6 +7547,7 @@ function _gxtSyncDomNow(): void {
       // arg cells to current values, so changes must be detected first.
       // Typed bridge dispatch via `compilePipeline.syncAllWrappers`; the
       // canonical `_gxtSyncAllWrappers` lives in manager.ts.
+      // What the hooks throw is the sync's error.
       try {
         const syncAll = getGxtRenderer()?.compilePipeline.syncAllWrappers;
         if (typeof syncAll === 'function') {
@@ -7578,8 +7575,8 @@ function _gxtSyncDomNow(): void {
             _gxtSetHadPendingSync(false);
           }
         }
-      } catch {
-        /* ignore */
+      } catch (syncAllErr) {
+        _gxtDeferSyncError(syncAllErr);
       }
       // PHASE 1a: Flush deferred if-watcher notifications. These were accumulated
       // during `_gxtTriggerReRender` calls and are flushed HERE (after all
@@ -7611,12 +7608,7 @@ function _gxtSyncDomNow(): void {
         for (const { cb, obj } of ordered) {
           if (directlyFiredCbs.has(cb)) continue;
           if (typeof cb.__getNextBool !== 'function') continue;
-          let next: boolean | null = null;
-          try {
-            next = cb.__getNextBool(obj);
-          } catch {
-            /* ignore */
-          }
+          const next = _gxtIfWatcherNextBool(cb, obj);
           if (next !== false) continue;
           directlyFiredCbs.add(cb);
           try {
@@ -7632,12 +7624,7 @@ function _gxtSyncDomNow(): void {
         for (const { cb, obj } of ordered) {
           if (directlyFiredCbs.has(cb)) continue;
           if (typeof cb.__getNextBool !== 'function') continue;
-          let next: boolean | null = null;
-          try {
-            next = cb.__getNextBool(obj);
-          } catch {
-            /* ignore */
-          }
+          const next = _gxtIfWatcherNextBool(cb, obj);
           if (next !== true) continue;
           directlyFiredCbs.add(cb);
           const ifc = cb.__ifCondition;
@@ -7670,40 +7657,32 @@ function _gxtSyncDomNow(): void {
         // candidate walk so any callbacks not represented in `ordered` (e.g.
         // late-registered ones) still fire.
         for (const { obj, keyName } of pending) {
-          try {
-            const candidates: object[] = [obj];
-            try {
-              const proto = Object.getPrototypeOf(obj);
-              if (proto && proto !== Object.prototype) candidates.push(proto);
-            } catch {
-              /* ignore */
-            }
-            const ctxsMap = _getOrCreateGxtComponentContexts();
-            if (ctxsMap) {
-              const ctxs = ctxsMap.get(obj);
-              if (ctxs) {
-                for (const ctx of ctxs) {
-                  const raw = (ctx as any)?.__gxtRawTarget || ctx;
-                  if (!candidates.includes(raw)) candidates.push(raw);
-                }
+          const candidates: object[] = [obj];
+          const proto = Object.getPrototypeOf(obj);
+          if (proto && proto !== Object.prototype) candidates.push(proto);
+          const ctxsMap = _getOrCreateGxtComponentContexts();
+          if (ctxsMap) {
+            const ctxs = ctxsMap.get(obj);
+            if (ctxs) {
+              for (const ctx of ctxs) {
+                const raw = (ctx as any)?.__gxtRawTarget || ctx;
+                if (!candidates.includes(raw)) candidates.push(raw);
               }
             }
-            for (const target of candidates) {
-              const keyMap = ifWatchers.get(target);
-              if (!keyMap) continue;
-              const watchers = keyMap.get(keyName);
-              if (!watchers) continue;
-              for (const cb of watchers) {
-                if (directlyFiredCbs.has(cb)) continue;
-                try {
-                  cb(obj);
-                } catch (e) {
-                  console.warn('[GXT] ifWatcher error:', e);
-                }
+          }
+          for (const target of candidates) {
+            const keyMap = ifWatchers.get(target);
+            if (!keyMap) continue;
+            const watchers = keyMap.get(keyName);
+            if (!watchers) continue;
+            for (const cb of watchers) {
+              if (directlyFiredCbs.has(cb)) continue;
+              try {
+                cb(obj);
+              } catch (e) {
+                console.warn('[GXT] ifWatcher error:', e);
               }
             }
-          } catch {
-            /* ignore */
           }
         }
       }
@@ -7713,25 +7692,22 @@ function _gxtSyncDomNow(): void {
       // stale and the morph ALWAYS fires, creating duplicate components/modifiers
       // on temporary elements. Only update root tag values (NOT hadPendingSync)
       // so that property-change-driven syncs still trigger the morph when needed.
+      // (Validating a root's tag throws a DEBUG tag-cycle assertion.)
       try {
         // Read via the gxt-bridge `rootComponent` namespace; the writer is
         // `glimmer/lib/renderer.ts`.
         const updateRootTags = getGxtRenderer()?.rootComponent.updateRootTagValues;
         if (typeof updateRootTags === 'function') updateRootTags();
-      } catch {
-        /* ignore */
+      } catch (rootTagErr) {
+        _gxtDeferSyncError(rootTagErr);
       }
       // The morph is not skipped when root tags merely look current: Phase 1b
       // above has just updated them, so such a check always passes and would
       // skip the morph for updates gxtSyncDom did not handle (e.g., inline
       // $__if with function values, undefined → truthy transitions). The morph
       // must always run when hadPendingSync is true from a property change.
-      // PHASE 2a: Snapshot live instances before force-rerender.
-      try {
-        getGxtRenderer()?.compilePipeline.snapshotLiveInstances();
-      } catch {
-        /* ignore */
-      }
+      // PHASE 2a: Snapshot live instances before force-rerender (copies a Set).
+      getGxtRenderer()?.compilePipeline.snapshotLiveInstances();
       // PHASE 2b: With gxtModuleDedup, GXT's native cell tracking handles
       // most DOM updates via gxtSyncDom() in Phase 1. The force-rerender
       // (morph) is kept as fallback for cases where cell tracking doesn't
@@ -7766,8 +7742,8 @@ function _gxtSyncDomNow(): void {
       // AFTER manager.ts's main rebuild body.
       try {
         getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
-      } catch {
-        /* ignore */
+      } catch (rebuildErr) {
+        _gxtDeferSyncError(rebuildErr);
       }
       // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
       // the modifiers whose destructor ran and that no evaluation of their
@@ -7811,8 +7787,8 @@ function _gxtSyncDomNow(): void {
       // drain).
       try {
         getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
-      } catch {
-        /* ignore */
+      } catch (insertErr) {
+        _gxtDeferSyncError(insertErr);
       }
       // PHASE 3c: Drain deferred each→empty inverse-branch old-row finalization
       // (didDestroyElement + willDestroy). This runs AFTER Phase 3b so the NEW
@@ -7822,11 +7798,12 @@ function _gxtSyncDomNow(): void {
       // transition.
       try {
         _gxtDrainPendingInverseOldRowFinalize();
-      } catch {
-        /* ignore */
+      } catch (finalizeErr) {
+        _gxtDeferSyncError(finalizeErr);
       }
-      // Re-render CurriedComponent marker regions
-      try {
+      // Re-render CurriedComponent marker regions. What a region's render
+      // throws is the sync's error; the other regions still render.
+      {
         const infos = _curriedRenderInfos;
         if (infos.length) {
           for (const info of infos) {
@@ -7871,13 +7848,11 @@ function _gxtSyncDomNow(): void {
                 if (newNode) parent.insertBefore(newNode, em);
                 _snapshotCurriedArgs(info, newFinal);
               }
-            } catch {
-              /* ignore render errors */
+            } catch (regionErr) {
+              _gxtDeferSyncError(regionErr);
             }
           }
         }
-      } catch {
-        /* ignore */
       }
       // PHASE 4: Destroy the components (with a custom manager) of the blocks
       // this sync tore down, once it changed the DOM and ran the insert hooks,
@@ -7937,8 +7912,10 @@ setInterval(() => {
     _intervalSyncBudget--;
     try {
       _gxtSyncDomNow();
-    } catch {
-      /* ignore - errors will be caught by QUnit */
+    } catch (error) {
+      // The interval's flush has no caller to throw to (a sync a run loop or a
+      // test helper starts throws to it): reported in DEBUG.
+      _gxtReportDroppedRead('A DOM sync on the fallback interval', error);
     }
   } else {
     // No pending sync — reset budget for next burst
@@ -7976,6 +7953,9 @@ function _gxtCleanupActiveComponents(): void {
   _gxtClearIfWatchers();
   // Destroy cached engine instances from {{mount}} so Namespace.destroy()
   // removes them from NAMESPACES (prevents "Should not have any NAMESPACES" failures).
+  // What an engine's destruction throws is thrown once the rest of the
+  // cleanup has run.
+  let engineError: { error: unknown } | null = null;
   if (_gxtEngineInstances.size > 0) {
     for (const [, engineInst] of _gxtEngineInstances) {
       try {
@@ -7997,8 +7977,8 @@ function _gxtCleanupActiveComponents(): void {
         ) {
           engineInst.destroy();
         }
-      } catch {
-        /* ignore */
+      } catch (error) {
+        engineError ??= { error };
       }
     }
     _gxtEngineInstances.clear();
@@ -8036,6 +8016,7 @@ function _gxtCleanupActiveComponents(): void {
   // Reset module-local rendering state
   _gxtCurrentSlots = undefined;
   _gxtCurrentFw = undefined;
+  if (engineError !== null) throw engineError.error;
 }
 
 // Patch QUnit.equiv and Assert.prototype.deepEqual to tolerate the whitespace
@@ -8154,12 +8135,9 @@ let _qunitWhitespacePatched = false;
 const _gxtHelperInstances: any[] = [];
 let _gxtHelperInstancePushHook: ((inst: any) => void) | null = null;
 function _gxtPushHelperInstance(inst: any): void {
+  // The hook (manager.ts) installs the recompute bridge on the instance.
   if (_gxtHelperInstancePushHook) {
-    try {
-      _gxtHelperInstancePushHook(inst);
-    } catch {
-      /* ignore — best-effort */
-    }
+    _gxtHelperInstancePushHook(inst);
   }
   _gxtHelperInstances.push(inst);
 }
