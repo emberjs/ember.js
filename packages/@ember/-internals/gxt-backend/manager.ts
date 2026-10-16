@@ -728,6 +728,21 @@ function _gxtRegisterDynamicRegion(first: Node, region: DynamicRegion): void {
 
 const _customManagedInstances: CustomManagedEntry[] = [];
 
+// Whether `node` is in an `{{#in-element}}` destination whose block is in the
+// document (its placeholder is connected), though the destination itself may
+// be detached: the block's content is live, as the classic sweep in
+// `_gxtDestroyUnclaimedPoolEntries` also takes it. Once the block goes, its
+// content leaves the destination (compile.ts `_inElementRemoveRender`).
+function _isInLiveInElementDestination(node: Node): boolean {
+  for (let current: Node | null = node; current !== null; current = current.parentNode) {
+    if ((current as any).__gxtIsInElementHost) {
+      const placeholder: Node | undefined = (current as any).__gxtInElementPlaceholder;
+      return placeholder !== undefined && placeholder.isConnected;
+    }
+  }
+  return false;
+}
+
 /**
  * Destroy any custom-managed component instances whose DOM nodes are no longer connected.
  * Called during the destroy phase (e.g., after a conditional block removes content).
@@ -737,7 +752,7 @@ function _gxtDestroyCustomManagedInstances(): void {
     const entry = _customManagedInstances[i]!;
     if (entry.destroyed) continue;
     const node = entry.region !== null ? entry.region.first() : entry.node;
-    if (node.isConnected) continue;
+    if (node.isConnected || _isInLiveInElementDestination(node)) continue;
     entry.destroyed = true;
     try {
       entry.destroyFn();

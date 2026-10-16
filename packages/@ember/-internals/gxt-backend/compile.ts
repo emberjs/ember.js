@@ -1275,6 +1275,10 @@ function _afterFlushAfterInsertQueue(): void {
   }
   // The render each destination holds.
   const _inElementRenders = new Map<Element, InElementRender>();
+  // The nodes a block item puts into the destination: a fragment's children,
+  // or the node itself.
+  const renderedNodesOfItem = (node: Node): Node[] =>
+    node instanceof DocumentFragment ? Array.from(node.childNodes) : [node];
   // Track which elements are in append mode (insertBefore=null)
   const _inElementAppendModeElements = new WeakSet<Element>();
 
@@ -1443,7 +1447,7 @@ function _afterFlushAfterInsertQueue(): void {
         const deferredFragment = document.createDocumentFragment();
         for (const node of deferredNodes) {
           if (node instanceof Node) {
-            deferredRenderedNodes.push(node);
+            deferredRenderedNodes.push(...renderedNodesOfItem(node));
             deferredFragment.appendChild(node);
           } else if (typeof node === 'function') {
             const textNode = document.createTextNode('');
@@ -1603,7 +1607,9 @@ function _afterFlushAfterInsertQueue(): void {
       const fragment = document.createDocumentFragment();
       for (const node of nodes) {
         if (node instanceof Node) {
-          render.nodes.push(node);
+          // The nodes a fragment (a component's render) holds are the
+          // render's, not the fragment, which inserting empties.
+          render.nodes.push(...renderedNodesOfItem(node));
           fragment.appendChild(node);
         } else if (typeof node === 'function') {
           // Dynamic content — a text node its effect keeps current, stopped
