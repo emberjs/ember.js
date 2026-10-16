@@ -63,5 +63,6 @@ types/stable
 
 # Ephemeral GXT test outputs (keep baseline + triage)
 /test-results/gxt-last-run.json
+/test-results/gxt-runner-exit.txt
 /test-results/gxt-summary.json
 /test-results/rehydration/

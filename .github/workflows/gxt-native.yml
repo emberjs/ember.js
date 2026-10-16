@@ -80,11 +80,17 @@ jobs:
             ${{ runner.temp }}/consumer-app/installed-packages.txt
           if-no-files-found: ignore
 
-  suite:
-    name: gxt-native test suite
+  # The suite runs in 4 shards in parallel (runner.mjs --shard i/4: every 4th
+  # module of the sorted list). `gxt-native test suite` merges them into the
+  # gxt-summary.json / gxt-last-run.json of one unsharded run and gates that.
+  suite-shard:
+    name: gxt-native test suite shard ${{ matrix.shard }}/4
     runs-on: ubuntu-latest
-    # ~7 min on a fast laptop; leave room for CI hardware.
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -93,23 +99,81 @@ jobs:
         with:
           install-playwright: 'true'
       # runner.mjs exits 1 on any failing test, known reds included, so the
-      # verdict comes from baseline-gate.mjs: no test red that the baseline
-      # lists green, no baseline module missing, no timeout or harness error.
-      - name: Run the native suite against test-results/native-baseline.json
+      # verdict comes from baseline-gate.mjs: no test of the shard's modules
+      # red that the baseline lists green, no timeout or harness error. That
+      # every baseline module ran is checked on the merged run.
+      - name: Run the native suite shard ${{ matrix.shard }}/4 against test-results/native-baseline.json
         env:
           EMBER_RENDER_BACKEND: gxt-native
           NODE_OPTIONS: --max-old-space-size=8192
+          SHARD: ${{ matrix.shard }}/4
         run: |
           status=0
           node scripts/gxt-test-runner/runner.mjs \
             --full \
+            --shard "$SHARD" \
             --auto-serve \
             --url http://localhost:5181/native.html \
             --min-modules 5 \
             --baseline test-results/native-baseline.json || status=$?
+          echo "$status" > test-results/gxt-runner-exit.txt
           node scripts/gxt-test-runner/baseline-gate.mjs \
             --baseline test-results/native-baseline.json \
+            --subset \
             --runner-exit "$status"
+      - name: Upload shard run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-native-suite-shard-${{ matrix.shard }}
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+            test-results/gxt-runner-exit.txt
+          if-no-files-found: ignore
+
+  suite:
+    name: gxt-native test suite
+    needs: suite-shard
+    # Also after a failed shard: the merged gate then names every regression.
+    # The job fails whenever a shard failed.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+          package-manager-cache: false
+      - name: Download shard run artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gxt-native-suite-shard-*
+          path: shard-runs
+      # Fails when a shard left no artifact (it never got to run the suite).
+      - name: Merge the shard runs
+        run: |
+          node scripts/gxt-test-runner/merge-runs.mjs \
+            --shards 4 \
+            --out-dir test-results \
+            shard-runs/gxt-native-suite-shard-*
+      # The unsharded verdict: no regressions, timeouts or harness errors, and
+      # every baseline module ran in some shard.
+      - name: Gate the merged native suite against test-results/native-baseline.json
+        run: |
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/native-baseline.json \
+            --runner-exit "$(cat test-results/gxt-runner-exit.txt || echo unknown)"
+      - name: Fail when a shard failed
+        if: ${{ needs.suite-shard.result != 'success' }}
+        env:
+          SHARD_RESULT: ${{ needs.suite-shard.result }}
+        run: |
+          echo "::error::A gxt-native test suite shard did not succeed (result: $SHARD_RESULT)."
+          exit 1
       - name: Upload run artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

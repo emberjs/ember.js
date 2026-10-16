@@ -9,8 +9,8 @@ A Playwright + QUnit runner for the Ember.js GXT test pages (compat
    signal.** No stuck-detection. Hangs are recorded as timeouts and never
    enter the baseline.
 2. **Per-module isolation.** Every module runs in its own browser context.
-3. **Deterministic ordering.** Modules are sorted lexicographically, sharding
-   uses a stable SHA-1 bucket on the module name.
+3. **Deterministic ordering.** Modules are sorted lexicographically; shard
+   N of M runs every Mth module of the sorted list, starting at the Nth.
 4. **Retries at the QUnit level.** `--retries` controls how many additional
    attempts QUnit gives a failing test. Mixed outcomes are quarantined, never
    counted as passing.
@@ -60,6 +60,19 @@ node scripts/gxt-test-runner/runner.mjs --filter "Syntax test:"
 node scripts/gxt-test-runner/runner.mjs --smoke --shard 2/4
 ```
 
+Merge the shards of one run (one directory per shard, each holding that
+shard's `gxt-summary.json` and `gxt-last-run.json`) into the two files an
+unsharded run writes, e.g. to gate the whole suite or to regenerate a
+baseline:
+
+```bash
+node scripts/gxt-test-runner/merge-runs.mjs --shards 4 --out-dir test-results \
+  shard-1 shard-2 shard-3 shard-4
+```
+
+`merge-runs.mjs` fails when a shard is missing, when the shards ran
+different code or when a module ran in two shards.
+
 ### Baseline gating
 
 ```bash
@@ -104,12 +117,17 @@ git add test-results/gxt-baseline.json
   the shard's modules are compared (a smoke module missing from the page is a
   runner exit 3).
 - `.github/workflows/gxt-full.yml` — nightly, compares against
-  `test-results/gxt-baseline.json`, files an issue on regression.
+  `test-results/gxt-baseline.json`, files an issue on regression. Runs in 5
+  shards (`--full --shard i/5`, each gated with `--subset`); the
+  `GXT full suite` job merges them with `merge-runs.mjs`, gates the merged run
+  without `--subset` (so every baseline module must have run in some shard),
+  and uploads the merged files as `gxt-full-run` / `gxt-candidate-baseline`.
 - `.github/workflows/gxt-native.yml` — every PR: the native suite
   (`--url http://localhost:5181/native.html`, `EMBER_RENDER_BACKEND=gxt-native`)
-  against `test-results/native-baseline.json`. The runner exits 1 on any
-  failing test, known reds included, so the job's verdict comes from
-  `baseline-gate.mjs`: no green->red test, no baseline module missing, no
+  against `test-results/native-baseline.json`, in 4 shards merged the same way
+  by the `gxt-native test suite` job (artifact `gxt-native-suite`). The runner
+  exits 1 on any failing test, known reds included, so the job's verdict comes
+  from `baseline-gate.mjs`: no green->red test, no baseline module missing, no
   timeout or harness error.
 
 ```bash

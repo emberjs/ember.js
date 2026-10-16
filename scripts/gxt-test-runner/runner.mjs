@@ -24,7 +24,6 @@
 import { chromium } from 'playwright';
 import { writeFileSync, mkdirSync, readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { spawn, execSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -336,7 +335,8 @@ function printHelp() {
   --smoke                 Run the 14-module smoke suite (default)
   --full                  Run every discovered module
   --filter <glob>         Substring/glob filter on module names
-  --shard N/M             Run only shard N of M (by module hash)
+  --shard N/M             Run only shard N of M (every Mth module of the sorted list,
+                          starting at the Nth)
   --baseline <file>       Compare against baseline JSON; non-zero on green->red
   --out-dir <dir>         Output directory (default: test-results)
   --module-timeout <ms>   Per-module wall-clock timeout (default 300000)
@@ -357,13 +357,15 @@ function printHelp() {
 
 // ---------- Module filtering ----------
 
+// Round-robin over the sorted module list. Modules of one family sort next to
+// each other and take similar time, so every shard gets its share of each
+// family and the shards of a CI matrix finish close together. Every shard
+// discovers the same list (same build, same page), so the shards partition it;
+// merge-runs.mjs rejects a module that ran in two shards and the unsharded
+// baseline-gate.mjs run on the merged result names any that ran in none.
 function shardFilter(modules, shard) {
   if (!shard) return modules;
-  return modules.filter((name) => {
-    const h = createHash('sha1').update(name).digest();
-    const bucket = (h.readUInt32BE(0) % shard.total) + 1;
-    return bucket === shard.index;
-  });
+  return [...modules].sort().filter((_, i) => i % shard.total === shard.index - 1);
 }
 
 function globFilter(modules, pattern) {
