@@ -4,7 +4,8 @@
  * (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, ApplicationTestCase, runTask } from 'internal-test-helpers';
-import { set } from '@ember/object';
+import { action, set } from '@ember/object';
+import Controller from '@ember/controller';
 import ObjectProxy from '@ember/object/proxy';
 import Route from '@ember/routing/route';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -233,6 +234,44 @@ moduleFor(
 
       this.assertText('Tomster');
       assert.strictEqual(serialized, 0, 'the model was never passed to JSON.stringify');
+    }
+  }
+);
+
+moduleFor(
+  'GXT correctness: route template actions',
+  class extends ApplicationTestCase {
+    async ['@test an action keeps its controller as this after a controller property changes'](
+      assert: any
+    ) {
+      // A classic `action` in an extended controller is bound to the object it
+      // is read from. The route template's first render reads it from the
+      // controller; a later write to the controller must not rebind it to the
+      // template's own context, whose writes would shadow the controller's.
+      this.add(
+        'controller:application',
+        Controller.extend({
+          count: 0,
+          bump: action(function (this: any) {
+            this.incrementProperty('count');
+          }),
+        })
+      );
+      this.add(
+        'template:application',
+        precompileTemplate('<button id="bump" {{on "click" this.bump}}></button>{{this.count}}')
+      );
+
+      await this.visit('/');
+      const controller = this.applicationInstance!.lookup('controller:application') as any;
+      const button = () => this.element!.querySelector('#bump') as HTMLButtonElement;
+
+      runTask(() => button().click());
+      assert.strictEqual(controller.count, 1, 'the first click set the controller');
+
+      runTask(() => button().click());
+      assert.strictEqual(controller.count, 2, 'the second click set the controller too');
+      this.assertText('2');
     }
   }
 );

@@ -4993,7 +4993,14 @@ function _gxtTriggerReRenderSyncCore(
               p = Object.getPrototypeOf(p);
             }
             if (!protoGetter) continue;
-            const freshVal = protoGetter.call(cellTarget);
+            // Read the getter as the context's first render read it: with
+            // `obj`, the object the context derives from, as `this`. root.ts
+            // copies a controller's getter values into its route template's
+            // `Object.create(controller)` context; read with the context as
+            // `this`, an `action` getter returns a function bound to the
+            // context, and the action's writes then shadow the controller's
+            // properties instead of setting them.
+            const freshVal = protoGetter.call(obj);
             const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
             if (oc) oc.update(freshVal);
           } catch {
