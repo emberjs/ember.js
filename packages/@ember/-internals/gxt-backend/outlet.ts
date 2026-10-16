@@ -620,13 +620,12 @@ function buildRenderState(route: ClassicRouteLike): GxtRenderState {
       template = templateFactoryOrComponent;
     } else {
       if (DEBUG && typeof templateFactoryOrComponent !== 'function') {
-        let label: string;
-
-        try {
-          label = `\`${String(templateFactoryOrComponent)}\``;
-        } catch {
-          label = 'an unknown object';
-        }
+        // A module namespace object (an invalid module export) has a null
+        // prototype and no string form.
+        const label =
+          typeof (templateFactoryOrComponent as any).toString === 'function'
+            ? `\`${String(templateFactoryOrComponent)}\``
+            : 'an unknown object';
 
         assert(
           `Failed to render the ${name} route, expected ` +

@@ -67,15 +67,16 @@ class EmberMountElement extends HTMLElement {
         // crashes with `undefined.setupRouter()` in production builds, where
         // the DEBUG routeless-engine assert (which fires first in dev and
         // masks the gap) is stripped.
-        if (typeof owner.buildChildEngineInstance === 'function') {
-          try {
-            engineInstance = owner.buildChildEngineInstance(engineName);
-            engineInstance._bootSync?.();
-          } catch {
-            // Not registered with the parent (or boot failed) — fall back to
-            // the legacy hand-rolled construction below.
-            engineInstance = null;
-          }
+        // An engine not registered with the parent is not built (the
+        // hand-rolled construction below finds none either). What building
+        // or booting a registered engine throws (its initializers) is an
+        // error of the render, captured below.
+        if (
+          typeof owner.buildChildEngineInstance === 'function' &&
+          owner.factoryFor?.(`engine:${engineName}`)
+        ) {
+          engineInstance = owner.buildChildEngineInstance(engineName);
+          engineInstance._bootSync?.();
         }
         if (engineInstance) {
           engineCache.set(engineName, engineInstance);

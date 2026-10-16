@@ -76,12 +76,10 @@ function routeTemplate(route: ClassicRouteLike, owner: InternalOwner): object {
   }
 
   if (DEBUG && typeof found !== 'function') {
-    let label: string;
-    try {
-      label = `\`${String(found)}\``;
-    } catch {
-      label = 'an unknown object';
-    }
+    // A module namespace object (an invalid module export) has a null
+    // prototype and no string form.
+    const label =
+      typeof (found as any).toString === 'function' ? `\`${String(found)}\`` : 'an unknown object';
     assert(
       `Failed to render the ${route.routeName} route, expected ` +
         `\`template:${name}\` to resolve into ` +

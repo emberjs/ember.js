@@ -204,40 +204,30 @@ const _manualTrackFrameStack: Set<any>[] = [];
 // Wrap tagFor to handle Symbol keys properly
 // GXT's tagFor might try to convert the key to a string for debugging
 export function tagFor(obj: object, key?: string | symbol, _meta?: any) {
-  try {
-    // Convert symbol keys to their description or a string representation
-    const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
-    // Ensure obj has a constructor property to prevent "Cannot read properties
-    // of undefined (reading 'name')" in GXT's cellFor debug label generation.
-    if (obj && typeof obj === 'object' && !obj.constructor) {
-      Object.defineProperty(obj, 'constructor', {
-        value: Object,
-        writable: true,
-        configurable: true,
-        enumerable: false,
-      });
-    }
-    // A property's tag is gxt's cell of the property, and creating it does not
-    // read the property, as Glimmer's `tagFor` does not: a new tag holds no
-    // value (`UNSET`) until a reader of the cell (`cellFor`) seeds it. A
-    // build-time template's read of the property (`$__tag(obj, key)`) creates
-    // the same tag. glimmer-compat's `tagFor` creates a lazy cell that reads
-    // the property when the cell is first read: a getter that asks for its own
-    // tag (a computed property) re-entered itself without end, and so did the
-    // cell accessor a template installs over a data property (`cellFor`): its
-    // first read read the property through itself.
-    return _gxtHostTagFor(obj, safeKey as string);
-  } catch (err: any) {
-    if (
-      err?.message?.includes('Symbol') ||
-      err?.message?.includes('name') ||
-      err?.message?.includes('undefined')
-    ) {
-      // Return a minimal tag to avoid breaking the system
-      return { value: 0 };
-    }
-    throw err;
+  // Convert symbol keys to their description or a string representation
+  const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
+  // Ensure obj has a constructor property to prevent "Cannot read properties
+  // of undefined (reading 'name')" in GXT's cellFor debug label generation.
+  if (obj && typeof obj === 'object' && !obj.constructor) {
+    Object.defineProperty(obj, 'constructor', {
+      value: Object,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
   }
+  // A property's tag is gxt's cell of the property, and creating it does not
+  // read the property, as Glimmer's `tagFor` does not: a new tag holds no
+  // value (`UNSET`) until a reader of the cell (`cellFor`) seeds it. A
+  // build-time template's read of the property (`$__tag(obj, key)`) creates
+  // the same tag. glimmer-compat's `tagFor` creates a lazy cell that reads
+  // the property when the cell is first read: a getter that asks for its own
+  // tag (a computed property) re-entered itself without end, and so did the
+  // cell accessor a template installs over a data property (`cellFor`): its
+  // first read read the property through itself. gxt's `tagFor` creates the
+  // cell without a debug label, so the label errors the constructor above
+  // guards against no longer occur.
+  return _gxtHostTagFor(obj, safeKey as string);
 }
 // Provide a LAZY createCache with proper invalidation for invokeHelper.
 //
@@ -425,15 +415,10 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       // GXT's own trackedData.setter. The compat trackedData stores values
       // in a separate map and only calls markTagDirty, so
       // the dirty-revision bookkeeping here is the source of truth for cache
-      // invalidation.
+      // invalidation. A tag cycle throws its DEBUG assertion, as classic
+      // `valueForTag` does.
       _consumedTags = Array.from(consumed);
-      _consumedTagSnapshots = _consumedTags.map((t) => {
-        try {
-          return currentTagRevision(t);
-        } catch {
-          return 0;
-        }
-      });
+      _consumedTagSnapshots = _consumedTags.map((t) => currentTagRevision(t));
       // Store nested caches
       _nestedCaches = Array.from(nested);
       _nestedCacheRevisions = _nestedCaches.map((c) => c._revision || 0);
@@ -447,14 +432,11 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
     // snapshot revisions. currentTagRevision walks tag dependencies and
     // returns the max revision across the tree, so any mutation anywhere
     // bumps it strictly greater than the stored snapshot.
+    // A tag cycle throws its DEBUG assertion, as classic `validateTag` does.
     for (let i = 0; i < _consumedTags.length; i++) {
       const tag = _consumedTags[i];
       if (tag == null) continue;
-      try {
-        if (currentTagRevision(tag) !== _consumedTagSnapshots[i]) return false;
-      } catch {
-        return false;
-      }
+      if (currentTagRevision(tag) !== _consumedTagSnapshots[i]) return false;
     }
     // Check the gxt cells fn() read against their revisions then.
     for (let i = 0; i < _cells.length; i++) {
@@ -1357,12 +1339,9 @@ export function resetTracking() {
   _debugTransactionLabelForTag = null;
   // Drain GXT's own frame stack too — the stranded gxtBeginTrackFrame calls
   // live in the dist's internal stack, observable only via gxtIsTracking().
+  // (`gxtEndTrackFrame` only restores gxt's rendering flag.)
   for (let i = 0; i < 1024 && gxtIsTracking(); i++) {
-    try {
-      gxtEndTrackFrame();
-    } catch {
-      break;
-    }
+    gxtEndTrackFrame();
   }
 }
 
