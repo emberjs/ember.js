@@ -13,7 +13,6 @@ import {
   pascalToKebab,
   isAllDigits,
   constructStyleDeprecationMessage as _constructStyleDeprecationMessage,
-  isAssertionLike as _isAssertionLike,
   protectGlobal,
   isPlainHtmlTagFastPath,
   createFnHelperValue,
@@ -119,13 +118,10 @@ function _unboundSnapshot(value: any): any {
     // If the raw property is a zero-arg getter (e.g. `() => this.x`),
     // call it to capture the current value. Plain functions passed as
     // user callbacks must not be invoked — GXT getters are arrow-style
-    // (no prototype) and are what `$__hash` emits for bindings.
+    // (no prototype) and are what `$__hash` emits for bindings. What the
+    // getter throws propagates, as Glimmer's read of the argument does.
     if (typeof v === 'function' && !(v as any).prototype) {
-      try {
-        out[key] = _unboundSnapshot((v as any)());
-      } catch {
-        out[key] = v;
-      }
+      out[key] = _unboundSnapshot((v as any)());
     } else {
       out[key] = _unboundSnapshot(v);
     }
@@ -843,8 +839,10 @@ function copyOwnNamedArgs(args: any, namedArgs: any, unwrap: NamedArgUnwrap): vo
   }
 }
 
-// A plain arrow/getter function standing for an argument value. Curried
-// helpers and components, `fn` helpers, mut cells and classes are values.
+// A plain arrow/getter function standing for an argument value: the compiler's
+// thunks take no parameters. Curried helpers and components, `fn` helpers, mut
+// cells, classes and functions with parameters (a modifier or helper defined as
+// an arrow function) are values.
 function isNamedArgThunk(v: any): boolean {
   return (
     typeof v === 'function' &&
@@ -852,35 +850,25 @@ function isNamedArgThunk(v: any): boolean {
     !v.__isCurriedComponent &&
     !v.__isFnHelper &&
     !v.__isMutCell &&
-    !v.prototype
+    !v.prototype &&
+    v.length === 0
   );
 }
 
 // Call argument thunks until a value comes out, then unwrap a curried
 // `(helper)` value: `{{helper foo "..."}}` in an argument position yields the
 // curried helper (or a thunk returning it), which must reach the component as
-// its result, not as a function to stringify.
+// its result, not as a function to stringify. What a thunk or the helper
+// throws propagates, as Glimmer's read of the argument does.
 function resolveNamedArgValue(v: any): any {
-  while (isNamedArgThunk(v)) {
-    try {
-      v = v();
-    } catch {
-      break;
-    }
-  }
+  while (isNamedArgThunk(v)) v = v();
   return unwrapCurriedHelper(v);
 }
 
 function unwrapCurriedHelper(v: any): any {
   let out = v;
   let guard = 8;
-  while (typeof out === 'function' && out.__isEmberCurriedHelper && guard-- > 0) {
-    try {
-      out = out();
-    } catch {
-      break;
-    }
-  }
+  while (typeof out === 'function' && out.__isEmberCurriedHelper && guard-- > 0) out = out();
   return out;
 }
 
@@ -1111,24 +1099,11 @@ installEmberWrappers();
     return _unwrap(args[0]) === _unwrap(args[1]);
   };
   // Installed as plain writable data properties (not protected like the
-  // helpers that use `protectGlobal`).
-  for (const [name, fn] of [
-    ['$__and', $__and_ember],
-    ['$__or', $__or_ember],
-    ['$__not', $__not_ember],
-    ['$__eq', $__eq_ember],
-  ] as const) {
-    try {
-      Object.defineProperty(g, name, {
-        value: fn,
-        writable: true,
-        configurable: true,
-        enumerable: true,
-      });
-    } catch {
-      g[name] = fn;
-    }
-  }
+  // helpers that use `protectGlobal`), as `setupGlobalScope` assigned gxt's.
+  g.$__and = $__and_ember;
+  g.$__or = $__or_ember;
+  g.$__not = $__not_ember;
+  g.$__eq = $__eq_ember;
 }
 
 // Strict-mode resolver injection. Templates compiled with `strictMode: true`
@@ -1931,8 +1906,10 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
         let fnResult: any;
         try {
           fnResult = fn();
-        } catch {
-          // The getter throws now; the call resolves it again (and throws there).
+        } catch (error) {
+          // Glimmer reads the callback only when the helper's function is
+          // called: the call resolves the getter again and throws there.
+          _gxtReportDroppedRead("The `fn` helper's callback", error);
           fnResult = fn;
         }
         if (fnResult && fnResult.__isMutCell) {
@@ -1970,12 +1947,9 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
         // getter. If it returns undefined/non-function, treat as a direct
         // handler and return the function itself (side effects are unfortunate
         // but consistent with prior behavior when the template used `this.x`).
-        let produced: any;
-        try {
-          produced = v();
-        } catch {
-          return v;
-        }
+        // What it throws propagates to the call, as Glimmer's read of the
+        // callback at the call does.
+        const produced = v();
         if (typeof produced === 'function') return produced;
         return v;
       };
@@ -2315,28 +2289,26 @@ function _gxtExtractAllThisPaths(src: string): string[] {
 // `cellFor(obj,'key')`) re-runs any consumer that captured it. Best-effort and
 // read-only on values (only intermediate accessor install is a side effect,
 // matching the empty-capture materialization already used in `itemToNode`).
+// `cellFor` reads the property: a getter on the path that throws ends the
+// walk, reported in DEBUG (the member's own read of the path throws to the
+// render; the walk reads paths parsed from its source, also ones it skips).
 function _gxtWalkThisPathCells(path: string, ctx: any): void {
   if (!ctx || typeof ctx !== 'object') return;
   let cur: any = ctx;
   const segs = path.split('.');
-  for (let i = 0; i < segs.length; i++) {
-    let seg = segs[i]!;
-    // Strip optional-chaining markers (`this.model?.firstName`).
-    while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
-      seg = seg.slice(0, -1);
-    }
-    if (!seg) continue;
-    if (!cur || typeof cur !== 'object') break;
-    try {
-      const cell = cellFor(cur, seg, /* skipDefine */ false);
-      cur = cell ? cell.value : cur[seg];
-    } catch {
-      try {
-        cur = cur[seg];
-      } catch {
-        break;
+  try {
+    for (let i = 0; i < segs.length; i++) {
+      let seg = segs[i]!;
+      // Strip optional-chaining markers (`this.model?.firstName`).
+      while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
+        seg = seg.slice(0, -1);
       }
+      if (!seg) continue;
+      if (!cur || typeof cur !== 'object') break;
+      cur = cellFor(cur, seg, /* skipDefine */ false).value;
     }
+  } catch (error) {
+    _gxtReportDroppedRead(`The \`${path}\` path of a hash member`, error);
   }
 }
 
@@ -2361,27 +2333,24 @@ function _gxtLinkHashMemberSources(getter: any, ctx: any, hashObj: any, hashKey:
     // A frozen getter keeps no cache: it is parsed again next time.
     if (Object.isExtensible(getter)) getter.__gxtHashPaths = paths;
   }
+  // A getter on a path that throws ends that path's walk, reported in DEBUG
+  // (as in `_gxtWalkThisPathCells`).
   for (let p = 0; p < paths.length; p++) {
     let cur: any = ctx;
     const segs = paths[p]!.split('.');
-    for (let i = 0; i < segs.length; i++) {
-      let seg = segs[i]!;
-      while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
-        seg = seg.slice(0, -1);
-      }
-      if (!seg) continue;
-      if (!cur || typeof cur !== 'object') break;
-      registerObjectValueOwner(cur, hashObj, hashKey);
-      try {
-        const c = cellFor(cur, seg, /* skipDefine */ true);
-        cur = c ? c.value : cur[seg];
-      } catch {
-        try {
-          cur = cur[seg];
-        } catch {
-          break;
+    try {
+      for (let i = 0; i < segs.length; i++) {
+        let seg = segs[i]!;
+        while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
+          seg = seg.slice(0, -1);
         }
+        if (!seg) continue;
+        if (!cur || typeof cur !== 'object') break;
+        registerObjectValueOwner(cur, hashObj, hashKey);
+        cur = cellFor(cur, seg, /* skipDefine */ true).value;
       }
+    } catch (error) {
+      _gxtReportDroppedRead(`The \`${paths[p]}\` path of a hash member`, error);
     }
   }
 }
@@ -4974,14 +4943,8 @@ function _gxtTriggerReRenderSyncCore(
     // changes reliably.
     //
     // The proto-walk + manager lookup is delegated to
-    // `_isCustomManagedComponent`; on a caught exception we conservatively
-    // treat `obj` as a nested-object.
-    try {
-      if (!_isCustomManagedComponent(obj)) {
-        _gxtSetHadNestedObjectChange(true);
-      }
-    } catch {
-      // If the check fails, be conservative and treat as nested-object.
+    // `_isCustomManagedComponent` (WeakMap and prototype reads only).
+    if (!_isCustomManagedComponent(obj)) {
       _gxtSetHadNestedObjectChange(true);
     }
   }
@@ -6016,12 +5979,15 @@ function _gxtSubscribeBackingArray(raw: any): void {
   // HERE is the only path that subscribes the source formula to that mutation.
   // (`arrangedContent` itself returns a fresh throwaway slice each read, so
   // subscribing to ITS `[]` cell is useless — must reach `wrappedItems`.)
+  // Glimmer reads none of these fields: one whose getter throws is skipped,
+  // reported in DEBUG.
   _read(raw);
   for (const propName of ['content', '_array', 'wrappedItems', '_content', 'arrangedContent']) {
     let val: any;
     try {
       val = raw[propName];
-    } catch {
+    } catch (error) {
+      _gxtReportDroppedRead(`The \`${propName}\` of an {{#each}} source`, error);
       continue;
     }
     if (Array.isArray(val)) _read(val);
@@ -7119,10 +7085,13 @@ function patchGlobalEachSync() {
           '_content',
           'arrangedContent',
         ]) {
+          // Glimmer reads none of these fields: one whose getter throws is
+          // skipped, reported in DEBUG.
           let val: any = undefined;
           try {
             val = (cur as any)[propName];
-          } catch {
+          } catch (error) {
+            _gxtReportDroppedRead(`The \`${propName}\` of an {{#each}} source`, error);
             continue;
           }
           if (val == null || visited.has(val)) continue;
@@ -9070,17 +9039,14 @@ const _gxtGetScopeFn = (key: string) => _gxtScopeStore.get(key);
 
 // A block param's value: a reactive param (a GXT formula, as `$_slot` passes a
 // yielded value that reads cells) is re-evaluated on each read, so the read
-// depends on the cells it reads.
+// depends on the cells it reads. What it throws propagates, as Glimmer's read
+// of a block param does.
 function unwrapReactiveValue(value: any): any {
   if (value === undefined || value === null) return value;
 
   // Check if it's a GXT reactive cell (has 'fn' property and 'isConst')
   if (typeof value === 'object' && 'fn' in value && 'isConst' in value) {
-    try {
-      return value.fn();
-    } catch {
-      return value;
-    }
+    return value.fn();
   }
 
   // Functions are returned as-is: yielded user callbacks (e.g.
@@ -9272,19 +9238,17 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         const $ARGS_KEY = GXT_ARGS_SYMBOL;
         const ctxArgs = ctx[$ARGS_KEY] || ctx['args'] || ctx?.args || {};
         let componentValue = ctxArgs[argName];
-        // Resolve getter functions
+        // Resolve getter functions, which take no parameters (what they throw
+        // propagates, as Glimmer's read of the argument does)
         let guard = 5;
         while (
           typeof componentValue === 'function' &&
           !componentValue.prototype &&
           !componentValue.__isCurriedComponent &&
+          componentValue.length === 0 &&
           guard-- > 0
         ) {
-          try {
-            componentValue = componentValue();
-          } catch {
-            break;
-          }
+          componentValue = componentValue();
         }
         if (componentValue && componentValue.__isCurriedComponent) {
           const managers = g.$_MANAGERS;
@@ -9408,19 +9372,19 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       !comp.__isCurriedComponent &&
       !comp.__stringComponentName
     ) {
+      // A getter takes no parameters (a function with parameters is a value);
+      // what it throws propagates, as Glimmer's read of the component
+      // reference does.
       let resolved = comp;
       let guard = 5;
       while (
         typeof resolved === 'function' &&
         !resolved.prototype &&
         !resolved.__isCurriedComponent &&
+        resolved.length === 0 &&
         guard-- > 0
       ) {
-        try {
-          resolved = resolved();
-        } catch {
-          break;
-        }
+        resolved = resolved();
       }
       if (resolved && resolved.__isCurriedComponent) {
         const managers = g.$_MANAGERS;
@@ -9467,13 +9431,10 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         !(elDef as any).__isCurriedComponent &&
         !(elDef as any).__stringComponentName &&
         !(elDef as any).__isElementHelperDefinition &&
+        (elDef as any).length === 0 &&
         guard-- > 0
       ) {
-        try {
-          elDef = (elDef as any)();
-        } catch {
-          break;
-        }
+        elDef = (elDef as any)();
       }
       if (
         elDef &&
@@ -10257,28 +10218,25 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   helperInstance = cached.instance;
                   recomputeTag = cached.recomputeTag;
                 } else {
-                  try {
-                    helperInstance = helperFactory.create();
-                    recomputeTag = helperInstance[RECOMPUTE_TAG] ?? null;
-                    _tagHelperInstanceCache.set(instanceKey, {
-                      instance: helperInstance,
-                      recomputeTag,
-                    });
-                    // Register for destruction via the module-local helper,
-                    // which fires the registered push-hook (manager.ts's
-                    // `_installHelperRecomputeBridge`) before pushing.
-                    _gxtPushHelperInstance(helperInstance);
-                    // Associate with the enclosing `{{#if}}` branch (if any) so
-                    // destroy+willDestroy fire on branch teardown, matching the
-                    // classic Ember Helper lifecycle (see class-based helper
-                    // lifecycle test).
-                    const ifScopeTag = _gxtCurrentHelperScope;
-                    if (ifScopeTag && typeof ifScopeTag.add === 'function') {
-                      ifScopeTag.add(helperInstance);
-                    }
-                  } catch (e) {
-                    if (_isAssertionLike(e)) throw e;
-                    helperInstance = null;
+                  // What the helper's `init` throws propagates, as Glimmer's
+                  // helper creation does.
+                  helperInstance = helperFactory.create();
+                  recomputeTag = helperInstance[RECOMPUTE_TAG] ?? null;
+                  _tagHelperInstanceCache.set(instanceKey, {
+                    instance: helperInstance,
+                    recomputeTag,
+                  });
+                  // Register for destruction via the module-local helper,
+                  // which fires the registered push-hook (manager.ts's
+                  // `_installHelperRecomputeBridge`) before pushing.
+                  _gxtPushHelperInstance(helperInstance);
+                  // Associate with the enclosing `{{#if}}` branch (if any) so
+                  // destroy+willDestroy fire on branch teardown, matching the
+                  // classic Ember Helper lifecycle (see class-based helper
+                  // lifecycle test).
+                  const ifScopeTag = _gxtCurrentHelperScope;
+                  if (ifScopeTag && typeof ifScopeTag.add === 'function') {
+                    ifScopeTag.add(helperInstance);
                   }
                 }
               }
@@ -10353,35 +10311,32 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // The helper's result renders as dynamic content
             // (`_gxtDynamicContent`): text, the HTML of a SafeString, a DOM
             // node or a component, rendered again when what the helper read
-            // changes. The binding's first run evaluates the helper (once).
-            try {
-              const content = _gxtDynamicContent(helperGetter, {
-                owner: undefined,
-                context: _gxtNamespaceContext(),
+            // changes. The binding's first run evaluates the helper (once);
+            // what the helper or its arguments throw propagates, as Glimmer's
+            // first evaluation of a helper does.
+            const content = _gxtDynamicContent(helperGetter, {
+              owner: undefined,
+              context: _gxtNamespaceContext(),
+            });
+            // The binding is created without an owner, so nothing ever
+            // disposes it — it merely goes quiescent when its deps stop
+            // changing. Inside an {{#if}} branch that is a live bug: after
+            // the branch collapses (the helper instance destroyed, caches
+            // evicted), any later dep bump — including the destroy cascade
+            // itself — re-fires the stale binding, which re-creates the
+            // helper (extra init/compute in the class-based lifecycle test,
+            // eager evaluation in the "evaluation should be lazy" trio).
+            // Register its destroy with the enclosing branch scope so
+            // destroyScope tears it down with the branch.
+            const ifScopeTag = _gxtCurrentHelperScope;
+            if (ifScopeTag && typeof ifScopeTag.add === 'function') {
+              ifScopeTag.add({
+                destroy: content.destroy,
+                isDestroyed: false,
+                isDestroying: false,
               });
-              // The binding is created without an owner, so nothing ever
-              // disposes it — it merely goes quiescent when its deps stop
-              // changing. Inside an {{#if}} branch that is a live bug: after
-              // the branch collapses (the helper instance destroyed, caches
-              // evicted), any later dep bump — including the destroy cascade
-              // itself — re-fires the stale binding, which re-creates the
-              // helper (extra init/compute in the class-based lifecycle test,
-              // eager evaluation in the "evaluation should be lazy" trio).
-              // Register its destroy with the enclosing branch scope so
-              // destroyScope tears it down with the branch.
-              const ifScopeTag = _gxtCurrentHelperScope;
-              if (ifScopeTag && typeof ifScopeTag.add === 'function') {
-                ifScopeTag.add({
-                  destroy: content.destroy,
-                  isDestroyed: false,
-                  isDestroying: false,
-                });
-              }
-              return content.fragment;
-            } catch (e) {
-              if (_isAssertionLike(e)) throw e; /* effect setup may fail */
-              return document.createTextNode('');
             }
+            return content.fragment;
           }
         }
 
@@ -10712,11 +10667,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     if (param.isConst !== true) {
                       return param;
                     }
-                    try {
-                      return param.fn();
-                    } catch {
-                      return param;
-                    }
+                    // What it throws propagates, as Glimmer's read of a
+                    // yielded value does.
+                    return param.fn();
                   }
                   // Do NOT call plain functions here — they may be user functions
                   // yielded as block params (e.g., {{yield this.updatePerson}}).
@@ -10753,12 +10706,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       // functions are reactive text getters (returned as functions
                       // for GXT reactive tracking). The marker, unlike a
                       // `.toString()` source check, survives minification.
+                      // What rendering the child throws propagates, as a
+                      // Glimmer block's render error does.
                       if ((child as any).$_isNode === true) {
-                        try {
-                          item = child();
-                        } catch {
-                          item = child;
-                        }
+                        item = child();
                       }
                     }
                     if (item instanceof GxtBlockScope) {
@@ -11856,11 +11807,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   g.$_tag.__compileWrapped = true;
 }
 
-// `$_dc` wrapper: a block-param component getter may THROW before its params
-// are bound (a slot that hasn't fired yet) — defer via a lazy component thunk
-// that re-invokes $_dc once the getter resolves. (The manager fw for
-// splattributes is derived in `$_dc_ember.renderComponent`,
-// ember-gxt-wrappers.ts, from the invocation props tuple.)
+// `$_dc` wrapper. (The manager fw for splattributes is derived in
+// `$_dc_ember.renderComponent`, ember-gxt-wrappers.ts, from the invocation
+// props tuple.)
 //
 // The block of a by-name component invocation that declared block params is a
 // `$_dc` with the `GXT_BLOCK_SCOPE_KEY` argument (`gxtBlockParamsTransform`,
@@ -11869,29 +11818,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   const __origDc = g.$_dc;
 
-  g.$_dc = function $_dc_deferThrow(componentGetter: any, gxtArgs: any, ctx: any, fw?: any): any {
+  g.$_dc = function $_dc_blockScope(componentGetter: any, gxtArgs: any, ctx: any, fw?: any): any {
     if (gxtArgs && gxtArgs[GXT_BLOCK_SCOPE_KEY] === true) {
       return new GxtBlockScope(gxtArgs[$SLOTS_SYMBOL].default, ctx);
-    }
-    if (typeof componentGetter === 'function') {
-      let getterThrew = false;
-      try {
-        componentGetter();
-      } catch {
-        getterThrew = true;
-      }
-      if (getterThrew) {
-        const lazyThunk = () => {
-          try {
-            componentGetter();
-          } catch {
-            return undefined;
-          }
-          return __origDc.call(undefined, componentGetter, gxtArgs, ctx, fw);
-        };
-        (lazyThunk as any).__isComponentThunk = true;
-        return lazyThunk;
-      }
     }
     return __origDc.call(this, componentGetter, gxtArgs, ctx, fw);
   };
@@ -13238,13 +13167,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         // Curried dynamic helper in content position: {{@value}} where
         // @value = {{helper foo "..."}}. The curried helper is a function
         // marked with __isEmberCurriedHelper; invoke it (with no extra
-        // args) to get the resolved text/value and recurse.
+        // args) to get the resolved text/value and recurse. What the helper
+        // throws propagates, as Glimmer's helper invocation does.
         while (typeof finalResult === 'function' && (finalResult as any).__isEmberCurriedHelper) {
-          try {
-            finalResult = (finalResult as any)();
-          } catch {
-            break;
-          }
+          finalResult = (finalResult as any)();
         }
 
         if (finalResult instanceof Node) {

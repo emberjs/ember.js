@@ -467,31 +467,27 @@ export function isAssertionLike(e: unknown): boolean {
  * Install `value` at `globalThis[name]` behind a getter that ignores writes, so
  * a later `setupGlobalScope()` pass (GXT iterates its symbol table and writes
  * each symbol to globalThis) cannot clobber the Ember-patched version. The
- * descriptor is `configurable: true, enumerable: true`; on a defineProperty
- * failure it falls back to a direct assignment (installs `value` either way).
+ * descriptor is `configurable: true, enumerable: true`. Every name it protects
+ * is configurable (gxt's `setupGlobalScope` assigns them, or an earlier
+ * `protectGlobal` defined them), so redefining it cannot fail.
  *
  * Used by compile.ts for `$_if`, `$_eachSync`, `$_maybeModifier`,
  * `$_helperHelper`, `$__log` and `$__if`, and by manager.ts for its row-keying
  * `$_eachSync` wrapper. compile.ts's `$_inElement` and `$_c` traps differ and
  * stay inline: `$_inElement` is non-configurable and `$_c` is defined without
- * `enumerable`; neither falls back to an assignment.
+ * `enumerable`.
  */
 export function protectGlobal(name: string, value: unknown): void {
-  const _g = globalThis as any;
-  try {
-    Object.defineProperty(_g, name, {
-      get() {
-        return value;
-      },
-      set(_v: any) {
-        /* protect from setupGlobalScope overwrite */
-      },
-      configurable: true,
-      enumerable: true,
-    });
-  } catch {
-    _g[name] = value;
-  }
+  Object.defineProperty(globalThis, name, {
+    get() {
+      return value;
+    },
+    set(_v: any) {
+      /* protect from setupGlobalScope overwrite */
+    },
+    configurable: true,
+    enumerable: true,
+  });
 }
 
 const CAPABILITIES_VERSIONS = { component: '3.13', helper: '3.23', modifier: '3.22' } as const;
