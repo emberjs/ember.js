@@ -3070,6 +3070,23 @@ function registerObjectValueOwner(value: any, ownerObj: object, ownerKey: string
 // `_objectValueCellMap` (also read below). See `installCompilePipelinePart`
 // call at module bottom.
 
+// A binding that reads a property of `obj` through a cell holding `obj` (the
+// `this.m.message` of a runtime-compiled template) subscribes to that cell,
+// not to the property's tag: the cells that hold `obj` stand for its property
+// tags. validator.ts's `dirtyTagFor(obj, key)` re-runs their bindings, as
+// `set(obj, key)` does (`_gxtTriggerReRenderSyncCore`), while the cell still
+// holds `obj` (a property that holds another object now is no owner).
+// Exposed via the gxt-bridge as `compilePipeline.revalidateObjectValueOwners`.
+function _gxtRevalidateObjectValueOwners(obj: object): void {
+  const owners = _objectValueCellMap.get(obj);
+  if (owners === undefined) return;
+  for (const { obj: ownerObj, key: ownerKey } of owners) {
+    if (!_isOwnerAlive(ownerObj)) continue;
+    const cell: any = _gxtPeekTagFor(ownerObj, ownerKey);
+    if (cell !== undefined && cell._value === obj) cell.update(obj);
+  }
+}
+
 function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   if (!array || typeof array !== 'object') return;
   let owners = _arrayOwnerMap.get(array);
@@ -14628,6 +14645,7 @@ installCompilePipelinePart({
   resetIntervalBudget: _gxtResetIntervalBudget,
   registerArrayOwner: registerArrayOwner,
   registerObjectValueOwner: registerObjectValueOwner,
+  revalidateObjectValueOwners: _gxtRevalidateObjectValueOwners,
   // Associate a new instance with the currently-rendering `{{#each}}` row
   // (closure over `_gxtCurrentRowCtx`).
   captureRowInstance: _gxtCaptureRowInstance,

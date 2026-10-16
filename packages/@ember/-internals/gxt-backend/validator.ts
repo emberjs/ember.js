@@ -992,8 +992,27 @@ export function dirtyTagFor(obj: any, key: any) {
   // still needs to be marked dirty and the global revision bumped so
   // within-sync template re-reads see the new value. Before the bridge is
   // installed the predicate is `undefined`, so the schedule call runs.
-  if (!getGxtRenderer()?.compilePipeline.isDirtyInRcSetSuppressed?.()) {
-    getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
+  const pipeline = getGxtRenderer()?.compilePipeline;
+  if (!pipeline?.isDirtyInRcSetSuppressed?.()) {
+    pipeline?.setPendingSync?.(true);
+    // The dirty is a state change that the run loop's DOM sync renders, as a
+    // `set()` is (Glimmer: dirtying a tag schedules a revalidation).
+    // `_gxtSyncDomNow` runs gxt's sync only for a sync recorded as a property
+    // change and discards the pending invalidations of any other, so a dirty
+    // without `notifyPropertyChange` (an addon's own storage: an assignment and
+    // `dirtyTagFor`) was never rendered. It is not recorded while a template
+    // renders, as a tracked collection's change is not
+    // (`_scheduleNativeCollectionFlush`): the bindings created after it read
+    // the new state. Nor while GXT hands a parent's arg value on to a child
+    // (`withArgPropagation`), a change GXT is already rendering.
+    if (_argPropagationDepth === 0 && !pipeline?.isCurrentlyRendering?.()) {
+      pipeline?.setPendingSyncFromPropertyChange?.(true);
+      // A runtime-compiled template's `this.m.message` reads `message` through
+      // the cell that holds `m`, which stands for its property tags.
+      if (obj !== null && typeof obj === 'object') {
+        pipeline?.revalidateObjectValueOwners?.(obj);
+      }
+    }
 
     // Notify the scheduler (typically _backburner.ensureInstance()) so that the
     // backburner run loop drains and flushAsyncObservers fires. Without this,

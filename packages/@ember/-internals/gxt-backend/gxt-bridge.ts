@@ -317,6 +317,13 @@ export interface GxtCompilePipelineCapabilities {
   registerObjectValueOwner?(value: unknown, ownerObj: object, ownerKey: string): void;
 
   /**
+   * Re-run the bindings that read a property of `obj` through the cell of an
+   * owner holding it (`registerObjectValueOwner`): validator.ts's
+   * `dirtyTagFor(obj, key)`. Contributed by compile.ts.
+   */
+  revalidateObjectValueOwners?(obj: object): void;
+
+  /**
    * Associate a new component instance with the `{{#each}}` row currently
    * rendering, so the row's teardown fires its `willDestroyElement` /
    * `willClearRender` before DOM removal. No-op outside an each row.
