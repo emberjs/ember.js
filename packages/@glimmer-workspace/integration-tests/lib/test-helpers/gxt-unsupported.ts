@@ -8,6 +8,8 @@
 
 const LIST_UPDATE_STEPS =
   "verifies only the LOCAL_DEBUG 'list-updates' steps (retain/move) of the Glimmer VM's list reconciliation; GXT's keyed list records no such steps";
+const SERIALIZATION =
+  "asserts the markers of Glimmer's SerializeBuilder (the block comments and the `<!--% %-->` placeholder of an empty text node); GXT emits no serialization markers";
 
 const GXT_VM_ONLY: Record<string, Record<string, string>> = {
   '#each': {
@@ -20,6 +22,9 @@ const GXT_VM_ONLY: Record<string, Record<string, string>> = {
     'When re-iterated via swap #7, the original references are updated': LIST_UPDATE_STEPS,
     'When re-iterated via swap #8, the original references are updated': LIST_UPDATE_STEPS,
     'When re-iterated via swap #9, the original references are updated': LIST_UPDATE_STEPS,
+  },
+  'Server-side rendering in Node.js (serialize)': {
+    'Null literals do not have representation in DOM': SERIALIZATION,
   },
 };
 
