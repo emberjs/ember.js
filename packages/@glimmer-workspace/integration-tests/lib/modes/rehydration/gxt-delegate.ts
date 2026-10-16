@@ -7,7 +7,9 @@
  *
  * - `renderServerSide` renders the template with GXT into a detached element
  *   and returns its HTML. GXT emits no Glimmer serialization markers (block
- *   comments, cursor scripts), and nothing here adds them.
+ *   comments, cursor scripts), and nothing here adds them. The render is not
+ *   interactive, as a server render is not: it runs with an owner whose
+ *   environment is not interactive, so modifiers do not install.
  * - `renderClientSide` removes the element's children (the server HTML) and
  *   renders the template again. No server node is reused, so there are no
  *   rehydration stats; reading `rehydrationStats` throws.
@@ -33,13 +35,22 @@ import type { ASTPluginBuilder } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 import { clearElement } from '@glimmer/util';
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getAmbientOwner,
+  getGxtRenderer,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
+import { buildOwner } from 'internal-test-helpers';
 
 import type { UserHelper } from '../../helpers';
+import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
 import type { RenderHandle } from '../../render-delegate';
+import type { TestOwner } from '../owner';
 
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
+import { defineTestModifier } from '../../modifiers';
+import { teardownOwners } from '../owner';
 
 // Why a test of the rehydration suites cannot run under GXT, by suite name
 // (the test class's `suiteName`) and test name.
@@ -49,8 +60,6 @@ const MARKER_EDIT =
   'removes a Glimmer serialization marker (block comment) from the server HTML before the client pass; GXT emits no markers';
 const IN_ELEMENT_CURSOR =
   "asserts Glimmer's in-element serialization (cursor script and block comments) in the remote element; GXT emits none";
-const IN_ELEMENT_INSERT_BEFORE =
-  'passes an element as {{#in-element}} insertBefore, which only the Glimmer VM accepts; Ember, and GXT with it, assert that insertBefore is null';
 const SELECTED_SERIALIZATION =
   "expects the selected=true attribute that Glimmer's SerializeBuilder writes on the server and rehydration keeps; GXT does not serialize the selected property";
 const CHAOS =
@@ -80,11 +89,8 @@ const GXT_UNSUPPORTED: Record<string, Record<string, string>> = {
     'Node curlies': STATS,
     'in-element can rehydrate': IN_ELEMENT_CURSOR,
     'in-element with insertBefore=null can rehydrate': IN_ELEMENT_CURSOR,
-    'in-element with insertBefore=element can rehydrate': IN_ELEMENT_INSERT_BEFORE,
     'in-element can rehydrate into pre-existing content': STATS,
     'in-element with insertBefore=null can rehydrate into pre-existing content': STATS,
-    'in-element with insertBefore=element can rehydrate into pre-existing content':
-      IN_ELEMENT_INSERT_BEFORE,
     'nested in-element can rehydrate': IN_ELEMENT_CURSOR,
     'svg elements': STATS,
     'title tag': STATS,
@@ -95,6 +101,10 @@ const GXT_UNSUPPORTED: Record<string, Record<string, string>> = {
     '#each rehydration': STATS,
     'Dynamic selected options': SELECTED_SERIALIZATION,
     'Dynamic multi-select': SELECTED_SERIALIZATION,
+    'curly invocation of a classic Component: multiple invocations': STATS,
+    'curly invocation of a classic Component: mismatched multiple invocations': STATS,
+    '{{component}} invocation: component invocations': STATS,
+    '{{component}} invocation: interacting with builtins': STATS,
   },
   // The component suite (`RehydratingComponents`).
   'initial render': {
@@ -216,6 +226,21 @@ export class GxtRehydrationDelegate implements RenderDelegate {
 
   private plugins: ASTPluginBuilder[] = [];
   private helpers: Dict = Object.create(null);
+  private modifiers: Dict = Object.create(null);
+  private _serverOwner: TestOwner | null = null;
+
+  /** The owner of the server render: its environment is not interactive. */
+  private get serverOwner(): TestOwner {
+    if (this._serverOwner === null) {
+      this._serverOwner = buildOwner({ bootOptions: { isInteractive: false } });
+    }
+    return this._serverOwner;
+  }
+
+  /** Called after each test: destroys the server render's owner. */
+  teardown(): void {
+    if (this._serverOwner !== null) teardownOwners(this._serverOwner);
+  }
 
   get rehydrationStats(): never {
     throw unsupported('rehydrationStats (the client render does not reuse server nodes)');
@@ -256,9 +281,18 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     element: SimpleElement | undefined = undefined
   ): string {
     const target = element ?? this.serverDoc.createElement('div');
-    // A copy: the server render is a one-off, and the client render owns the
-    // live context.
-    this.render(template, { ...context }, target);
+    // A server render is not interactive. The GXT backend reads that from the
+    // ambient owner's `-environment:main`, as it does for an application that
+    // boots with `isInteractive: false` (FastBoot).
+    const ambientOwner = getAmbientOwner() as unknown;
+    setAmbientOwner(this.serverOwner);
+    try {
+      // A copy: the server render is a one-off, and the client render owns the
+      // live context.
+      this.render(template, { ...context }, target);
+    } finally {
+      setAmbientOwner(ambientOwner);
+    }
     takeSnapshot();
     return this.serialize(target);
   }
@@ -302,23 +336,28 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     this.helpers[name] = definition;
   }
 
-  // Only tests listed in `GXT_UNSUPPORTED` register components, modifiers or
-  // internal helpers.
+  // A modifier is in the templates' scope under its name, as a helper is.
+  registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
+    this.modifiers[name] = defineTestModifier(ModifierClass);
+  }
+
+  // Only tests listed in `GXT_UNSUPPORTED` register components or internal
+  // helpers.
   registerComponent(): never {
     throw unsupported('registerComponent');
+  }
+
+  registerClassicComponent(): never {
+    throw unsupported('registerClassicComponent');
   }
 
   registerInternalHelper(): never {
     throw unsupported('registerInternalHelper (Glimmer VM internal helpers)');
   }
 
-  registerModifier(): never {
-    throw unsupported('registerModifier');
-  }
-
   private render(template: string, context: object, target: SimpleElement): void {
     const factory = gxtPipeline().compileTemplate(template, {
-      scopeValues: { ...this.helpers },
+      scopeValues: { ...this.helpers, ...this.modifiers },
       plugins: { ast: this.plugins },
     }) as GxtTemplateFactory;
     factory().render(context, target as unknown as Element);
