@@ -65,12 +65,8 @@ function _normalizeStringValue(value: unknown): string {
   // Objects with no toString method (e.g. Object.create(null)) would throw
   // "Cannot convert object to primitive value" when stringified.
   if (typeof (value as any).toString !== 'function') return '';
-  try {
-    return String(value);
-  } catch {
-    // Defensive: an overridden toString that throws shouldn't crash render.
-    return '';
-  }
+  // What an overridden `toString` throws propagates, as from Glimmer's.
+  return String(value);
 }
 
 // Quoted attribute values with interpolation (`src='{{this.src}}'`) get Ember
@@ -285,15 +281,12 @@ function extractThisPath(getterStr: string): string | null {
 // Coerce a value to its text-node string for the reactive update path. The
 // text effect is the sole updater here, so a reactive update back to a value
 // with no usable toString (`Object.create(null)`, the dynamic-content "no
-// toString" case) must clear the node rather than throw.
+// toString" case) must clear the node rather than throw. What an overridden
+// `toString` throws propagates, as from Glimmer's `normalizeStringValue`.
 function _gxtCoerceText(v: any): string {
   if (v == null) return '';
   if (typeof v === 'object' && typeof v.toString !== 'function') return '';
-  try {
-    return String(v);
-  } catch {
-    return '';
-  }
+  return String(v);
 }
 
 /**
@@ -7564,8 +7557,8 @@ function _gxtSyncDomNow(): void {
             _gxtSetHadPendingSync(false);
           }
         }
-      } catch (syncAllErr) {
-        _gxtDeferSyncError(syncAllErr);
+      } catch (error) {
+        _gxtDeferSyncError(error);
       }
       // PHASE 1a: Flush deferred if-watcher notifications. These were accumulated
       // during `_gxtTriggerReRender` calls and are flushed HERE (after all
@@ -7687,8 +7680,8 @@ function _gxtSyncDomNow(): void {
         // `glimmer/lib/renderer.ts`.
         const updateRootTags = getGxtRenderer()?.rootComponent.updateRootTagValues;
         if (typeof updateRootTags === 'function') updateRootTags();
-      } catch (rootTagErr) {
-        _gxtDeferSyncError(rootTagErr);
+      } catch (error) {
+        _gxtDeferSyncError(error);
       }
       // The morph is not skipped when root tags merely look current: Phase 1b
       // above has just updated them, so such a check always passes and would
@@ -7731,8 +7724,8 @@ function _gxtSyncDomNow(): void {
       // AFTER manager.ts's main rebuild body.
       try {
         getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
-      } catch (rebuildErr) {
-        _gxtDeferSyncError(rebuildErr);
+      } catch (error) {
+        _gxtDeferSyncError(error);
       }
       // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
       // the modifiers whose destructor ran and that no evaluation of their
@@ -7776,8 +7769,8 @@ function _gxtSyncDomNow(): void {
       // drain).
       try {
         getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
-      } catch (insertErr) {
-        _gxtDeferSyncError(insertErr);
+      } catch (error) {
+        _gxtDeferSyncError(error);
       }
       // PHASE 3c: Drain deferred each→empty inverse-branch old-row finalization
       // (didDestroyElement + willDestroy). This runs AFTER Phase 3b so the NEW
@@ -7787,8 +7780,8 @@ function _gxtSyncDomNow(): void {
       // transition.
       try {
         _gxtDrainPendingInverseOldRowFinalize();
-      } catch (finalizeErr) {
-        _gxtDeferSyncError(finalizeErr);
+      } catch (error) {
+        _gxtDeferSyncError(error);
       }
       // Re-render CurriedComponent marker regions. What a region's render
       // throws is the sync's error; the other regions still render.
@@ -7837,8 +7830,8 @@ function _gxtSyncDomNow(): void {
                 if (newNode) parent.insertBefore(newNode, em);
                 _snapshotCurriedArgs(info, newFinal);
               }
-            } catch (regionErr) {
-              _gxtDeferSyncError(regionErr);
+            } catch (error) {
+              _gxtDeferSyncError(error);
             }
           }
         }
@@ -9925,11 +9918,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Objects with no toString (e.g. Object.create(null)) would throw
         // "Cannot convert object to primitive value" — normalize to ''.
         if (typeof raw === 'object' && typeof (raw as any).toString !== 'function') return '';
-        try {
-          return String(raw);
-        } catch {
-          return '';
-        }
+        return String(raw);
       };
 
       // Create start/end anchors and initial content.
@@ -11406,11 +11395,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               if (typeof (v as any).toHTML === 'function') return v;
               // Object with no toString (e.g. Object.create(null)) — normalize to ''.
               if (typeof (v as any).toString !== 'function') return '';
-              try {
-                return String(v);
-              } catch {
-                return '';
-              }
+              return String(v);
             }
             return v;
           };
@@ -13450,11 +13435,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
             if (fv.toHTML) return fv.toHTML();
             // Object.create(null) and similar have no toString — normalize to ''
             if (typeof fv === 'object' && typeof (fv as any).toString !== 'function') return '';
-            try {
-              return String(fv);
-            } catch {
-              return '';
-            }
+            return String(fv);
           };
           return renderReactiveHtml(getHtml);
         }
