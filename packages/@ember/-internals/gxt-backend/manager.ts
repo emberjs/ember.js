@@ -10314,24 +10314,21 @@ function _hideOneProp(target: any, key: string) {
   const desc = Object.getOwnPropertyDescriptor(target, key);
   if (!desc || desc.enumerable === false) return;
   if (desc.configurable === false) return;
-  try {
-    if ('value' in desc) {
-      Object.defineProperty(target, key, {
-        value: desc.value,
-        writable: desc.writable !== false,
-        enumerable: false,
-        configurable: true,
-      });
-    } else {
-      Object.defineProperty(target, key, {
-        get: desc.get,
-        set: desc.set,
-        enumerable: false,
-        configurable: true,
-      });
-    }
-  } catch {
-    /* ignore */
+  // Redefining a configurable own property cannot fail.
+  if ('value' in desc) {
+    Object.defineProperty(target, key, {
+      value: desc.value,
+      writable: desc.writable !== false,
+      enumerable: false,
+      configurable: true,
+    });
+  } else {
+    Object.defineProperty(target, key, {
+      get: desc.get,
+      set: desc.set,
+      enumerable: false,
+      configurable: true,
+    });
   }
 }
 function hideGxtInternalPropsOn(target: any) {
@@ -10342,14 +10339,8 @@ function hideGxtInternalPropsOn(target: any) {
   // Also strip any remaining `__gxt*`-prefixed own enumerable keys
   // (per-component cells/markers the reactivity may have stamped on the
   // instance).
-  {
-    try {
-      for (const key of Object.keys(target)) {
-        if (key.startsWith('__gxt')) _hideOneProp(target, key);
-      }
-    } catch {
-      /* ignore */
-    }
+  for (const key of Object.keys(target)) {
+    if (key.startsWith('__gxt')) _hideOneProp(target, key);
   }
 }
 
@@ -10572,11 +10563,7 @@ function handleCustomManagedComponent(
           get() {
             // Subscribe the reading effect to the args-revision cell.
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            try {
-              _argsRevCell.value;
-            } catch {
-              /* ignore */
-            }
+            _argsRevCell.value;
             return live;
           },
           enumerable: false,
@@ -10638,48 +10625,41 @@ function handleCustomManagedComponent(
       !(asyncCaps && asyncCaps.updateHook === false) &&
       typeof actualManager.updateComponent === 'function'
     ) {
-      try {
-        const slotsObj: any =
-          (renderContext as any)?.$slots ||
-          (renderContext as any)?.[$SLOTS_SYMBOL] ||
-          (args as any)?.$slots ||
-          (args as any)?.[$SLOTS_SYMBOL];
-        const origDefault =
-          slotsObj && typeof slotsObj.default === 'function' ? slotsObj.default : null;
-        if (origDefault && !(origDefault as any).__gxtYieldWrapped) {
-          const wrapped = function (this: any, ...slotArgs: any[]) {
-            const result = origDefault.apply(this, slotArgs);
-            const items = Array.isArray(result) ? result : result == null ? [] : [result];
-            return items.map((child: any) => {
-              // Only wrap REACTIVE TEXT getters: plain functions that are not
-              // node thunks ($_tag/$_c/$_dc/$_eachSync) and not curried
-              // components / Nodes. These are `() => this.<path>` bindings.
-              if (
-                typeof child === 'function' &&
-                !(child as any).__isCurriedComponent &&
-                !(child instanceof Node)
-              ) {
-                // Node thunks carry the compiler's `$_isNode` marker.
-                const isNodeThunk = (child as any).$_isNode === true;
-                if (!isNodeThunk) {
-                  _yieldGetters.push(child as () => any);
-                }
+      const slotsObj: any =
+        (renderContext as any)?.$slots ||
+        (renderContext as any)?.[$SLOTS_SYMBOL] ||
+        (args as any)?.$slots ||
+        (args as any)?.[$SLOTS_SYMBOL];
+      const origDefault =
+        slotsObj && typeof slotsObj.default === 'function' ? slotsObj.default : null;
+      if (origDefault && !(origDefault as any).__gxtYieldWrapped) {
+        const wrapped = function (this: any, ...slotArgs: any[]) {
+          const result = origDefault.apply(this, slotArgs);
+          const items = Array.isArray(result) ? result : result == null ? [] : [result];
+          return items.map((child: any) => {
+            // Only wrap REACTIVE TEXT getters: plain functions that are not
+            // node thunks ($_tag/$_c/$_dc/$_eachSync) and not curried
+            // components / Nodes. These are `() => this.<path>` bindings.
+            if (
+              typeof child === 'function' &&
+              !(child as any).__isCurriedComponent &&
+              !(child instanceof Node)
+            ) {
+              // Node thunks carry the compiler's `$_isNode` marker.
+              const isNodeThunk = (child as any).$_isNode === true;
+              if (!isNodeThunk) {
+                _yieldGetters.push(child as () => any);
               }
-              return child;
-            });
-          };
-          (wrapped as any).__hasBlockParams = (origDefault as any).__hasBlockParams;
-          (wrapped as any).__gxtYieldWrapped = true;
-          // Replace on whichever container actually holds the default slot fn so
-          // the render (`createSlot` → `value(...)`) invokes the wrapper.
-          try {
-            slotsObj.default = wrapped;
-          } catch {
-            /* slot object may be frozen — best-effort */
-          }
-        }
-      } catch {
-        /* yield-getter collection is best-effort */
+            }
+            return child;
+          });
+        };
+        (wrapped as any).__hasBlockParams = (origDefault as any).__hasBlockParams;
+        (wrapped as any).__gxtYieldWrapped = true;
+        // Replace on whichever container actually holds the default slot fn so
+        // the render (`createSlot` → `value(...)`) invokes the wrapper. (gxt's
+        // frozen empty-slots object has no default slot.)
+        slotsObj.default = wrapped;
       }
     }
 
@@ -10780,21 +10760,17 @@ function handleCustomManagedComponent(
     // component's `@computed('args.named.*'/'args.positional.*')` CPs (dirtying
     // their cells so the subscribed text effects re-fire).
     if (!isRerender) {
-      try {
-        _installCustomManagedArgEffect({
-          instance,
-          context,
-          renderContext,
-          actualManager,
-          asyncCaps,
-          argGetters,
-          posGetters,
-          liveNamed,
-          livePositional,
-        });
-      } catch {
-        /* best-effort */
-      }
+      _installCustomManagedArgEffect({
+        instance,
+        context,
+        renderContext,
+        actualManager,
+        asyncCaps,
+        argGetters,
+        posGetters,
+        liveNamed,
+        livePositional,
+      });
 
       // Yielded-content and forwarded-attribute reactivity: when the host's
       // YIELDED `{{this.value}}` or a bound attribute it forwards changes (no
@@ -10804,20 +10780,16 @@ function handleCustomManagedComponent(
       // (`<FooBar>{{this.value}}</FooBar>`). De-duped by value comparison so
       // exactly one updateComponent fires per genuine change.
       if (_yieldGetters.length > 0 || _forwardedGetters.length > 0) {
-        try {
-          _installCustomManagedYieldEffect({
-            instance,
-            context,
-            renderContext,
-            actualManager,
-            asyncCaps,
-            yieldGetters: [..._yieldGetters, ..._forwardedGetters],
-            argGetters,
-            posGetters,
-          });
-        } catch {
-          /* best-effort */
-        }
+        _installCustomManagedYieldEffect({
+          instance,
+          context,
+          renderContext,
+          actualManager,
+          asyncCaps,
+          yieldGetters: [..._yieldGetters, ..._forwardedGetters],
+          argGetters,
+          posGetters,
+        });
       }
     }
 
@@ -10853,35 +10825,25 @@ function _installCustomManagedArgEffect(o: {
   // Nothing to subscribe to (no live arg sources) → no effect.
   if (namedKeys.length === 0 && posGetters.length === 0) return;
 
+  // What a computed property's getter or a re-run binding throws is the
+  // effect's error: the sync that re-ran it queues it as an update error.
   const _recompute = (obj: any, changedKey: string) => {
-    try {
-      const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, changedKey);
-      if (deps) {
-        for (const { key, value } of deps) {
-          try {
-            const dc = _gxtCellFor(obj, key, /* skipDefine */ true);
-            if (dc) {
-              dc.update(value);
-              // This effect runs DURING the GXT sync drain (it was re-fired by
-              // the dirtied source cell). A `cell.update()` issued mid-drain
-              // lands in `tagsToRevalidate` AFTER the drain snapshotted its
-              // work list, and the drain's terminal clear wipes it — so the CP
-              // cell's text opcode would never re-run. Flush the cell's related
-              // opcodes synchronously here so the bound text node updates in the
-              // same tick.
-              try {
-                _gxtFlushCellOpcodes(dc);
-              } catch {
-                /* ignore */
-              }
-            }
-          } catch {
-            /* ignore */
-          }
+    const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, changedKey);
+    if (deps) {
+      for (const { key, value } of deps) {
+        const dc = _gxtCellFor(obj, key, /* skipDefine */ true);
+        if (dc) {
+          dc.update(value);
+          // This effect runs DURING the GXT sync drain (it was re-fired by
+          // the dirtied source cell). A `cell.update()` issued mid-drain
+          // lands in `tagsToRevalidate` AFTER the drain snapshotted its
+          // work list, and the drain's terminal clear wipes it — so the CP
+          // cell's text opcode would never re-run. Flush the cell's related
+          // opcodes synchronously here so the bound text node updates in the
+          // same tick.
+          _gxtFlushCellOpcodes(dc);
         }
       }
-    } catch {
-      /* ignore */
     }
   };
 
@@ -10946,22 +10908,16 @@ function _installCustomManagedArgEffect(o: {
       named: freshNamed,
       positional: freshPositional,
     };
-    try {
-      if (!_updateHookExplicitlyFalse && typeof actualManager.updateComponent === 'function') {
-        actualManager.updateComponent(instance, newCapturedArgs);
-      }
-    } catch {
-      /* ignore */
+    // What the manager's hooks throw is the effect's error, as Glimmer's
+    // update of a custom-managed component throws it to the render.
+    if (!_updateHookExplicitlyFalse && typeof actualManager.updateComponent === 'function') {
+      actualManager.updateComponent(instance, newCapturedArgs);
     }
-    try {
-      if (
-        asyncCaps?.asyncLifecycleCallbacks &&
-        typeof actualManager.didUpdateComponent === 'function'
-      ) {
-        actualManager.didUpdateComponent(instance);
-      }
-    } catch {
-      /* ignore */
+    if (
+      asyncCaps?.asyncLifecycleCallbacks &&
+      typeof actualManager.didUpdateComponent === 'function'
+    ) {
+      actualManager.didUpdateComponent(instance);
     }
 
     // (2) Recompute the component's args-derived computed properties so the
@@ -10991,21 +10947,13 @@ function _installCustomManagedArgEffect(o: {
     // `this.args.named`/`.positional` getters that handleCustomManagedComponent
     // installs).
     // Dirty + synchronously flush that cell here so the effect re-runs and
-    // re-reads `this.salutation` with the new args this tick. Best-effort.
-    try {
-      for (const target of recomputeTargets) {
-        const revCell = (target as any)?.__gxtArgsRevCell;
-        if (revCell && typeof revCell.update === 'function') {
-          try {
-            revCell.update((revCell.value || 0) + 1);
-            _gxtFlushCellOpcodes(revCell);
-          } catch {
-            /* per-cell best-effort */
-          }
-        }
+    // re-reads `this.salutation` with the new args this tick.
+    for (const target of recomputeTargets) {
+      const revCell = (target as any)?.__gxtArgsRevCell;
+      if (revCell && typeof revCell.update === 'function') {
+        revCell.update((revCell.value || 0) + 1);
+        _gxtFlushCellOpcodes(revCell);
       }
-    } catch {
-      /* re-flush bridge is best-effort */
     }
   });
 }
@@ -11123,20 +11071,13 @@ function _installCustomManagedYieldEffect(o: {
     const named: Record<string, any> = {};
     for (const k of Object.keys(o.argGetters || {})) named[k] = _untracked(o.argGetters[k]!);
     const positional = (o.posGetters || []).map((getter) => _untracked(getter));
-    try {
-      actualManager.updateComponent(instance, { named, positional });
-    } catch {
-      /* ignore */
-    }
-    try {
-      if (
-        asyncCaps?.asyncLifecycleCallbacks &&
-        typeof actualManager.didUpdateComponent === 'function'
-      ) {
-        actualManager.didUpdateComponent(instance);
-      }
-    } catch {
-      /* ignore */
+    // What the manager's hooks throw is the effect's error.
+    actualManager.updateComponent(instance, { named, positional });
+    if (
+      asyncCaps?.asyncLifecycleCallbacks &&
+      typeof actualManager.didUpdateComponent === 'function'
+    ) {
+      actualManager.didUpdateComponent(instance);
     }
   });
 }
@@ -11389,11 +11330,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
     const wrapped = () => {
       _totalFires++;
       if (_totalFires > HARD_CAP) {
-        try {
-          unsub();
-        } catch {
-          /* ignore */
-        }
+        unsub();
         return;
       }
       if (el.isConnected) {
@@ -11411,11 +11348,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         cb();
         _preConnectTicks++;
         if (_preConnectTicks > 256) {
-          try {
-            unsub();
-          } catch {
-            /* ignore */
-          }
+          unsub();
         }
         return;
       }
@@ -11423,27 +11356,21 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       // re-attachment, then unsubscribe to prevent cross-test leaks.
       _disconnectedTicks++;
       if (_disconnectedTicks > 4) {
-        try {
-          unsub();
-        } catch {
-          /* ignore */
-        }
+        unsub();
       }
     };
     unsub = (_gxtRegisterClassicReactor as any)(wrapped, 'renderLinkToElement');
   };
 
-  // id attribute (doesn't change over the element's lifetime, so no reactor)
+  // id attribute (doesn't change over the element's lifetime, so no reactor).
+  // What LinkTo's getters throw here and below propagates, as from its
+  // template's bindings in Glimmer.
   let _lastId: any = undefined;
   const applyId = () => {
-    try {
-      const id = instance.id;
-      if (id && id !== _lastId) {
-        el.id = id;
-        _lastId = id;
-      }
-    } catch {
-      /* ignore */
+    const id = instance.id;
+    if (id && id !== _lastId) {
+      el.id = id;
+      _lastId = id;
     }
   };
   gxtEffect(() => {
@@ -11454,21 +11381,28 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   // class attribute (includes 'ember-view', 'active', 'disabled', etc.)
   let _lastClass: any = undefined;
   const applyClass = () => {
-    try {
-      const cls = instance.class;
-      if (cls != null && cls !== _lastClass) {
-        el.className = cls;
-        _lastClass = cls;
-      }
-    } catch {
-      /* ignore */
+    const cls = instance.class;
+    if (cls != null && cls !== _lastClass) {
+      el.className = cls;
+      _lastClass = cls;
     }
   };
   gxtEffect(() => {
     touchClassicTags();
     applyClass();
   });
-  _registerReactor(applyClass);
+  // The classic-tag reactor re-applies the class on EVERY classic tag dirty,
+  // including ones in the middle of a transition, where Glimmer renders
+  // nothing: `isActive` throws there while a lazy engine's routes are not
+  // loaded yet. A throw keeps the previous class, reported in DEBUG; the class
+  // binding's effect above reads it again when the template re-renders.
+  _registerReactor(() => {
+    try {
+      applyClass();
+    } catch (error) {
+      _gxtReportDroppedRead("LinkTo's class, re-read on a classic tag dirty,", error);
+    }
+  });
 
   // href attribute
   let _lastHref: any = undefined;
@@ -11495,11 +11429,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       // re-runs of applyHref (classic-tag bridge, reactor) must NOT capture
       // repeatedly — that would leak an error across subsequent tests.
       if (_hrefAttempts === 0) {
-        try {
-          captureRenderError(e);
-        } catch {
-          /* ignore */
-        }
+        captureRenderError(e);
       }
       _hrefAttempts++;
     }
@@ -11522,27 +11452,20 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   for (const attr of optionalAttrs) {
     if (forwardedNames.has(attr)) continue;
     gxtEffect(() => {
-      try {
-        const val = instance[attr];
-        if (val !== undefined && val !== null) {
-          el.setAttribute(attr, String(val));
-        } else {
-          el.removeAttribute(attr);
-        }
-      } catch {
-        /* ignore */
+      const val = instance[attr];
+      if (val !== undefined && val !== null) {
+        el.setAttribute(attr, String(val));
+      } else {
+        el.removeAttribute(attr);
       }
     });
   }
 
-  // Click handler
+  // Click handler. What it throws reaches the event's dispatch, as an
+  // `{{on "click"}}` handler's error does.
   if (typeof instance.click === 'function') {
     el.addEventListener('click', (e: Event) => {
-      try {
-        instance.click(e);
-      } catch {
-        // click handler may throw if routing service is unavailable
-      }
+      instance.click(e);
     });
   }
 
