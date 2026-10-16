@@ -1376,19 +1376,17 @@ function createEmberMaybeHelper(original: Function) {
               for (let i = 0; i < posList.length; i++) {
                 const val = posList[i];
                 const posKey = `__pos${i}__`;
+                // A getter takes no parameters (a function with parameters is
+                // the argument's value); what it throws propagates, as
+                // Glimmer's read of the argument does.
                 if (
                   typeof val === 'function' &&
                   !(val as any).__isCurriedComponent &&
-                  !(val as any).prototype
+                  !(val as any).prototype &&
+                  val.length === 0
                 ) {
                   Object.defineProperty(componentArgs, posKey, {
-                    get: () => {
-                      try {
-                        return (val as any)();
-                      } catch {
-                        return val;
-                      }
-                    },
+                    get: () => (val as any)(),
                     enumerable: true,
                     configurable: true,
                   });
@@ -1666,13 +1664,11 @@ function createEmberTag(original: Function) {
 
             const slotFn = (_slotCtx: any, ...params: any[]) => {
               const unwrappedParams = params.map((param) => {
-                // Unwrap GXT reactive formulas (objects with fn/isConst)
+                // Unwrap GXT reactive formulas (objects with fn/isConst); what
+                // the formula throws propagates, as Glimmer's read of a
+                // yielded value does.
                 if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
-                  try {
-                    return param.fn();
-                  } catch {
-                    return param;
-                  }
+                  return param.fn();
                 }
                 // Do NOT call plain functions — they may be user functions
                 // yielded as block params (e.g., {{yield this.updatePerson}}).
@@ -2457,33 +2453,16 @@ function createEmberDc(original: Function) {
       });
     }
 
-    // Try to evaluate the component getter to check what kind of value it returns.
+    // Evaluate the component getter to check what kind of value it returns.
+    // What it throws is an error of the render, as Glimmer's read of the
+    // component reference is.
     let componentValue: any;
     let reads: DcReads;
     try {
       ({ value: componentValue, reads } = readDcValue(componentGetter));
-    } catch {
-      // Getter failed — likely block params not set yet.
-      // Return a lazy thunk that evaluates when GXT processes the children.
-      const lazyThunk = () => {
-        try {
-          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-          if (val && val.__isCurriedComponent) {
-            return renderComponent(val, gxtArgs, ctx);
-          }
-          if (typeof val === 'string') {
-            const mgrs = g.$_MANAGERS;
-            if (mgrs?.component?.canHandle?.(val)) {
-              return renderComponent(val, gxtArgs, ctx);
-            }
-          }
-          return val;
-        } catch {
-          return undefined;
-        }
-      };
-      (lazyThunk as any).__isComponentThunk = true;
-      return lazyThunk;
+    } catch (error) {
+      captureDcError(error);
+      throw error;
     }
 
     const kind = dcKind(componentValue);
@@ -2530,11 +2509,7 @@ function createEmberDc(original: Function) {
           while (p && !v.has(p)) {
             v.add(p);
             if (getGxtRenderer()?.registries.internalModifierManagers.has(p)) return true;
-            try {
-              p = Object.getPrototypeOf(p);
-            } catch {
-              break;
-            }
+            p = Object.getPrototypeOf(p);
           }
           return false;
         })();
@@ -2601,12 +2576,7 @@ function createEmberDc(original: Function) {
  */
 function _dynamicDebugPath(fn: any): string | null {
   if (typeof fn !== 'function') return null;
-  let src: string;
-  try {
-    src = String(fn);
-  } catch {
-    return null;
-  }
+  const src = String(fn);
   // GXT emits `() => this.Foo` / `() => $a.helper` / `() => _this2.foo` style.
   // Match `identifier.Path` with optional optional-chaining.
   const m = /(?:=>|return)\s*([a-zA-Z_$][\w$]*)(\?\.|\.)((?:[\w$](?:\?\.|\.)?)+)/.exec(src);
@@ -2732,11 +2702,7 @@ function createEmberModifierHelper(original: Function) {
             managerFactory = mgr;
             break;
           }
-          try {
-            pointer = Object.getPrototypeOf(pointer);
-          } catch {
-            break;
-          }
+          pointer = Object.getPrototypeOf(pointer);
         }
         if (!managerFactory) return undefined;
 
@@ -2782,11 +2748,7 @@ function createEmberModifierHelper(original: Function) {
             hasModifierManager = true;
             break;
           }
-          try {
-            ptr = Object.getPrototypeOf(ptr);
-          } catch {
-            break;
-          }
+          ptr = Object.getPrototypeOf(ptr);
         }
       }
 

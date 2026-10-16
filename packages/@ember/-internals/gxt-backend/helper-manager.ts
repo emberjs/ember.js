@@ -566,32 +566,24 @@ export class CustomHelperManager {
     return manager?.getDestroyable?.(bucket) || null;
   }
 
+  // The delegate's capabilities. What creating the delegate throws (the
+  // manager factory, or its capabilities assertion) propagates, as Glimmer's
+  // `getDelegateFor` does.
   get capabilities() {
-    // Try to get a delegate to check capabilities.
-    const owner = getAmbientOwner();
-    try {
-      const manager = this.getDelegateFor(owner);
-      return (
-        manager?.capabilities || {
-          hasValue: false,
-          hasDestroyable: false,
-          hasScheduledEffect: false,
-        }
-      );
-    } catch {
-      return { hasValue: false, hasDestroyable: false, hasScheduledEffect: false };
-    }
+    const manager = this.getDelegateFor(getAmbientOwner());
+    return (
+      manager?.capabilities || {
+        hasValue: false,
+        hasDestroyable: false,
+        hasScheduledEffect: false,
+      }
+    );
   }
 
   getDebugName(helper: any) {
     if (!DEBUG) return 'Helper';
-    const owner = getAmbientOwner();
-    try {
-      const manager = this.getDelegateFor(owner);
-      return manager?.getDebugName?.(helper) || 'Helper';
-    } catch {
-      return 'Helper';
-    }
+    const manager = this.getDelegateFor(getAmbientOwner());
+    return manager?.getDebugName?.(helper) || 'Helper';
   }
 }
 
