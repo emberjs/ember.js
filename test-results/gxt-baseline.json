@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T13:21:23.556Z",
+    "capturedAt": "2026-10-16T15:02:31.627Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "5e6bced0b5",
-    "totalTests": 10171,
-    "totalModules": 1000,
+    "emberCommit": "6ec3d03b1a",
+    "totalTests": 10180,
+    "totalModules": 1001,
     "quarantinedTests": 0,
-    "totalAssertions": 60897,
-    "totalAssertionsPassing": 60488,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after angle-bracket block params became bound per invocation of the block (each {{yield}} of a by-name component's block, default or named, renders it with its own params; a nested block reads the outer block's params; a component in scope or compiled with gxt's own slot functions keeps them); written by runner.mjs in the GitHub Actions GXT full workflow (run 38907069880, on the code of 5e6bced0b5). 9861/10171 green (was 9845/10166), 1000 modules, no timeouts, no harness errors, no green->red. 11 tests no longer fail (the else/inverse named-block params tests, the Glimmer yield tests 'yield' and 'yielding a string and rendering its length', the strict-mode 'Can use template local in nested blocks with locals', and the each-in keyword yielded as a named block param in non-strict mode); the new module GXT block params of an invocation passes 5/5; no module has fewer passing assertions."
+    "totalAssertions": 60916,
+    "totalAssertionsPassing": 60508,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a bare dirtyTagFor renders the property's new value (the dirty is recorded for the run loop's DOM sync, and re-runs the bindings that read the object through a cell holding it), creating a property's tag no longer reads the property (a tagFor before the first render no longer overflows the stack), and a content binding re-runs before the bindings its evaluation created (a nested renderComponent no longer re-renders before its parent); written by runner.mjs in the GitHub Actions GXT full workflow (run 38920491051, on the code of 6ec3d03b1a). 9871/10180 green (was 9861/10171), 1001 modules, no timeouts, no harness errors, no green->red. 1 test no longer fails (Strict Mode - renderComponent: renderComponent is eager, so it tracks with its parent); the new module GXT dirtyTagFor passes 9/9; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2606,6 +2606,13 @@
       "assertionsPassing": 38,
       "failingTests": []
     },
+    "GXT dirtyTagFor": {
+      "total": 9,
+      "passing": 9,
+      "assertionsTotal": 20,
+      "assertionsPassing": 20,
+      "failingTests": []
+    },
     "GXT dynamic components follow their definition": {
       "total": 4,
       "passing": 4,
@@ -4566,15 +4573,10 @@
     },
     "Strict Mode - renderComponent": {
       "total": 29,
-      "passing": 28,
-      "assertionsTotal": 147,
+      "passing": 29,
+      "assertionsTotal": 146,
       "assertionsPassing": 146,
-      "failingTests": [
-        {
-          "name": " renderComponent is eager, so it tracks with its parent",
-          "category": "gxt:triage"
-        }
-      ],
+      "failingTests": [],
       "skippedTests": [
         " when args are a custom tracked class, the rendered component response appropriately",
         " can *not* render in to a TextNode"
@@ -8530,6 +8532,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 310
+    "gxt:triage": 309
   }
 }
