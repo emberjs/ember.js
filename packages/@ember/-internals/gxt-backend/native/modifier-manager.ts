@@ -46,6 +46,7 @@ import {
   unwrapArg,
   type ArgLabels,
   type ArgsSource,
+  type Arguments,
 } from './args';
 import { destroy, registerDestructor } from './destroyable';
 import {
@@ -61,16 +62,78 @@ import { debug, untrack } from './validator';
 /** gxt context key: `false` on render roots whose modifiers must not run. */
 export const INTERACTIVE: unique symbol = Symbol('ember-native-interactive');
 
-interface ModifierInstance {
-  readonly element: Element;
-  /** The state destroyed (Ember destroyable) when the modifier is removed. */
-  readonly state: object;
-  install(): void;
-  update(): void;
-  installed: boolean;
-  scheduled: boolean;
-  removed: boolean;
-  stopTracking: (() => void) | null;
+/**
+ * One element modifier: its element, the state destroyed (Ember destroyable)
+ * when it is removed, its commit state, and how it installs / updates. A
+ * class, so that `install` and `update` are prototype methods: a modifier
+ * holds no closures of its own.
+ */
+abstract class ModifierInstance {
+  installed = false;
+  scheduled = false;
+  removed = false;
+  stopTracking: (() => void) | null = null;
+
+  constructor(
+    readonly element: Element,
+    readonly state: object
+  ) {}
+
+  abstract install(): void;
+  abstract update(): void;
+}
+
+/** A modifier of a native internal manager (`on`). */
+export class InternalModifierInstance extends ModifierInstance {
+  constructor(
+    element: Element,
+    private readonly manager: InternalModifierManager,
+    private readonly internalState: object
+  ) {
+    super(element, manager.getDestroyable(internalState));
+  }
+
+  install(): void {
+    this.manager.install(this.internalState);
+  }
+
+  update(): void {
+    this.manager.update(this.internalState);
+  }
+}
+
+/**
+ * A modifier of a public custom manager (`setModifierManager`, capabilities
+ * 3.22). `untracked`: the manager's `disableAutoTracking`, install / update
+ * run untracked.
+ */
+export class CustomModifierInstance extends ModifierInstance {
+  constructor(
+    element: Element,
+    state: object,
+    private readonly delegate: ModifierDelegate,
+    private readonly modifier: unknown,
+    private readonly args: Arguments,
+    private readonly untracked: boolean
+  ) {
+    super(element, state);
+  }
+
+  install(): void {
+    if (this.untracked) {
+      untrack(() => this.delegate.installModifier(this.modifier, this.element, this.args));
+    } else {
+      this.delegate.installModifier(this.modifier, this.element, this.args);
+    }
+  }
+
+  update(): void {
+    if (this.untracked) {
+      untrack(() => this.delegate.updateModifier(this.modifier, this.args));
+    } else {
+      this.delegate.updateModifier(this.modifier, this.args);
+    }
+  }
 }
 
 // ---------------------------------------------------------------- commit queue
@@ -286,36 +349,23 @@ function createInstance(
     const state = {};
     registerDestructor(state, () => delegate.destroyModifier(modifier, args));
     if (ENV._DEBUG_RENDER_TREE) DEBUG_INSTANCES.set(state, modifier);
-    const untracked = delegate.capabilities.disableAutoTracking === true;
-    return {
+    return new CustomModifierInstance(
       element,
       state,
-      install: untracked
-        ? () => untrack(() => delegate.installModifier(modifier, element, args))
-        : () => delegate.installModifier(modifier, element, args),
-      update: untracked
-        ? () => untrack(() => delegate.updateModifier(modifier, args))
-        : () => delegate.updateModifier(modifier, args),
-      installed: false,
-      scheduled: false,
-      removed: false,
-      stopTracking: null,
-    };
+      delegate,
+      modifier,
+      args,
+      delegate.capabilities.disableAutoTracking === true
+    );
   }
 
   // Native internal modifier manager (`on`): it reads the call site's
   // literal-or-thunk arguments itself and does not use the owner.
-  const internalState = manager.create(element, definition, source);
-  return {
+  return new InternalModifierInstance(
     element,
-    state: manager.getDestroyable(internalState),
-    install: () => manager.install(internalState),
-    update: () => manager.update(internalState),
-    installed: false,
-    scheduled: false,
-    removed: false,
-    stopTracking: null,
-  };
+    manager,
+    manager.create(element, definition, source)
+  );
 }
 
 // ---------------------------------------------------------------- the slot
