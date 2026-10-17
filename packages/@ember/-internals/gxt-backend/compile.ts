@@ -7448,26 +7448,17 @@ function _gxtCaptureUpdateError(error: unknown): void {
 // One gxt pass: re-execute the bindings whose cells changed. Returns the cells
 // the pass's modifier commits wrote.
 //
-// gxt ends a pass by emptying its queue of changed cells and leaving its
-// rendering state; a binding that throws skips that end. Left there, the
-// queue would re-execute the failing binding in every later sync, also one of
-// another render after this one is gone. The pass ends here then, as an Ember
-// renderer whose revalidation failed renders again only after a new change.
+// A pass that a binding aborts ends in gxt like a completed one: its queue of
+// changed cells is emptied and it leaves rendering state, as an Ember renderer
+// whose revalidation failed renders again only after a new change.
 function _gxtRevalidationPass(): Map<GxtCell, boolean> {
   const prev = _gxtPassCommitWrites;
   const writes = new Map<GxtCell, boolean>();
   _gxtPassCommitWrites = writes;
-  let ended = false;
   try {
     gxtSyncDom();
-    ended = true;
   } finally {
     _gxtPassCommitWrites = prev;
-    if (!ended) {
-      // Written by gxt itself.
-      (globalThis as any).__gxtClearTagsToRevalidate?.();
-      gxtSetIsRendering(false);
-    }
   }
   return writes;
 }

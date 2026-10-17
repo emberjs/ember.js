@@ -91,6 +91,33 @@ moduleFor(
         runTask(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
       }, /the truthiness failed/);
     }
+
+    ['@test a condition that threw is not evaluated again by the sync of another change'](
+      assert: QUnit['assert']
+    ) {
+      let reads = 0;
+      const BoomProxy = ObjectProxy.extend({
+        isTruthy: computed(function () {
+          reads++;
+          throw new Error('the truthiness failed');
+        }),
+      });
+
+      this.render('[{{this.label}}]{{#if this.value}}yes{{else}}no{{/if}}', {
+        label: 'a',
+        value: false,
+      });
+      this.assertText('[a]no');
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
+      }, /the truthiness failed/);
+      const readsAfterError = reads;
+
+      runTask(() => set(this.context, 'label', 'b'));
+      assert.strictEqual(reads, readsAfterError, 'the failed condition did not run again');
+      assert.ok(this.element.textContent!.startsWith('[b]'), 'the other change rendered');
+    }
   }
 );
 
