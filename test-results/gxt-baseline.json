@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T06:05:57.781Z",
+    "capturedAt": "2026-10-17T16:34:11.728Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "f697f1e1eb",
-    "totalTests": 10227,
-    "totalModules": 1019,
+    "emberCommit": "6a88b0abdf",
+    "totalTests": 10234,
+    "totalModules": 1022,
     "quarantinedTests": 0,
-    "totalAssertions": 61124,
-    "totalAssertionsPassing": 60729,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after the GXT code outside gxt-backend stops swallowing errors: the DOM sync at the end of a run loop throws its error from the run loop's end, and renderComponent, the route root template, the classic root render, the metal and routing hooks, template()'s implicit scope and the test teardown no longer drop errors; written by runner.mjs in the GitHub Actions GXT full workflow (run 39008574626, merged from 5 shards, on the code of f697f1e1eb). 9926/10227 green (was 9925/10226), 1019 modules, no timeouts, no harness errors, no green->red. The new test passes: GXT errors: the DOM sync at the end of a run loop (1/1); every other module has the same tests and passing assertions."
+    "totalAssertions": 61143,
+    "totalAssertionsPassing": 60744,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after the DOM sync throws the errors the update it renders queued (an updated component's hooks, a component a new branch renders) to the code that ran it, a revalidation pass a binding aborts ends as a completed one, a re-read of a LinkTo's class reports what it throws in DEBUG, and a curried content region keeps its component while its curried value stays; written by runner.mjs in the GitHub Actions GXT full workflow (run 39049907032, merged from 5 shards, on the code of 6a88b0abdf). 9933/10234 green (was 9926/10227), 1022 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT errors: hook errors of an update (4/4), GXT errors: hook errors of an update of a route template (1/1), GXT a curried component keeps its instance while its curried value stays (2/2). Helpers test: {{fn}} has the same tests and passing assertions; its red tests now record the errors their updates throw (44 -> 48 assertions). Every other module has the same tests and passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2501,6 +2501,13 @@
       "assertionsPassing": 11,
       "failingTests": []
     },
+    "GXT a curried component keeps its instance while its curried value stays": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 8,
+      "assertionsPassing": 8,
+      "failingTests": []
+    },
     "GXT a definition invoked as another kind": {
       "total": 2,
       "passing": 2,
@@ -2674,6 +2681,20 @@
       "passing": 4,
       "assertionsTotal": 4,
       "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT errors: hook errors of an update": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
+      "failingTests": []
+    },
+    "GXT errors: hook errors of an update of a route template": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 1,
+      "assertionsPassing": 1,
       "failingTests": []
     },
     "GXT errors: the DOM sync at the end of a run loop": {
@@ -3020,7 +3041,7 @@
     "Helpers test: {{fn}}": {
       "total": 14,
       "passing": 6,
-      "assertionsTotal": 44,
+      "assertionsTotal": 48,
       "assertionsPassing": 17,
       "failingTests": [
         {
