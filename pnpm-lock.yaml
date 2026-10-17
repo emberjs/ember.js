@@ -110,8 +110,8 @@ importers:
         specifier: workspace:*
         version: link:packages/@glimmer/component
       '@nullvoxpopuli/release-plan':
-        specifier: ^0.21.0
-        version: 0.21.0
+        specifier: ^0.22.0
+        version: 0.22.0
       '@octokit/rest':
         specifier: ^22.0.0
         version: 22.0.1
@@ -4776,8 +4776,8 @@ packages:
     resolution: {integrity: sha512-llZkSzeTsimFx64U+ThT2xQM2uEce8GIQUYvxgbB6ZFvBhV2LP9LeJJb3HT+syG0uCFLsTCHjV9SfC0WNU1vtA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@nullvoxpopuli/release-plan@0.21.0':
-    resolution: {integrity: sha512-c9zJXIt5r3NIGHofIMYpzfAZXTdYzHur8N6WHnI+bMYZ5sRfDV75zy6lRNuQAVC5Z/lc3MiL+KDk0BGLi6Lynw==}
+  '@nullvoxpopuli/release-plan@0.22.0':
+    resolution: {integrity: sha512-oQG+tjxnsFiYqElWC7BZaqKrU8e4fb+EvikI2zLbppmNSVkrgE6Sz6IExAZ8lEw8LEkmzkadIsMCqViosZTHtg==}
     engines: {node: 22.* || 24.* || >= 26}
     hasBin: true
 
@@ -9705,6 +9705,10 @@ packages:
   lightningcss@1.33.0:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
+
+  lilconfig@3.1.4:
+    resolution: {integrity: sha512-zJZyBmQhArDRefuWTypZxwDpFDIYmrj8ypSBvwGD5P13Y95s6DjzKgu4DVdGbeQa5PDEsAOCAPNk4X+QOR006w==}
+    engines: {node: '>=14'}
 
   line-column@1.0.2:
     resolution: {integrity: sha512-Ktrjk5noGYlHsVnYWh62FLVs4hTb8A3e+vucNZMgPeAOITdshMSgv4cCZQeRDjm7+goqmo6+liZwTXo+U3sVww==}
@@ -15074,7 +15078,7 @@ snapshots:
     dependencies:
       which: 7.0.0
 
-  '@nullvoxpopuli/release-plan@0.21.0':
+  '@nullvoxpopuli/release-plan@0.22.0':
     dependencies:
       '@manypkg/get-packages': 3.1.0
       '@npmcli/package-json': 8.0.0
@@ -15083,6 +15087,7 @@ snapshots:
       execa: 9.6.1
       hosted-git-info: 10.1.1
       latest-version: 9.0.0
+      lilconfig: 3.1.4
       p-map: 7.1.1
       parse-github-repo-url: 1.4.1
       semver: 7.8.5
@@ -21346,6 +21351,8 @@ snapshots:
       lightningcss-linux-x64-musl: 1.33.0
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
+
+  lilconfig@3.1.4: {}
 
   line-column@1.0.2:
     dependencies:
