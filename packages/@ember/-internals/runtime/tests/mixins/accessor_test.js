@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(

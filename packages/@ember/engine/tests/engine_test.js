@@ -1,7 +1,7 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { processAllNamespaces } from '@ember/-internals/metal';
 import { getName } from '@ember/-internals/utils';
 import {

@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import Mixin from '@ember/object/mixin';
 import { InternalMixin } from '@ember/object/mixin-internal';
 import {
