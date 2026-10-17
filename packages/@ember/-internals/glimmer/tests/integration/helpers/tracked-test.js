@@ -301,8 +301,8 @@ moduleFor(
           @tracked
           name = 'bob';
 
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             currentUserService = this;
           }
         }
