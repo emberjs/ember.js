@@ -174,7 +174,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    async [`${testUnless(REMOVED || DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
+    async [`${testUnless(REMOVED || DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test array proxy + aliasedProperty complex test`](
       assert
     ) {
       expectDeprecation(
