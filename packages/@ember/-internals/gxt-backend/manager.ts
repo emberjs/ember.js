@@ -3744,6 +3744,30 @@ const _internalComponentSyncCallbacks = new Set<{
   el: HTMLElement;
 }>();
 
+// The LinkTo bindings a classic tag dirty invalidated (`renderLinkToElement`'s
+// classic-tag reactors), re-applied in the run loop's render queue, where
+// Glimmer revalidates them: after the router's work of that run loop, not
+// inside the `set()` that dirtied a tag (which may be in the middle of a
+// transition). Every one runs; the first error is thrown after them.
+const _linkToReapplies = new Set<() => void>();
+function _flushLinkToReapplies(): void {
+  const reapplies = Array.from(_linkToReapplies);
+  _linkToReapplies.clear();
+  const errors: unknown[] = [];
+  for (const reapply of reapplies) {
+    try {
+      reapply();
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  if (errors.length > 0) throw errors[0];
+}
+function _scheduleLinkToReapply(reapply: () => void): void {
+  _linkToReapplies.add(reapply);
+  scheduleOnce('render', null, _flushLinkToReapplies);
+}
+
 // Set of component instances that had .rerender() explicitly called.
 // When non-empty, `_gxtSyncAllWrappers` will fire update hooks for the
 // rerendered component(s) and all their ancestors (matching Ember's
@@ -5277,6 +5301,7 @@ function _gxtDestroyTrackedInstances(): void {
 
   trackedArgCells.clear();
   trackedWrapperInstances.clear();
+  _linkToReapplies.clear();
   _updatedInstances.length = 0;
   _afterInsertQueue.length = 0;
   _allLiveInstances.clear();
@@ -11258,10 +11283,10 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   // The dirty notification may land on a DIFFERENT object (router vs routingService,
   // alias chains, etc.), and GXT's effect scheduler does not reliably pick up
   // classic @glimmer/validator tag dirties — so we use a side-channel reactor
-  // registered per-element that re-applies the reactive attributes whenever
-  // ANY classic tag is dirtied. This keeps href/class/active in sync with
-  // router state and @tracked field mutations without depending on the GXT
-  // formula re-evaluation path.
+  // registered per-element that re-applies the reactive attributes in the
+  // render queue of the run loop in which ANY classic tag is dirtied. This
+  // keeps href/class/active in sync with router state and @tracked field
+  // mutations without depending on the GXT formula re-evaluation path.
   const touchClassicTags = _gxtTouchClassicBridge;
 
   // Register a side-channel reactor that auto-unsubscribes once the element
@@ -11287,27 +11312,39 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   // accumulating further work on the runloop.
   let _totalFires = 0;
   const HARD_CAP = 10_000;
-  const _registerReactor = (cb: () => void) => {
+  // A dirty schedules the re-application into the run loop's render queue
+  // (`_scheduleLinkToReapply`), where Glimmer re-reads a binding. The link
+  // lives as long as its owner: once the application or engine instance is
+  // destroyed, its links render nothing, as Glimmer never revalidates a
+  // destroyed LinkTo.
+  const owner = instance.owner;
+  const ownerDestroyed = (): boolean =>
+    owner !== null && typeof owner === 'object' && _isDestroying(owner);
+  const _registerReactor = (apply: () => void) => {
     let unsub: () => void = () => {};
+    const reapply = () => {
+      if (ownerDestroyed()) unsub();
+      else apply();
+    };
     const wrapped = () => {
       _totalFires++;
-      if (_totalFires > HARD_CAP) {
+      if (_totalFires > HARD_CAP || ownerDestroyed()) {
         unsub();
         return;
       }
       if (el.isConnected) {
         _hasBeenConnected = true;
         _disconnectedTicks = 0;
-        cb();
+        _scheduleLinkToReapply(reapply);
         return;
       }
       if (!_hasBeenConnected) {
-        // Before the element ever lands in the DOM: still fire the
+        // Before the element ever lands in the DOM: still schedule the
         // callback so the latest reactive state is ready the moment the
         // element is inserted. Cap pre-connection firings so we don't
         // leak a reactor on an element that ultimately never gets
         // inserted (e.g., rendered into a discarded branch).
-        cb();
+        _scheduleLinkToReapply(reapply);
         _preConnectTicks++;
         if (_preConnectTicks > 256) {
           unsub();
@@ -11321,7 +11358,11 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         unsub();
       }
     };
-    unsub = (_gxtRegisterClassicReactor as any)(wrapped, 'renderLinkToElement');
+    const unregister = (_gxtRegisterClassicReactor as any)(wrapped, 'renderLinkToElement');
+    unsub = () => {
+      unregister();
+      _linkToReapplies.delete(reapply);
+    };
   };
 
   // id attribute (doesn't change over the element's lifetime, so no reactor).
@@ -11353,18 +11394,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
     touchClassicTags();
     applyClass();
   });
-  // The classic-tag reactor re-applies the class on EVERY classic tag dirty,
-  // including ones in the middle of a transition, where Glimmer renders
-  // nothing: `isActive` throws there while a lazy engine's routes are not
-  // loaded yet. A throw keeps the previous class, reported in DEBUG; the class
-  // binding's effect above reads it again when the template re-renders.
-  _registerReactor(() => {
-    try {
-      applyClass();
-    } catch (error) {
-      _gxtReportDroppedRead("LinkTo's class, re-read on a classic tag dirty,", error);
-    }
-  });
+  _registerReactor(applyClass);
 
   // href attribute
   let _lastHref: any = undefined;

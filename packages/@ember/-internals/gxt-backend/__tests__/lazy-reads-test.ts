@@ -11,9 +11,12 @@
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { ApplicationTestCase, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import type Owner from '@ember/owner';
+import EmberObject, { set } from '@ember/object';
 import templateOnly from '@ember/component/template-only';
+import RoutingService from '@ember/routing/lib/routing-service';
+import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import GlimmerComponent from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
@@ -149,6 +152,54 @@ moduleFor(
       runTask(() => (this.element.querySelector('button') as HTMLButtonElement).click());
       assert.deepEqual(calls, [1], 'the call reaches the callback');
       assert.deepEqual(reads, ['handler'], 'the call reads the callback');
+    }
+  }
+);
+
+moduleFor(
+  'GXT reads: LinkTo',
+  class extends ApplicationTestCase {
+    async ['@test a tag dirtied inside set() re-reads no LinkTo binding there'](
+      assert: QUnit['assert']
+    ) {
+      let calls: string[] = [];
+      let counting = false;
+      this.add(
+        'service:-routing',
+        class extends RoutingService {
+          isActiveForRoute(...args: Parameters<RoutingService['isActiveForRoute']>) {
+            if (counting) calls.push('isActiveForRoute');
+            return super.isActiveForRoute(...args);
+          }
+          generateURL(...args: Parameters<RoutingService['generateURL']>) {
+            if (counting) calls.push('generateURL');
+            return super.generateURL(...args);
+          }
+        }
+      );
+      this.router.map(function (this: any) {
+        this.route('about');
+      });
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @route='about' id='about-link'>About</LinkTo>`)
+      );
+
+      await this.visit('/');
+      let link = this.element.querySelector('#about-link') as HTMLAnchorElement;
+      assert.strictEqual(link.getAttribute('href'), '/about');
+
+      let other = EmberObject.create({ value: 1 });
+      let inSet: string[] = [];
+      runTask(() => {
+        counting = true;
+        set(other, 'value', 2);
+        inSet = calls.slice();
+      });
+      counting = false;
+      assert.deepEqual(inSet, [], 'the set() itself reads no LinkTo binding');
+      assert.strictEqual(link.getAttribute('href'), '/about');
+      assert.notOk(link.classList.contains('active'));
     }
   }
 );
