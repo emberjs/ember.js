@@ -126,6 +126,7 @@ moduleFor(
         ['a', 'b'],
         'each instance has the arguments of its invocation'
       );
+      this.assert.false(instances[0]!.isDestroying, 'the first invocation keeps its instance');
     }
 
     ['@test a classic invocation in the other branch of an {{#if}} gets its own instance']() {
@@ -177,12 +178,14 @@ moduleFor(
         ['a', 'b'],
         'each instance has the arguments of its row'
       );
+      this.assert.false(instances[0]!.isDestroying, 'the first row keeps its instance');
 
       runTask(() => set(this.context, 'list', ['b']));
 
       this.assertText('[b]');
       this.assert.strictEqual(instances.length, 2, 'the remaining row keeps its instance');
       this.assert.strictEqual(instances[1]!.get('value'), 'b');
+      this.assert.false(instances[1]!.isDestroying, 'the remaining row keeps its instance');
       this.assert.true(instances[0]!.isDestroying, 'the removed row destroys its instance');
     }
 
@@ -207,6 +210,7 @@ moduleFor(
         ['a', 'a!'],
         'each instance has the arguments of its row'
       );
+      this.assert.false(instances[0]!.isDestroying, 'the first row keeps its instance');
     }
   }
 );

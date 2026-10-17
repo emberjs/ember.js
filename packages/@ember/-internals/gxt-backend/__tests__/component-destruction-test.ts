@@ -7,7 +7,8 @@
  * it and in the blocks rendered in it, a yielded block's included, in the order
  * they were created. Their managers' scheduled destructors (a Glimmer
  * component's `willDestroy`, scheduled into the `actions` queue) run before the
- * run loop that tore the block down ends.
+ * run loop that tore the block down ends. A component that stays rendered is
+ * not destroyed.
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -16,6 +17,7 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
+import ClassicComponent from '@ember/component';
 
 moduleFor(
   'GXT components are destroyed with their block',
@@ -97,6 +99,40 @@ moduleFor(
 
       this.assertText('');
       this.assert.deepEqual(destroyed, ['b', 'c', 'a'], 'the last row destroys its component');
+    }
+
+    ['@test a tagless classic component is not destroyed while it stays rendered']() {
+      let destroyed: unknown[] = [];
+      this.owner.register(
+        'component:classic-item',
+        setComponentTemplate(
+          precompileTemplate('[{{this.label}}]'),
+          class extends ClassicComponent {
+            tagName = '';
+            declare label: string;
+            willDestroy() {
+              super.willDestroy();
+              destroyed.push(this.label);
+            }
+          }
+        )
+      );
+
+      this.render('{{classic-item label="a"}}{{#if this.show}}{{classic-item label="b"}}{{/if}}', {
+        show: false,
+      });
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][b]');
+      this.assert.deepEqual(destroyed, [], 'the rendered components are live');
+
+      runTask(() => set(this.context, 'show', false));
+
+      this.assertText('[a]');
+      this.assert.notOk(destroyed.includes('a'), 'the component still rendered is live');
     }
   }
 );
