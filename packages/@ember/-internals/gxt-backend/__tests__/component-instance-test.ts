@@ -761,5 +761,130 @@ moduleFor(
       this.assert.deepEqual(hooks, [], 'no component is created or destroyed');
       this.assert.strictEqual(instances[0]!.args.value, 'b', 'its arguments are updated');
     }
+
+    // `component:yield-either`: a tagless classic component yielding
+    // `(if @c <first> <second>)`.
+    registerYieldEither(first: string, second: string) {
+      this.owner.register(
+        'component:yield-either',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (if this.c ${first} ${second})}}`),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+    }
+
+    ['@test a block renders the component of a yielded (if) curried value and replaces it']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+      this.registerYieldEither(
+        '(component "classic-show-arg" value="a")',
+        '(component "classic-show-arg" value="b")'
+      );
+
+      this.render('{{#yield-either c=this.c as |x|}}{{x}}{{/yield-either}}', { c: true });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[b]');
+      this.assert.deepEqual(
+        hooks,
+        ['init b', 'willDestroy a'],
+        'the new curried value renders its own instance, the replaced one is destroyed'
+      );
+
+      runTask(() => set(this.context, 'c', true));
+
+      this.assertText('[a]');
+      this.assert.strictEqual(instances.length, 3, 'each curried value has its own instance');
+      this.assert.true(instances[1]!.isDestroyed, 'the replaced instance is destroyed');
+    }
+
+    ['@test a block renders a yielded (if) value that changes from a curried component to text']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+      this.registerYieldEither('(component "classic-show-arg" value="a")', '"text"');
+
+      this.render('{{#yield-either c=this.c as |x|}}{{x}}{{/yield-either}}', { c: true });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('text');
+      this.assert.deepEqual(hooks, ['willDestroy a'], 'the replaced component is destroyed');
+
+      runTask(() => set(this.context, 'c', true));
+
+      this.assertText('[a]');
+      this.assert.strictEqual(instances.length, 2, 'the curried value renders a new instance');
+    }
+
+    ['@test a block renders the component of a yielded (component this.name) and follows the name']() {
+      let hooks: string[] = [];
+      for (let name of ['first', 'second']) {
+        this.owner.register(
+          `component:${name}-item`,
+          setComponentTemplate(
+            precompileTemplate(`[${name}]`),
+            class extends ClassicComponent {
+              tagName = '';
+              willDestroy() {
+                super.willDestroy();
+                hooks.push(`willDestroy ${name}`);
+              }
+            }
+          )
+        );
+      }
+      this.owner.register(
+        'component:yield-named',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component this.name)}}'),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render('{{#yield-named name=this.name as |x|}}{{x}}{{/yield-named}}', {
+        name: 'first-item',
+      });
+      this.assertText('[first]');
+
+      runTask(() => set(this.context, 'name', 'second-item'));
+
+      this.assertText('[second]');
+      this.assert.deepEqual(hooks, ['willDestroy first'], 'the replaced component is destroyed');
+    }
+
+    ['@test a block renders the component of a yielded (if) curried value in an element']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+      this.registerYieldEither(
+        '(component "classic-show-arg" value="a")',
+        '(component "classic-show-arg" value="b")'
+      );
+
+      this.render('{{#yield-either c=this.c as |x|}}<p>{{x}}</p>{{/yield-either}}', { c: true });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[b]');
+      this.assert.deepEqual(
+        hooks,
+        ['init b', 'willDestroy a'],
+        'the new curried value renders its own instance, the replaced one is destroyed'
+      );
+    }
   }
 );
