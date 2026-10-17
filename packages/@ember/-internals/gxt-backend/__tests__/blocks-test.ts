@@ -198,11 +198,21 @@ moduleFor(
     }
 
     ['@test a block of an invocation by tag binds its params next to a curly invocation']() {
-      // The template's curly block makes gxt compile `<XTwice>` as a component
-      // with a slot function of its own.
+      // gxt compiles the curly block to a component invocation with a slot
+      // function of its own; `<XTwice>` stays a by-name invocation.
       this.registerLayout('x-twice', '{{yield "foo"}}|{{yield ""}}');
       this.render('{{#x-twice as |s|}}A{{s}}{{/x-twice}}/<XTwice as |s|>B{{s}}</XTwice>');
       this.assertText('Afoo|A/Bfoo|B');
+    }
+
+    ['@test a curly block nested in an element or a block gets the params of each yield']() {
+      this.registerLayout('x-twice', '{{yield "foo" 1}}|{{yield "" 2}}');
+      this.render(
+        '<div>{{#x-twice as |s n|}}[{{s}}-{{n}}]{{/x-twice}}</div>' +
+          '{{#if this.show}}<p>{{#x-twice as |s|}}({{s}}){{/x-twice}}</p>{{/if}}',
+        { show: true }
+      );
+      this.assertText('[foo-1]|[-2](foo)|()');
     }
 
     ['@test each {{yield}} to a named block renders it with its own params']() {

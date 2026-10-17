@@ -899,12 +899,11 @@ export const GXT_BLOCK_SCOPE_KEY = '__gxtBlockScope__';
  *
  * A component whose name is in scope (a strict-mode local, a block param)
  * compiles to `$_c` / `$_dc` with its block as a slot function whose arguments
- * are the block params: its params (and its named blocks') are left to gxt. So
- * are those of a tag gxt compiles to `$_c('Name', …)` because the template's
- * top level has a curly block of that component (`{{#foo-bar}}` makes every
- * `<FooBar>` of the template a `$_c('FooBar', …)`: gxt binds the name, as a
- * compat component, in the scope the curly block is in, which is still there
- * when the template's code is generated only for the top level).
+ * are the block params: its params (and its named blocks') are left to gxt.
+ * A curly component block (`{{#foo-bar as |x|}}`) is not an element: gxt
+ * compiles it, at any depth, to `$_c('FooBar', …)` with its block as a slot
+ * function, and a `<FooBar>` element of the same template stays a by-name
+ * invocation bound here.
  *
  * Every block-param binder is scope-stacked (element AND `{{#block as |..|}}`),
  * so an inner binder re-declaring a name shadows the outer one; only the
@@ -929,16 +928,12 @@ function gxtBlockParamsTransform(scopeValues: Record<string, unknown> | undefine
       }
       return null;
     };
-    // The tags gxt compiles to `$_c('Name', …)`: the PascalCase names of the
-    // template's top-level curly component blocks (see the doc comment).
-    const compatComponents = new Set<string>();
-    // A tag naming a component in scope: a scope value, a block param, or a
-    // component gxt binds for the template's curly blocks.
+    // A tag naming a component in scope: a scope value or a block param.
     const isLexicalTag = (tag: string): boolean => {
       const dot = tag.indexOf('.');
       const head = dot === -1 ? tag : tag.slice(0, dot);
       if (scopeValues && Object.prototype.hasOwnProperty.call(scopeValues, head)) return true;
-      return resolve(head) !== null || compatComponents.has(tag);
+      return resolve(head) !== null;
     };
     // Rewrite a yielded contextual-component tag `<param.Foo …>` → `<__gxtBp1.$_bp0.Foo …>`,
     // and a tag that is the param itself, `<param …>` → `<__gxtBp1.$_bp0 …>`: as in
@@ -976,23 +971,6 @@ function gxtBlockParamsTransform(scopeValues: Record<string, unknown> | undefine
     return {
       name: 'ember-gxt-block-params',
       visitor: {
-        Template(node: any): void {
-          for (const statement of node.body || []) {
-            if (statement.type !== 'BlockStatement') continue;
-            const p = statement.path;
-            if (!p || p.type !== 'PathExpression' || !p.head || p.head.type !== 'VarHead') {
-              continue;
-            }
-            const name: string = p.head.name;
-            if (p.tail.length !== 0 || !name.includes('-')) continue;
-            compatComponents.add(
-              name
-                .split('-')
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join('')
-            );
-          }
-        },
         ElementNode: {
           enter(node: any, path: any): void {
             rewriteTag(node);
