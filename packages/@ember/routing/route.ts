@@ -1060,20 +1060,18 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
         // every `@computed` getter on the controller — breaking templates that
         // read things like `this.allSitesAllArticles`.
         m.proto = correctProto;
-        try {
-          Object.defineProperty(m, 'proto', {
-            get() {
-              return correctProto;
-            },
-            set(_v) {
-              /* ignore — see comment above */
-            },
-            configurable: true,
-            enumerable: false,
-          });
-        } catch {
-          /* already non-configurable — best effort */
-        }
+        // `proto` is a configurable property of the meta (a data property, or
+        // this accessor from an earlier setup), so it can be redefined.
+        Object.defineProperty(m, 'proto', {
+          get() {
+            return correctProto;
+          },
+          set(_v) {
+            /* ignore — see comment above */
+          },
+          configurable: true,
+          enumerable: false,
+        });
       }
     }
 

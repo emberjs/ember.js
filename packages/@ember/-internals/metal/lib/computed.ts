@@ -467,13 +467,9 @@ export class ComputedProperty extends ComputedDescriptor {
         // genuine class prototype keeps that invariant; a mutated meta
         // loses it, and we fall through to run the user getter as usual.
         if (meta.isPrototypeMeta(obj)) {
-          let originalProto: unknown = undefined;
-          try {
-            const ctor = (obj as any).constructor;
-            if (ctor !== undefined) originalProto = ctor.prototype;
-          } catch {
-            /* leave originalProto undefined */
-          }
+          // The Meta constructor reads `obj.constructor` the same way.
+          const ctor = (obj as any).constructor;
+          const originalProto: unknown = ctor === undefined ? undefined : ctor.prototype;
           if (meta.proto === originalProto) {
             consumeTag(propertyTag);
             return undefined;
