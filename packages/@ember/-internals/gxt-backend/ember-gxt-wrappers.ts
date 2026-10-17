@@ -1243,22 +1243,18 @@ function createEmberMaybeHelper(original: Function) {
           // This enables recompute() to trigger re-evaluation of the same instance.
           let instance = liveHelperEntry(instances.get(instanceKey));
           if (!instance || instance.__managerBucket === true) {
-            try {
-              instance = factory.create();
-              instances.set(instanceKey, instance);
-              // Also record the instance for destruction (see
-              // `pushHelperInstance` in gxt-bridge.ts).
-              getGxtRenderer()?.compilePipeline.pushHelperInstance?.(instance);
-              // If this helper was created during an `{{#if}}` branch render,
-              // associate it with that branch's teardown scope so destroy +
-              // willDestroy fire on branch swap (not only on component teardown).
-              const ifScope = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
-              if (ifScope && typeof ifScope.add === 'function') {
-                ifScope.add(instance);
-              }
-            } catch (e) {
-              console.error(`[ember-gxt] Error creating class helper "${name}":`, e);
-              return undefined;
+            // What the class's `create` throws reaches the render.
+            instance = factory.create();
+            instances.set(instanceKey, instance);
+            // Also record the instance for destruction (see
+            // `pushHelperInstance` in gxt-bridge.ts).
+            getGxtRenderer()?.compilePipeline.pushHelperInstance?.(instance);
+            // If this helper was created during an `{{#if}}` branch render,
+            // associate it with that branch's teardown scope so destroy +
+            // willDestroy fire on branch swap (not only on component teardown).
+            const ifScope = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
+            if (ifScope && typeof ifScope.add === 'function') {
+              ifScope.add(instance);
             }
           }
 
@@ -1293,16 +1289,13 @@ function createEmberMaybeHelper(original: Function) {
         // Plain function registered directly via owner.register('helper:name', fn).
         // Ember allows registering a bare function — treat it like a default
         // function helper (positional args spread, named args as last arg).
+        // What the function throws reaches the render.
         if (
           typeof factoryClass === 'function' &&
           (!factoryClass.prototype || typeof factoryClass.prototype.compute !== 'function')
         ) {
-          try {
-            const hasNamed = named && Object.keys(named).length > 0;
-            return hasNamed ? factoryClass(...positional, named) : factoryClass(...positional);
-          } catch (e) {
-            console.error(`[ember-gxt] Error invoking plain-function helper "${name}":`, e);
-          }
+          const hasNamed = named && Object.keys(named).length > 0;
+          return hasNamed ? factoryClass(...positional, named) : factoryClass(...positional);
         }
 
         // Helper was found in registry but couldn't be invoked
