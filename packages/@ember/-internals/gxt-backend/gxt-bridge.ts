@@ -58,6 +58,54 @@ export const GXT_VIEW_SKIP_KEYS: readonly string[] = [
 ];
 
 /**
+ * Defines, on the render context of a route template (`Object.create(
+ * controller)`), each getter of the controller's class that the context does
+ * not define: read with the controller as `this` (a `@tracked` property keeps
+ * its value per instance, an `@action` binds the controller), and only when
+ * the template reads it, as Glimmer reads `this.x`. The first read keeps the
+ * value in the context's cell for the key (`cellFor`), which a change of the
+ * controller's properties updates (compile.ts `_gxtTriggerReRenderSyncCore`);
+ * a getter the template never reads never runs.
+ */
+export function defineControllerGetters(
+  context: object,
+  controller: object,
+  cellFor: (obj: object, key: string, skipDefine: boolean) => unknown,
+  skipKeys: ReadonlySet<string>
+): void {
+  const seen = new Set<string>();
+  let proto = Object.getPrototypeOf(controller);
+  while (proto !== null && proto !== Object.prototype) {
+    for (const key of Object.getOwnPropertyNames(proto)) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+      if (!Object.getOwnPropertyDescriptor(proto, key)?.get) continue;
+      if (Object.getOwnPropertyDescriptor(context, key)) continue;
+      const hold = (value: unknown): void => {
+        Object.defineProperty(context, key, {
+          value,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+        cellFor(context, key, false);
+      };
+      Object.defineProperty(context, key, {
+        get() {
+          hold((controller as Record<string, unknown>)[key]);
+          return (context as Record<string, unknown>)[key];
+        },
+        set: hold,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+    proto = Object.getPrototypeOf(proto);
+  }
+}
+
+/**
  * Teardown of component instances and destroyables. Implemented by manager.ts.
  */
 export interface GxtDestructionCapabilities {

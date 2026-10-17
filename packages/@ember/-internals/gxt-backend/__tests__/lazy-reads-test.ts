@@ -15,6 +15,7 @@ import { ApplicationTestCase, moduleFor, RenderingTestCase, runTask } from 'inte
 import type Owner from '@ember/owner';
 import EmberObject, { computed, defineProperty, set } from '@ember/object';
 import Component from '@ember/component';
+import Controller from '@ember/controller';
 import templateOnly from '@ember/component/template-only';
 import RoutingService from '@ember/routing/lib/routing-service';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -271,6 +272,43 @@ moduleFor(
       runTask(() => (root!.value = 'b'));
       assert.strictEqual(input.value, 'b');
       assert.deepEqual(reads, [], 'the argument is not read');
+    }
+  }
+);
+
+moduleFor(
+  "GXT reads: a route template's controller",
+  class extends ApplicationTestCase {
+    async ['@test a getter the template does not read is not read'](assert: QUnit['assert']) {
+      let reads: string[] = [];
+      class ReadsController extends Controller {
+        @tracked count = 1;
+        get shown() {
+          reads.push('shown');
+          return `shown${this.count}`;
+        }
+        get unread() {
+          reads.push('unread');
+          return 'unread';
+        }
+      }
+      this.add('controller:application', class extends ReadsController {});
+      this.add('controller:index', class extends ReadsController {});
+      this.add('template:application', precompileTemplate('[{{this.shown}}]{{outlet}}'));
+      this.add('template:index', precompileTemplate('({{this.shown}})'));
+
+      await this.visit('/');
+      this.assertText('[shown1](shown1)');
+      assert.notOk(reads.includes('unread'), 'rendering reads no other getter');
+
+      let application = this.applicationInstance!.lookup('controller:application') as any;
+      let index = this.applicationInstance!.lookup('controller:index') as any;
+      runTask(() => {
+        application.count = 2;
+        index.count = 3;
+      });
+      this.assertText('[shown2](shown3)');
+      assert.notOk(reads.includes('unread'), 'a change reads no other getter');
     }
   }
 );

@@ -4789,6 +4789,11 @@ function _gxtTriggerReRenderSyncCore(
           p = Object.getPrototypeOf(p);
         }
         if (!protoGetter) continue;
+        // Only a getter a template read has a cell here (`cellFor` on the
+        // read, or a route template's `defineControllerGetters`): one no
+        // template reads is not run.
+        const oc = _gxtPeekTagFor(cellTarget, ownKey);
+        if (oc === undefined) continue;
         // Read the getter as the context's first render read it: with
         // `obj`, the object the context derives from, as `this`. root.ts
         // copies a controller's getter values into its route template's
@@ -4797,9 +4802,11 @@ function _gxtTriggerReRenderSyncCore(
         // context, and the action's writes then shadow the controller's
         // properties instead of setting them.
         //
-        // Every sibling getter is read, also ones no template reads (a
-        // change runs none of them in Glimmer): one that throws keeps its
-        // cell, and the template's read of it throws to the render.
+        // A change runs the getters a template read again, here rather than
+        // when the template re-reads them (Glimmer re-runs a getter whose tags
+        // changed, at the revalidation): one that throws in the new state (a
+        // branch that read it is going away) keeps its cell, reported in
+        // DEBUG, and the template's read of it throws to the render.
         let freshVal: unknown;
         try {
           freshVal = protoGetter.call(obj);
@@ -4807,8 +4814,7 @@ function _gxtTriggerReRenderSyncCore(
           if (DEBUG) _gxtReportDroppedRead(`The \`${ownKey}\` getter`, error);
           continue;
         }
-        const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
-        if (oc) oc.update(freshVal);
+        oc.update(freshVal);
       }
     } finally {
       _innerSiblingRescanDepth--;

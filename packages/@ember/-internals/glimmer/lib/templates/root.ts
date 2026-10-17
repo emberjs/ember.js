@@ -12,6 +12,7 @@ import {
   setCurrentOutletState,
   setAmbientOwner,
   setControllerOutletRerender,
+  defineControllerGetters,
   GXT_ARGS_SYMBOL,
   GXT_CONTEXT_SKIP_KEYS,
   GXT_VIEW_SKIP_KEYS,
@@ -802,50 +803,13 @@ function createRootTemplate(_owner: any) {
         }
       }
 
-      // Fix for @tracked properties on controller prototype:
-      // Object.create(controller) makes prototype getters run with `this = renderContext`
-      // instead of `this = controller`. The @tracked getter's storage is keyed by
-      // `this`, so it creates a fresh storage entry for renderContext and returns the
-      // initial value (e.g., `false` for `@tracked isExpanded = false`), ignoring the
-      // actual current value on the controller (e.g., `true` after a toggle click).
-      //
-      // Fix: iterate the controller's prototype chain, find getter-based properties
-      // (likely @tracked), read the ACTUAL current value from `controller` (with the
-      // correct `this`), and update the GXT cell on renderContext to that value.
-      // This must happen BEFORE renderTemplateWithContext so the initial render sees
-      // the correct values.
+      // The controller's getters, read with the controller as `this` when the
+      // template reads them (`defineControllerGetters`): through the prototype
+      // chain they would run with the render context as `this`, where a
+      // `@tracked` property has a fresh storage entry and its initial value.
+      // Before renderTemplateWithContext, so the initial render reads them.
       if (controller && _cellFor) {
-        try {
-          const visitedKeys = new Set<string>();
-          let proto = Object.getPrototypeOf(controller);
-          while (proto && proto !== Object.prototype) {
-            for (const key of Object.getOwnPropertyNames(proto)) {
-              if (visitedKeys.has(key)) continue;
-              visitedKeys.add(key);
-              if (key.startsWith('_') || key.startsWith('$')) continue;
-              const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
-              // Only process getter-only or getter+setter properties (likely @tracked)
-              if (!protoDesc?.get) continue;
-              // Don't override already-installed own properties on renderContext
-              if (Object.getOwnPropertyDescriptor(renderContext, key)) continue;
-              try {
-                // Read the actual value using the controller as `this`, not renderContext,
-                // so the controller's own storage is read instead of a fresh entry.
-                const actualValue = (controller as any)[key];
-                // Install a GXT cell on renderContext for this key
-                _cellFor(renderContext, key, /* skipDefine */ false);
-                // Update the cell to the actual current value from the controller
-                const cell = _cellFor(renderContext, key, /* skipDefine */ true);
-                if (cell) cell.update(actualValue);
-              } catch {
-                /* ignore */
-              }
-            }
-            proto = Object.getPrototypeOf(proto);
-          }
-        } catch {
-          /* ignore */
-        }
+        defineControllerGetters(renderContext, controller, _cellFor, new Set<string>());
       }
 
       // Set the current outlet state for nested <ember-outlet> elements

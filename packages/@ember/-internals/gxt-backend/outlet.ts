@@ -26,7 +26,7 @@
 // hooks (`setRouteOutletHooks`), installed when compile.ts loads it.
 import { getOwner, type InternalOwner } from '@ember/-internals/owner';
 import { set } from '@ember/-internals/metal';
-import { assert, warn } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
@@ -46,6 +46,7 @@ import {
   getAmbientOwner,
   setAmbientOwner,
   setRouteOutletHooks,
+  defineControllerGetters,
   GXT_CONTEXT_SKIP_KEYS,
 } from './gxt-bridge';
 
@@ -246,49 +247,16 @@ function classicLevelContext(nestedOutlet: GxtOutletState): any {
   nestedContext.outletState = nestedOutlet;
   nestedContext.args = withOutletArg({ model, controller, outletState: nestedOutlet });
 
-  // Fix for @tracked properties on controller prototype:
-  // Object.create(controller) makes prototype getters run with `this = nestedContext`
-  // instead of `this = controller`. The @tracked getter's storage is keyed by `this`,
-  // so it creates a fresh storage entry for nestedContext with the initial value
-  // (e.g., `false` for `@tracked isExpanded = false`), ignoring the actual current
-  // value on the controller (e.g., `true` after a toggle click).
-  //
-  // Fix: install GXT cells on nestedContext with the ACTUAL current values from controller.
-  if (controller) {
-    const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-    if (_cellFor) {
-      const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, 'model']);
-      const visited = new Set<string>();
-      let proto = Object.getPrototypeOf(controller);
-      while (proto && proto !== Object.prototype) {
-        for (const key of Object.getOwnPropertyNames(proto)) {
-          if (visited.has(key)) continue;
-          visited.add(key);
-          if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
-          const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
-          if (!protoDesc?.get) continue;
-          if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
-          try {
-            // Read the actual value from controller (not through nestedContext prototype)
-            const actualValue = (controller as any)[key];
-            // Install GXT cell on nestedContext and set it to the actual value
-            _cellFor(nestedContext, key, /* skipDefine */ false);
-            const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
-            if (cell) cell.update(actualValue);
-          } catch (error) {
-            // Every getter of the controller is read here, also ones the
-            // template never reads (Glimmer runs none of them). A getter that
-            // throws keeps no cell; a template read of it throws to the render.
-            if (DEBUG) {
-              warn(`Reading \`${key}\` of a route's controller threw: ${String(error)}`, false, {
-                id: 'ember-gxt.route-controller-getter',
-              });
-            }
-          }
-        }
-        proto = Object.getPrototypeOf(proto);
-      }
-    }
+  // The controller's getters, read with the controller as `this` when the
+  // template reads them.
+  const cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+  if (controller && cellFor) {
+    defineControllerGetters(
+      nestedContext,
+      controller,
+      cellFor,
+      new Set([...GXT_CONTEXT_SKIP_KEYS, 'model'])
+    );
   }
 
   return nestedContext;
