@@ -20,7 +20,9 @@
 import { defineSimpleModifier, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
 import { helper } from '@ember/component/helper';
+import { capabilities as helperCapabilities, setHelperManager } from '@ember/helper';
 import { htmlSafe } from '@ember/template';
+import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@ember/component';
 import templateOnly from '@ember/component/template-only';
 
@@ -36,6 +38,19 @@ function fragmentOf(...nodes: Node[]): DocumentFragment {
   let fragment = document.createDocumentFragment();
   for (let node of nodes) fragment.appendChild(node);
   return fragment;
+}
+
+// An object helper definition (as `fn`, `hash`, … of @ember/helper are)
+// whose value is `helped`.
+function objectHelperDefinition(): object {
+  return setHelperManager(
+    () => ({
+      capabilities: helperCapabilities('3.23', { hasValue: true }),
+      createHelper: () => ({}),
+      getValue: () => 'helped',
+    }),
+    {}
+  );
 }
 
 moduleFor(
@@ -207,6 +222,26 @@ moduleFor(
 
       runTask(() => set(this.context, 'value', 'text again'));
       this.assertHTML('<div>text again</div>');
+    }
+
+    ['@test a helper definition value renders the helper invoked without arguments']() {
+      this.render('<p>{{this.definition}}</p>[{{this.definition}}]', {
+        definition: objectHelperDefinition(),
+      });
+      this.assertHTML('<p>helped</p>[helped]');
+    }
+
+    ['@test a helper definition in a strict template renders the helper invoked without arguments']() {
+      let def = objectHelperDefinition();
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('{{def}}<p>{{def}}</p>', { strictMode: true, scope: () => ({ def }) }),
+          templateOnly()
+        )
+      );
+      this.render('<Bar />');
+      this.assertHTML('helped<p>helped</p>');
     }
 
     ['@test text content keeps its text node while the value stays text']() {

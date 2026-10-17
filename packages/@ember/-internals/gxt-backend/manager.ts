@@ -8822,6 +8822,29 @@ const $_MANAGERS = {
             };
             return _curryFnHelper(resolvedFn, params, hash);
           }
+
+          // An internal helper (`fn`, `hash`, `array`, `concat`, … of
+          // @ember/helper as values, `setInternalHelperManager(helperFn, {})`):
+          // its manager is the helper function itself, which takes the
+          // captured arguments as references and returns a reference.
+          if (typeof internalManager === 'function') {
+            const internalHelper = internalManager as (args: object, owner: unknown) => unknown;
+            const resolvedFn = (positional: any[], named: any) => {
+              const positionalRefs = positional.map((value) =>
+                _createConstRef(value, DEBUG ? 'helper-arg' : false)
+              );
+              const namedRefs: Record<string, unknown> = {};
+              for (const key of Object.keys(named || {})) {
+                namedRefs[key] = _createConstRef(named[key], DEBUG ? key : false);
+              }
+              const ref = internalHelper(
+                { positional: positionalRefs, named: namedRefs, length: positionalRefs.length },
+                owner
+              );
+              return _isGlimmerRef(ref) ? _valueForRefForManager(ref as any) : ref;
+            };
+            return _curryFnHelper(resolvedFn, params, hash);
+          }
         }
       }
 

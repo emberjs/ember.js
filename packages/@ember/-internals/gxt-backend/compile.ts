@@ -3526,6 +3526,18 @@ function _gxtHasHelperManager(value: object): boolean {
   return _gxtHasManagerIn(getGxtRenderer()?.registries.internalHelperManagers, value);
 }
 
+// Whether a content value is a helper definition Glimmer's dynamic content
+// invokes without arguments: it has a helper manager and is not a component
+// definition (Glimmer's `toDynamicContentType` checks the component first).
+function _gxtIsHelperDefinition(value: unknown): boolean {
+  return (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    _gxtHasHelperManager(value as object) &&
+    !_gxtIsComponentDefinition(value)
+  );
+}
+
 // Whether a modifier manager is associated with `value` or a prototype of it
 // (`setModifierManager` / `setInternalModifierManager`).
 function _gxtHasModifierManager(value: object): boolean {
@@ -3624,6 +3636,22 @@ function _gxtContentFunctionValue(fn: Function, helper: _GxtContentHelper | null
   }
   if (_gxtHasHelperManager(fn)) return (globalThis as any).$_maybeHelper(fn, [], {});
   return fn();
+}
+
+// What an object helper definition (`fn`, `hash`, … of @ember/helper as a
+// value, an object with a helper manager) renders: the value of the helper
+// invoked without arguments, as Glimmer's dynamic content does. With the
+// binding's `helper`, a helper whose manager has a delegate is rendered through
+// the instance the binding owns, as a function helper value is.
+function _gxtContentObjectHelperValue(
+  definition: object,
+  helper: _GxtContentHelper | null
+): unknown {
+  if (helper !== null) {
+    const value = _gxtOwnedHelperValue(definition, helper);
+    if (value !== _GXT_NOT_OWNED) return value;
+  }
+  return (globalThis as any).$_maybeHelper(definition, [], {});
 }
 
 function _gxtContentKind(value: unknown): _GxtContentKind {
@@ -3878,12 +3906,12 @@ function _gxtContentText(value: unknown): unknown {
 
 // The value of a content binding: what `read` returns, with a function value
 // taken as `_gxtContentFunctionValue` takes it (a component definition stays,
-// a helper definition is invoked, another function is called), and a gxt cell
-// read: a block parameter of a build-time template is the cell
-// of the yielded value. The objects the cells it read hold become their
-// value-owners (`_gxtRegisterLeafOwners`) on every evaluation, so after
-// `set(context, 'page', newPage)` a change of `newPage.title` updates
-// `{{this.page.title}}`.
+// a helper definition is invoked, another function is called), an object
+// helper definition invoked too, and a gxt cell read: a block parameter of a
+// build-time template is the cell of the yielded value. The objects the cells
+// it read hold become their value-owners (`_gxtRegisterLeafOwners`) on every
+// evaluation, so after `set(context, 'page', newPage)` a change of
+// `newPage.title` updates `{{this.page.title}}`.
 function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null = null): unknown {
   if (helper !== null) helper.used = false;
   let value = read();
@@ -3893,6 +3921,14 @@ function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null 
       if (next === value) break;
       value = next;
     } else if (value !== null && typeof value === 'object') {
+      // An object helper definition renders the value of the helper invoked
+      // without arguments (`_gxtContentObjectHelperValue`).
+      if (_gxtIsHelperDefinition(value)) {
+        const next = _gxtContentObjectHelperValue(value, helper);
+        if (next === value) break;
+        value = next;
+        continue;
+      }
       const cellValue = _gxtUnwrapCell(value);
       if (cellValue === value) break;
       value = cellValue;
@@ -3909,7 +3945,8 @@ function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null 
 
 // What the result of a content mustache's getter renders as, taken as the
 // content binding takes its value (`_gxtContentValue`): a function result as
-// `_gxtContentFunctionValue` takes it, and a gxt cell result read. A block
+// `_gxtContentFunctionValue` takes it, an object helper definition invoked
+// (`_gxtContentObjectHelperValue`), and a gxt cell result read. A block
 // parameter of a build-time template is the cell of the yielded value when that
 // value is not constant (gxt `$_slot`), as for `{{yield (if this.c (component
 // "a") (component "b"))}}`; the block's `{{x}}` renders the value the cell
@@ -3917,6 +3954,7 @@ function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null 
 function _gxtContentResult(result: unknown, helper: _GxtContentHelper | null): unknown {
   if (typeof result === 'function') return _gxtContentFunctionValue(result, helper);
   if (result === null || typeof result !== 'object') return result;
+  if (_gxtIsHelperDefinition(result)) return _gxtContentObjectHelperValue(result, helper);
   const value = _gxtUnwrapCell(result);
   return value === result ? result : _gxtContentResult(value, helper);
 }
@@ -4091,7 +4129,8 @@ function _gxtRenderContentChild(
 // A content mustache that gxt renders itself (at the top level of a
 // build-time template or of a block, a yielded block param there) renders
 // what its value is, as Glimmer's dynamic content: text, the HTML of a
-// SafeString, a DOM node or the nodes of a fragment, switching kind in place.
+// SafeString, a DOM node or the nodes of a fragment, switching kind in place,
+// or the value of a helper definition invoked without arguments (`{{fn}}`).
 // gxt's own dynamic-content binding renders it; a SafeString is trusted HTML.
 // It does not make the runtime gxt's native one.
 _gxtRegisterHostHooks({
@@ -4099,7 +4138,9 @@ _gxtRegisterHostHooks({
   classifyContent: (value: unknown) =>
     value !== null && typeof value === 'object' && typeof (value as any).toHTML === 'function'
       ? 'html'
-      : undefined,
+      : _gxtIsHelperDefinition(value)
+        ? 'helper'
+        : undefined,
 });
 
 function _gxtIsInTriggerReRender(): boolean {
