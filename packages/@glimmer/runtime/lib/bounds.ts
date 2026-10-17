@@ -1,10 +1,10 @@
-import type { Bounds, Cursor, Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import type { Bounds, Cursor, Nullable, SimpleNode, SimpleParentNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 
 export class CursorImpl implements Cursor {
   constructor(
-    public element: SimpleElement,
+    public element: SimpleParentNode,
     public nextSibling: Nullable<SimpleNode>
   ) {
     setLocalDebugType('cursor', this);
@@ -15,12 +15,12 @@ export type DestroyableBounds = Bounds;
 
 export class ConcreteBounds implements Bounds {
   constructor(
-    public parentNode: SimpleElement,
+    public parentNode: SimpleParentNode,
     private first: SimpleNode,
     private last: SimpleNode
   ) {}
 
-  parentElement(): SimpleElement {
+  parentElement(): SimpleParentNode {
     return this.parentNode;
   }
 
