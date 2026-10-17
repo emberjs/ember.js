@@ -2723,10 +2723,9 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
       // component's click handler calls (mut this.val).
       const parentRenderCtx = _gxtHashGetterCtx || _gxtLastRenderContext;
 
-      // Collect named args from hash (keep getters for reactivity).
-      // Also eagerly evaluate each getter to establish GXT cell tracking
-      // in the calling formula's context — this ensures the parent template
-      // re-evaluates when curried arg dependencies change.
+      // Collect named args from hash, as getters: as in Glimmer (a curried
+      // argument is a reference), an argument is read when the component reads
+      // it, and the read subscribes the reader to it.
       const namedArgs: Record<string, any> = {};
       if (hash) {
         for (const key of Object.keys(hash)) {
@@ -2736,21 +2735,11 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           if (typeof val === 'function' && !val.prototype && parentRenderCtx) {
             (val as any).__mutParentCtx = parentRenderCtx;
           }
-          // Touch the value to track the cell dependency. The component reads
-          // its arguments lazily (Glimmer reads none here), so a getter that
-          // throws is skipped; the component's read of it throws.
-          if (typeof val === 'function' && !val.prototype) {
-            try {
-              val();
-            } catch (error) {
-              _gxtReportDroppedRead(`The curried \`${key}\` argument`, error);
-            }
-          }
         }
       }
 
-      // Collect remaining positional params (after the first which is the component ref)
-      // For each positional getter, also store a setter if derivable (for mut support).
+      // Collect remaining positional params (after the first which is the
+      // component ref), also as getters.
       const positionals: any[] = [];
       for (let i = 1; i < params.length; i++) {
         const p = params[i];
@@ -2759,15 +2748,6 @@ function _gxtCachedReference(factory: () => unknown): () => unknown {
           (p as any).__mutParentCtx = parentRenderCtx;
         }
         positionals.push(p);
-        // Touch positional values to track cell dependencies (skipped when
-        // it throws, as a named argument is).
-        if (typeof p === 'function' && !p.prototype) {
-          try {
-            p();
-          } catch (error) {
-            _gxtReportDroppedRead('A curried positional argument', error);
-          }
-        }
       }
 
       // Validate that a string component name can be resolved.
