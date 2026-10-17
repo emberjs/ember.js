@@ -23,6 +23,8 @@ import { setComponentTemplate } from '@glimmer/manager';
 import GlimmerComponent from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 
+declare const expectNoWarning: (fn: () => void) => void;
+
 moduleFor(
   'GXT reads: a value rendered as content',
   class extends RenderingTestCase {
@@ -309,6 +311,43 @@ moduleFor(
       });
       this.assertText('[shown2](shown3)');
       assert.notOk(reads.includes('unread'), 'a change reads no other getter');
+    }
+  }
+);
+
+moduleFor(
+  'GXT reads: a contextual component in a (hash)',
+  class extends RenderingTestCase {
+    ['@test reading its argument does not read it again'](assert: QUnit['assert']) {
+      let reads = 0;
+      class Root extends GlimmerComponent {
+        get isOpen() {
+          reads++;
+          return true;
+        }
+      }
+      this.owner.register(
+        'component:x-open',
+        setComponentTemplate(
+          this.compile('{{if @isOpen "open" "closed"}}'),
+          class extends GlimmerComponent {}
+        )
+      );
+      this.owner.register(
+        'component:root',
+        setComponentTemplate(
+          this.compile(
+            '{{#let (hash open=(component "x-open" isOpen=this.isOpen)) as |thing|}}' +
+              '{{#thing.open}}{{/thing.open}}{{/let}}'
+          ),
+          Root
+        )
+      );
+
+      // A read that no template does is reported in DEBUG when it throws.
+      expectNoWarning(() => this.render('<Root />'));
+      this.assertText('open');
+      assert.ok(reads <= 3, `the argument is read once per use (read ${reads} times)`);
     }
   }
 );

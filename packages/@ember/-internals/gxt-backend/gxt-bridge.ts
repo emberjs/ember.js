@@ -311,6 +311,16 @@ export interface GxtCompilePipelineCapabilities {
   /** Classic `dirtyTagFor`, but a no-op while the view tree is rebuilt from the DOM. */
   classicDirtyTagFor(obj: object, key: string | symbol): void;
 
+  /** The `this` of the template rendering now. */
+  currentTemplateThis?(): unknown;
+
+  /**
+   * Run `fn` with `context` as the `this` of the template rendering now: a
+   * getter a template created reads its `(hash)` members' paths on it
+   * (compile.ts `$__hash_ember`) when another template's render runs it.
+   */
+  withTemplateThis?<T>(context: unknown, fn: () => T): T;
+
   /** GXT's `cellFor(obj, key)`: the reactive cell backing a property. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cellFor(obj: object, key: string | symbol, debug?: boolean): any;

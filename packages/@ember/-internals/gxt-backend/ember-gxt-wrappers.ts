@@ -2437,6 +2437,17 @@ function createEmberDc(original: Function) {
   }
 
   return function $_dc_ember(componentGetter: () => any, gxtArgs: any, ctx: any): any {
+    // The component getter belongs to the template rendering now: every read
+    // of it runs with that template as the current one, also a later one (a
+    // sync's re-read, a curried argument read in the component's own render,
+    // manager.ts `handle`), so a `(hash)` it builds walks its members' paths
+    // on that template's `this` (compile.ts `$__hash_ember`).
+    const pipeline = getGxtRenderer()?.compilePipeline;
+    const templateThis = pipeline?.currentTemplateThis?.();
+    const readComponent =
+      typeof componentGetter === 'function' && pipeline?.withTemplateThis
+        ? () => pipeline.withTemplateThis!(templateThis, componentGetter)
+        : componentGetter;
     // Inject $PROPS_SYMBOL on args so GXT's $_c (component function) can find them.
     // (Not on frozen args, which cannot take it.)
     if (
@@ -2459,7 +2470,7 @@ function createEmberDc(original: Function) {
     let componentValue: any;
     let reads: DcReads;
     try {
-      ({ value: componentValue, reads } = readDcValue(componentGetter));
+      ({ value: componentValue, reads } = readDcValue(readComponent));
     } catch (error) {
       captureDcError(error);
       throw error;
@@ -2554,7 +2565,7 @@ function createEmberDc(original: Function) {
       typeof componentValue === 'object' ||
       typeof componentValue === 'function'
     ) {
-      return followDefinition(componentGetter, gxtArgs, ctx, componentValue, kind, reads);
+      return followDefinition(readComponent, gxtArgs, ctx, componentValue, kind, reads);
     }
 
     // Any other value (a number, `true`) goes to GXT's native $_dc.

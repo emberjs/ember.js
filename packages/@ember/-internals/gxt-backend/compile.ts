@@ -3152,6 +3152,17 @@ let _gxtCurrentTemplateThis: any = null;
 // host hook, through which gxt reads the module-local.
 const _gxtGetTemplateThisFn = () => _gxtCurrentTemplateThis;
 _gxtRegisterHostHooks({ getCurrentTemplateThis: _gxtGetTemplateThisFn });
+// Run `fn` with `context` as the current template `this` (the bridge's
+// `compilePipeline.withTemplateThis`).
+function _gxtWithTemplateThis<T>(context: unknown, fn: () => T): T {
+  const prev = _gxtCurrentTemplateThis;
+  _gxtCurrentTemplateThis = context;
+  try {
+    return fn();
+  } finally {
+    _gxtCurrentTemplateThis = prev;
+  }
+}
 
 // Shared subscription-recovery for non-text effect sites ($_attr attribute
 // effect, {{{html-raw}}} effect): run `getter` under a capture tracker frame
@@ -14092,6 +14103,8 @@ _gxtRegisterHostHooks({
 });
 installCompilePipelinePart({
   compileTemplate: compileTemplate,
+  currentTemplateThis: _gxtGetTemplateThisFn,
+  withTemplateThis: _gxtWithTemplateThis,
   resetIntervalBudget: _gxtResetIntervalBudget,
   registerArrayOwner: registerArrayOwner,
   registerObjectValueOwner: registerObjectValueOwner,
