@@ -298,6 +298,23 @@ export const CURRENT_TAG = new CurrentTag();
 
 export const combine = MonomorphicTagImpl.combine;
 
+/**
+ * Whether `tag` is the combination of the first `size` entries of `tags`, in order.
+ */
+export function isCombinationOf(tag: Tag, tags: (Tag | null)[], size: number): boolean {
+  if (tag[TYPE] !== COMBINATOR_TAG_ID) return false;
+
+  let subtags = (tag as MonomorphicTagImpl).subtag as Tag[];
+
+  if (subtags.length !== size) return false;
+
+  for (let i = 0; i < size; i++) {
+    if (subtags[i] !== tags[i]) return false;
+  }
+
+  return true;
+}
+
 // Warm
 
 let tag1 = createUpdatableTag();

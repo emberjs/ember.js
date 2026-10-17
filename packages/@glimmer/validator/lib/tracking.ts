@@ -5,7 +5,14 @@ import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
+import {
+  combine,
+  CONSTANT_TAG,
+  isCombinationOf,
+  isConstTag,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
  * A tag with the `slot` field that `Tracker#add` reads and writes.
@@ -15,6 +22,30 @@ import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './v
  */
 interface ConsumedTag extends Tag {
   slot: number;
+}
+
+/**
+ * Makes the tag of a frame that consumed two or more tags.
+ *
+ * `previous` is the tag that the frame produced the last time it ran.
+ * If the frame consumed the same tags again, in the same order,
+ * the result is `previous`.
+ * That tag keeps its memoized revision, and nothing is allocated.
+ *
+ *   1. last run:  consumed [ a, b, c ]    result: tag X.
+ *   2. this run:  consumed [ a, b, c ]    result: tag X again.
+ *   3. or:        consumed [ a, c ]       result: a new tag.
+ *
+ * This code is not in `Tracker#combineForCache`, to keep that method small.
+ * V8 puts a small method inline into the end of the frame.
+ * With this code in it, a frame that consumed one tag was 6% slower.
+ */
+function combineOrReuse(previous: Tag | undefined, tags: (Tag | null)[], size: number): Tag {
+  if (previous !== undefined && isCombinationOf(previous, tags, size)) {
+    return previous;
+  }
+
+  return combine(tags.slice(0, size) as Tag[]);
 }
 
 /**
@@ -102,6 +133,29 @@ class Tracker {
       result = tags[0] as Tag;
     } else {
       result = combine(tags.slice(0, size) as Tag[]);
+    }
+
+    this.clear();
+
+    return result;
+  }
+
+  /**
+   * `combine()` for the frame of a cache.
+   *
+   * `previous` is the tag that the cache has from its last run.
+   * See `combineOrReuse`.
+   */
+  combineForCache(previous: Tag | undefined): Tag {
+    let { tags, size } = this;
+    let result: Tag;
+
+    if (size === 0) {
+      result = CONSTANT_TAG;
+    } else if (size === 1) {
+      result = tags[0] as Tag;
+    } else {
+      result = combineOrReuse(previous, tags, size);
     }
 
     this.clear();
@@ -206,6 +260,32 @@ export function endTrackFrame(): Tag {
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
   return unwrap(current).combine();
+}
+
+/**
+ * `endTrackFrame()` for the frame of a cache.
+ *
+ * `previous` is the tag that the cache has from its last run.
+ * If the cache consumed the same tags again, that tag is the result.
+ *
+ * Only `getValue` calls this.
+ * The frames of the render VM end in `endTrackFrame`,
+ * which has no code for the reuse.
+ */
+function endCacheFrame(previous: Tag | undefined): Tag {
+  let current = CURRENT_TRACKER;
+
+  if (DEBUG) {
+    if (OPEN_TRACK_FRAMES.length === 0) {
+      throw new Error('attempted to close a tracking frame, but one was not open');
+    }
+
+    unwrap(debug.endTrackingTransaction)();
+  }
+
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
+
+  return unwrap(current).combineForCache(previous);
 }
 
 export function beginUntrackFrame(): void {
@@ -313,7 +393,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame();
+      tag = endCacheFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);
