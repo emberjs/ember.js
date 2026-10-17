@@ -13,7 +13,7 @@ module('Custom Helper test', function (hooks) {
       }
     }
 
-    await render(<template>{{(Custom "my-test")}}</template>);
+    await render(<template>{{(Custom 'my-test')}}</template>);
 
     await assert.stableRender('my-test-custom');
   });
