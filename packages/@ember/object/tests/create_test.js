@@ -112,7 +112,7 @@ moduleFor(
       }
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test sets up mandatory setters for simple properties watched with aliases`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sets up mandatory setters for simple properties watched with aliases`](
       assert
     ) {
       if (DEBUG) {
