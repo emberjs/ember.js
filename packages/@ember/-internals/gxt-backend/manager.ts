@@ -135,6 +135,8 @@ import {
   $_fin as _gxtFin,
   $template as _gxtTemplateKey,
   registerDestructor as _gxtRegisterDestructor,
+  // A property's cell, looked up without creating it (`_heldPropertyValue`).
+  peekTagFor as _gxtPeekTagFor,
   // A render-tree node's identity in gxt's tree.
   COMPONENT_ID_PROPERTY as _gxtComponentIdKey,
   cId as _gxtComponentId,
@@ -188,6 +190,20 @@ function _readLatestCurried(dcGetter: () => any): any {
     _gxtReportDroppedRead("a dynamic component's value, read for a curried argument,", error);
     return null;
   }
+}
+// What `_heldPropertyValue` returns for a property whose value is computed when
+// it is read.
+const NOT_HELD: unique symbol = Symbol('gxt not held');
+// The value `obj` holds for its own property `key`, read without running code:
+// a data property's value, or the value of the cell a cell-backed accessor
+// reads; `NOT_HELD` for any other accessor (a getter or a computed property,
+// which Glimmer runs only when a template reads it).
+function _heldPropertyValue(obj: object, key: string): unknown {
+  const desc = Object.getOwnPropertyDescriptor(obj, key);
+  if (desc === undefined) return undefined;
+  if (!desc.get && !desc.set) return desc.value;
+  const cell = _gxtPeekTagFor(obj, key);
+  return cell !== undefined ? (cell as { _value: unknown })._value : NOT_HELD;
 }
 // The DOM api of the compat renderers (the bridge's `gxtLib.HTMLBrowserDOMApi`).
 // A text-content update of an element whose content is one text node changes
@@ -2971,17 +2987,10 @@ export function markTemplateRendered(instance: any): void {
     // Also check getOwnPropertyNames to catch non-enumerable getter properties
     for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
 
-    // Glimmer reads none of these properties: one whose getter throws is
-    // skipped, reported in DEBUG (as `checkBacktracking`'s scan does).
+    // The values the instance holds: Glimmer runs no getter here.
     for (const k of allKeys) {
       if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
-      let val: any;
-      try {
-        val = instance[k];
-      } catch (error) {
-        _gxtReportDroppedRead(`the rendered-instance scan's read of \`${k}\``, error);
-        continue;
-      }
+      const val: any = _heldPropertyValue(instance, k);
       if (
         val &&
         typeof val === 'object' &&
@@ -3086,15 +3095,9 @@ export function checkBacktracking(targetObj: any, key: string): void {
       const keys = Object.keys(rendered);
       for (const k of keys) {
         if (k.startsWith('_') || k.startsWith('$')) continue;
-        // The read only names the property path in the assertion's message;
-        // Glimmer reads no property here.
-        let val: unknown;
-        try {
-          val = rendered[k];
-        } catch (error) {
-          _gxtReportDroppedRead(`the backtracking message's read of \`${k}\``, error);
-          continue;
-        }
+        // The value only names the property path in the assertion's message:
+        // a held value, as no getter runs here.
+        const val = _heldPropertyValue(rendered, k);
         // Check both raw and proxy-unwrapped identity
         const rawTarget = _proxyToRaw.get(targetObj) || targetObj;
         if (val === rawTarget || val === targetObj) {
@@ -4511,16 +4514,13 @@ function _gxtSyncAllWrappersBody(): void {
         // the each-source would then re-fire reading the stale local value and
         // clobber the freshly-rendered new array back to empty.
         const argKeysForEntry = entry.cells;
+        // The local state is what the instance holds: a getter or computed
+        // property computes its value (Glimmer runs none here) and stays out.
         for (const k of Object.keys(entry.instance)) {
           if (k.startsWith('_') || k.startsWith('__')) continue;
           if (argKeysForEntry && k in argKeysForEntry) continue;
-          // Glimmer reads none of these: a getter that throws keeps its
-          // property out of the snapshot, reported in DEBUG.
-          try {
-            snap[k] = entry.instance[k];
-          } catch (error) {
-            _gxtReportDroppedRead(`the state snapshot's read of \`${k}\``, error);
-          }
+          const held = _heldPropertyValue(entry.instance, k);
+          if (held !== NOT_HELD) snap[k] = held;
         }
         entry.instance.__gxtPreHookStateSnapshot = snap;
       }

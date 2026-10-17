@@ -13,7 +13,8 @@
  */
 import { ApplicationTestCase, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import type Owner from '@ember/owner';
-import EmberObject, { set } from '@ember/object';
+import EmberObject, { computed, defineProperty, set } from '@ember/object';
+import Component from '@ember/component';
 import templateOnly from '@ember/component/template-only';
 import RoutingService from '@ember/routing/lib/routing-service';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -200,6 +201,39 @@ moduleFor(
       assert.deepEqual(inSet, [], 'the set() itself reads no LinkTo binding');
       assert.strictEqual(link.getAttribute('href'), '/about');
       assert.notOk(link.classList.contains('active'));
+    }
+  }
+);
+
+moduleFor(
+  'GXT reads: the properties of a rendered component',
+  class extends RenderingTestCase {
+    ['@test a computed property the template does not read is not computed'](
+      assert: QUnit['assert']
+    ) {
+      let reads: string[] = [];
+      this.owner.register(
+        'component:x-instance-cp',
+        Component.extend({
+          layout: this.compile('<p>{{this.label}}</p>'),
+          label: 'ok',
+          init() {
+            this._super(...arguments);
+            defineProperty(
+              this,
+              'unread',
+              computed(function () {
+                reads.push('unread');
+                return { nested: true };
+              })
+            );
+          },
+        })
+      );
+
+      this.render('{{x-instance-cp}}');
+      this.assertText('ok');
+      assert.deepEqual(reads, [], 'the computed property is not computed');
     }
   }
 );
