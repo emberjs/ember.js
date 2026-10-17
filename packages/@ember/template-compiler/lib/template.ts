@@ -352,8 +352,14 @@ function _extractScopeFromEval(
       if (value !== undefined) {
         scope[name] = value;
       }
-    } catch {
-      // Variable not in scope — skip
+    } catch (error) {
+      // The word is not a variable of the caller's scope (a ReferenceError),
+      // or a reserved word such as `if` or `else` (a SyntaxError): the scan
+      // also collects template keywords and text. Anything else, such as a
+      // global's getter that throws, is the template's error.
+      if (!(error instanceof ReferenceError) && !(error instanceof SyntaxError)) {
+        throw error;
+      }
     }
   }
 
