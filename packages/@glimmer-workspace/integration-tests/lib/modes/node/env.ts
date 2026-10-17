@@ -1,8 +1,7 @@
 import type {
   Cursor,
+  DOMRenderer,
   Environment,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
   SimpleDocument,
   TreeBuilder,
 } from '@glimmer/interfaces';
@@ -18,8 +17,7 @@ import { JitRenderDelegate } from '../jit/delegate';
 
 export interface NodeEnvironmentOptions {
   document: SimpleDocument;
-  appendOperations?: GlimmerTreeConstruction;
-  updateOperations?: GlimmerTreeChanges;
+  dom?: DOMRenderer;
 }
 
 export class NodeJitRenderDelegate extends JitRenderDelegate {

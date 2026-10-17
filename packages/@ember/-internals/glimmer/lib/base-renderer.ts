@@ -13,6 +13,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   Cursor,
   DebugRenderTree,
+  DOMRenderer,
   Environment,
   RenderResult as GlimmerRenderResult,
   EvaluationContext,
@@ -708,8 +709,6 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
 const isCursor = (into: IntoTarget): into is Cursor => 'element' in into;
 
-const isDOMElement = (into: IntoTarget): into is Element => 'innerHTML' in into;
-
 function toCursor(into: IntoTarget): Cursor {
   return isCursor(into) ? into : { element: into as SimpleElement, nextSibling: null };
 }
@@ -734,7 +733,11 @@ function toCursor(into: IntoTarget): Cursor {
  * That render clears the element.
  * A `Cursor` target is never cleared.
  */
-function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): IntoTarget {
+function replaceLastRender(
+  dom: DOMRenderer,
+  into: IntoTarget,
+  element: Element | SimpleElement
+): IntoTarget {
   let last = LAST_RENDER_INTO.get(element);
 
   if (last?.glimmerResult) {
@@ -743,8 +746,8 @@ function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): 
     return { element: element as SimpleElement, nextSibling: last.glimmerResult.firstNode() };
   }
 
-  if (!last && isDOMElement(into)) {
-    into.innerHTML = '';
+  if (!last && !isCursor(into) && dom.hasProperty(into as SimpleElement, 'innerHTML')) {
+    dom.clearChildren(into as SimpleElement);
   }
 
   return into;
@@ -805,7 +808,10 @@ export function renderComponent(
   let renderer = rendererFor(owner, env);
   let element = isCursor(into) ? into.element : into;
 
-  let root = renderer.render(component, { into: replaceLastRender(into, element), args });
+  let root = renderer.render(component, {
+    into: replaceLastRender(renderer.state.env.dom, into, element),
+    args,
+  });
   let glimmerResult = root.result;
 
   /**

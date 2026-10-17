@@ -23,7 +23,7 @@ export default class RenderResultImpl implements RenderResult {
     readonly drop: object
   ) {
     associateDestroyableChild(this, drop);
-    registerDestructor(this, () => clear(this.bounds));
+    registerDestructor(this, () => clear(env.dom, this.bounds));
   }
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {

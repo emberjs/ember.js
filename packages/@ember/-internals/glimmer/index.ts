@@ -152,7 +152,7 @@ export {
   type TemplatesRegistry,
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
-export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
+export { DOMRendererImpl, NodeDOMRenderer } from './lib/dom';
 
 // needed for test
 // TODO just test these through public API

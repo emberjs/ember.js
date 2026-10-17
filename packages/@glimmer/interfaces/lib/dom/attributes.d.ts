@@ -2,7 +2,7 @@ import type { Maybe, Nullable } from '../core.js';
 import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
 import type { Stack } from '../stack.js';
 import type { Bounds, Cursor } from './bounds.js';
-import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
+import type { DOMRenderer } from './renderer.js';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -98,8 +98,7 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   };
 
   nextSibling: Nullable<SimpleNode>;
-  dom: GlimmerTreeConstruction;
-  updateOperations: GlimmerTreeChanges;
+  dom: DOMRenderer;
   constructing: Nullable<SimpleElement>;
   element: SimpleElement;
 
@@ -118,6 +117,7 @@ export interface AttributeCursor {
   element: SimpleElement;
   name: string;
   namespace: Nullable<AttrNamespace>;
+  tagName: string;
 }
 
 export interface AttributeOperation {
