@@ -89,9 +89,8 @@ function hyphenToUnderscore(str: string): string {
 }
 
 /**
- * Module-local counter for fallback render-context IDs, used by
- * managers.component.handle and template.render() when no `gxtRoot` id is
- * available. The first id is 101.
+ * Module-local counter for fallback render-context IDs, used by the `$_tag`
+ * wrapper when no `gxtRoot` id is available. The first id is 101.
  */
 let _contextId = 100;
 
@@ -568,6 +567,53 @@ function _getOrCreateGxtRoot(_parentElement: Element): any {
   return root;
 }
 
+// Whether `ctx` is a node of gxt's render tree: gxt maps its id to it.
+function _gxtIsTreeNode(ctx: object): boolean {
+  if ((ctx as any)[COMPONENT_ID_PROPERTY] === undefined) return false;
+  gxtSetParentContext(ctx as any);
+  const node = _gxtGetParentContext();
+  gxtSetParentContext(null);
+  return node === ctx;
+}
+
+// A template's render is a node of gxt's render tree, a child of `parent`: the
+// node the template is rendered in (the active parent context when the render
+// starts: the block, the component invocation or the template rendering it).
+// gxt tears the render down with that node: the destructors registered on the
+// render's context (its elements' modifiers, its bindings) and the blocks its
+// template creates run when the block the component is invoked in goes, as
+// Glimmer destroys a component's block with the block around it. A context
+// still in the tree keeps its place; one whose node gxt tore down gets a new
+// id (gxt released the old one).
+function _gxtJoinRenderTree(renderContext: any, parent: object): void {
+  if (_gxtIsTreeNode(renderContext)) return;
+  delete renderContext[COMPONENT_ID_PROPERTY];
+  const addedToTree = _gxtFindAddedToTreeSym(renderContext);
+  if (addedToTree !== null) delete renderContext[addedToTree];
+  gxtSetParentContext(parent as any);
+  try {
+    // Mints the context's id and adds it to the tree under the active parent.
+    (_gxtGetArgs as any)(renderContext, [renderContext['args']]);
+  } finally {
+    gxtSetParentContext(null);
+  }
+  // Learns gxt's flag (`_gxtAddedToTree`).
+  _gxtFindAddedToTreeSym(renderContext);
+}
+
+// Runs `render`, the render of a component invoked with `ctx`, with `ctx` as
+// gxt's active parent context (as gxt's own `$_c` does) when it is a node of
+// gxt's render tree: the component's template joins the tree under it.
+function _gxtRenderInvokedIn<T>(ctx: unknown, render: () => T): T {
+  if (ctx === null || typeof ctx !== 'object' || !_gxtIsTreeNode(ctx)) return render();
+  gxtSetParentContext(ctx as any);
+  try {
+    return render();
+  } finally {
+    gxtSetParentContext(null);
+  }
+}
+
 // Canonical state for the GXT component-context registry, owned by this file.
 // The map is a `WeakMap` keyed by component / controller instances (or their
 // prototypes for the manager.ts proto-keyed entries) whose values are a `Set`
@@ -963,8 +1009,10 @@ function renderReactiveHtml(getHtml: () => any): DocumentFragment {
 // Render `comp` through the Ember component manager; `handle` returns either
 // the rendered nodes or a thunk producing them.
 function handleEmberComponent(managers: any, comp: any, namedArgs: any, fw: any, ctx: any): any {
-  const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
-  return typeof handleResult === 'function' ? handleResult() : handleResult;
+  return _gxtRenderInvokedIn(ctx, () => {
+    const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
+    return typeof handleResult === 'function' ? handleResult() : handleResult;
+  });
 }
 
 /**
@@ -9580,9 +9628,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             _setInternalProp(namedArgs, '$slots', { default: defaultSlotFn });
           }
 
-          const handleResult = managers.component.handle(resolvedTag, namedArgs, fw, ctx);
-          if (typeof handleResult === 'function') return handleResult();
-          return handleResult;
+          return _gxtRenderInvokedIn(ctx, () => {
+            const handleResult = managers.component.handle(resolvedTag, namedArgs, fw, ctx);
+            return typeof handleResult === 'function' ? handleResult() : handleResult;
+          });
         }
       }
     }
@@ -9608,7 +9657,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // template on in-place array mutation (life-cycle-test `that thing about
       // destroying`). The wrapper sets `$BLOCK_WRAPPER_SYMBOL` on itself
       // (glimmer-next dom.ts) before its body renders, so this guard sees it.
-      !(ctx as any)[$BLOCK_WRAPPER_SYMBOL]
+      !(ctx as any)[$BLOCK_WRAPPER_SYMBOL] &&
+      // Nor a template's context: its render is a node of the tree
+      // (`_gxtJoinRenderTree`).
+      !_gxtAddedToTree(ctx)
     ) {
       const gxtRootCtx = _gxtRootContext;
       const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
@@ -10807,11 +10859,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             let handleResult: any;
             let rendered: any;
             try {
-              handleResult = managers.component.handle(kebabName, args, fw, ctx);
-              rendered = handleResult;
-              if (typeof rendered === 'function') {
-                rendered = rendered();
-              }
+              rendered = _gxtRenderInvokedIn(ctx, () => {
+                handleResult = managers.component.handle(kebabName, args, fw, ctx);
+                return typeof handleResult === 'function' ? handleResult() : handleResult;
+              });
             } finally {
               // Pop the template-only tracking stack after render (even on error).
               if (
@@ -11947,6 +11998,12 @@ function _gxtScopeValuesNativeSafe(sv: Record<string, unknown> | undefined): boo
 // hunt it once by description on an instance that has been through
 // $_GET_ARGS and cache the (module-global) symbol instance.
 let _gxtAddedToTreeSymCache: symbol | null = null;
+// Whether gxt added `obj` to its render tree and has not torn its node down
+// (gxt's flag; known once a context joined the tree).
+function _gxtAddedToTree(obj: object): boolean {
+  const flag = _gxtAddedToTreeSymCache;
+  return flag !== null && (obj as any)[flag] === true;
+}
 function _gxtFindAddedToTreeSym(obj: object): symbol | null {
   if (_gxtAddedToTreeSymCache) return _gxtAddedToTreeSymCache;
   const s = Object.getOwnPropertySymbols(obj).find((x) => x.description === 'addedToTree');
@@ -13511,16 +13568,17 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         // `gxtRenderInBlock`): destroying the render destroys them.
         if (renderRoot !== undefined) {
           const prevRootContext = _gxtRootContext;
-          const prevParentContext = _gxtGetParentContext();
           const prevNamespace = _gxtNamespace;
           _gxtRootContext = renderRoot;
           _gxtNamespace = _gxtRootNamespace(parentElement);
+          // The root is the node the render's template renders in.
+          gxtSetParentContext(renderRoot as any);
           try {
             return gxtRenderInBlock(renderRoot, null, () => this.render(context, parentElement));
           } finally {
+            gxtSetParentContext(null);
             _gxtRootContext = prevRootContext;
             _gxtNamespace = prevNamespace;
-            gxtSetParentContext(prevParentContext);
           }
         }
         if (!parentElement) {
@@ -13548,6 +13606,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         const _inElemStackStart = _inElemStack.length;
         for (const id of _inElementLiteralIds) _inElemStack.push(id);
         _gxtSetIsRendering(true);
+        // Whether the render's context is the active parent context (popped
+        // when the render ends).
+        let joinedRenderTree = false;
 
         try {
           // Per-parent-element root isolation: renders into the same parent
@@ -13558,7 +13619,13 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // still read the current root, either directly intra-file or via
           // `compilePipeline.getRootContext` from cross-file callers.
           const gxtRoot = _getOrCreateGxtRoot(parentElement);
-          gxtSetParentContext(gxtRoot);
+          // The node the template renders in (`_gxtJoinRenderTree`): the
+          // active parent context, else the root.
+          const activeParent = _gxtGetParentContext();
+          const treeParent =
+            activeParent !== undefined && activeParent !== null && activeParent !== context
+              ? activeParent
+              : gxtRoot;
 
           // Use the context directly — don't wrap with Object.create()!
           // The context IS the Proxy from createRenderContext. Wrapping it would
@@ -13657,53 +13724,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           if (RENDERED_NODES_PROPERTY && !renderContext[RENDERED_NODES_PROPERTY as any]) {
             renderContext[RENDERED_NODES_PROPERTY as any] = [];
           }
-          // CRITICAL: The Ember render context is NOT registered in GXT's internal
-          // TREE map (that map is not accessible from outside GXT in production builds).
-          // When GXT's $_if/$_each/etc. call addToTree(renderContext, newChild), they
-          // set PARENT.set(newChildId, renderContext[COMPONENT_ID_PROPERTY]). Then the
-          // context walker does TREE.get(parentId) which returns undefined and crashes
-          // while trying to read RENDERING_CONTEXT_PROPERTY off the undefined parent.
-          //
-          // Fix: assign the gxtRoot's COMPONENT_ID_PROPERTY to the render context. This
-          // way addToTree writes PARENT[childId] = gxtRootId, and TREE.get(gxtRootId)
-          // returns the gxtRoot (which IS registered in TREE and has
-          // RENDERING_CONTEXT_PROPERTY set). Walker finds the DOM api and returns.
-          //
-          // This must be set UNCONDITIONALLY (not guarded by "if not set"), because an
-          // earlier classic-component render may have assigned a dangling custom id to
-          // the same instance, leaving addToTree pointing into a void.
-          //
-          // NATIVE PATH EXCEPTION: a native-templateFn template calls
-          // $_GET_ARGS itself, which mints the context its OWN fresh id
-          // (`??= cId()`) and addToTree-registers it as a DISTINCT child of the
-          // ambient gxtRoot — the root-id stamp above would instead make
-          // $_GET_ARGS do `TREE.set(rootId, renderContext)` (overwriting the
-          // root's entry, self-parenting it, and recycling the root id on
-          // teardown). So for native templates: do NOT stamp; and on a
-          // force-rerender (same instance reused by the morph path with its
-          // previous registration manually discarded) clear the stale id +
-          // addedToTree flag so $_GET_ARGS re-registers cleanly.
           const __gxtNativeTpl = (compilationResult as any).__gxtNativePath === true;
-          if (COMPONENT_ID_PROPERTY && __gxtNativeTpl) {
-            if (_gxtIsForceRerender()) {
-              // (The id and the flag are plain assignments, by this function
-              // and by gxt.)
-              delete renderContext[COMPONENT_ID_PROPERTY as any];
-              const _attSym = _gxtFindAddedToTreeSym(renderContext);
-              if (_attSym) {
-                delete (renderContext as any)[_attSym];
-              }
-            }
-          } else if (COMPONENT_ID_PROPERTY) {
-            const rootId = gxtRoot && (gxtRoot as any)[COMPONENT_ID_PROPERTY as any];
-            if (rootId !== undefined && rootId !== null) {
-              // (The render context is assigned its rendering context above.)
-              renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
-            } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
-              // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
-              renderContext[COMPONENT_ID_PROPERTY as any] = ++_contextId;
-            }
-          }
 
           // Ensure 'args' key is ALWAYS accessible on the render context
           // GXT's runtime compiler uses $args = 'args' (a string), so templates
@@ -13711,6 +13732,14 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           if (!renderContext['args']) {
             renderContext['args'] = context['args'] || context.args || {};
           }
+
+          // The render is a node of gxt's render tree under the node it renders
+          // in, and the active parent context while its template renders: the
+          // blocks it creates and the components it invokes are its children.
+          // (A native template's `$_GET_ARGS` finds the context in the tree.)
+          _gxtJoinRenderTree(renderContext, treeParent);
+          gxtSetParentContext(renderContext);
+          joinedRenderTree = true;
 
           // Native path: gxt's own preamble resolves slots/fw via
           // `$_GET_SLOTS/$_GET_FW(this, arguments)`, which (with no args passed
@@ -13983,6 +14012,8 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // `assert.throws` / Ember's error recovery. Swallowing here would
           // turn user-visible failures into silent successes.
           throw err;
+        } finally {
+          if (joinedRenderTree) gxtSetParentContext(null);
         }
       },
     };

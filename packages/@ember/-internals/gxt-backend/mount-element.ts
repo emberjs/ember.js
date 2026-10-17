@@ -1,4 +1,4 @@
-import { createRoot, setParentContext, getParentContext, $SLOTS_SYMBOL } from '@lifeart/gxt';
+import { createRoot, setParentContext, $SLOTS_SYMBOL } from '@lifeart/gxt';
 import { getGxtRenderer, getAmbientOwner, setAmbientOwner, GXT_ARGS_SYMBOL } from './gxt-bridge';
 
 /**
@@ -145,9 +145,9 @@ class EmberMountElement extends HTMLElement {
       const previousOwner = getAmbientOwner();
       setAmbientOwner(engineInstance);
 
-      // Set up GXT rendering context (the shared root context, owned by
-      // compile.ts and read/written via the compilePipeline bridge).
-      const savedParent = getParentContext();
+      // The engine's template renders in the shared root context (owned by
+      // compile.ts and read/written via the compilePipeline bridge), the
+      // active parent context while it renders.
       const _cp119 = getGxtRenderer()?.compilePipeline;
       let gxtRoot = _cp119?.getRootContext?.();
       if (!gxtRoot) {
@@ -168,9 +168,7 @@ class EmberMountElement extends HTMLElement {
           }
         }
       } finally {
-        if (savedParent) {
-          setParentContext(savedParent);
-        }
+        setParentContext(null);
         setAmbientOwner(previousOwner);
       }
     } catch (e: any) {
