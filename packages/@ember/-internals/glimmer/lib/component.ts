@@ -25,7 +25,7 @@ import { isUpdatableRef, updateRef } from '@glimmer/reference/lib/reference';
 import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '@glimmer/interfaces';
 import {
   BOUNDS,
   CURLY_COMPONENT_MANAGER,
@@ -1098,7 +1098,7 @@ class Component<S = unknown>
 
     let element = _element;
     let isSVG = element.namespaceURI === 'http://www.w3.org/2000/svg';
-    let { type, normalized } = normalizeProperty(element as unknown as SimpleElement, name);
+    let { type, normalized } = normalizeProperty(element, name);
 
     if (isSVG || type === 'attr') {
       return element.getAttribute(normalized);
@@ -1490,7 +1490,7 @@ class Component<S = unknown>
 
     // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
     // However, the types are more specific in some places which necessitates the `as`.
-    this.renderer.appendTo(this, target as unknown as SimpleElement);
+    this.renderer.appendTo(this, target);
 
     return this;
   }

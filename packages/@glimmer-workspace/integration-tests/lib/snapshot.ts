@@ -1,7 +1,7 @@
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { EndTag, Token } from 'simple-html-tokenizer';
 import { COMMENT_NODE, TEXT_NODE } from '@glimmer/constants';
-import { castToSimple, unwrap } from '@glimmer/debug-util';
+import { unwrap } from '@glimmer/debug-util';
 import { tokenize } from 'simple-html-tokenizer';
 
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
@@ -89,7 +89,7 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
 function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
   let div: SimpleElement;
   if (typeof divOrHTML === 'string') {
-    div = castToSimple(document.createElement('div'));
+    div = document.createElement('div');
     replaceHTML(div, divOrHTML);
   } else {
     div = divOrHTML;
@@ -137,7 +137,7 @@ export function equalSnapshots(a: SimpleNode[], b: SimpleNode[]) {
 }
 
 export function isServerMarker(node: SimpleNode) {
-  return node.nodeType === COMMENT_NODE && node.nodeValue.charAt(0) === '%';
+  return node.nodeType === COMMENT_NODE && node.nodeValue?.charAt(0) === '%';
 }
 
 export function normalizeSnapshot(

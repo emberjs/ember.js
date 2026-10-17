@@ -26,6 +26,7 @@ import { EMPTY_ARGS, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import type { TemplateOnlyComponent } from '@ember/component/template-only';
 import templateOnlyComponent from '@ember/component/template-only';
 import {
+  assertingElement,
   createTemplate,
   defineSimpleModifier,
   JitRenderDelegate,
@@ -450,7 +451,7 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'in-element',
             args: { positional: [this.element.firstChild], named: {} },
             instance: (instance: GlimmerComponent<Dict> | null) => instance === null,
-            bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
+            bounds: this.elementBounds(assertingElement(this.element.firstChild)),
             children: [
               {
                 type: 'component',
@@ -819,20 +820,17 @@ class DebugRenderTreeTest extends RenderTest {
     let node = expect(_node, 'BUG: Expected node');
 
     return {
-      parentElement: expect(
-        node.parentNode,
-        'BUG: detached node'
-      ) as unknown as SimpleNode as SimpleElement,
-      firstNode: node as unknown as SimpleNode,
-      lastNode: node as unknown as SimpleNode,
+      parentElement: assertingElement(node.parentNode),
+      firstNode: node,
+      lastNode: node,
     };
   }
 
   elementBounds(element: SimpleElement): CapturedBounds {
     return {
-      parentElement: element as unknown as SimpleElement,
-      firstNode: element.firstChild! as unknown as SimpleNode,
-      lastNode: element.lastChild! as unknown as SimpleNode,
+      parentElement: element,
+      firstNode: element.firstChild!,
+      lastNode: element.lastChild!,
     };
   }
 

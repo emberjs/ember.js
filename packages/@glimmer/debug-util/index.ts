@@ -5,7 +5,6 @@ export * from './lib/platform-utils';
 export * from './lib/present';
 export {
   castToBrowser,
-  castToSimple,
   checkBrowserNode as checkNode,
   isElement,
   isSimpleElement,

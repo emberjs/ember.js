@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type {
   Bounds,
   Environment,
@@ -90,8 +89,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
       return super.__appendText(string);
     } else if (string === '') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return this.__appendComment('% %') as any as SimpleText;
+      return this.__appendComment('% %');
     } else if (current && current.nodeType === TEXT_NODE) {
       this.__appendComment('%|%');
     }

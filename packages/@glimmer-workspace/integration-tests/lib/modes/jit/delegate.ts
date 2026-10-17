@@ -15,7 +15,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { castToBrowser, castToSimple } from '@glimmer/debug-util';
+import { castToBrowser } from '@glimmer/debug-util';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
 import { clientBuilder, curry } from '@glimmer/runtime';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
@@ -54,7 +54,7 @@ export class JitRenderDelegate implements RenderDelegate {
   private debugRenderTree: boolean;
 
   constructor({ doc, debugRenderTree = false }: RenderDelegateOptions = {}) {
-    this.doc = castToSimple(doc ?? document);
+    this.doc = doc ?? document;
     this.debugRenderTree = debugRenderTree;
   }
 
@@ -105,7 +105,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   getInitialElement(): SimpleElement {
     if (isBrowserTestDocument(this.doc)) {
-      return castToSimple(castToBrowser(this.doc).getElementById('qunit-fixture')!);
+      return castToBrowser(this.doc).getElementById('qunit-fixture')!;
     } else {
       return this.createElement('div');
     }

@@ -19,7 +19,7 @@ import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import type Registry from '@ember/-internals/container/lib/registry';
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '@glimmer/interfaces';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a

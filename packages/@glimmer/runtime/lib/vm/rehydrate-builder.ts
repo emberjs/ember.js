@@ -13,7 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
-import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast';
+import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
@@ -460,7 +460,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   getMarker(element: HTMLElement, guid: string): Nullable<SimpleNode> {
     const marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
-      return castToSimple(marker);
+      return marker;
     }
     return null;
   }
@@ -516,16 +516,16 @@ function isComment(node: SimpleNode): node is SimpleComment {
   return node.nodeType === COMMENT_NODE;
 }
 
-function isOpenBlock(node: SimpleNode): node is SimpleComment {
-  return node.nodeType === COMMENT_NODE && node.nodeValue.lastIndexOf('%+b:', 0) === 0;
+function isOpenBlock(node: SimpleNode): boolean {
+  return node.nodeType === COMMENT_NODE && node.nodeValue?.lastIndexOf('%+b:', 0) === 0;
 }
 
-function isCloseBlock(node: SimpleNode): node is SimpleComment {
-  return node.nodeType === COMMENT_NODE && node.nodeValue.lastIndexOf('%-b:', 0) === 0;
+function isCloseBlock(node: SimpleNode): boolean {
+  return node.nodeType === COMMENT_NODE && node.nodeValue?.lastIndexOf('%-b:', 0) === 0;
 }
 
 function getBlockDepth(node: SimpleComment): number {
-  return parseInt(node.nodeValue.slice(4), 10);
+  return parseInt(node.nodeValue?.slice(4) ?? '', 10);
 }
 
 function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
