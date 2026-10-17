@@ -2158,6 +2158,15 @@ function _gxtAppendRenderedObject(value: any, append: (v: any) => void): void {
   }
 }
 
+// The nodes strictly between two sibling markers, in order.
+function _gxtNodesBetween(start: Node, end: Node): Node[] {
+  const nodes: Node[] = [];
+  for (let node = start.nextSibling; node !== null && node !== end; node = node.nextSibling) {
+    nodes.push(node);
+  }
+  return nodes;
+}
+
 // Remove the nodes strictly between two sibling markers; returns them in order.
 function _removeNodesBetween(parent: Node, start: Node, end: Node): Node[] {
   const removed: Node[] = [];
@@ -2224,6 +2233,7 @@ function _gxtShowCurriedRegionContent(info: any, value: unknown): boolean {
   // An empty comment holds the place of content with no nodes.
   if (content.length === 0) content = [document.createComment('')];
   for (const node of content) parent.insertBefore(node, end);
+  info.laterNodes = content;
   info.shownContent = { kind, key, first: content[0]!, last: content[content.length - 1]! };
   // The region no longer shows a curried component: the next one renders.
   info.lastCurried = undefined;
@@ -13199,6 +13209,8 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               endMarker,
               site: _gxtComponentSite(),
               lastCurried: finalResult,
+              // What the region renders after a change.
+              laterNodes: [] as Node[],
             };
             // A curried component, or a component name; an empty curried
             // component marker renders nothing.
@@ -13221,6 +13233,19 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               fragment.appendChild(initialNode);
             }
             fragment.appendChild(endMarker);
+            // gxt removes the nodes the region rendered first with the render
+            // it is in; the nodes it renders after a change are the region's
+            // to remove, when that render is destroyed (as a dynamic
+            // component's, ember-gxt-wrappers.ts `followDefinition`).
+            const renderOfRegion = _gxtGetParentContext();
+            if (renderOfRegion) {
+              _gxtRegisterDestructor(renderOfRegion, () => {
+                for (const node of curriedRenderInfo.laterNodes) {
+                  node.parentNode?.removeChild(node);
+                }
+                curriedRenderInfo.laterNodes = [];
+              });
+            }
 
             // The effect depends on what `item()` reads (e.g. `this.c` of
             // `(if this.c (component …) (component …))`). What the getter and
@@ -13261,6 +13286,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                 }
                 if (isCurried) curriedRenderInfo.lastCurried = newFinal;
               }
+              curriedRenderInfo.laterNodes = _gxtNodesBetween(startMarker, endMarker);
             });
 
             return fragment;
