@@ -12588,6 +12588,11 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       // EMBER_IN_ELEMENT: {{#in-element}} insertBefore semantics emit as
       // $_inElement's 4th MODE arg (1=clear, 0=append, literal=dev-assert).
       EMBER_IN_ELEMENT: true,
+      // EMBER_WHITESPACE: Glimmer's text. The template is parsed as Glimmer
+      // parses it (standalone-line and `~` whitespace control, entities
+      // decoded once) and every whitespace text node is kept, so
+      // `{{a}}⏎{{b}}` renders "a⏎b".
+      EMBER_WHITESPACE: true,
       // EMBER_ARG_LABELS (DEBUG): a helper / modifier call site passes the
       // source paths of its arguments, the debug labels of their references
       // ("While rendering: this.foo" in an `{{on}}` / `{{fn}}` assertion).

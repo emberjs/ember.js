@@ -129,6 +129,9 @@ export default defineConfig(({ mode }) => {
       // It also turns EMBER_PROPERTY_TAGS on there: a template's property read
       // consumes the property's tag (Glimmer's getProp), so `set()` /
       // `notifyPropertyChange()` on an untracked property re-render it.
+      // EMBER_WHITESPACE: a template's text is Glimmer's (standalone-line and
+      // `~` whitespace control, entities decoded once, whitespace text kept),
+      // as the runtime compile (gxt-backend/compile.ts) has it.
       ...(useGxt
         ? isolateTestCompileErrors(
             compiler(mode, {
@@ -137,6 +140,7 @@ export default defineConfig(({ mode }) => {
                 WITH_HELPER_MANAGER: true,
                 WITH_MODIFIER_MANAGER: true,
                 TRY_CATCH_ERROR_HANDLING: false,
+                EMBER_WHITESPACE: true,
                 // A helper / modifier call site passes its arguments' source
                 // paths: their references' debug labels (DEBUG).
                 EMBER_ARG_LABELS: true,
@@ -266,6 +270,7 @@ export default defineConfig(({ mode }) => {
             EMBER_PROPERTY_TAGS: 'false',
             EMBER_SELF: 'false',
             EMBER_LOOSE_COMPONENTS: 'false',
+            EMBER_WHITESPACE: 'false',
             EMBER_ARG_LABELS: 'false',
           },
         }),

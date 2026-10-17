@@ -68,13 +68,16 @@ export default defineConfig(({ mode }) => ({
     // them (the app lists `decorator-transforms`; no `dt7948` global), and a
     // template's property read consumes the property's tag, as Glimmer's
     // does: `set()` / `notifyPropertyChange()` on a plain (untracked)
-    // property re-render it.
+    // property re-render it. EMBER_WHITESPACE: a template's text is
+    // Glimmer's (standalone-line and `~` whitespace control, entities decoded
+    // once, whitespace text kept).
     compiler(mode, {
       flags: {
         WITH_EMBER_INTEGRATION: true,
         WITH_HELPER_MANAGER: true,
         WITH_MODIFIER_MANAGER: true,
         TRY_CATCH_ERROR_HANDLING: false,
+        EMBER_WHITESPACE: true,
       },
     }),
     emberSourceResolver(),
