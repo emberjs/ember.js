@@ -21,9 +21,12 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
   moduleFor(
     'EMBER_DROP_CLASSIC_FEATURES build flag: Controller',
     class extends AbstractTestCase {
-      ['@test Controller extends no other class'](assert) {
-        assert.strictEqual(Object.getPrototypeOf(Controller), Function.prototype);
-        assert.strictEqual(Object.getPrototypeOf(Controller.prototype), Object.prototype);
+      ['@test the base class of Controller extends no other class'](assert) {
+        let Base = Object.getPrototypeOf(Controller);
+
+        assert.strictEqual(Object.getPrototypeOf(Base), Function.prototype);
+        assert.strictEqual(Object.getPrototypeOf(Base.prototype), Object.prototype);
+        assert.notOk(Controller.prototype instanceof EmberObject);
       }
 
       ['@test the owner passes itself to the constructor'](assert) {

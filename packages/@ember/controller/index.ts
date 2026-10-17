@@ -248,18 +248,8 @@ const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
   },
 });
 
-// NOTE: This doesn't actually extend EmberObject.
 /**
-  @class Controller
-  @extends EmberObject
-  @uses Ember.ControllerMixin
-  @public
-*/
-interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(InternalControllerMixin) {}
-
-/**
-  The `Controller` base class when the `EMBER_DROP_CLASSIC_FEATURES` build
+  The base class of `Controller` when the `EMBER_DROP_CLASSIC_FEATURES` build
   flag is set. It extends no other class.
 
   The owner passes itself to the constructor, as it does for Glimmer
@@ -269,9 +259,9 @@ class Controller<_T = unknown> extends FrameworkObject.extend(InternalController
   The route reads `queryParams`, sets `model` and the query param values, and
   uses `_qpDelegate` and `_qpChanged` to sync the query params with the URL.
 */
-class PlainController<T = unknown> {
+class PlainControllerBase {
   /** The container creates instances only through `create`. */
-  static create<C extends PlainController>(this: new (owner: Owner) => C, props: object): C {
+  static create<C extends PlainControllerBase>(this: new (owner: Owner) => C, props: object): C {
     let owner = getOwner(props);
     assert('A controller must be created by its owner', owner);
 
@@ -280,7 +270,7 @@ class PlainController<T = unknown> {
 
   declare isController: true;
 
-  @tracked model: T | undefined;
+  @tracked model: unknown;
 
   queryParams: Readonly<Array<ControllerQueryParam>> | null = null;
 
@@ -297,7 +287,7 @@ class PlainController<T = unknown> {
     this.namespace = owner.lookup('application:main');
     this.target = owner.lookup('router:main');
 
-    if (this.willDestroy !== PlainController.prototype.willDestroy) {
+    if (this.willDestroy !== PlainControllerBase.prototype.willDestroy) {
       registerDestructor(this, () => this.willDestroy());
     }
   }
@@ -310,7 +300,7 @@ class PlainController<T = unknown> {
   willDestroy(): void {}
 
   /** @internal */
-  _qpChanged(controller: PlainController, _prop: string) {
+  _qpChanged(controller: PlainControllerBase, _prop: string) {
     let dotIndex = _prop.indexOf('.[]');
     let prop = dotIndex === -1 ? _prop : _prop.slice(0, dotIndex);
 
@@ -320,7 +310,22 @@ class PlainController<T = unknown> {
   }
 }
 
-PlainController.prototype.isController = true;
+PlainControllerBase.prototype.isController = true;
+
+const ClassicControllerBase = FrameworkObject.extend(InternalControllerMixin);
+const ControllerBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainControllerBase : ClassicControllerBase
+) as typeof ClassicControllerBase;
+
+// NOTE: This doesn't actually extend EmberObject.
+/**
+  @class Controller
+  @extends EmberObject
+  @uses Ember.ControllerMixin
+  @public
+*/
+interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
+class Controller<_T = unknown> extends ControllerBase {}
 
 /**
   Creates a property that lazily looks up another controller in the container.
@@ -378,12 +383,7 @@ export function inject(
   return metalInject('controller', ...args);
 }
 
-const ExportedController = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainController : Controller
-) as typeof Controller;
-type ExportedController<T = unknown> = Controller<T>;
-
-export { ExportedController as default, ControllerMixin };
+export { Controller as default, ControllerMixin };
 
 /**
   A type registry for Ember `Controller`s. Meant to be declaration-merged so string
