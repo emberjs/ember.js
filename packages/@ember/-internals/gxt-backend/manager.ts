@@ -4986,12 +4986,19 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       }
     }
 
-    // Tagless components (tagName === '') use DocumentFragments which are
-    // never "connected" after insertion. Consider them alive if they were
-    // rendered in the current pass or if they are claimed in a pool.
+    // Tagless components (tagName === '') have no element. They are alive
+    // while the nodes they rendered are in the document, and when they were
+    // rendered in the current pass (a newborn's nodes may not be inserted
+    // yet).
     if (!isAlive && instance.tagName === '' && !instance.isDestroyed && !instance.isDestroying) {
       const passId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-      if (instance.__gxtRenderedInPass === passId || _currentPassRenderedInstances.has(instance)) {
+      const bounds = instance.__gxtBounds;
+      if (
+        instance.__gxtRenderedInPass === passId ||
+        _currentPassRenderedInstances.has(instance) ||
+        bounds?.firstNode?.isConnected === true ||
+        bounds?.lastNode?.isConnected === true
+      ) {
         isAlive = true;
       }
     }
