@@ -14,6 +14,7 @@ import ObjectProxy from '@ember/object/proxy';
 import Component from '@ember/component';
 import type Controller from '@ember/controller';
 import Route from '@ember/routing/route';
+import { run, _getCurrentRunLoop } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
 
 const BoomClass = EmberObject.extend({
@@ -89,6 +90,31 @@ moduleFor(
       assert.throws(() => {
         runTask(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
       }, /the truthiness failed/);
+    }
+  }
+);
+
+moduleFor(
+  'GXT errors: the DOM sync at the end of a run loop',
+  class extends RenderingTestCase {
+    ['@test what the sync of a run loop throws reaches the code that ran the run loop'](
+      assert: QUnit['assert']
+    ) {
+      const BoomProxy = ObjectProxy.extend({
+        isTruthy: computed(function () {
+          throw new Error('the truthiness failed');
+        }),
+      });
+
+      this.render('{{#if this.value}}yes{{else}}no{{/if}}', { value: false });
+      this.assertText('no');
+
+      // A bare run loop (not `runTask`, which syncs after its run loop): the
+      // sync runs at the end of the run loop.
+      assert.throws(() => {
+        run(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
+      }, /the truthiness failed/);
+      assert.strictEqual(_getCurrentRunLoop(), null, 'the run loop has ended');
     }
   }
 );
