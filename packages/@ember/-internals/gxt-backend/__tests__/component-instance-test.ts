@@ -448,3 +448,318 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'GXT a curried content region renders its own component',
+  class extends RenderingTestCase {
+    // `component:classic-show-arg`: a tagless classic component rendering its
+    // `value`, that records each instance it creates and its hooks.
+    registerClassicShowArg(instances: ClassicComponent[], hooks: string[]) {
+      this.owner.register(
+        'component:classic-show-arg',
+        setComponentTemplate(
+          precompileTemplate('[{{this.value}}]'),
+          class extends ClassicComponent {
+            tagName = '';
+            init(properties?: object) {
+              super.init(properties);
+              instances.push(this);
+              hooks.push(`init ${this.get('value')}`);
+            }
+            didUpdateAttrs() {
+              hooks.push(`didUpdateAttrs ${this.get('value')}`);
+            }
+            willDestroy() {
+              super.willDestroy();
+              hooks.push(`willDestroy ${this.get('value')}`);
+            }
+          }
+        )
+      );
+    }
+
+    // `component:show-arg`: a Glimmer component rendering its `@value`, that
+    // records each instance it creates and its destruction.
+    registerShowArg(instances: Component<{ value: string }>[], hooks: string[]) {
+      this.owner.register(
+        'component:show-arg',
+        setComponentTemplate(
+          precompileTemplate('[{{@value}}]'),
+          class extends Component<{ value: string }> {
+            constructor(owner: object, args: { value: string }) {
+              super(owner, args);
+              instances.push(this);
+              hooks.push(`constructor ${args.value}`);
+            }
+            willDestroy() {
+              super.willDestroy();
+              hooks.push(`willDestroy ${this.args.value}`);
+            }
+          }
+        )
+      );
+    }
+
+    ['@test two regions rendered by updates get their own classic instances']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render(
+        '{{#let (if this.c (component "classic-show-arg" value="a") (component "classic-show-arg" value="b"))' +
+          ' (if this.d (component "classic-show-arg" value="c") (component "classic-show-arg" value="d"))' +
+          ' as |x y|}}{{x}}{{y}}{{/let}}',
+        { c: true, d: true }
+      );
+      this.assertText('[a][c]');
+      runTask(() => set(this.context, 'c', false));
+      this.assertText('[b][c]');
+
+      runTask(() => set(this.context, 'd', false));
+
+      this.assertText('[b][d]');
+      let live = instances.filter((instance) => !instance.isDestroying);
+      this.assert.deepEqual(
+        live.map((instance) => instance.get('value')),
+        ['b', 'd'],
+        'each region has an instance with the arguments of its curried value'
+      );
+    }
+
+    ['@test a region destroys the classic component of the curried value it replaces']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render(
+        '{{#let (if this.c (component "classic-show-arg" value="a") (component "classic-show-arg" value="b")) as |x|}}{{x}}{{/let}}',
+        { c: true }
+      );
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 2, 'the new curried value has its own instance');
+      this.assert.deepEqual(
+        hooks,
+        ['init b', 'willDestroy a'],
+        'the replaced instance is destroyed'
+      );
+      this.assert.true(instances[0]!.isDestroyed, 'the replaced instance is destroyed');
+      this.assert.false(instances[1]!.isDestroying, 'the new instance stays');
+
+      runTask(() => set(this.context, 'c', true));
+
+      this.assertText('[a]');
+      this.assert.strictEqual(
+        instances.length,
+        3,
+        'the curried value rendered again has a new instance'
+      );
+      this.assert.true(instances[1]!.isDestroyed, 'the replaced instance is destroyed');
+    }
+
+    ['@test a region destroys the Glimmer component of the curried value it replaces']() {
+      let instances: Component<{ value: string }>[] = [];
+      let hooks: string[] = [];
+      this.registerShowArg(instances, hooks);
+
+      this.render(
+        '{{#let (if this.c (component "show-arg" value="a") (component "show-arg" value="b")) as |x|}}{{x}}{{/let}}',
+        { c: true }
+      );
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 2, 'the new curried value has its own instance');
+      this.assert.deepEqual(
+        hooks,
+        ['constructor b', 'willDestroy a'],
+        'the replaced instance is destroyed'
+      );
+    }
+
+    ['@test a region destroys a tagless classic component of another definition it replaces']() {
+      let hooks: string[] = [];
+      for (let name of ['first', 'second']) {
+        this.owner.register(
+          `component:${name}-item`,
+          setComponentTemplate(
+            precompileTemplate(`[${name}]`),
+            class extends ClassicComponent {
+              tagName = '';
+              willDestroy() {
+                super.willDestroy();
+                hooks.push(`willDestroy ${name}`);
+              }
+            }
+          )
+        );
+      }
+
+      this.render(
+        '{{#let (if this.c (component "first-item") (component "second-item")) as |x|}}{{x}}{{/let}}',
+        { c: true }
+      );
+      this.assertText('[first]');
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[second]');
+      this.assert.deepEqual(hooks, ['willDestroy first'], 'the replaced component is destroyed');
+    }
+
+    ['@test a region destroys the component it replaces with text']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render(
+        '{{#let (if this.c (component "classic-show-arg" value="a") "text") as |x|}}{{x}}{{/let}}',
+        { c: true }
+      );
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('text');
+      this.assert.deepEqual(hooks, ['willDestroy a'], 'the replaced component is destroyed');
+    }
+
+    ['@test the component a region renders after a change leaves with the region']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+      this.owner.register(
+        'component:show-either',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#let (if @c (component "classic-show-arg" value="a") (component "classic-show-arg" value="b")) as |x|}}{{x}}{{/let}}'
+          ),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render('{{#if this.show}}{{show-either c=this.c}}{{/if}}', { show: true, c: true });
+      this.assertText('[a]');
+      runTask(() => set(this.context, 'c', false));
+      this.assertText('[b]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'show', false));
+
+      this.assertText('');
+      this.assert.deepEqual(hooks, ['willDestroy b'], 'the component is destroyed with the region');
+    }
+
+    ['@test a region in an element destroys the component of the curried value it replaces']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render(
+        '<p>{{#let (if this.c (component "classic-show-arg" value="a") (component "classic-show-arg" value="b")) as |x|}}{{x}}{{/let}}</p>',
+        { c: true }
+      );
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'c', false));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 2, 'the new curried value has its own instance');
+      this.assert.deepEqual(
+        hooks,
+        ['init b', 'willDestroy a'],
+        'the replaced instance is destroyed'
+      );
+    }
+
+    ['@test a let-bound curried classic component in an element is updated when a curried argument changes']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render(
+        '<p>{{#let (component "classic-show-arg" value=this.v) as |x|}}{{x}}{{/let}}</p>',
+        { v: 'a' }
+      );
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.deepEqual(hooks, ['didUpdateAttrs b'], 'the instance is updated');
+    }
+
+    ['@test a let-bound curried classic component is updated when a curried argument changes']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+
+      this.render('{{#let (component "classic-show-arg" value=this.v) as |x|}}{{x}}{{/let}}', {
+        v: 'a',
+      });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.deepEqual(hooks, ['didUpdateAttrs b'], 'the instance is updated');
+    }
+
+    ['@test a curried classic component of a yielded (hash) is updated when a curried argument changes']() {
+      let instances: ClassicComponent[] = [];
+      let hooks: string[] = [];
+      this.registerClassicShowArg(instances, hooks);
+      this.owner.register(
+        'component:yield-hash',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash item=(component "classic-show-arg" value=this.v))}}'),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render('{{#yield-hash v=this.v as |h|}}{{h.item}}{{/yield-hash}}', { v: 'a' });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.deepEqual(hooks, ['didUpdateAttrs b'], 'the instance is updated');
+    }
+
+    ['@test a let-bound curried Glimmer component is updated when a curried argument changes']() {
+      let instances: Component<{ value: string }>[] = [];
+      let hooks: string[] = [];
+      this.registerShowArg(instances, hooks);
+
+      this.render('{{#let (component "show-arg" value=this.v) as |x|}}{{x}}{{/let}}', { v: 'a' });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.deepEqual(hooks, [], 'no component is created or destroyed');
+      this.assert.strictEqual(instances[0]!.args.value, 'b', 'its arguments are updated');
+    }
+  }
+);
