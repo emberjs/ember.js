@@ -129,8 +129,9 @@ function gxtRunTask<F extends () => any>(callback: F): ReturnType<F> {
   // updated DOM immediately, then clear the sync state (including the tags
   // queued for revalidation, so stale cells do not re-evaluate).
   gxtHarness!.syncAfterRun(true);
-  // Errors thrown while destroying components during the sync are rethrown
-  // by `syncDomNow()` above, so no render-error flush is needed here.
+  // The sync throws the errors of the update it renders (an updated
+  // component's hook, a component a new branch renders, a destruction), so no
+  // render-error flush is needed here.
   return result;
 }
 

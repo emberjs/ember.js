@@ -110,15 +110,20 @@ export const gxtHarness = __GXT_MODE__
       syncAfterRun(clearTagsToRevalidate: boolean) {
         const pipeline = getGxtRenderer()?.compilePipeline;
         pipeline?.resetManagedComponentCounters?.();
-        pipeline?.syncDomNow?.();
-        pipeline?.setPendingSync?.(false);
-        pipeline?.setPendingSyncFromPropertyChange?.(false);
-        if (clearTagsToRevalidate) {
-          // Written by gxt itself.
-          const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
-          if (typeof clearTags === 'function') clearTags();
+        // What the sync throws (an error of the update it renders) reaches the
+        // caller of the helper, after the sync state is cleared.
+        try {
+          pipeline?.syncDomNow?.();
+        } finally {
+          pipeline?.setPendingSync?.(false);
+          pipeline?.setPendingSyncFromPropertyChange?.(false);
+          if (clearTagsToRevalidate) {
+            // Written by gxt itself.
+            const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
+            if (typeof clearTags === 'function') clearTags();
+          }
+          pipeline?.resetIntervalBudget?.();
         }
-        pipeline?.resetIntervalBudget?.();
       },
     }
   : undefined;

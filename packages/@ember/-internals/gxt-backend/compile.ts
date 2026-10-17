@@ -7268,9 +7268,8 @@ function _gxtIfWatcherNextBool(cb: IfWatcherCb, obj: object): boolean | null {
 
 // An error a binding throws while it updates (it renders a component whose
 // constructor throws, its value cannot render, …) is the update's error. gxt's
-// pass stops at it; the sync queues it in the render-error queue, and the code
-// that asked for the update throws it from there (`renderPass.flushRenderErrors`,
-// see the renderer's `revalidate`), as Glimmer's revalidation throws it to the
+// pass stops at it; the sync queues it in the render-error queue and throws it
+// at its end (`_gxtSyncDomNow`), as Glimmer's revalidation throws it to the
 // code that renders.
 function _gxtCaptureUpdateError(error: unknown): void {
   getGxtRenderer()!.compilePipeline.captureRenderError(error);
@@ -7392,6 +7391,14 @@ function _gxtSyncDomNow(): void {
     _gxtSetPendingSyncFromPropertyChange(false);
     // The matching `_gxtSetSyncing(false)` reset lives in the `finally` below.
     _gxtSetSyncing(true);
+    // What the update this sync renders queues (`captureRenderError`: a hook
+    // of an updated component, a branch whose component throws, see
+    // `_gxtCaptureUpdateError`) is this sync's error: the sync throws the first
+    // one at its end to the code that ran it, as Glimmer's revalidation throws
+    // an error of the render to the code that ran the run loop.
+    const renderPass = getGxtRenderer()!.renderPass;
+    const renderErrorMark = renderPass.renderErrorMark();
+    let completed = false;
     // Increment sync cycle ID so modifier update dedup works correctly.
     _gxtIncrementSyncCycleId();
     // Clear modifier update tracking for this new sync cycle
@@ -7791,6 +7798,7 @@ function _gxtSyncDomNow(): void {
       } catch (destroyErr) {
         _gxtDeferredSyncError = _gxtDeferredSyncError || destroyErr;
       }
+      completed = true;
     } finally {
       // CRITICAL: Always reset the syncing flag even if an error escapes.
       // Without this, the flag stays true forever and _gxtSyncDomNow becomes a
@@ -7799,6 +7807,9 @@ function _gxtSyncDomNow(): void {
       // Also reset the property-driven mirror flag so a subsequent
       // initial-render sync starts in a clean state.
       _gxtSetSyncIsPropertyDriven(false);
+      // An error that escaped a phase reaches the caller as it is; the queue
+      // can hold copies of it (several sites queue an error and also throw it).
+      if (!completed) renderPass.dropRenderErrors(renderErrorMark);
     }
     // Re-throw any deferred error (the rerender limit, the force-rerender or
     // lifecycle phases) so it propagates to assert.throws() in tests. The read
@@ -7806,12 +7817,15 @@ function _gxtSyncDomNow(): void {
     // `_gxtFlags.syncing` and `_gxtFlags.syncIsPropertyDriven`, so the throw
     // escapes with a clean sync state — the next `_gxtSyncDomNow` call will not
     // short-circuit on the re-entrancy guard. Clear before throwing so the slot
-    // starts the next sync cycle empty.
+    // starts the next sync cycle empty; the queued errors of the sync are
+    // dropped (one of them can be a copy of it).
     const deferredSyncErr = _gxtDeferredSyncError;
     if (deferredSyncErr) {
       _gxtDeferredSyncError = null;
+      renderPass.dropRenderErrors(renderErrorMark);
       throw deferredSyncErr;
     }
+    renderPass.flushRenderErrors(renderErrorMark);
   }
 }
 
