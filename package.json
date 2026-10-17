@@ -175,7 +175,10 @@
     "node": ">= 20.19"
   },
   "release-plan": {
-    "ignore": true
+    "ignore": true,
+    "renameCommitters": {
+      "NullVoxPopuli-ai-agent": "NullVoxPopuli"
+    }
   },
   "pnpm": {
     "onlyBuiltDependencies": [
