@@ -3888,6 +3888,20 @@ function _gxtContentValue(read: () => unknown, helper: _GxtContentHelper | null 
   return value;
 }
 
+// What the result of a content mustache's getter renders as, taken as the
+// content binding takes its value (`_gxtContentValue`): a function result as
+// `_gxtContentFunctionValue` takes it, and a gxt cell result read. A block
+// parameter of a build-time template is the cell of the yielded value when that
+// value is not constant (gxt `$_slot`), as for `{{yield (if this.c (component
+// "a") (component "b"))}}`; the block's `{{x}}` renders the value the cell
+// holds (a component), not the cell.
+function _gxtContentResult(result: unknown, helper: _GxtContentHelper | null): unknown {
+  if (typeof result === 'function') return _gxtContentFunctionValue(result, helper);
+  if (result === null || typeof result !== 'object') return result;
+  const value = _gxtUnwrapCell(result);
+  return value === result ? result : _gxtContentResult(value, helper);
+}
+
 // What a function child of an element renders: `getter` is the compiled
 // `{{…}}` expression (or a block's render function), `owner` the context the
 // element is rendered in. It is evaluated once, in a tracking frame of its own.
@@ -13108,14 +13122,15 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       _gxtSetTracker(_captureFrame);
       try {
         result = item();
-        // Mirror the effect's read shape so the same cells are captured: a
-        // function result is taken as the content binding takes it
-        // (`_gxtContentFunctionValue`). A nested getter (e.g. from $__if) is
-        // called, a helper definition invoked, and a component definition (a
-        // CurriedComponent included) stays for the rendering paths below.
-        if (typeof result === 'function') {
+        // Mirror the effect's read shape so the same cells are captured: the
+        // result is taken as the content binding takes it
+        // (`_gxtContentResult`). A nested getter (e.g. from $__if) is called, a
+        // helper definition invoked, a gxt cell (a block parameter) read, and a
+        // component definition (a CurriedComponent included) stays for the
+        // rendering paths below.
+        if (typeof result === 'function' || (result !== null && typeof result === 'object')) {
           contentHelper = _gxtContentHelper();
-          finalResult = _gxtContentFunctionValue(result, contentHelper);
+          finalResult = _gxtContentResult(result, contentHelper);
         } else {
           finalResult = result;
         }
@@ -13251,9 +13266,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
             // `(if this.c (component …) (component …))`). What the getter and
             // the render throw propagates.
             _gxtTemplateEffect(() => {
-              const newResult = item();
-              const newFinal =
-                typeof newResult === 'function' ? _gxtContentFunctionValue(newResult) : newResult;
+              const newFinal: any = _gxtContentResult(item(), null);
               const parent = startMarker.parentNode;
               if (!parent) return;
 
