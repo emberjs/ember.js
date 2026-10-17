@@ -413,7 +413,7 @@ moduleFor(
       this.assertText('1');
     }
 
-    '@test getters update when dependent computeds are invalidated'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getters update when dependent computeds are invalidated`]() {
       class CountComponent extends Component {
         @tracked _count = 0;
 
@@ -774,7 +774,7 @@ moduleFor(
       assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
     }
 
-    '@test computed properties can depend on args'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed properties can depend on args`]() {
       class TestComponent extends Component {
         @computed('args.text')
         get text() {
@@ -800,7 +800,7 @@ moduleFor(
       this.assertText('hello!');
     }
 
-    '@test computed properties can depend on nested args'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed properties can depend on nested args`]() {
       let foo = EmberObject.create({
         text: 'hello!',
       });

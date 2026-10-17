@@ -20,7 +20,9 @@ function testGet(assert, expect, x, y) {
 moduleFor(
   'EmberObject computed property',
   class extends AbstractTestCase {
-    ['@test computed property on instance'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed property on instance`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -31,7 +33,9 @@ moduleFor(
       testGet(assert, 'FOO', MyClass.create(), 'foo');
     }
 
-    ['@test computed property on subclass'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed property on subclass`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -49,7 +53,9 @@ moduleFor(
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
-    ['@test replacing computed property with regular val'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test replacing computed property with regular val`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -64,7 +70,9 @@ moduleFor(
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
-    ['@test complex dependent keys'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test complex dependent keys`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -101,7 +109,9 @@ moduleFor(
       testGet(assert, 'BOOM 22', obj2, 'foo');
     }
 
-    ['@test complex dependent keys changing complex dependent keys'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test complex dependent keys changing complex dependent keys`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -143,7 +153,9 @@ moduleFor(
       testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
-    ['@test can retrieve metadata for a computed property'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can retrieve metadata for a computed property`](
+      assert
+    ) {
       let MyClass = EmberObject.extend({
         computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
       });
@@ -178,7 +190,7 @@ moduleFor(
       }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
     }
 
-    ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test overriding a computed property with null removes it from eachComputedProperty iteration`](
       assert
     ) {
       let MyClass = EmberObject.extend({
@@ -261,7 +273,7 @@ moduleFor(
       );
     }
 
-    ['@test list of properties updates when an additional property is added (such cache busting)'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test list of properties updates when an additional property is added (such cache busting)`](
       assert
     ) {
       let MyClass = EmberObject.extend({
@@ -313,7 +325,9 @@ moduleFor(
       );
     }
 
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Calling _super in call outside the immediate function of a CP getter works`](
+      assert
+    ) {
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -338,7 +352,9 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Calling _super in apply outside the immediate function of a CP getter works`](
+      assert
+    ) {
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -386,7 +402,9 @@ moduleFor(
       obj2.destroy();
     }
 
-    ['@test native getters and setters work'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test native getters and setters work`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         bar = 123;
 
@@ -407,7 +425,9 @@ moduleFor(
       assert.equal(instance.bar, 456, 'setters work');
     }
 
-    [`${testUnless(EMBER_A.isRemoved)} @test @each on maybe array`](assert) {
+    [`${testUnless(EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each on maybe array`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
 
       let Normalizer = EmberObject.extend({
@@ -461,7 +481,9 @@ moduleFor(
       assert.deepEqual(n.normalized, []);
     }
 
-    ['@test @each works on array with falsy values'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each works on array with falsy values`](
+      assert
+    ) {
       let obj = class extends EmberObject {
         falsy = [null, undefined, false, '', 0, {}];
         truthy = [true, 'foo', 123];
@@ -487,7 +509,9 @@ moduleFor(
       }, /When using @each to observe the array `true,foo,123`, the items in the array must be objects/);
     }
 
-    ['@test @each works with array-likes'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each works with array-likes`](
+      assert
+    ) {
       class ArrayLike {
         constructor(arr = []) {
           this.inner = arr;
@@ -562,7 +586,9 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test computeds can have cycles'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computeds can have cycles`](
+      assert
+    ) {
       class CycleObject {
         // eslint-disable-next-line getter-return
         @computed('bar')

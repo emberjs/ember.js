@@ -28,7 +28,9 @@ const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test empty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test empty part 1/2`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
@@ -53,7 +55,9 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test notEmpty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notEmpty part 1/2`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
@@ -95,7 +99,9 @@ moduleFor(
       assert.equal(get(obj, 'notFoo'), false);
     }
 
-    [`${testUnless(isRemoved)} @test empty part 2/2`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test empty part 2/2`](
+      assert
+    ) {
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -226,7 +232,9 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    [`${testUnless(isRemoved)} @test notEmpty part 2/2`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notEmpty part 2/2`](
+      assert
+    ) {
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -240,7 +248,9 @@ moduleFor(
       assert.equal(get(obj, 'hasItems'), false, 'is empty');
     }
 
-    [`${testUnless(isRemoved)} @test none`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test none`](
+      assert
+    ) {
       expectDeprecation(/`none` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isNone` from `@ember\/utils` is deprecated/, isEnabled);
 

@@ -8,7 +8,8 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, computed } from '@ember/object';
+import EmberObject, { get } from '@ember/object';
+import computed from '@ember/-internals/metal/lib/computed';
 import { moduleFor, ignoreDeprecation } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

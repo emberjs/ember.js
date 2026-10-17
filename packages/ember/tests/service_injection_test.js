@@ -72,7 +72,9 @@ moduleFor(
 moduleFor(
   'Service Injection with ES5 Getters',
   class extends ApplicationTestCase {
-    async ['@test Service can be injected and is resolved without calling `get`'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Service can be injected and is resolved without calling \`get\``](
+      assert
+    ) {
       this.add(
         'controller:application',
         class extends Controller {

@@ -30,7 +30,7 @@ import type { ControllerQueryParamType } from '@ember/controller';
 import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import { dependentKeyCompat } from '@ember/object/compat';
+import { dependentKeyCompat } from '@ember/object/lib/dependent-key-compat';
 import { once } from '@ember/runloop';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';

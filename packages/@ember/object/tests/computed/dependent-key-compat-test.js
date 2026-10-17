@@ -1,12 +1,14 @@
 import EmberObject, { computed, observer } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'dependentKeyCompat',
   class extends AbstractTestCase {
-    '@test it works with computed properties'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it works with computed properties`](
+      assert
+    ) {
       class Person {
         @tracked firstName = 'Tom';
         @tracked lastName = 'Dale';
@@ -31,7 +33,9 @@ moduleFor(
       assert.equal(tom.fullName, 'Thomas Dale');
     }
 
-    '@test it works with classic classes'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it works with classic classes`](
+      assert
+    ) {
       let Person = class extends EmberObject {
         @tracked
         firstName = 'Tom';
@@ -58,7 +62,9 @@ moduleFor(
       assert.equal(tom.fullName, 'Thomas Dale');
     }
 
-    '@test a read of the getter does not hide a change from a computed property'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a read of the getter does not hide a change from a computed property`](
+      assert
+    ) {
       class Person {
         @tracked firstName = 'Tom';
         @tracked lastName = 'Dale';
@@ -94,7 +100,7 @@ moduleFor(
       assert.strictEqual(tom.fullName, 'Tomster Dale');
     }
 
-    '@test a read of the getter does not hide a change from a computed property on another object'(
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a read of the getter does not hide a change from a computed property on another object`](
       assert
     ) {
       class Person {
@@ -125,7 +131,9 @@ moduleFor(
       assert.strictEqual(badge.label, 'Hello, Thomas');
     }
 
-    '@test a read of the getter does not hide a change in classic classes'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a read of the getter does not hide a change in classic classes`](
+      assert
+    ) {
       let Person = class extends EmberObject {
         @tracked
         firstName = 'Tom';
@@ -153,7 +161,9 @@ moduleFor(
       assert.strictEqual(tom.fullName, 'Thomas Dale');
     }
 
-    '@test a computed property follows the properties that the getter reads now'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a computed property follows the properties that the getter reads now`](
+      assert
+    ) {
       class Person {
         @tracked firstName = 'Tom';
         @tracked nickname = 'Tomster';
@@ -185,7 +195,9 @@ moduleFor(
       assert.strictEqual(tom.greeting, 'Hello, Zoey');
     }
 
-    async '@test a read of the getter does not hide a change from an async observer'(assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a read of the getter does not hide a change from an async observer`](
+      assert
+    ) {
       let Person = EmberObject.extend({
         firstName: tracked({ value: 'Tom' }),
 
@@ -219,7 +231,9 @@ moduleFor(
       tom.destroy();
     }
 
-    async '@test it works with async observers'(assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it works with async observers`](
+      assert
+    ) {
       let count = 0;
 
       let Person = EmberObject.extend({
@@ -256,7 +270,9 @@ moduleFor(
       tom.destroy();
     }
 
-    '@test it does not work with sync observers'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it does not work with sync observers`](
+      assert
+    ) {
       let count = 0;
 
       let Person = EmberObject.extend({

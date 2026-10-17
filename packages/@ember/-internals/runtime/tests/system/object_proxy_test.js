@@ -199,7 +199,7 @@ moduleFor(
       }
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should work with watched properties`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should work with watched properties`](
       assert
     ) {
       let content1 = { firstName: 'Tom', lastName: 'Dale' };

@@ -173,7 +173,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         this.assertText('FIZZ BAR hey');
       }
 
-      ['@test layout supports computed property']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test layout supports computed property`]() {
         expectClassicComponentDeprecation();
 
         let FooBarComponent = class extends Component {
@@ -344,7 +344,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         });
       }
 
-      ['@test tagName can not be a computed property']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test tagName can not be a computed property`]() {
         expectClassicComponentDeprecation();
 
         let FooBarComponent = class extends Component {
@@ -964,7 +964,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         this.assertText('In layout - someProp: wycats');
       }
 
-      ['@test setting a value for a computed property then later getting the value for that property works'](
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a value for a computed property then later getting the value for that property works`](
         assert
       ) {
         expectClassicComponentDeprecation();
@@ -1706,7 +1706,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         this.assertText('initial value - initial value');
       }
 
-      ['@test a two way binding flows upstream through a CP when consumed in the template']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP when consumed in the template`]() {
         expectClassicComponentDeprecation();
 
         let component;
@@ -1753,7 +1753,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         this.assertText('initial value - initial value');
       }
 
-      ['@test a two way binding flows upstream through a CP without template consumption']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP without template consumption`]() {
         expectClassicComponentDeprecation();
 
         let component;
@@ -1801,7 +1801,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         this.assertText('initial value');
       }
 
-      ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test GH#18417 - a two way binding flows upstream to a parent component through a CP`]() {
         expectClassicComponentDeprecation();
 
         let parent, child;
@@ -1983,7 +1983,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         assertElement('foo');
       }
 
-      ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test child triggers revalidate during parent destruction (GH#13846)`]() {
         expectClassicComponentDeprecation();
 
         this.owner.register(

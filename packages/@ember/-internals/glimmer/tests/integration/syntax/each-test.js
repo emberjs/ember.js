@@ -1119,27 +1119,29 @@ if (!ARRAY_PROXY_REMOVED && !EMBER_A_REMOVED) {
     }
   );
 
-  moduleFor(
-    'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-    class extends EachTest {
-      createList(items) {
-        let wrapped = emberA(items);
-        let proxy = ignoreDeprecation(() =>
-          class extends ArrayProxy {
-            @computed('wrappedItems.[]')
-            get arrangedContent() {
-              // Slice the items to ensure that updates must be propogated
-              return this.wrappedItems.slice();
-            }
-          }.create({
-            wrappedItems: wrapped,
-          })
-        );
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    moduleFor(
+      'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
+      class extends EachTest {
+        createList(items) {
+          let wrapped = emberA(items);
+          let proxy = ignoreDeprecation(() =>
+            class extends ArrayProxy {
+              @computed('wrappedItems.[]')
+              get arrangedContent() {
+                // Slice the items to ensure that updates must be propogated
+                return this.wrappedItems.slice();
+              }
+            }.create({
+              wrappedItems: wrapped,
+            })
+          );
 
-        return { list: proxy, delegate: wrapped };
+          return { list: proxy, delegate: wrapped };
+        }
       }
-    }
-  );
+    );
+  }
 
   moduleFor(
     'Syntax test: {{#each}} with array proxies, content is updated after init',
