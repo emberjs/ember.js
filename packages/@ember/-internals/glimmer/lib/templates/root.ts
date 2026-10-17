@@ -201,41 +201,38 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     const isClass = fnStr.startsWith('class ') || fnStr.startsWith('class{');
 
     if (isClass) {
-      // It's a class (GXT Component) - instantiate with new
-      try {
-        // Check if it's a GXT Component class (has $template symbol or extends GxtComponent)
-        const lib = _gxtLib();
-        const isGxtComponent =
-          (lib && tpl.prototype instanceof lib.Component) ||
-          tpl.prototype?.constructor?.name === 'Component' ||
-          tpl.prototype?.$template ||
-          typeof tpl.prototype?.template === 'function';
+      // It's a class (GXT Component) - instantiate with new. What its
+      // constructor or template throws reaches the render, as above.
+      // Check if it's a GXT Component class (has $template symbol or extends GxtComponent)
+      const lib = _gxtLib();
+      const isGxtComponent =
+        (lib && tpl.prototype instanceof lib.Component) ||
+        tpl.prototype?.constructor?.name === 'Component' ||
+        tpl.prototype?.$template ||
+        typeof tpl.prototype?.template === 'function';
 
-        if (isGxtComponent) {
-          // Use GXT's proper rendering flow for GXT components
-          lib.renderComponent(tpl, {
-            element: target,
-            args: ctx?.args || {},
-            owner: getGxtRenderer()?.compilePipeline.getRootContext?.(),
-          });
-          return; // renderComponent handles everything
-        }
+      if (isGxtComponent) {
+        // Use GXT's proper rendering flow for GXT components
+        lib.renderComponent(tpl, {
+          element: target,
+          args: ctx?.args || {},
+          owner: getGxtRenderer()?.compilePipeline.getRootContext?.(),
+        });
+        return; // renderComponent handles everything
+      }
 
-        // Non-GXT class - instantiate manually
-        const componentInstance = new tpl(ctx?.args || {});
+      // Non-GXT class - instantiate manually
+      const componentInstance = new tpl(ctx?.args || {});
 
-        // GXT components have a 'template' property that is a function
-        // The function must be called with the component instance as `this`
-        const templateProp = componentInstance.template || componentInstance['template'];
-        if (typeof templateProp === 'function') {
-          // Call the template function bound to the component instance
-          template = templateProp.call(componentInstance);
-        } else {
-          // No template property, use the instance itself
-          template = componentInstance;
-        }
-      } catch {
-        return;
+      // GXT components have a 'template' property that is a function
+      // The function must be called with the component instance as `this`
+      const templateProp = componentInstance.template || componentInstance['template'];
+      if (typeof templateProp === 'function') {
+        // Call the template function bound to the component instance
+        template = templateProp.call(componentInstance);
+      } else {
+        // No template property, use the instance itself
+        template = componentInstance;
       }
     } else {
       // Regular function - call it.
@@ -333,14 +330,11 @@ function customComponentManagerFactory(definition: object): Function | undefined
 
 // Helper to get component's template
 function getTemplateForComponent(component: any, owner: any): any {
-  // Try getComponentTemplate from @glimmer/manager
-  try {
-    const tpl = getComponentTemplate(component.constructor || component);
-    if (tpl) {
-      return tpl;
-    }
-  } catch {
-    // Not set via setComponentTemplate
+  // Try getComponentTemplate from @glimmer/manager (WeakMap lookups along the
+  // prototype chain)
+  const ownTemplate = getComponentTemplate(component.constructor || component);
+  if (ownTemplate) {
+    return ownTemplate;
   }
 
   // Try the bridge component-template registry
@@ -454,63 +448,57 @@ function createRootTemplate(_owner: any) {
         const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
         if (_cellFor) {
           const skipKeys = new Set([...GXT_CONTEXT_SKIP_KEYS, ...GXT_VIEW_SKIP_KEYS, 'ownerView']);
-          try {
-            const ctor: any = (component as any).constructor;
-            if (ctor && ctor.PrototypeMixin) {
-              const collected = new Set<string>();
-              const walk = (mx: any, depth = 0) => {
-                if (!mx || depth > 20) return;
-                if (mx.properties && typeof mx.properties === 'object') {
-                  for (const k of Object.keys(mx.properties)) collected.add(k);
-                }
-                if (Array.isArray(mx.mixins)) {
-                  for (const inner of mx.mixins) walk(inner, depth + 1);
-                }
-              };
-              walk(ctor.PrototypeMixin);
-              for (const key of collected) {
-                if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
-                // Only install a cell if the component doesn't already have
-                // an own descriptor for this key. If the key is already on
-                // the component (with a value or as a cell-backed
-                // getter/setter), renderer.ts's earlier pass has handled it.
-                const existing = Object.getOwnPropertyDescriptor(renderContext, key);
-                if (existing) continue;
-                // Walk the prototype chain of the COMPONENT to detect
-                // mixin-installed accessors (computed properties like
-                // `actionContextObject` from TargetActionSupport). If any
-                // ancestor has an accessor descriptor (get OR set) for this
-                // key, skip cellFor install — otherwise `_cellFor(..., false)`
-                // would install a cell-backed own getter whose `__fn = () =>
-                // component[key]` would re-read the CP's getter through the
-                // prototype chain, recursing without bound (`cell.value →
-                // __fn() → component[key] → cell.value → ...`). Matches the
-                // same guard in renderer.ts. `properties[key]` holds the
-                // ComputedProperty itself, so the proto descriptor is the
-                // reliable signal.
-                let hasAccessor = false;
-                let proto: any = Object.getPrototypeOf(component);
-                while (proto && proto !== Object.prototype) {
-                  const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
-                  if (protoDesc) {
-                    if (protoDesc.get || protoDesc.set) hasAccessor = true;
-                    break;
-                  }
-                  proto = Object.getPrototypeOf(proto);
-                }
-                if (hasAccessor) continue;
-                try {
-                  // `cellFor(..., skipDefine=false)` creates a cell and
-                  // installs a tracked getter/setter for the key, even if
-                  // the property did not previously exist on the object.
-                  _cellFor(renderContext, key, /* skipDefine */ false);
-                } catch {
-                  /* ignore non-configurable properties */
-                }
+          const ctor: any = (component as any).constructor;
+          if (ctor && ctor.PrototypeMixin) {
+            const collected = new Set<string>();
+            const walk = (mx: any, depth = 0) => {
+              if (!mx || depth > 20) return;
+              if (mx.properties && typeof mx.properties === 'object') {
+                for (const k of Object.keys(mx.properties)) collected.add(k);
               }
+              if (Array.isArray(mx.mixins)) {
+                for (const inner of mx.mixins) walk(inner, depth + 1);
+              }
+            };
+            walk(ctor.PrototypeMixin);
+            for (const key of collected) {
+              if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+              // Only install a cell if the component doesn't already have
+              // an own descriptor for this key. If the key is already on
+              // the component (with a value or as a cell-backed
+              // getter/setter), renderer.ts's earlier pass has handled it.
+              const existing = Object.getOwnPropertyDescriptor(renderContext, key);
+              if (existing) continue;
+              // Walk the prototype chain of the COMPONENT to detect
+              // mixin-installed accessors (computed properties like
+              // `actionContextObject` from TargetActionSupport). If any
+              // ancestor has an accessor descriptor (get OR set) for this
+              // key, skip cellFor install — otherwise `_cellFor(..., false)`
+              // would install a cell-backed own getter whose `__fn = () =>
+              // component[key]` would re-read the CP's getter through the
+              // prototype chain, recursing without bound (`cell.value →
+              // __fn() → component[key] → cell.value → ...`). Matches the
+              // same guard in renderer.ts. `properties[key]` holds the
+              // ComputedProperty itself, so the proto descriptor is the
+              // reliable signal.
+              let hasAccessor = false;
+              let proto: any = Object.getPrototypeOf(component);
+              while (proto && proto !== Object.prototype) {
+                const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+                if (protoDesc) {
+                  if (protoDesc.get || protoDesc.set) hasAccessor = true;
+                  break;
+                }
+                proto = Object.getPrototypeOf(proto);
+              }
+              if (hasAccessor) continue;
+              // `cellFor(..., skipDefine=false)` creates a cell and installs a
+              // tracked getter/setter for the key, even if the property did
+              // not previously exist on the object. The key is not an own
+              // property and no accessor is inherited, so creating the cell
+              // reads an inherited data value (or `undefined`).
+              _cellFor(renderContext, key, /* skipDefine */ false);
             }
-          } catch {
-            /* ignore PrototypeMixin walk errors */
           }
         }
 
@@ -680,48 +668,26 @@ function createRootTemplate(_owner: any) {
       // cell and re-evaluates when the cell is updated via component-contexts
       // propagation (triggered by set(controller, 'model', newValue)).
       //
-      // GXT fix: if the controller defines a read-only computed `model`
-      // (e.g. `@computed get model() { return [...] }`), the inherited setter
-      // on the controller throws "Cannot override the computed property".
-      // Detect that case and define `model` directly on renderContext with a
-      // data descriptor that shadows the inherited computed, so the getter
-      // still reads the computed value through prototype chain on read, but
-      // subsequent writes don't go back through the computed's setter.
+      // A controller whose class defines `model` as an accessor (Controller's
+      // own computed `model`, a getter, a `@tracked` field) keeps it: the
+      // template reads the controller's `model`, with the controller as
+      // `this` (`defineControllerGetters` below). Nothing is written through
+      // the accessor, which would run the controller's setter on the render
+      // context (a computed `model` without a setter throws); Glimmer writes
+      // no controller property when it renders.
       if (!componentInstance) {
-        try {
-          // Walk prototype chain looking for a `model` descriptor that is a
-          // getter-without-setter (readonly computed).
-          let proto = Object.getPrototypeOf(renderContext);
-          let foundReadOnlyModel = false;
-          while (proto && proto !== Object.prototype) {
-            const d = Object.getOwnPropertyDescriptor(proto, 'model');
-            if (d) {
-              if (d.get && !d.set) foundReadOnlyModel = true;
-              break;
-            }
-            proto = Object.getPrototypeOf(proto);
+        let accessorModel = false;
+        let proto = Object.getPrototypeOf(renderContext);
+        while (proto && proto !== Object.prototype) {
+          const d = Object.getOwnPropertyDescriptor(proto, 'model');
+          if (d) {
+            accessorModel = d.get !== undefined || d.set !== undefined;
+            break;
           }
-          if (foundReadOnlyModel) {
-            // Define own data property so assignment doesn't invoke inherited
-            // computed setter. Use the controller's computed value if `model`
-            // from the outlet is undefined, so `{{this.model}}` reads the
-            // computed result through the render context.
-            Object.defineProperty(renderContext, 'model', {
-              value: model !== undefined ? model : (controller as any).model,
-              writable: true,
-              configurable: true,
-              enumerable: true,
-            });
-          } else {
-            renderContext.model = model;
-          }
-        } catch {
-          // Fall back to direct assignment if anything goes wrong.
-          try {
-            renderContext.model = model;
-          } catch {
-            /* readonly computed */
-          }
+          proto = Object.getPrototypeOf(proto);
+        }
+        if (!accessorModel) {
+          renderContext.model = model;
         }
       }
 
@@ -739,11 +705,7 @@ function createRootTemplate(_owner: any) {
         // Register controller → outletRef so set(controller, key, val)
         // can locate the outlet for a full rerender. See the docblock on
         // `_gxtControllerToOutletRefMap` at module top.
-        try {
-          _gxtControllerToOutletRefMap.set(controller, instance.outletRef);
-        } catch {
-          /* WeakMap rejects non-object keys; controller is checked above */
-        }
+        _gxtControllerToOutletRefMap.set(controller, instance.outletRef);
       }
 
       // Install GXT cells on the render context so property reads inside formulas
@@ -751,53 +713,43 @@ function createRootTemplate(_owner: any) {
       // re-renders because the formula never tracked cell(context, 'model').
       const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
+      // Each key is an own configurable data property, so creating its cell
+      // reads a plain value and redefines a configurable property.
       if (_cellFor) {
-        try {
-          const skipKeys = new Set(GXT_CONTEXT_SKIP_KEYS);
-          for (const key of Object.getOwnPropertyNames(renderContext)) {
-            if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
-            const desc = Object.getOwnPropertyDescriptor(renderContext, key);
-            if (
-              desc &&
-              !desc.get &&
-              !desc.set &&
-              desc.configurable &&
-              typeof desc.value !== 'function'
-            ) {
-              try {
-                _cellFor(renderContext, key, false);
-                // Register reverse mapping so nested object mutations
-                // dirty the parent cell (e.g., model.color changes → dirty cell(ctx, 'model'))
-                if (desc.value && typeof desc.value === 'object' && _registerOwner) {
-                  _registerOwner(desc.value, renderContext, key);
-                }
-              } catch {
-                /* ignore non-configurable properties */
-              }
+        const skipKeys = new Set(GXT_CONTEXT_SKIP_KEYS);
+        for (const key of Object.getOwnPropertyNames(renderContext)) {
+          if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+          const desc = Object.getOwnPropertyDescriptor(renderContext, key);
+          if (
+            desc &&
+            !desc.get &&
+            !desc.set &&
+            desc.configurable &&
+            typeof desc.value !== 'function'
+          ) {
+            _cellFor(renderContext, key, false);
+            // Register reverse mapping so nested object mutations
+            // dirty the parent cell (e.g., model.color changes → dirty cell(ctx, 'model'))
+            if (desc.value && typeof desc.value === 'object' && _registerOwner) {
+              _registerOwner(desc.value, renderContext, key);
             }
           }
-          // Also install cells on argsObj for @model etc.
-          for (const key of ['model', 'controller']) {
-            const desc = Object.getOwnPropertyDescriptor(argsObj, key);
-            if (
-              desc &&
-              !desc.get &&
-              !desc.set &&
-              desc.configurable &&
-              typeof desc.value !== 'function'
-            ) {
-              try {
-                _cellFor(argsObj, key, false);
-                if (desc.value && typeof desc.value === 'object' && _registerOwner) {
-                  _registerOwner(desc.value, argsObj, key);
-                }
-              } catch {
-                /* ignore */
-              }
+        }
+        // Also install cells on argsObj for @model etc.
+        for (const key of ['model', 'controller']) {
+          const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+          if (
+            desc &&
+            !desc.get &&
+            !desc.set &&
+            desc.configurable &&
+            typeof desc.value !== 'function'
+          ) {
+            _cellFor(argsObj, key, false);
+            if (desc.value && typeof desc.value === 'object' && _registerOwner) {
+              _registerOwner(desc.value, argsObj, key);
             }
           }
-        } catch {
-          /* ignore cell installation errors */
         }
       }
 
@@ -1013,85 +965,75 @@ function createRootTemplate(_owner: any) {
         !routeTemplateChanged
       ) {
         const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-        let cellsUpdated = false;
         if (_cellFor) {
-          try {
-            // Detect phantom rerender: when the outletState's model is the SAME
-            // object as the previous render's model, this rerender was likely
-            // triggered by the renderer's tag-revalidate loop (e.g., from a
-            // `set(controller, 'model', x)` call in setupController) rather
-            // than by a new setOutletState with a fresh model. In that case,
-            // skip the model cell updates — the cells may have been refreshed
-            // by the set() call's propagation through the component-contexts map
-            // to a NEWER value (the controller's current model), and writing
-            // the stale outlet model back would clobber that fresh value.
-            // The model update from set() will be picked up by the next
-            // legitimate setOutletState rerender (which carries the new
-            // render.model).
-            const isPhantomRerender =
-              lastPropagatedModel !== undefined && newModel === lastPropagatedModel;
-            // Update the model cell on the args object
-            const cell = _cellFor(lastArgsObj, 'model', /* skipDefine */ true);
-            if (cell && !isPhantomRerender) {
-              cell.value = newModel;
-            }
-            // Re-register the new model object for interior mutation tracking.
-            // The previous model was registered via registerObjectValueOwner,
-            // but the new model is a different object reference that needs its
-            // own entry in _objectValueCellMap.
-            const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
-            if (newModel && typeof newModel === 'object' && _registerOwner && !isPhantomRerender) {
-              _registerOwner(newModel, lastArgsObj, 'model');
-              _registerOwner(newModel, lastRenderContext, 'model');
-            }
-            // Always update model on the render context cell.
-            // The cell was installed by cellFor during initial render; updating
-            // it here ensures GXT formulas tracking this.model re-evaluate.
-            const ctxCell = _cellFor(lastRenderContext, 'model', /* skipDefine */ true);
-            if (ctxCell && !isPhantomRerender) {
-              ctxCell.value = newModel;
-            }
-            if (!isPhantomRerender) {
-              lastPropagatedModel = newModel;
-            }
-            // For a non-model controller-property write (QP key, etc.) the
-            // changed key's renderContext cell was already dirtied by
-            // the component-contexts fan-out; touch it
-            // here too (idempotent) so a freshly-encountered key whose cell
-            // hadn't yet been installed on lastRenderContext picks up the
-            // controller's current value before the syncDomNow flush. The
-            // value is read back through the renderContext (prototype →
-            // controller), so this never overwrites with a stale value.
-            if (cellOnlyKey && cellOnlyKey !== 'model') {
-              try {
-                const keyCell = _cellFor(lastRenderContext, cellOnlyKey, /* skipDefine */ false);
-                if (keyCell) {
-                  keyCell.value = (lastRenderContext as any)[cellOnlyKey];
-                }
-              } catch {
-                /* non-configurable / accessor key — the fan-out already
-                   dirtied any installed cell; syncDomNow below flushes it */
-              }
-            }
-            // Update outletState
-            lastRenderContext.outletState = effectiveOutlet;
-            cellsUpdated = true;
-          } catch {
-            /* fall through to full re-render */
+          // Detect phantom rerender: when the outletState's model is the SAME
+          // object as the previous render's model, this rerender was likely
+          // triggered by the renderer's tag-revalidate loop (e.g., from a
+          // `set(controller, 'model', x)` call in setupController) rather
+          // than by a new setOutletState with a fresh model. In that case,
+          // skip the model cell updates — the cells may have been refreshed
+          // by the set() call's propagation through the component-contexts map
+          // to a NEWER value (the controller's current model), and writing
+          // the stale outlet model back would clobber that fresh value.
+          // The model update from set() will be picked up by the next
+          // legitimate setOutletState rerender (which carries the new
+          // render.model).
+          const isPhantomRerender =
+            lastPropagatedModel !== undefined && newModel === lastPropagatedModel;
+          // Update the model cell on the args object
+          const cell = _cellFor(lastArgsObj, 'model', /* skipDefine */ true);
+          if (cell && !isPhantomRerender) {
+            cell.value = newModel;
           }
-          if (cellsUpdated) {
-            // Sync DOM now so GXT formulas re-evaluate and update text nodes.
-            // What the sync throws (an error of the update it renders) is the
-            // re-render's error: it does not fall back to a full re-render.
-            const _cpRoot = getGxtRenderer()?.compilePipeline;
-            const syncDomNow = _cpRoot?.syncDomNow;
-            if (typeof syncDomNow === 'function') {
-              _cpRoot?.setPendingSync?.(true);
-              _cpRoot?.setPendingSyncFromPropertyChange?.(true);
-              syncDomNow();
-            }
-            return;
+          // Re-register the new model object for interior mutation tracking.
+          // The previous model was registered via registerObjectValueOwner,
+          // but the new model is a different object reference that needs its
+          // own entry in _objectValueCellMap.
+          const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
+          if (newModel && typeof newModel === 'object' && _registerOwner && !isPhantomRerender) {
+            _registerOwner(newModel, lastArgsObj, 'model');
+            _registerOwner(newModel, lastRenderContext, 'model');
           }
+          // Always update model on the render context cell.
+          // The cell was installed by cellFor during initial render; updating
+          // it here ensures GXT formulas tracking this.model re-evaluate.
+          const ctxCell = _cellFor(lastRenderContext, 'model', /* skipDefine */ true);
+          if (ctxCell && !isPhantomRerender) {
+            ctxCell.value = newModel;
+          }
+          if (!isPhantomRerender) {
+            lastPropagatedModel = newModel;
+          }
+          // For a non-model controller-property write (QP key, etc.) the
+          // changed key's renderContext cell was already dirtied by
+          // the component-contexts fan-out; touch it
+          // here too (idempotent) so a freshly-encountered key whose cell
+          // hadn't yet been installed on lastRenderContext picks up the
+          // controller's current value before the syncDomNow flush. The
+          // value is read back through the renderContext (prototype →
+          // controller), so this never overwrites with a stale value. What
+          // a controller getter throws here reaches the write, as the
+          // change trigger's own read of the property does.
+          if (cellOnlyKey && cellOnlyKey !== 'model') {
+            const keyCell = _cellFor(lastRenderContext, cellOnlyKey, /* skipDefine */ false);
+            if (keyCell) {
+              keyCell.value = (lastRenderContext as any)[cellOnlyKey];
+            }
+          }
+          // Update outletState
+          lastRenderContext.outletState = effectiveOutlet;
+          // Sync DOM now so GXT formulas re-evaluate and update text nodes.
+          // What the cell updates or the sync throw (an error of the update it
+          // renders) is the re-render's error: it does not fall back to a full
+          // re-render.
+          const _cpRoot = getGxtRenderer()?.compilePipeline;
+          const syncDomNow = _cpRoot?.syncDomNow;
+          if (typeof syncDomNow === 'function') {
+            _cpRoot?.setPendingSync?.(true);
+            _cpRoot?.setPendingSyncFromPropertyChange?.(true);
+            syncDomNow();
+          }
+          return;
         }
       }
 
@@ -1130,70 +1072,65 @@ function createRootTemplate(_owner: any) {
         renderOutletState(outletRef);
       }
 
+      // DOM and attribute operations on the live anchors (their attribute
+      // names are valid, they come from an element), and a MutationObserver,
+      // which every DOM this renders into has.
       if (oldAnchorMap.size > 0) {
-        try {
-          const newAnchors = parentElement.querySelectorAll('a[id]');
-          for (const newA of Array.from(newAnchors)) {
-            if (!(newA instanceof HTMLAnchorElement) || !newA.id) continue;
-            const oldA = oldAnchorMap.get(newA.id);
-            if (!oldA || oldA === newA) continue;
+        const newAnchors = parentElement.querySelectorAll('a[id]');
+        for (const newA of Array.from(newAnchors)) {
+          if (!(newA instanceof HTMLAnchorElement) || !newA.id) continue;
+          const oldA = oldAnchorMap.get(newA.id);
+          if (!oldA || oldA === newA) continue;
 
-            // Sync initial state: copy new's attrs & children onto old so the
-            // captured `oldA` reference is immediately up-to-date (reflects
-            // whatever the re-render computed). Keep NEW in the DOM so the
-            // reactive effects that fire later (on classic tag dirty) continue
-            // to target the element their closure captured (`el` inside
-            // renderLinkToElement), which is NEW.
-            const syncAttrs = (src: HTMLAnchorElement, dst: HTMLAnchorElement) => {
-              const dstAttrs = Array.from(dst.attributes);
-              for (const a of dstAttrs) {
-                if (!src.hasAttribute(a.name)) dst.removeAttribute(a.name);
-              }
-              const srcAttrs = Array.from(src.attributes);
-              for (const a of srcAttrs) {
-                if (dst.getAttribute(a.name) !== a.value) {
-                  dst.setAttribute(a.name, a.value);
-                }
-              }
-            };
-            syncAttrs(newA, oldA);
-
-            // Install a MutationObserver on NEW that mirrors attribute /
-            // child-list changes onto OLD. This lets the captured `oldA`
-            // reference stay in sync when subsequent reactive effects
-            // (driven by `dirtyTagFor(routing, 'currentState')`) mutate NEW.
-            // The observer is never disconnected explicitly; once a later
-            // re-render replaces NEW, nothing mutates it any more.
-            try {
-              const obs = new MutationObserver((records) => {
-                for (const rec of records) {
-                  if (rec.type === 'attributes' && rec.attributeName) {
-                    const name = rec.attributeName;
-                    const val = newA.getAttribute(name);
-                    if (val === null) {
-                      oldA.removeAttribute(name);
-                    } else if (oldA.getAttribute(name) !== val) {
-                      oldA.setAttribute(name, val);
-                    }
-                  } else if (rec.type === 'childList') {
-                    // Mirror text content for simple inner text cases
-                    // (LinkTo yields block content). Full child mirroring
-                    // would require recursive DOM cloning; for most LinkTo
-                    // use cases the block is a static text label so
-                    // textContent suffices.
-                    if (oldA.textContent !== newA.textContent) {
-                      oldA.textContent = newA.textContent;
-                    }
-                  }
-                }
-              });
-              obs.observe(newA, { attributes: true, childList: true, subtree: true });
-            } catch {
-              /* MutationObserver unavailable in this environment */
+          // Sync initial state: copy new's attrs & children onto old so the
+          // captured `oldA` reference is immediately up-to-date (reflects
+          // whatever the re-render computed). Keep NEW in the DOM so the
+          // reactive effects that fire later (on classic tag dirty) continue
+          // to target the element their closure captured (`el` inside
+          // renderLinkToElement), which is NEW.
+          const syncAttrs = (src: HTMLAnchorElement, dst: HTMLAnchorElement) => {
+            const dstAttrs = Array.from(dst.attributes);
+            for (const a of dstAttrs) {
+              if (!src.hasAttribute(a.name)) dst.removeAttribute(a.name);
             }
-          }
-        } catch {
-          /* best-effort preservation */
+            const srcAttrs = Array.from(src.attributes);
+            for (const a of srcAttrs) {
+              if (dst.getAttribute(a.name) !== a.value) {
+                dst.setAttribute(a.name, a.value);
+              }
+            }
+          };
+          syncAttrs(newA, oldA);
+
+          // Install a MutationObserver on NEW that mirrors attribute /
+          // child-list changes onto OLD. This lets the captured `oldA`
+          // reference stay in sync when subsequent reactive effects
+          // (driven by `dirtyTagFor(routing, 'currentState')`) mutate NEW.
+          // The observer is never disconnected explicitly; once a later
+          // re-render replaces NEW, nothing mutates it any more.
+          const obs = new MutationObserver((records) => {
+            for (const rec of records) {
+              if (rec.type === 'attributes' && rec.attributeName) {
+                const name = rec.attributeName;
+                const val = newA.getAttribute(name);
+                if (val === null) {
+                  oldA.removeAttribute(name);
+                } else if (oldA.getAttribute(name) !== val) {
+                  oldA.setAttribute(name, val);
+                }
+              } else if (rec.type === 'childList') {
+                // Mirror text content for simple inner text cases
+                // (LinkTo yields block content). Full child mirroring
+                // would require recursive DOM cloning; for most LinkTo
+                // use cases the block is a static text label so
+                // textContent suffices.
+                if (oldA.textContent !== newA.textContent) {
+                  oldA.textContent = newA.textContent;
+                }
+              }
+            }
+          });
+          obs.observe(newA, { attributes: true, childList: true, subtree: true });
         }
       }
     };
