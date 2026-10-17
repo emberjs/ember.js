@@ -2009,6 +2009,20 @@ function _snapshotCurriedArgs(info: any, curried: any) {
   info.__lastSnapshot = snap;
 }
 
+// Whether the curried-component region of `info` already shows `curried`: the
+// curried value it rendered last, or one with the same definition and argument
+// values. Glimmer's curry reference keeps its curried value while the
+// definition stays, and the curried arguments are references: a change of one
+// updates the component the value rendered (the sync re-reads a classic
+// component's arguments, a Glimmer component's `this.args` reads them) and
+// nothing renders again. Another curried value renders its own component.
+function _curriedRegionCurrent(info: any, curried: any, start: Node, end: Node): boolean {
+  return (
+    start.nextSibling !== end &&
+    (curried === info.lastCurried || !_curriedComponentChanged(info, curried))
+  );
+}
+
 // Helper: check if curried component has changed compared to last snapshot.
 function _curriedComponentChanged(info: any, curried: any): boolean {
   const last = info.__lastSnapshot;
@@ -2179,6 +2193,7 @@ function _gxtShowCurriedRegionContent(info: any, value: unknown): boolean {
   // The region no longer shows a curried component: the next one renders.
   info.lastRenderedName = undefined;
   info.__lastSnapshot = null;
+  info.lastCurried = undefined;
   return true;
 }
 
@@ -7759,12 +7774,10 @@ function _gxtSyncDomNow(): void {
               // A value that is not a component: its text, HTML or node.
               if (_gxtShowCurriedRegionContent(info, newFinal)) continue;
 
-              // Skip teardown if same component with unchanged args (preserves DOM stability)
               if (
                 newFinal &&
                 newFinal.__isCurriedComponent &&
-                sm.nextSibling !== em &&
-                !_curriedComponentChanged(info, newFinal)
+                _curriedRegionCurrent(info, newFinal, sm, em)
               ) {
                 continue;
               }
@@ -7781,6 +7794,7 @@ function _gxtSyncDomNow(): void {
               if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
                 const newNode = render(newFinal);
                 if (newNode) parent.insertBefore(newNode, em);
+                info.lastCurried = newFinal;
                 _snapshotCurriedArgs(info, newFinal);
               }
             } catch (error) {
@@ -13036,27 +13050,17 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           if (_cinitial) _cfrag.appendChild(_cinitial);
           _cfrag.appendChild(_cem);
 
-          // Set up reactive effect to track curried arg changes
-          const _cinfo: any = { lastRenderedName: _curriedItem.__name, __lastSnapshot: null };
-          _snapshotCurriedArgs(_cinfo, _curriedItem);
+          // The region shows this one curried value: a change of a curried
+          // argument updates the component it rendered (`_curriedRegionCurrent`).
+          // The effect renders it again only while the region is empty.
           // What the arguments' getters and the render throw propagates.
           _gxtTemplateEffect(() => {
-            // For eagerly-evaluated curried components, track arg getters
             const cc = _curriedItem;
             _touchCurriedArgGetters(cc);
             const parent = _csm.parentNode;
-            if (!parent) return;
-            // Skip if args haven't changed
-            if (_csm.nextSibling !== _cem && !_curriedComponentChanged(_cinfo, cc)) return;
-            // Re-render: remove old, insert new
-            const _removed = _removeNodesBetween(parent, _csm, _cem);
-            if (_removed.length > 0) {
-              getGxtRenderer()?.destruction.destroyInstancesInNodes(_removed);
-            }
+            if (!parent || _csm.nextSibling !== _cem) return;
             const newNode = _renderCurried(cc);
             if (newNode) parent.insertBefore(newNode, _cem);
-            _cinfo.lastRenderedName = cc.__name;
-            _snapshotCurriedArgs(_cinfo, cc);
           });
           return _cfrag;
         }
@@ -13224,6 +13228,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               renderCurriedComponent,
               managers,
               lastRenderedName: finalResult.__name,
+              lastCurried: finalResult,
             };
             // Snapshot initial curried args for change detection
             _snapshotCurriedArgs(curriedRenderInfo, finalResult);
@@ -13257,12 +13262,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               // A value that is not a component: its text, HTML or node.
               if (_gxtShowCurriedRegionContent(curriedRenderInfo, newFinal)) return;
 
-              // Skip teardown if same component with unchanged args (preserves DOM stability)
               if (
                 newFinal &&
                 newFinal.__isCurriedComponent &&
-                startMarker.nextSibling !== endMarker &&
-                !_curriedComponentChanged(curriedRenderInfo, newFinal)
+                _curriedRegionCurrent(curriedRenderInfo, newFinal, startMarker, endMarker)
               ) {
                 return;
               }
@@ -13290,6 +13293,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                   parent.insertBefore(newNode, endMarker);
                 }
                 curriedRenderInfo.lastRenderedName = newFinal.__name;
+                curriedRenderInfo.lastCurried = newFinal;
                 _snapshotCurriedArgs(curriedRenderInfo, newFinal);
               } else if (newFinal && typeof newFinal === 'string') {
                 // Component name resolved to string — try rendering directly
@@ -13305,6 +13309,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                   }
                 }
                 curriedRenderInfo.lastRenderedName = newFinal;
+                curriedRenderInfo.lastCurried = undefined;
               }
             });
 
