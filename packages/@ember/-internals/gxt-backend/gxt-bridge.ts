@@ -292,7 +292,7 @@ export interface GxtCompilePipelineCapabilities {
    */
   syncAllWrappers(): void;
 
-  /** Empty all component-instance pools, including custom-manager pools. */
+  /** Destroy the custom-managed components still alive and empty the component-instance pools. */
   clearInstancePools(): void;
 
   /**

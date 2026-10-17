@@ -712,10 +712,8 @@ interface CustomManagedEntry {
   // The dynamic content the component's nodes start with, when they start
   // with one: the component is in the document while that content is.
   region: DynamicRegion | null;
-  // Runs the manager's `destroyComponent` (and `release`).
+  // Runs the manager's `destroyComponent`.
   destroyFn: () => void;
-  // Takes the component out of its instance pool, so no render reuses it.
-  release: () => void;
   destroyed: boolean;
   // The order the components are destroyed in: the order they were created
   // in, the components a block's teardown destroys put in document order
@@ -955,7 +953,6 @@ function _trackBlockComponent(entry: CustomManagedEntry): void {
 function _queueComponentOfDestroyedBlock(entry: CustomManagedEntry): void {
   if (entry.destroyed || entry.blockDestroyed) return;
   entry.blockDestroyed = true;
-  entry.release();
   _componentsOfDestroyedBlocks.push(entry);
 }
 
@@ -1511,19 +1508,14 @@ queueMicrotask(_patchEachSyncForRowKeying);
 // Retry once compile.ts's own patch has installed (it also uses microtask).
 setTimeout(_patchEachSyncForRowKeying, 0);
 
-// `_customManagedPool` and `_customManagedInstances` are declared after this
-// point in the file; the forward reference is safe because
-// `_gxtClearInstancePools` is never called during module init (it's a
-// test-teardown hook), so the body only runs long after both declarations
-// have been evaluated (no TDZ hazard). The custom-managed components still
-// alive are destroyed first, as destroying the render destroys them.
+// A test-teardown hook. The custom-managed components still alive are
+// destroyed first, as destroying the render destroys them.
 function _gxtClearInstancePools(): void {
   _gxtDestroyRemainingCustomManagedInstances();
   for (const pool of _allPoolArrays) {
     pool.length = 0;
   }
   _allPoolArrays.clear();
-  _customManagedPool.clear();
   _customManagedInstances.length = 0;
 }
 
@@ -9827,7 +9819,6 @@ function _gxtComponentNode(delegate: any, component: any): any {
       node: null,
       region: null,
       destroyFn: () => delegate.destroyComponent(component),
-      release: () => {},
       destroyed: false,
       order: ++_customManagedOrder,
       block: null,
@@ -10276,12 +10267,6 @@ function handleStringComponent(
   };
 }
 
-// Cache for custom-managed component instances, keyed by ComponentClass -> array of pool entries
-const _customManagedPool = new Map<
-  any,
-  { instance: any; context: any; manager: any; claimed: boolean }[]
->();
-
 // Properties added by createRenderContext that should be hidden from user code on
 // custom-managed component instances so deep-equality checks against the user's
 // original instance shape still pass.
@@ -10339,8 +10324,8 @@ function hideGxtInternalPropsOn(target: any) {
   }
 }
 
-// Clearing of `_customManagedPool` and `_customManagedInstances` lives in
-// `_gxtClearInstancePools` (defined earlier in this file).
+// Clearing of `_customManagedInstances` lives in `_gxtClearInstancePools`
+// (defined earlier in this file).
 
 /**
  * Handle a component with a custom component manager (from setComponentManager).
@@ -10367,139 +10352,60 @@ function handleCustomManagedComponent(
     }
 
     // Build named/positional args from the GXT args object
-    const { namedArgs, positionalArgs, liveNamed, livePositional, argGetters, posGetters } =
-      buildCustomManagedArgs(args);
+    const { liveNamed, livePositional, argGetters, posGetters } = buildCustomManagedArgs(args);
 
-    // Check for a cached instance from a previous render pass (for instance reuse on re-render)
-    const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
-    let pool = _customManagedPool.get(ComponentClass);
-    if (!pool) {
-      pool = [];
-      _customManagedPool.set(ComponentClass, pool);
-      // Seed lastPassId so the first invocation in this pass doesn't spuriously
-      // reset claimed flags on entries that were just pushed during this same pass.
-      (pool as any).__lastPassId = currentPassId;
-    }
-    // Reset claimed flags only when we've actually advanced to a new render pass.
-    if ((pool as any).__lastPassId !== currentPassId) {
-      (pool as any).__lastPassId = currentPassId;
-      for (const entry of pool) entry.claimed = false;
-    }
-
-    let cachedEntry = pool.find((e) => !e.claimed);
-    let instance: any;
-    let context: any;
-    let isRerender = false;
+    // Each invocation creates its own component, as Glimmer's
+    // `CreateComponentOpcode` does: an instance is never handed to another
+    // invocation (whose arguments it does not have).
     const asyncCaps = actualManager.capabilities;
+    // A class that inherits its registered template from a base class may
+    // have its own class-body `<template>`, which wins over the inherited
+    // one (Glimmer renders the nearest). gxt compiles that template to an
+    // instance field, so it is known once the component exists: such a
+    // component is created as a class-body component is (`classBodyArgs`,
+    // its arguments read from the invocation when it reads them) and, when
+    // it has one, rendered as one.
+    // gxt brands the class that declares a class-body template: a
+    // registration nearer than it (an intermediate class's) wins.
+    const classBodyArgs =
+      _inheritsComponentTemplate(ComponentClass, template) &&
+      _nearestTemplateKind(ComponentClass) !== 'registered'
+        ? _gxtInvocationArgs(args, _gxtFwTuple(args, fw))
+        : null;
+    const capturedArgs = { named: classBodyArgs ?? liveNamed, positional: livePositional };
+    const instance = actualManager.createComponent(ComponentClass, capturedArgs);
     // When the component is created: its place in the creation order, before
     // the components its template renders, and the block it renders in.
-    let order = 0;
-    let block: object | null = null;
+    const order = ++_customManagedOrder;
+    const block = _gxtBlockOf(ctx);
 
-    if (cachedEntry) {
-      // Reuse existing instance — call updateComponent
-      cachedEntry.claimed = true;
-      instance = cachedEntry.instance;
-      context = cachedEntry.context;
-      isRerender = true;
-
-      // Notify the manager of updated args.
-      //
-      // Custom managers built with `componentCapabilities('3.13', {})`
-      // (or any options bag with no `updateHook` key) end up with
-      // `capabilities.updateHook === undefined`. We treat undefined as
-      // "call updateComponent", as Ember historically did on every arg
-      // change in that case; basic managers depend on it to bridge the new
-      // captured args into the component via `set(component, 'args', ...)`.
-      //
-      // Only suppress the dispatch when the user explicitly set
-      // `updateHook: false`, the documented opt-out.
-      const newCapturedArgs = { named: namedArgs, positional: positionalArgs };
-      const _updateHookExplicitlyFalse = asyncCaps && asyncCaps.updateHook === false;
-      if (!_updateHookExplicitlyFalse && typeof actualManager.updateComponent === 'function') {
-        actualManager.updateComponent(instance, newCapturedArgs);
-      }
-
-      // Update live named/positional on instance.args (non-enumerable to hide from user code)
-      if (instance?.args) {
-        Object.defineProperty(instance.args, 'named', {
-          value: liveNamed,
-          writable: true,
-          enumerable: false,
-          configurable: true,
-        });
-        Object.defineProperty(instance.args, 'positional', {
-          value: livePositional,
-          writable: true,
-          enumerable: false,
-          configurable: true,
-        });
-      }
-
-      // Call didUpdateComponent if supported
-      if (
-        asyncCaps?.asyncLifecycleCallbacks &&
-        typeof actualManager.didUpdateComponent === 'function'
-      ) {
-        actualManager.didUpdateComponent(instance);
-      }
-    } else {
-      // A class that inherits its registered template from a base class may
-      // have its own class-body `<template>`, which wins over the inherited
-      // one (Glimmer renders the nearest). gxt compiles that template to an
-      // instance field, so it is known once the component exists: such a
-      // component is created as a class-body component is (`classBodyArgs`,
-      // its arguments read from the invocation when it reads them) and, when
-      // it has one, rendered as one.
-      // gxt brands the class that declares a class-body template: a
-      // registration nearer than it (an intermediate class's) wins.
-      const classBodyArgs =
-        _inheritsComponentTemplate(ComponentClass, template) &&
-        _nearestTemplateKind(ComponentClass) !== 'registered'
-          ? _gxtInvocationArgs(args, _gxtFwTuple(args, fw))
-          : null;
-      const capturedArgs = { named: classBodyArgs ?? liveNamed, positional: livePositional };
-      instance = actualManager.createComponent(ComponentClass, capturedArgs);
-      order = ++_customManagedOrder;
-      block = _gxtBlockOf(ctx);
-
-      if (classBodyArgs !== null && _hasClassBodyTemplate(instance)) {
-        const component = instance;
-        const rendered = _gxtRenderComponentNode(
-          () => _gxtComponentNode(actualManager, component),
-          classBodyArgs,
-          ctx
-        );
-        if (
-          asyncCaps?.asyncLifecycleCallbacks &&
-          typeof actualManager.didCreateComponent === 'function'
-        ) {
-          actualManager.didCreateComponent(component);
-        }
-        return rendered;
-      }
-
-      // Get the rendering context (may be null for template-only custom components)
-      context =
-        typeof actualManager.getContext === 'function'
-          ? actualManager.getContext(instance)
-          : instance;
-
-      // Cache for future re-renders
-      pool.push({
-        instance,
-        context,
-        manager: actualManager,
-        claimed: true,
-      });
-
-      // Call didCreateComponent if supported
+    if (classBodyArgs !== null && _hasClassBodyTemplate(instance)) {
+      const rendered = _gxtRenderComponentNode(
+        () => _gxtComponentNode(actualManager, instance),
+        classBodyArgs,
+        ctx
+      );
       if (
         asyncCaps?.asyncLifecycleCallbacks &&
         typeof actualManager.didCreateComponent === 'function'
       ) {
         actualManager.didCreateComponent(instance);
       }
+      return rendered;
+    }
+
+    // Get the rendering context (may be null for template-only custom components)
+    const context =
+      typeof actualManager.getContext === 'function'
+        ? actualManager.getContext(instance)
+        : instance;
+
+    // Call didCreateComponent if supported
+    if (
+      asyncCaps?.asyncLifecycleCallbacks &&
+      typeof actualManager.didCreateComponent === 'function'
+    ) {
+      actualManager.didCreateComponent(instance);
     }
 
     let resolvedTemplate = template;
@@ -10608,10 +10514,9 @@ function handleCustomManagedComponent(
     // inside a tracker frame and it subscribes to the same outer cell. Wrap the
     // default slot fn to collect those getters; `_installCustomManagedYieldEffect`
     // reads them in its own gxtEffect and dispatches updateComponent on a genuine
-    // change. Initial-render only, and not when updateHook is false.
+    // change. Not when updateHook is false.
     const _yieldGetters: Array<() => any> = [];
     if (
-      !isRerender &&
       !(asyncCaps && asyncCaps.updateHook === false) &&
       typeof actualManager.updateComponent === 'function'
     ) {
@@ -10659,7 +10564,6 @@ function handleCustomManagedComponent(
     // are evaluated in the component's invocation, like its arguments).
     const _forwardedGetters: Array<() => any> = [];
     if (
-      !isRerender &&
       !(asyncCaps && asyncCaps.updateHook === false) &&
       typeof actualManager.updateComponent === 'function' &&
       Array.isArray(fw)
@@ -10704,28 +10608,15 @@ function handleCustomManagedComponent(
     if (context && context !== renderContext && context !== instance)
       hideGxtInternalPropsOn(context);
 
-    // Set up destructor on initial render only: the component is destroyed with
-    // the block it rendered in (`_trackBlockComponent`), or once its nodes left
-    // the document (`_gxtDestroyCustomManagedInstances`), whichever comes first.
-    if (
-      !isRerender &&
-      asyncCaps?.destructor &&
-      typeof actualManager.destroyComponent === 'function'
-    ) {
-      const release = () => {
-        const idx = pool!.findIndex((e) => e.instance === instance);
-        if (idx >= 0) pool!.splice(idx, 1);
-      };
-      const destroyFn = () => {
-        actualManager.destroyComponent(instance);
-        release();
-      };
+    // The component is destroyed with the block it rendered in
+    // (`_trackBlockComponent`), or once its nodes left the document
+    // (`_gxtDestroyCustomManagedInstances`), whichever comes first.
+    if (asyncCaps?.destructor && typeof actualManager.destroyComponent === 'function') {
       const firstChild = container.firstChild;
       const entry: CustomManagedEntry = {
         node: firstChild,
         region: firstChild !== null ? (_dynamicRegionByFirstNode.get(firstChild) ?? null) : null,
-        destroyFn,
-        release,
+        destroyFn: () => actualManager.destroyComponent(instance),
         destroyed: false,
         order,
         block,
@@ -10744,43 +10635,41 @@ function handleCustomManagedComponent(
     // salutation = @computed('args.named.firstName')), so the hooks never fire
     // and the text stays at the snapshot captured on first render.
     //
-    // Install a single gxtEffect (initial render only) that READS every arg
-    // source getter — subscribing to the outer source cells — and on a genuine
-    // change re-dispatches the manager lifecycle hooks AND recomputes the
-    // component's `@computed('args.named.*'/'args.positional.*')` CPs (dirtying
-    // their cells so the subscribed text effects re-fire).
-    if (!isRerender) {
-      _installCustomManagedArgEffect({
+    // Install a single gxtEffect that READS every arg source getter —
+    // subscribing to the outer source cells — and on a genuine change
+    // re-dispatches the manager lifecycle hooks AND recomputes the component's
+    // `@computed('args.named.*'/'args.positional.*')` CPs (dirtying their cells
+    // so the subscribed text effects re-fire).
+    _installCustomManagedArgEffect({
+      instance,
+      context,
+      renderContext,
+      actualManager,
+      asyncCaps,
+      argGetters,
+      posGetters,
+      liveNamed,
+      livePositional,
+    });
+
+    // Yielded-content and forwarded-attribute reactivity: when the host's
+    // YIELDED `{{this.value}}` or a bound attribute it forwards changes (no
+    // arg change), re-dispatch the manager lifecycle hooks (updateComponent /
+    // didUpdateComponent). Separate from the arg effect above (which only
+    // fires on arg changes) so it covers the no-args case
+    // (`<FooBar>{{this.value}}</FooBar>`). De-duped by value comparison so
+    // exactly one updateComponent fires per genuine change.
+    if (_yieldGetters.length > 0 || _forwardedGetters.length > 0) {
+      _installCustomManagedYieldEffect({
         instance,
         context,
         renderContext,
         actualManager,
         asyncCaps,
+        yieldGetters: [..._yieldGetters, ..._forwardedGetters],
         argGetters,
         posGetters,
-        liveNamed,
-        livePositional,
       });
-
-      // Yielded-content and forwarded-attribute reactivity: when the host's
-      // YIELDED `{{this.value}}` or a bound attribute it forwards changes (no
-      // arg change), re-dispatch the manager lifecycle hooks (updateComponent /
-      // didUpdateComponent). Separate from the arg effect above (which only
-      // fires on arg changes) so it covers the no-args case
-      // (`<FooBar>{{this.value}}</FooBar>`). De-duped by value comparison so
-      // exactly one updateComponent fires per genuine change.
-      if (_yieldGetters.length > 0 || _forwardedGetters.length > 0) {
-        _installCustomManagedYieldEffect({
-          instance,
-          context,
-          renderContext,
-          actualManager,
-          asyncCaps,
-          yieldGetters: [..._yieldGetters, ..._forwardedGetters],
-          argGetters,
-          posGetters,
-        });
-      }
     }
 
     return container;
