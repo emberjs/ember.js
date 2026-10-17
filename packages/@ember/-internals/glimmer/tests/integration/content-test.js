@@ -640,7 +640,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test it can render a readOnly property of a path`]() {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a readOnly property of a path`]() {
     expectDeprecation(
       /from `@ember\/object\/computed` is deprecated/,
       DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
