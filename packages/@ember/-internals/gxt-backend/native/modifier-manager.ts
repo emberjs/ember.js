@@ -39,7 +39,14 @@ import {
   resolveCurried,
   setTracker,
 } from '@lifeart/gxt';
-import { argsProxyFor, shiftLabels, unwrapArg, type ArgLabels, type ArgsSource } from './args';
+import {
+  argsProxyFor,
+  namedSource,
+  shiftLabels,
+  unwrapArg,
+  type ArgLabels,
+  type ArgsSource,
+} from './args';
 import { destroy, registerDestructor } from './destroyable';
 import {
   CustomModifierManager,
@@ -65,8 +72,6 @@ interface ModifierInstance {
   removed: boolean;
   stopTracking: (() => void) | null;
 }
-
-const NO_NAMED: Readonly<Record<string, unknown>> = Object.freeze({});
 
 // ---------------------------------------------------------------- commit queue
 let pending: ModifierInstance[] = [];
@@ -339,13 +344,15 @@ function handle(
 
   let definition: unknown = modifier;
   let positional = props;
-  let namedArgs = (typeof named === 'function' ? named() : named) ?? NO_NAMED;
+  let namedArgs = namedSource(typeof named === 'function' ? named() : named);
 
   if (getCurried(modifier) !== undefined) {
     const resolved = resolveCurried(modifier);
     definition = resolved.definition;
     if (resolved.positional.length > 0) positional = [...resolved.positional, ...props];
-    if (resolved.named.length > 0) namedArgs = Object.assign({}, ...resolved.named, namedArgs);
+    if (resolved.named.length > 0) {
+      namedArgs = namedSource(Object.assign({}, ...resolved.named, namedArgs));
+    }
     labels = shiftLabels(labels, resolved.positional.length);
   }
 

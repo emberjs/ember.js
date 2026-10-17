@@ -45,7 +45,14 @@ import {
   registerDestructor as gxtRegisterDestructor,
   resolveCurried,
 } from '@lifeart/gxt';
-import { argsProxyFor, shiftLabels, unwrapArg, type ArgLabels, type ArgsSource } from './args';
+import {
+  argsProxyFor,
+  namedSource,
+  shiftLabels,
+  unwrapArg,
+  type ArgLabels,
+  type ArgsSource,
+} from './args';
 import { _hasDestroyableChildren, destroy, isDestroying } from './destroyable';
 import {
   DEFAULT_HELPER_MANAGER,
@@ -72,8 +79,6 @@ interface HelperInstance {
   /** What destroying the call site destroys (Ember destroyable), if any. */
   readonly destroyable: object | null;
 }
-
-const NO_NAMED: Readonly<Record<string, unknown>> = Object.freeze({});
 
 const valueOf = (instance: HelperInstance): unknown =>
   instance.cache === null ? instance.value : getValue(instance.cache);
@@ -268,13 +273,15 @@ function handle(
 ): unknown {
   let definition: unknown = value;
   let positional = args;
-  let namedArgs = named ?? NO_NAMED;
+  let namedArgs = namedSource(named);
 
   if (getCurried(value) !== undefined) {
     const resolved = resolveCurried(value);
     definition = resolved.definition;
     if (resolved.positional.length > 0) positional = [...resolved.positional, ...args];
-    if (resolved.named.length > 0) namedArgs = Object.assign({}, ...resolved.named, namedArgs);
+    if (resolved.named.length > 0) {
+      namedArgs = namedSource(Object.assign({}, ...resolved.named, namedArgs));
+    }
     labels = shiftLabels(labels, resolved.positional.length);
   }
 

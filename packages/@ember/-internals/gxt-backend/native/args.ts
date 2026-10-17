@@ -11,6 +11,8 @@
 // frame, a binding formula) subscribes to exactly the arguments it reads.
 import { DEBUG } from '@glimmer/env';
 
+const hasOwn = Object.prototype.hasOwnProperty;
+
 /**
  * The source text of a call site's path arguments (gxt's EMBER_ARG_LABELS
  * compile flag, on in DEBUG builds): `positional[i]` for the i-th argument
@@ -26,9 +28,27 @@ export interface ArgLabels {
 /** The current arguments of one call site (literal-or-thunk values). */
 export interface ArgsSource {
   positional: readonly unknown[];
+  /** `NO_NAMED` when the call site passes no named argument. */
   named: Readonly<Record<string, unknown>>;
   /** The call site's argument labels (DEBUG builds). */
   labels?: ArgLabels | undefined;
+}
+
+/** The named arguments of a call site that passes none: one frozen object. */
+export const NO_NAMED: Readonly<Record<string, unknown>> = Object.freeze({});
+
+/**
+ * A call site's named arguments as its `ArgsSource` keeps them: `NO_NAMED`
+ * when there are none. The compiler passes a fresh `{}` on every evaluation
+ * of a call site without named arguments, and a helper instance or a modifier
+ * keeps its source for as long as it lives.
+ */
+export function namedSource(
+  named: Readonly<Record<string, unknown>> | undefined
+): Readonly<Record<string, unknown>> {
+  if (named === undefined) return NO_NAMED;
+  for (const key in named) if (hasOwn.call(named, key)) return named;
+  return NO_NAMED;
 }
 
 /**
@@ -59,8 +79,6 @@ function convertToInt(prop: PropertyKey): number | null {
   if (isNaN(num)) return null;
   return num % 1 === 0 ? num : null;
 }
-
-const hasOwn = Object.prototype.hasOwnProperty;
 
 class NamedArgsHandler implements ProxyHandler<object> {
   declare set?: (target: object, prop: PropertyKey) => boolean;
