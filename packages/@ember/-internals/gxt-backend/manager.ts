@@ -11457,9 +11457,23 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       _lastClass = cls;
     }
   };
+  // The effect re-runs on every classic tag change, also while a transition
+  // has not settled its routes, where Glimmer does not read the class: what a
+  // re-run throws is reported in DEBUG, and the reactor's read in the render
+  // queue (where Glimmer reads it) throws it.
+  let _classRead = false;
   gxtEffect(() => {
     touchClassicTags();
-    applyClass();
+    if (!_classRead) {
+      _classRead = true;
+      applyClass();
+      return;
+    }
+    try {
+      applyClass();
+    } catch (error) {
+      _gxtReportDroppedRead("LinkTo's class, read again,", error);
+    }
   });
   _registerReactor(applyClass);
 
