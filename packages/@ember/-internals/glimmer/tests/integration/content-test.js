@@ -303,7 +303,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a computed property']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a computed property`]() {
     let Formatter = class extends EmberObject {
       @computed('message')
       get formattedMessage() {
@@ -330,7 +330,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a computed property with nested dependency']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a computed property with nested dependency`]() {
     let Formatter = class extends EmberObject {
       @computed('messenger.message')
       get formattedMessage() {
@@ -640,7 +640,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test it can render a readOnly property of a path`]() {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a readOnly property of a path`]() {
     expectDeprecation(
       /from `@ember\/object\/computed` is deprecated/,
       DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled

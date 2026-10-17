@@ -1592,7 +1592,7 @@ moduleFor(
       this.assertText('3');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test ensure aliases are watched properly [GH#17243]`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test ensure aliases are watched properly [GH#17243]`]() {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled

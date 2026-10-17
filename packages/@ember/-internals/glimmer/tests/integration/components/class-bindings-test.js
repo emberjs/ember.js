@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  classes,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -545,7 +552,7 @@ moduleFor(
       });
     }
 
-    ['@test using a computed property for classNameBindings triggers an assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test using a computed property for classNameBindings triggers an assertion`]() {
       let FooBarComponent = class extends Component {
         @computed
         get classNameBindings() {

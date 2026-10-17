@@ -1,4 +1,4 @@
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { alias } from '@ember/-internals/metal';
 import {
   and,
@@ -35,7 +35,7 @@ import {
 moduleFor(
   'computed macros - decorators - assertions',
   class extends AbstractTestCase {
-    ['@test and throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test and throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @and foo;
@@ -55,7 +55,7 @@ moduleFor(
       }, /You attempted to use @alias/);
     }
 
-    ['@test bool throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test bool throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @bool foo;
@@ -65,7 +65,7 @@ moduleFor(
       }, /You attempted to use @bool/);
     }
 
-    ['@test collect throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test collect throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @collect foo;
@@ -75,7 +75,7 @@ moduleFor(
       }, /You attempted to use @collect/);
     }
 
-    ['@test deprecatingAlias throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test deprecatingAlias throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @deprecatingAlias foo;
@@ -85,7 +85,7 @@ moduleFor(
       }, /You attempted to use @deprecatingAlias/);
     }
 
-    ['@test empty throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test empty throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @empty foo;
@@ -95,7 +95,7 @@ moduleFor(
       }, /You attempted to use @empty/);
     }
 
-    ['@test equal throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test equal throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @equal foo;
@@ -105,7 +105,7 @@ moduleFor(
       }, /You attempted to use @equal/);
     }
 
-    ['@test filter throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test filter throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @filter foo;
@@ -115,7 +115,7 @@ moduleFor(
       }, /You attempted to use @filter/);
     }
 
-    ['@test filterBy throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test filterBy throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @filterBy foo;
@@ -125,7 +125,7 @@ moduleFor(
       }, /You attempted to use @filterBy/);
     }
 
-    ['@test gt throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test gt throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @gt foo;
@@ -135,7 +135,7 @@ moduleFor(
       }, /You attempted to use @gt/);
     }
 
-    ['@test gte throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test gte throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @gte foo;
@@ -145,7 +145,7 @@ moduleFor(
       }, /You attempted to use @gte/);
     }
 
-    ['@test intersect throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test intersect throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @intersect foo;
@@ -155,7 +155,7 @@ moduleFor(
       }, /You attempted to use @intersect/);
     }
 
-    ['@test lt throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lt throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @lt foo;
@@ -165,7 +165,7 @@ moduleFor(
       }, /You attempted to use @lt/);
     }
 
-    ['@test lte throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lte throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @lte foo;
@@ -175,7 +175,7 @@ moduleFor(
       }, /You attempted to use @lte/);
     }
 
-    ['@test map throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test map throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @map foo;
@@ -185,7 +185,7 @@ moduleFor(
       }, /You attempted to use @map/);
     }
 
-    ['@test mapBy throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test mapBy throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @mapBy foo;
@@ -195,7 +195,7 @@ moduleFor(
       }, /You attempted to use @mapBy/);
     }
 
-    ['@test match throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test match throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @match foo;
@@ -205,7 +205,7 @@ moduleFor(
       }, /You attempted to use @match/);
     }
 
-    ['@test max throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test max throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @max foo;
@@ -215,7 +215,7 @@ moduleFor(
       }, /You attempted to use @max/);
     }
 
-    ['@test min throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test min throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @min foo;
@@ -225,7 +225,7 @@ moduleFor(
       }, /You attempted to use @min/);
     }
 
-    ['@test not throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test not throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @not foo;
@@ -235,7 +235,7 @@ moduleFor(
       }, /You attempted to use @not/);
     }
 
-    ['@test notEmpty throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notEmpty throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @notEmpty foo;
@@ -245,7 +245,7 @@ moduleFor(
       }, /You attempted to use @notEmpty/);
     }
 
-    ['@test oneWay throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test oneWay throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @oneWay foo;
@@ -255,7 +255,7 @@ moduleFor(
       }, /You attempted to use @oneWay/);
     }
 
-    ['@test or throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test or throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @or foo;
@@ -265,7 +265,7 @@ moduleFor(
       }, /You attempted to use @or/);
     }
 
-    ['@test readOnly throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test readOnly throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @readOnly foo;
@@ -275,7 +275,7 @@ moduleFor(
       }, /You attempted to use @readOnly/);
     }
 
-    ['@test setDiff throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setDiff throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @setDiff foo;
@@ -285,7 +285,7 @@ moduleFor(
       }, /You attempted to use @setDiff/);
     }
 
-    ['@test sort throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sort throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @sort foo;
@@ -295,7 +295,7 @@ moduleFor(
       }, /You attempted to use @sort/);
     }
 
-    ['@test sum throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sum throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @sum foo;
@@ -305,7 +305,7 @@ moduleFor(
       }, /You attempted to use @sum/);
     }
 
-    ['@test union throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test union throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @union foo;
@@ -315,7 +315,7 @@ moduleFor(
       }, /You attempted to use @uniq\/@union/);
     }
 
-    ['@test uniq throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test uniq throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @uniq foo;
@@ -325,7 +325,7 @@ moduleFor(
       }, /You attempted to use @uniq\/@union/);
     }
 
-    ['@test uniqBy throws an error if used without parameters']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test uniqBy throws an error if used without parameters`]() {
       expectAssertion(() => {
         class Foo {
           @uniqBy foo;

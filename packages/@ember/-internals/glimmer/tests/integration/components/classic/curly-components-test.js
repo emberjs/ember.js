@@ -160,7 +160,7 @@ moduleFor(
       this.assertText('FIZZ BAR hey');
     }
 
-    ['@test layout supports computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test layout supports computed property`]() {
       let FooBarComponent = class extends Component {
         elementId = 'blahzorz';
         @computed
@@ -317,7 +317,7 @@ moduleFor(
       });
     }
 
-    ['@test tagName can not be a computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test tagName can not be a computed property`]() {
       let FooBarComponent = class extends Component {
         @computed
         get tagName() {
@@ -903,7 +903,7 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
     }
 
-    ['@test setting a value for a computed property then later getting the value for that property works'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a value for a computed property then later getting the value for that property works`](
       assert
     ) {
       let componentInstance = null;
@@ -1607,7 +1607,7 @@ moduleFor(
       this.assertText('initial value - initial value');
     }
 
-    ['@test a two way binding flows upstream through a CP when consumed in the template']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP when consumed in the template`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1652,7 +1652,7 @@ moduleFor(
       this.assertText('initial value - initial value');
     }
 
-    ['@test a two way binding flows upstream through a CP without template consumption']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP without template consumption`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1698,7 +1698,7 @@ moduleFor(
       this.assertText('initial value');
     }
 
-    ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test GH#18417 - a two way binding flows upstream to a parent component through a CP`]() {
       let parent, child;
       let ParentComponent = class extends Component {
         init() {
@@ -1872,7 +1872,7 @@ moduleFor(
       assertElement('foo');
     }
 
-    ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test child triggers revalidate during parent destruction (GH#13846)`]() {
       this.owner.register(
         'component:x-select',
         setComponentTemplate(
