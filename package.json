@@ -112,6 +112,7 @@
     "@embroider/vite": "^1.7.2",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
+    "@nullvoxpopuli/release-plan": "^0.21.0",
     "@octokit/rest": "^22.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",
@@ -154,7 +155,6 @@
     "qunit": "^2.19.4",
     "qunit-dom": "^3.6.0",
     "recast": "^0.22.0",
-    "release-plan": "github:NullVoxPopuli-ai-agent/release-plan#nvp/git-change-detection",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.57.1",
     "router_js": "workspace:*",
@@ -181,8 +181,7 @@
     "onlyBuiltDependencies": [
       "@swc/core",
       "core-js",
-      "esbuild",
-      "release-plan"
+      "esbuild"
     ],
     "overrides": {
       "babel-plugin-ember-template-compilation": "^4.0.0",

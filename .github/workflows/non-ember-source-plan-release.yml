@@ -40,9 +40,9 @@ jobs:
       pull-requests: write
     if: needs.should-run-release-plan-prepare.outputs.should-prepare == 'true'
     steps:
-      # release-plan/actions/prepare installs release-plan from npm, which
-      # does not work for a git dependency, so these steps run the copy
-      # that pnpm installs.
+      # release-plan/actions/prepare always installs the unscoped
+      # release-plan package, so these steps run the
+      # @nullvoxpopuli/release-plan copy that pnpm installs.
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           # release-plan reads git history since the last release of each package
