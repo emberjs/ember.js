@@ -236,6 +236,13 @@ export interface GxtViewUtilsCapabilities {
   afterRebuildViewTreeFromDom?(explicitRegistry?: unknown): void;
 
   /**
+   * Runs `render`, a re-render of templates that are rendered already (the
+   * root outlet's full re-render): the classic component invocations it
+   * evaluates again take back the instances of their class in order.
+   */
+  reRenderInvocations?<T>(render: () => T): T;
+
+  /**
    * Ids of classic-component wrappers whose `{{#if}}` the user toggled to
    * false. Owned by compile.ts; manager.ts reads it to keep `isExpanded` false
    * on re-created instances. Callers must not mutate it.

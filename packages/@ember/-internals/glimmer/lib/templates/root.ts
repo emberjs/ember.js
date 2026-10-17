@@ -1117,7 +1117,14 @@ function createRootTemplate(_owner: any) {
       // / template / nested-outlet TRANSITION where node identity is not
       // preserved by design — clear + renderOutletState is correct.
       parentElement.innerHTML = '';
-      renderOutletState(outletRef);
+      // The application template's invocations are rendered again: they take
+      // back their component instances, which Glimmer keeps on a transition.
+      const reRenderInvocations = getGxtRenderer()?.viewUtils.reRenderInvocations;
+      if (reRenderInvocations) {
+        reRenderInvocations(() => renderOutletState(outletRef));
+      } else {
+        renderOutletState(outletRef);
+      }
 
       if (oldAnchorMap.size > 0) {
         try {

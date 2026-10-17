@@ -340,6 +340,9 @@ interface PoolEntry {
   // a middle item doesn't cause a position-slide that misreports IDs in
   // `willDestroyElement` hooks.
   eachRowKey?: any;
+  // The invocation the instance was created for (see
+  // `getCachedOrCreateInstance`), none for an invocation without an identity.
+  invocation: symbol | undefined;
 }
 
 // =============================================================================
@@ -1487,6 +1490,23 @@ function _closingOrder(a: Node, b: Node): number {
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
+// The re-renders of rendered templates in progress (`_gxtReRenderInvocations`).
+let _invocationsReRendering = 0;
+
+// Runs `render`, a re-render of templates that are rendered already: the root
+// outlet's full re-render on a transition evaluates the application template
+// again. The invocations it evaluates are the ones Glimmer renders once and
+// keeps, so they take back the instances of their class, in order, instead of
+// creating new ones (`getCachedOrCreateInstance`).
+function _gxtReRenderInvocations<T>(render: () => T): T {
+  _invocationsReRendering++;
+  try {
+    return render();
+  } finally {
+    _invocationsReRendering--;
+  }
+}
+
 // ---- Each-iteration row key tracking ----
 // When rendering inside `{{#each items as |item|}}`, push the `item` identity
 // onto this stack so `getCachedOrCreateInstance` can include it in the pool
@@ -1641,9 +1661,23 @@ function getCachedOrCreateInstance(
 
   let poolEntry: PoolEntry | undefined;
 
-  // Helper: skip destroyed/destroying instances in pool lookup
+  // The invocation: the id of the `$_tag` thunk it renders through, which each
+  // evaluation of the invocation shares, or none for one rendered another way.
+  // Glimmer creates an instance per invocation (`CreateComponentOpcode`) and
+  // never hands it to another one, also not after a re-render: an instance is
+  // only reused by the invocation it was created for, or by the invocation
+  // that evaluates it again in a re-render of its template
+  // (`_gxtReRenderInvocations`).
+  const invocation: symbol | undefined = args?.__thunkId;
+  const reRendering = _invocationsReRendering > 0;
+
+  // Helper: skip destroyed/destroying instances, and those of other
+  // invocations, in pool lookup
   const isAlive = (e: PoolEntry) =>
-    !e.claimed && !e.instance?.isDestroyed && !e.instance?.isDestroying;
+    !e.claimed &&
+    !e.instance?.isDestroyed &&
+    !e.instance?.isDestroying &&
+    (reRendering || e.invocation === invocation);
 
   // If we're inside an {{#each}} iteration, the row's item identity is on
   // `_eachRowKeyStack`. Prefer matching a pool entry whose `eachRowKey` equals
@@ -1695,6 +1729,7 @@ function getCachedOrCreateInstance(
   if (poolEntry) {
     // Claim this instance and update with new args
     poolEntry.claimed = true;
+    poolEntry.invocation = invocation;
     const hasChanges = updateInstanceWithNewArgs(poolEntry.instance, args);
 
     // CLASSIC-ONLY (gated): syncing classNameBindings / attributeBindings onto a
@@ -1802,7 +1837,7 @@ function getCachedOrCreateInstance(
   // updatedThisPass is false since this is initial creation, not an update
   // Tag the entry with the current each-row key (if any) so future renders
   // match this instance to the same row rather than to a positional slot.
-  const newEntry: PoolEntry = { instance, claimed: true, updatedThisPass: false };
+  const newEntry: PoolEntry = { instance, claimed: true, updatedThisPass: false, invocation };
   if (insideEachRow) {
     newEntry.eachRowKey = currentRowKey;
   }
@@ -13901,6 +13936,7 @@ setGxtRenderer({
     // body runs, to reset stale `_wrapperIfUserFalse` view-registry children
     // and drain the in-element deferred-render queue.
     rebuildViewTreeFromDom: _gxtBridgeRebuildViewTreeFromDom,
+    reRenderInvocations: _gxtReRenderInvocations,
     // The adapter dispatches an `afterFlushAfterInsertQueue` host hook
     // (contributed by compile.ts via `installViewUtilsPart`) AFTER the main
     // body runs, to drain the in-element deferred-render queue.
