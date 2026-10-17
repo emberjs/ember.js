@@ -2009,10 +2009,20 @@ function _resolveCurriedArgs(curried: any): {
 // an equal one then. Another curried value renders its own component. The
 // arguments are read untracked: the region does not depend on them.
 function _curriedRegionCurrent(info: any, curried: any): boolean {
-  const shown = info.lastCurried;
+  return _gxtShowsCurriedValue(info.lastCurried, curried);
+}
+
+// Whether the component rendered for the value `shown` (undefined: none) shows
+// the value `curried` (`_curriedRegionCurrent`): the same value, or two curried
+// components that are the same curried value.
+function _gxtShowsCurriedValue(shown: any, curried: any): boolean {
   return (
     curried === shown ||
-    (shown !== undefined && _gxtUntracked(() => _gxtSameCurriedValue(shown, curried)))
+    (shown != null &&
+      curried != null &&
+      Boolean(shown.__isCurriedComponent) &&
+      Boolean(curried.__isCurriedComponent) &&
+      _gxtUntracked(() => _gxtSameCurriedValue(shown, curried)))
   );
 }
 
@@ -3773,6 +3783,13 @@ function _gxtDynamicContent(
     const html = next === 'html' ? _gxtCoerceText((value as any).toHTML()) : '';
     const identity = next === 'html' ? html : next === 'text' ? undefined : value;
     if (next === kind && identity === rendered) return;
+    // Another curried component equal to the one shown is the same curried
+    // value, as for a curried region: its component stays (a getter that makes
+    // the value again, like a yielded `(if this.c (component …) …)` evaluated
+    // after each change of what it read, gives an equal one).
+    if (next === 'component' && kind === 'component' && _gxtShowsCurriedValue(rendered, value)) {
+      return;
+    }
     let anchor = nodes.length > 0 ? nodes[0]! : null;
     const parent = anchor === null ? fragment : anchor.parentNode;
     if (parent === null) return;
