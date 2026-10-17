@@ -8,8 +8,9 @@
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
-import EmberObject from '@ember/object';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import EmberObject, { computed, set } from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
 
 const BoomClass = EmberObject.extend({
   init() {
@@ -62,6 +63,28 @@ moduleFor(
       assert.throws(() => {
         this.render('{{boom-fn "an argument"}}');
       }, /the helper function failed/);
+    }
+  }
+);
+
+moduleFor(
+  'GXT errors: {{#if}} conditions',
+  class extends RenderingTestCase {
+    ['@test what the truthiness of a condition throws after a change reaches the run loop'](
+      assert: QUnit['assert']
+    ) {
+      const BoomProxy = ObjectProxy.extend({
+        isTruthy: computed(function () {
+          throw new Error('the truthiness failed');
+        }),
+      });
+
+      this.render('{{#if this.value}}yes{{else}}no{{/if}}', { value: false });
+      this.assertText('no');
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
+      }, /the truthiness failed/);
     }
   }
 );
