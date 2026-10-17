@@ -75,17 +75,15 @@ if (__GXT_MODE__) {
     // - interior model mutation (`set(model, 'color', 'blue')`, keyName
     //   undefined): the interior leaf cell was already dirtied by the `set()`,
     //   and the cell-only path's `syncDomNow()` flushes it.
+    //
+    // What the re-render throws (the sync's error: a lifecycle hook of a
+    // component the template renders, …) reaches the code that changed the
+    // controller, inside the run loop Glimmer would throw it from.
     _gxtInControllerRerender = true;
     try {
       // Cell-only fast path; the changed key is forwarded so its renderContext
       // cell is refreshed before syncDomNow().
       rerender(outletRef, keyName);
-    } catch (e) {
-      // Surface via warn rather than swallowing. Rerender failures shouldn't
-      // break the set() that triggered them; the next legitimate
-      // setOutletState will retry.
-      // eslint-disable-next-line no-console
-      console.warn('[gxt] controller-outlet-rerender failed', e);
     } finally {
       _gxtInControllerRerender = false;
     }
@@ -1015,6 +1013,7 @@ function createRootTemplate(_owner: any) {
         !routeTemplateChanged
       ) {
         const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+        let cellsUpdated = false;
         if (_cellFor) {
           try {
             // Detect phantom rerender: when the outletState's model is the SAME
@@ -1076,7 +1075,14 @@ function createRootTemplate(_owner: any) {
             }
             // Update outletState
             lastRenderContext.outletState = effectiveOutlet;
+            cellsUpdated = true;
+          } catch {
+            /* fall through to full re-render */
+          }
+          if (cellsUpdated) {
             // Sync DOM now so GXT formulas re-evaluate and update text nodes.
+            // What the sync throws (an error of the update it renders) is the
+            // re-render's error: it does not fall back to a full re-render.
             const _cpRoot = getGxtRenderer()?.compilePipeline;
             const syncDomNow = _cpRoot?.syncDomNow;
             if (typeof syncDomNow === 'function') {
@@ -1085,8 +1091,6 @@ function createRootTemplate(_owner: any) {
               syncDomNow();
             }
             return;
-          } catch {
-            /* fall through to full re-render */
           }
         }
       }

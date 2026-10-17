@@ -4418,45 +4418,36 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
     if (_isControllerKey && keyName !== 'model' && typeof keyName === 'string') {
       // Detect QP-tracked property: scan controller.queryParams (array form,
       // string entries or object entries — see normalizeControllerQueryParams
-      // in @ember/routing/lib/utils.ts for the three legal shapes).
-      try {
-        const qp = (obj as any).queryParams;
-        if (Array.isArray(qp)) {
-          for (let i = 0; i < qp.length; i++) {
-            const entry = qp[i];
-            if (typeof entry === 'string') {
-              if (entry === keyName) {
-                _isQpKey = true;
-                break;
-              }
-            } else if (entry && typeof entry === 'object') {
-              if (Object.prototype.hasOwnProperty.call(entry, keyName)) {
-                _isQpKey = true;
-                break;
-              }
+      // in @ember/routing/lib/utils.ts for the three legal shapes). It is a
+      // concatenated property the router reads too.
+      const qp = (obj as any).queryParams;
+      if (Array.isArray(qp)) {
+        for (let i = 0; i < qp.length; i++) {
+          const entry = qp[i];
+          if (typeof entry === 'string') {
+            if (entry === keyName) {
+              _isQpKey = true;
+              break;
+            }
+          } else if (entry && typeof entry === 'object') {
+            if (Object.prototype.hasOwnProperty.call(entry, keyName)) {
+              _isQpKey = true;
+              break;
             }
           }
         }
-      } catch (e) {
-        // Accessing .queryParams on an arbitrary controller-shaped object
-        // should never throw, but if a getter rejects, warn and fall through.
-        console.warn('[gxt] QP-key detection on controller failed', e);
       }
     }
+    // What the outlet re-render throws (the sync's error) reaches the code
+    // that made the change.
     if (_isControllerKey && (keyName === 'model' || _isQpKey)) {
       const _ctrlHook = getControllerOutletRerender();
       if (typeof _ctrlHook === 'function') {
-        try {
-          // Pass the changed key: the outlet-rerender hook takes the cell-only
-          // fast path for it (a route MODEL identity swap keeps the route
-          // template's components, so `didInsertElement` fires once, while
-          // `{{@model.…}}` bindings still re-evaluate).
-          _ctrlHook(obj, keyName);
-        } catch (e) {
-          // Match the existing post-trigger error handling shape — warn but
-          // don't break the canonical trigger body.
-          console.warn('[gxt] controller-set outlet rerender hook failed', e);
-        }
+        // Pass the changed key: the outlet-rerender hook takes the cell-only
+        // fast path for it (a route MODEL identity swap keeps the route
+        // template's components, so `didInsertElement` fires once, while
+        // `{{@model.…}}` bindings still re-evaluate).
+        _ctrlHook(obj, keyName);
       }
     } else if (obj && typeof obj === 'object' && !_gxtIsCurrentlyRendering()) {
       // Interior model mutation bridge: if `obj` is registered as the VALUE
@@ -4467,50 +4458,39 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
       // `this.set(...)` writes go through this path — those should hit the
       // classic backtracking-re-render assertion, not get re-rendered into a
       // green test).
-      try {
-        const owners = _objectValueCellMap.get(obj);
-        if (owners) {
-          const _ctrlHook = getControllerOutletRerender();
-          if (typeof _ctrlHook === 'function') {
-            const seen = new Set<object>();
-            for (const { obj: ownerObj, key: ownerKey } of owners) {
-              if (ownerKey !== 'model') continue;
-              if (!ownerObj || typeof ownerObj !== 'object') continue;
-              // ownerObj may be:
-              //   (a) the renderContext (Object.create(controller)) — its
-              //       prototype IS the controller, OR
-              //   (b) the argsObj — has a `controller` data property that
-              //       points to the controller, OR
-              //   (c) the controller itself (unusual but possible).
-              // In each case extract the controller and fire the hook.
-              let candidate: object | null = null;
-              const proto = Object.getPrototypeOf(ownerObj);
-              if (proto && (proto as any).isController === true) {
-                candidate = proto;
-              } else if ((ownerObj as any).isController === true) {
-                candidate = ownerObj;
-              } else {
-                const ac = (ownerObj as any).controller;
-                if (ac && typeof ac === 'object' && (ac as any).isController === true) {
-                  candidate = ac;
-                }
+      const owners = _objectValueCellMap.get(obj);
+      if (owners) {
+        const _ctrlHook = getControllerOutletRerender();
+        if (typeof _ctrlHook === 'function') {
+          const seen = new Set<object>();
+          for (const { obj: ownerObj, key: ownerKey } of owners) {
+            if (ownerKey !== 'model') continue;
+            if (!ownerObj || typeof ownerObj !== 'object') continue;
+            // ownerObj may be:
+            //   (a) the renderContext (Object.create(controller)) — its
+            //       prototype IS the controller, OR
+            //   (b) the argsObj — has a `controller` data property that
+            //       points to the controller, OR
+            //   (c) the controller itself (unusual but possible).
+            // In each case extract the controller and fire the hook.
+            let candidate: object | null = null;
+            const proto = Object.getPrototypeOf(ownerObj);
+            if (proto && (proto as any).isController === true) {
+              candidate = proto;
+            } else if ((ownerObj as any).isController === true) {
+              candidate = ownerObj;
+            } else {
+              const ac = (ownerObj as any).controller;
+              if (ac && typeof ac === 'object' && (ac as any).isController === true) {
+                candidate = ac;
               }
-              if (candidate && !seen.has(candidate)) {
-                seen.add(candidate);
-                try {
-                  _ctrlHook(candidate);
-                } catch (e) {
-                  console.warn('[gxt] controller-set outlet rerender (interior) hook failed', e);
-                }
-              }
+            }
+            if (candidate && !seen.has(candidate)) {
+              seen.add(candidate);
+              _ctrlHook(candidate);
             }
           }
         }
-      } catch (e) {
-        // _objectValueCellMap.get on an arbitrary object should never throw,
-        // but if WeakMap rejects (non-object key), fall through quietly, as
-        // SyncCore's reverse lookup does.
-        console.warn('[gxt] interior-mutation bridge owner walk failed', e);
       }
     }
   } finally {
