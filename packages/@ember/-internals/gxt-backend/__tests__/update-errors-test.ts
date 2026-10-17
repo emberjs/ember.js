@@ -8,10 +8,13 @@
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { ApplicationTestCase, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import EmberObject, { computed, set } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import Component from '@ember/component';
+import type Controller from '@ember/controller';
+import Route from '@ember/routing/route';
+import { precompileTemplate } from '@ember/template-compilation';
 
 const BoomClass = EmberObject.extend({
   init() {
@@ -121,6 +124,45 @@ moduleFor(
       assert.throws(() => {
         runTask(() => set(instance!, 'title', 'boom'));
       }, /the bound property failed/);
+    }
+  }
+);
+
+moduleFor(
+  "GXT errors: a change of a route controller's model",
+  class extends ApplicationTestCase {
+    async ['@test what re-rendering the route template throws reaches the run loop'](
+      assert: QUnit['assert']
+    ) {
+      this.add(
+        'component:foo-bar',
+        class extends Component {
+          destroy() {
+            super.destroy();
+            throw new Error('the teardown failed');
+          }
+        }
+      );
+      this.add(
+        'route:application',
+        class extends Route {
+          model() {
+            return { show: true };
+          }
+        }
+      );
+      this.add(
+        'template:application',
+        precompileTemplate('[{{#if this.model.show}}{{foo-bar}}{{/if}}]')
+      );
+
+      await this.visit('/');
+      const controller = this.applicationInstance!.lookup('controller:application') as Controller;
+
+      assert.throws(() => {
+        runTask(() => set(controller, 'model', { show: false }));
+      }, /the teardown failed/);
+      this.assertText('[]');
     }
   }
 );
