@@ -212,5 +212,153 @@ moduleFor(
       );
       this.assert.false(instances[0]!.isDestroying, 'the first row keeps its instance');
     }
+
+    ['@test a {{component}} invocation rendered after a re-render gets its own classic instance']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+
+      this.render(
+        '{{component this.name value="a"}}{{#if this.show}}{{component this.name value="b"}}{{/if}}',
+        { name: 'classic-show-arg', show: false }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][b]');
+      this.assert.strictEqual(instances.length, 2, 'each invocation has an instance');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'b'],
+        'each instance has the arguments of its invocation'
+      );
+      this.assert.false(instances[0]!.isDestroying, 'the first invocation keeps its instance');
+    }
+
+    ['@test a {{component}} invocation in the other branch of an {{#if}} gets its own classic instance']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+
+      this.render(
+        '{{#if this.cond}}{{component this.name value="a"}}{{else}}{{component this.name value="b"}}{{/if}}',
+        { name: 'classic-show-arg', cond: true }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'cond', false));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 2, 'the other branch has its own instance');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'b'],
+        'each instance has the arguments of its invocation'
+      );
+      this.assert.true(instances[0]!.isDestroying, 'the removed branch destroys its instance');
+    }
+
+    ['@test a {{component}} row of another {{#each}} over the same items gets its own classic instance']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+
+      this.render(
+        '{{#each this.list as |item|}}{{component this.name value=item}}{{/each}}' +
+          '{{#if this.show}}{{#each this.list as |item|}}{{component this.name value=(concat item "!")}}{{/each}}{{/if}}',
+        { name: 'classic-show-arg', list: ['a'], show: false }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][a!]');
+      this.assert.strictEqual(instances.length, 2, 'each row has an instance');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'a!'],
+        'each instance has the arguments of its row'
+      );
+      this.assert.false(instances[0]!.isDestroying, 'the first row keeps its instance');
+    }
+
+    ['@test a classic block invocation rendered after a re-render gets its own instance']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+
+      this.render(
+        '{{#classic-show-arg value="a"}}{{/classic-show-arg}}' +
+          '{{#if this.show}}{{#classic-show-arg value="b"}}{{/classic-show-arg}}{{/if}}',
+        { show: false }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][b]');
+      this.assert.strictEqual(instances.length, 2, 'each invocation has an instance');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'b'],
+        'each instance has the arguments of its invocation'
+      );
+      this.assert.false(instances[0]!.isDestroying, 'the first invocation keeps its instance');
+    }
+
+    ['@test a curried classic component invoked with angle brackets after a re-render gets its own instance']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+
+      this.render(
+        '{{#let (component "classic-show-arg" value="a") as |C|}}<C />{{/let}}' +
+          '{{#if this.show}}{{#let (component "classic-show-arg" value="b") as |C|}}<C />{{/let}}{{/if}}',
+        { show: false }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][b]');
+      this.assert.strictEqual(instances.length, 2, 'each invocation has an instance');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'b'],
+        'each instance has the arguments of its invocation'
+      );
+    }
+
+    ['@test a classic block invocation rendered after a re-render renders its own arguments']() {
+      let instances: ClassicComponent[] = [];
+      this.registerClassicShowArg(instances);
+      this.owner.register(
+        'component:curry-show-arg',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component "classic-show-arg" value=this.value)}}'),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render(
+        '{{#curry-show-arg value="a" as |show|}}{{show}}{{/curry-show-arg}}' +
+          '{{#if this.show}}{{#curry-show-arg value="b" as |show|}}{{show}}{{/curry-show-arg}}{{/if}}',
+        { show: false }
+      );
+      this.assertText('[a]');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'show', true));
+
+      this.assertText('[a][b]');
+      this.assert.deepEqual(
+        instances.map((instance) => instance.get('value')),
+        ['a', 'b'],
+        'each yielded component has the arguments of its invocation'
+      );
+    }
   }
 );
