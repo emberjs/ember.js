@@ -9380,6 +9380,15 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       if (managers?.component?.canHandle?.(comp)) {
         return handleEmberComponent(managers, comp, args, args?.[$PROPS_SYMBOL] || null, ctx);
       }
+      // A curly component block whose name resolves to no component
+      // (`{{#no-good}}…{{/no-good}}`, at any depth): Glimmer's resolution
+      // throws, where gxt would call the name as a component function.
+      if (!comp.startsWith('@')) {
+        const name = doubleDashToSlash(pascalToKebab(comp));
+        throw new Error(
+          `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
+        );
+      }
     }
 
     if (comp && comp.__isCurriedComponent) {
