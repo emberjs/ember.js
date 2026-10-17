@@ -52,6 +52,7 @@
   },
   "release-plan": {
     "files": [
+      "index.js",
       "index.ts",
       "lib/**"
     ]

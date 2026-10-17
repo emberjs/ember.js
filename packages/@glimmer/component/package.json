@@ -54,6 +54,8 @@
   },
   "release-plan": {
     "files": [
+      "index.js",
+      "index.ts",
       "src/**",
       "addon-main.cjs"
     ]
