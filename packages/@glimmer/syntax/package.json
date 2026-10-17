@@ -49,12 +49,5 @@
     "publint": "^0.3.2",
     "rollup": "^4.57.1",
     "typescript": "^5.7.3"
-  },
-  "release-plan": {
-    "files": [
-      "index.js",
-      "index.ts",
-      "lib/**"
-    ]
   }
 }
