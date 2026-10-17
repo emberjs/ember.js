@@ -601,3 +601,89 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'GXT helper args: plain function helpers',
+  class extends RenderingTestCase {
+    ['@test a plain function helper runs again when tracked state it read changes'](
+      assert: QUnit['assert']
+    ) {
+      class State {
+        @tracked value = 'one';
+      }
+      let state = new State();
+      let calls = 0;
+      let read = (prefix: string) => {
+        calls++;
+        return `${prefix}-${state.value}`;
+      };
+
+      this.render('{{this.read "x"}}', { read });
+      this.assertText('x-one');
+
+      runTask(() => (state.value = 'two'));
+      this.assertText('x-two');
+      assert.strictEqual(calls, 2, 'the function ran again');
+    }
+
+    ['@test a plain function helper invoked at two call sites runs at each'](
+      assert: QUnit['assert']
+    ) {
+      let calls = 0;
+      let count = (value: string) => {
+        calls++;
+        return value;
+      };
+
+      this.render('[{{this.count "a"}}][{{this.count "a"}}]', { count });
+      this.assertText('[a][a]');
+      assert.strictEqual(calls, 2, 'each call site calls the function once');
+    }
+
+    ['@test a plain function helper reads a named argument when it uses it'](
+      assert: QUnit['assert']
+    ) {
+      let calls = 0;
+      let pick = (value: string, options: { suffix: string }) => {
+        calls++;
+        return `${value}${options.suffix}`;
+      };
+
+      this.render('{{this.pick this.value suffix=this.suffix}}|{{this.other}}', {
+        pick,
+        value: 'a',
+        suffix: '!',
+        other: 'x',
+      });
+      this.assertText('a!|x');
+      assert.strictEqual(calls, 1, 'called once on render');
+
+      runTask(() => set(this.context, 'suffix', '?'));
+      this.assertText('a?|x');
+      assert.strictEqual(calls, 2, 'a change of a named argument it read calls it again');
+
+      runTask(() => set(this.context, 'other', 'y'));
+      this.assertText('a?|y');
+      assert.strictEqual(calls, 2, 'an unrelated change does not call it');
+    }
+
+    ['@test a {{#let}} value of a plain function helper is one reference for every read'](
+      assert: QUnit['assert']
+    ) {
+      let calls = 0;
+      let next = () => `id-${++calls}`;
+
+      this.render(
+        '{{#let (this.next) as |id|}}<p>{{id}}</p><p>{{id}}</p><i id="{{this.prefix}}-{{id}}"></i>{{/let}}',
+        { next, prefix: 'a' }
+      );
+      this.assertText('id-1id-1');
+      assert.strictEqual(this.element!.querySelector('i')!.id, 'a-id-1');
+      assert.strictEqual(calls, 1, 'the block reads one value');
+
+      runTask(() => set(this.context, 'prefix', 'b'));
+      assert.strictEqual(this.element!.querySelector('i')!.id, 'b-id-1');
+      assert.strictEqual(calls, 1, 'a change of another part of the attribute keeps the value');
+    }
+  }
+);

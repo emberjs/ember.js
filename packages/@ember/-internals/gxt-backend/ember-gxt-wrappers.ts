@@ -124,19 +124,43 @@ function unwrapHash(hash: Record<string, any>): Record<string, any> {
   const result: Record<string, any> = {};
   for (const key of Object.keys(hash)) {
     if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
-    const val = hash[key];
-    // Don't call CurriedComponent functions - they should be preserved as-is
-    let resolved = typeof val === 'function' && !val.__isCurriedComponent ? val() : val;
-    // Resolve the extra `$__cached` level for a `(hash)`/`(array)` named arg
-    // (see resolveGxtArg).
-    let guard = 0;
-    while (typeof resolved === 'function' && (resolved as any).__isCachedHelper && guard++ < 8) {
-      resolved = resolved();
-    }
-    result[key] = resolved;
+    result[key] = resolveNamedArg(hash[key]);
   }
   Object.freeze(result);
   return result;
+}
+
+// The value of a named argument of a helper call.
+function resolveNamedArg(val: any): any {
+  // Don't call CurriedComponent functions - they should be preserved as-is
+  let resolved = typeof val === 'function' && !val.__isCurriedComponent ? val() : val;
+  // Resolve the extra `$__cached` level for a `(hash)`/`(array)` named arg
+  // (see resolveGxtArg).
+  let guard = 0;
+  while (typeof resolved === 'function' && (resolved as any).__isCachedHelper && guard++ < 8) {
+    resolved = resolved();
+  }
+  return resolved;
+}
+
+// The named arguments of a plain function helper call: an object whose
+// properties resolve their argument when they are read, like the named
+// arguments proxy of Glimmer's helper managers, so reading the keys
+// (`Object.keys`) reads no argument. `null` when the call has no named
+// arguments.
+function lazyNamedArgs(hash: Record<string, any>): Record<string, any> | null {
+  if (!hash || typeof hash !== 'object') return null;
+  let named: Record<string, any> | null = null;
+  for (const key of Object.keys(hash)) {
+    if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
+    named ??= {};
+    Object.defineProperty(named, key, {
+      get: () => resolveNamedArg(hash[key]),
+      enumerable: true,
+      configurable: false,
+    });
+  }
+  return named === null ? null : Object.freeze(named);
 }
 
 /**
@@ -720,97 +744,39 @@ function createEmberMaybeHelper(original: Function) {
         }
       }
 
-      // No helper manager — treat as a default function helper (Ember convention).
-      // Plain functions used as helpers: positional args are spread, named args
-      // (if any) are passed as the last argument.
-      // This handles {{(this.hello this.foo)}} and {{(this.hello "foo" foo="bar")}}.
-      //
-      // Use the managed helper bucket cache (keyed by function) so that:
-      // 1. GXT formula re-evaluations within the same render don't double-call
-      // 2. When args change, the function IS re-called with fresh values
+      // No helper manager: a plain function is a helper (Glimmer's default
+      // helper manager, @glimmer/manager's FunctionHelperManager). It is called
+      // with the positional arguments and, when there are named arguments, an
+      // object of them whose properties read their argument when they are read
+      // (`lazyNamedArgs`): the binding that evaluates the call depends on the
+      // named arguments the function uses only. The binding calls it again
+      // whenever something it read changed; its result is not cached (gxt
+      // evaluates a binding once when it creates it, and a `{{#let}}` value of
+      // a helper call is a cached reference).
       const positional = unwrapArgs(args || []);
-      const named = unwrapHash(hash);
-      const hasNamed = named && Object.keys(named).length > 0;
+      const named = lazyNamedArgs(hash);
 
       // Mark user helper results that are functions so downstream
       // unwrapArgs / unwrapHash do not treat them as GXT reactive getters
       // and invoke them. For example, when a user function like `boundFn`
       // is invoked via `(fn ...)` (shadowed), the returned closure must reach
       // the outer helper (e.g. `invoke`) as-is rather than be eagerly called.
-      const markHelperResult = (v: any) => {
-        // A frozen function cannot take the mark.
-        if (
-          typeof v === 'function' &&
-          !v.prototype &&
-          !v.__isFnHelper &&
-          !v.__isMutCell &&
-          !v.__isHelperResult &&
-          Object.isExtensible(v)
-        ) {
-          Object.defineProperty(v, '__isHelperResult', {
-            value: true,
-            enumerable: false,
-            configurable: true,
-          });
-        }
-        return v;
-      };
-      // Skip the JSON.stringify-based result cache when any positional arg is a
-      // non-primitive object or a plain function value, because the comparison is
-      // unreliable for them: Map/Set serialize to `{}`, in-place mutation of a POJO
-      // is missed, cycles throw, and functions serialize to null (false hits across
-      // distinct callbacks, e.g. two (fn ...) subexpressions shadowed by a user fn).
-      // The helper runs inside a reactive formula that already dedupes by tag
-      // tracking, so re-invoking per formula evaluation is safe.
-      const hasObjectArg = positional.some(
-        (a: any) =>
-          (a !== null && typeof a === 'object') ||
-          (typeof a === 'function' && !a.__isFnHelper && !a.__isMutCell)
-      );
-      if (hasObjectArg) {
-        return markHelperResult(
-          hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
-        );
+      // A frozen function cannot take the mark.
+      const result = named === null ? nameOrFn(...positional) : nameOrFn(...positional, named);
+      if (
+        typeof result === 'function' &&
+        !result.prototype &&
+        !result.__isFnHelper &&
+        !result.__isMutCell &&
+        !result.__isHelperResult &&
+        Object.isExtensible(result)
+      ) {
+        Object.defineProperty(result, '__isHelperResult', {
+          value: true,
+          enumerable: false,
+          configurable: true,
+        });
       }
-
-      let cached = managedHelperBucketCache.get(nameOrFn);
-      let argsSer: string | null = null;
-      try {
-        argsSer = JSON.stringify({ p: positional, n: named });
-      } catch (error) {
-        // A cyclic or BigInt argument cannot be serialized (a TypeError): the
-        // helper then runs on every evaluation. Any other error (a `toJSON`
-        // of an argument) is the argument's own and is thrown.
-        if (!(error instanceof TypeError)) throw error;
-      }
-
-      if (cached && cached.__plainFnHelper) {
-        // Check if args actually changed
-        if (argsSer !== null && argsSer === cached.lastArgsSer) {
-          // Same args — return cached result (dedup within same render)
-          return cached.lastResult;
-        }
-        // Args changed — re-invoke the function
-        const result = markHelperResult(
-          hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
-        );
-        cached.lastArgsSer = argsSer;
-        cached.lastResult = result;
-        return result;
-      }
-
-      // First invocation — call and cache
-      const result = markHelperResult(
-        hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
-      );
-      managedHelperBucketCache.set(nameOrFn, {
-        __plainFnHelper: true,
-        lastArgsSer: argsSer,
-        lastResult: result,
-        bucket: null,
-        delegate: null,
-        reactiveArgs: null as any,
-      });
       return result;
     }
 
