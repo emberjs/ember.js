@@ -1345,12 +1345,11 @@ function _renderComponentGxt(
       for (const e of targetState.entries) {
         if (e.runloop !== currentRunloop) stale.push(e);
       }
+      // What the destruction throws (a destructor, a manager's
+      // destroyComponent) reaches the caller, as replacing a classic render
+      // destroys the last one unguarded.
       for (const e of stale) {
-        try {
-          e.destroy();
-        } catch {
-          /* ignore */
-        }
+        e.destroy();
       }
     }
     // Initial render into a target that has not yet been claimed by
@@ -1406,11 +1405,7 @@ function _renderComponentGxt(
     if (!first || !last) return;
     while (first) {
       const next: Node | null = first.nextSibling;
-      try {
-        first.parentNode?.removeChild(first);
-      } catch {
-        /* ignore */
-      }
+      first.parentNode?.removeChild(first);
       if (first === last) break;
       first = next;
     }
@@ -1755,12 +1750,10 @@ function _renderComponentGxt(
       if (targetState) {
         targetState.entries.unshift(entry);
       }
-      // Register destructor on owner so owner.destroy() cleans up DOM
-      try {
-        registerDestructor(owner, doDestroy);
-      } catch {
-        // owner may not be destroyable
-      }
+      // Register destructor on owner so owner.destroy() cleans up DOM. An
+      // owner that is being destroyed throws, as classic's
+      // `associateDestroyableChild(owner, root)` does.
+      registerDestructor(owner, doDestroy);
       return result;
     }
 
@@ -1840,11 +1833,7 @@ function _renderComponentGxt(
           if (typeof ComponentClass.create === 'function') {
             instance = ComponentClass.create(Object.assign({}, args || {}, { owner }));
           } else {
-            try {
-              instance = new ComponentClass(owner, args || {});
-            } catch {
-              instance = new ComponentClass();
-            }
+            instance = new ComponentClass(owner, args || {});
           }
         }
 
@@ -1934,12 +1923,9 @@ function _renderComponentGxt(
       renderRegion();
     }
 
-    // Flush queued didInsertElement / didRender hooks
-    try {
-      gxtRenderPass().flushAfterInsertQueue();
-    } catch {
-      // Ignore flush errors in renderComponent context
-    }
+    // Flush queued didInsertElement / didRender hooks. What a hook throws
+    // aborts the render (below), as a hook error in Glimmer's commit does.
+    gxtRenderPass().flushAfterInsertQueue();
     // didCreateComponent runs once the render and its children's hooks are
     // done, as Glimmer's transaction commit runs it.
     if (
@@ -1976,12 +1962,10 @@ function _renderComponentGxt(
     targetState.entries.unshift(entry);
   }
 
-  // Register destructor on owner so that destroying the owner cleans up the DOM
-  try {
-    registerDestructor(owner, doDestroy);
-  } catch {
-    // owner may not be destroyable
-  }
+  // Register destructor on owner so that destroying the owner cleans up the DOM.
+  // An owner that is being destroyed throws, as classic's
+  // `associateDestroyableChild(owner, root)` does.
+  registerDestructor(owner, doDestroy);
 
   return result;
 }
