@@ -133,20 +133,16 @@ export class DynamicScope implements GlimmerDynamicScope {
 const _proxyContentOwners = new WeakMap<object, Set<{ proxy: any; obj: object; key: string }>>();
 
 function _registerArrayProxyOwner(proxy: any, ownerObj: object, ownerKey: string) {
-  try {
-    const desc = Object.getOwnPropertyDescriptor(proxy, 'content');
-    if (!desc || desc.get) return; // content is a CP, skip
-    const content = desc.value;
-    if (!content || !Array.isArray(content)) return;
-    let owners = _proxyContentOwners.get(content);
-    if (!owners) {
-      owners = new Set();
-      _proxyContentOwners.set(content, owners);
-    }
-    owners.add({ proxy, obj: ownerObj, key: ownerKey });
-  } catch {
-    /* ignore */
+  const desc = Object.getOwnPropertyDescriptor(proxy, 'content');
+  if (!desc || desc.get) return; // content is a CP, skip
+  const content = desc.value;
+  if (!content || !Array.isArray(content)) return;
+  let owners = _proxyContentOwners.get(content);
+  if (!owners) {
+    owners = new Set();
+    _proxyContentOwners.set(content, owners);
   }
+  owners.add({ proxy, obj: ownerObj, key: ownerKey });
 }
 
 // Lazily registers (once) an after-hook on the GXT re-render trigger that runs
@@ -167,13 +163,11 @@ function _ensureTriggerReRenderPatched() {
       if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
         const owners = _proxyContentOwners.get(obj);
         if (owners) {
+          // The owner's cell was installed with the proxy's data property
+          // (below), so finding it reads nothing that can throw.
           for (const { proxy, obj: ownerObj, key: ownerKey } of owners) {
-            try {
-              const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-              if (c) c.update(proxy); // Update with proxy, not content array
-            } catch {
-              /* ignore */
-            }
+            const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(proxy); // Update with proxy, not content array
           }
         }
       }
@@ -332,46 +326,42 @@ class ClassicRootState implements RendererRoot {
                   for (const key in component) {
                     if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key))
                       continue;
-                    try {
-                      // Walk the prototype chain to find the descriptor. `for...in`
-                      // iterates inherited enumerable keys too, but
-                      // `Object.getOwnPropertyDescriptor(component, key)` returns
-                      // `undefined` for inherited props. Without walking, we fail
-                      // to detect mixin-installed computed-property getter/setter
-                      // pairs (e.g., `actionContextObject` from TargetActionSupport)
-                      // and install a cellFor whose cell re-reads the CP through
-                      // `comp[key]`, recursing forever
-                      // (cell.value -> cell.__fn() -> comp[key] -> cell.value ...).
-                      let desc: PropertyDescriptor | undefined;
-                      let obj: any = component;
-                      while (obj && obj !== Object.prototype) {
-                        desc = Object.getOwnPropertyDescriptor(obj, key);
-                        if (desc) break;
-                        obj = Object.getPrototypeOf(obj);
-                      }
-                      if (desc && (desc.get || desc.set)) continue;
-                      if (desc && desc.configurable === false) continue;
-                      const value = component[key];
-                      if (typeof value === 'function') continue;
-                      _cellFor(component, key, /* skipDefine */ false);
-                      // Register array owner for KVO array mutation tracking
-                      if (_registerArrayOwner && Array.isArray(value)) {
-                        _registerArrayOwner(value, component, key);
-                      }
-                      // For ArrayProxy values, register the proxy in a separate map
-                      // so that when its content array fires notifyPropertyChange,
-                      // we can dirty the component cell with the proxy (not the content).
-                      if (
-                        _registerArrayOwner &&
-                        value &&
-                        typeof value === 'object' &&
-                        typeof value.objectAt === 'function' &&
-                        !Array.isArray(value)
-                      ) {
-                        _registerArrayProxyOwner(value, component, key);
-                      }
-                    } catch {
-                      /* ignore */
+                    // Walk the prototype chain to find the descriptor. `for...in`
+                    // iterates inherited enumerable keys too, but
+                    // `Object.getOwnPropertyDescriptor(component, key)` returns
+                    // `undefined` for inherited props. Without walking, we fail
+                    // to detect mixin-installed computed-property getter/setter
+                    // pairs (e.g., `actionContextObject` from TargetActionSupport)
+                    // and install a cellFor whose cell re-reads the CP through
+                    // `comp[key]`, recursing forever
+                    // (cell.value -> cell.__fn() -> comp[key] -> cell.value ...).
+                    let desc: PropertyDescriptor | undefined;
+                    let obj: any = component;
+                    while (obj && obj !== Object.prototype) {
+                      desc = Object.getOwnPropertyDescriptor(obj, key);
+                      if (desc) break;
+                      obj = Object.getPrototypeOf(obj);
+                    }
+                    if (desc && (desc.get || desc.set)) continue;
+                    if (desc && desc.configurable === false) continue;
+                    const value = component[key];
+                    if (typeof value === 'function') continue;
+                    _cellFor(component, key, /* skipDefine */ false);
+                    // Register array owner for KVO array mutation tracking
+                    if (_registerArrayOwner && Array.isArray(value)) {
+                      _registerArrayOwner(value, component, key);
+                    }
+                    // For ArrayProxy values, register the proxy in a separate map
+                    // so that when its content array fires notifyPropertyChange,
+                    // we can dirty the component cell with the proxy (not the content).
+                    if (
+                      _registerArrayOwner &&
+                      value &&
+                      typeof value === 'object' &&
+                      typeof value.objectAt === 'function' &&
+                      !Array.isArray(value)
+                    ) {
+                      _registerArrayProxyOwner(value, component, key);
                     }
                   }
                 }
