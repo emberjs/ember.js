@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get } from '@ember/object';
 import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';

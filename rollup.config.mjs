@@ -247,6 +247,8 @@ function packages() {
 
       // private helpers that must not become importable module paths
       '@ember/array/lib/sort-compare.ts',
+      '@ember/object/lib/core-object.ts',
+      '@ember/object/lib/ember-object.ts',
     ],
     cwd: 'packages',
   });

@@ -1,5 +1,6 @@
 import Route from '@ember/routing/route';
-import EmberObject, { computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed } from '@ember/object';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';

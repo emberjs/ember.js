@@ -4,7 +4,7 @@ export { guidFor } from '@ember/-internals/utils/lib/guid';
 import { addListener } from '@ember/-internals/metal/lib/events';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import EmberObject from '.';
+import EmberObject from '@ember/object/lib/ember-object';
 
 // Here we have runtime shenanigans to add debug-only errors to the class in dev
 // builds. Those runtime shenanigans produce the need for type-level shenanigans

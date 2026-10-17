@@ -10,7 +10,8 @@ import {
 import Component from '@glimmer/component';
 import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
-import EmberObject, { set } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 import templateOnly from '@ember/component/template-only';
