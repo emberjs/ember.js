@@ -655,6 +655,13 @@ export interface GxtCompilePipelineCapabilities {
   syncDomNow?(): void;
 
   /**
+   * Take what the end-of-runloop sync of the run loop's `end` listener threw,
+   * if anything (`{ error }`, as any value can be thrown), for the runloop's
+   * `onEnd` to throw. Contributed by glimmer's base-renderer.ts.
+   */
+  takeRunLoopEndError?(): { error: unknown } | null;
+
+  /**
    * Whether `withSuppressDirtyInRcSet` is active. validator.ts's `dirtyTagFor`
    * then dirties the tag but does not schedule another sync.
    */

@@ -5,6 +5,7 @@ import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
   getGxtRenderer,
   getAmbientOwner,
+  installCompilePipelinePart,
   setAmbientOwner,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 import {
@@ -865,6 +866,20 @@ if (!__GXT_MODE__) {
   // so that renderSettled()'s promise resolves AFTER the DOM is up-to-date.
   // Only flush on the outermost runloop end (nextInstance == null) and when
   // not inside runTask (which performs its own explicit sync).
+  //
+  // What the sync throws (an error of the update it renders) reaches the code
+  // that ran the run loop, as a render error of the run loop's render queue
+  // does. Thrown from this listener, it would skip the runloop's `onEnd` (the
+  // reset of the current run loop, the observer flush), so it is kept here and
+  // `onEnd`, the run loop's last step, throws it (`takeRunLoopEndError`).
+  let endError: { error: unknown } | null = null;
+  installCompilePipelinePart({
+    takeRunLoopEndError() {
+      const taken = endError;
+      endError = null;
+      return taken;
+    },
+  });
   _backburner.on('end', (_curr: unknown, nextInstance: unknown) => {
     loops = 0;
     const _cpBB = getGxtRenderer()?.compilePipeline;
@@ -873,8 +888,8 @@ if (!__GXT_MODE__) {
       if (typeof syncNow === 'function') {
         try {
           syncNow();
-        } catch {
-          /* errors handled inside sync */
+        } catch (error) {
+          endError = { error };
         }
       }
     }

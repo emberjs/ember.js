@@ -63,20 +63,23 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
     // Reset budget when all runloops complete
     if (!next) {
       _gxtFlushBudget = 0;
+      // This is the run loop's last step. What a DOM sync threw (the one of
+      // the run loop's `end` listener in base-renderer, or the one below; an
+      // error of the update it renders) is thrown from here, so it reaches the
+      // code that ran the run loop, as a render error in the run loop's render
+      // queue does.
+      const _cpRL = getGxtRenderer()?.compilePipeline;
+      const endError = _cpRL?.takeRunLoopEndError?.();
+      if (endError) throw endError.error;
       // Flush GXT DOM updates when the outermost run loop ends, but ONLY if
       // we're not inside a runTask call (which has its own explicit sync).
       // This ensures tracked property changes from bare run() calls (e.g.,
       // renderComponent tests) are reflected in the DOM before assertions run,
       // without double-syncing during runTask calls.
-      const _cpRL = getGxtRenderer()?.compilePipeline;
       if (_cpRL?.getPendingSync?.() && !_cpRL?.getRunTaskActive?.()) {
         const syncNow = _cpRL?.syncDomNow;
         if (typeof syncNow === 'function') {
-          try {
-            syncNow();
-          } catch {
-            /* errors handled by sync */
-          }
+          syncNow();
         }
       }
     }
