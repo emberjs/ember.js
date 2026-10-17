@@ -17,7 +17,8 @@ import {
   and,
   or,
 } from '@ember/object/computed';
-import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get, set, computed, defineProperty } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';

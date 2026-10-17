@@ -17,7 +17,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { getName, setName } from '@ember/-internals/utils/lib/name';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 
 /**
   A Namespace is an object usually used to contain other objects or methods

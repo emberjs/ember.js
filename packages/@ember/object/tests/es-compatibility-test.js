@@ -1,4 +1,5 @@
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed, observer } from '@ember/object';
 import {
   defineProperty,
   on,

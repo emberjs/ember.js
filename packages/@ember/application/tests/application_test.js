@@ -7,7 +7,7 @@ import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import {
   moduleFor,
   ApplicationTestCase,

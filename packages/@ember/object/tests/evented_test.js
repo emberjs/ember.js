@@ -1,5 +1,5 @@
-import CoreObject from '@ember/object/core';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/lib/core-object';
+import EmberObject from '@ember/object/lib/ember-object';
 import EventedMixin from '@ember/object/evented';
 import Component from '@ember/component';
 import Route from '@ember/routing/route';

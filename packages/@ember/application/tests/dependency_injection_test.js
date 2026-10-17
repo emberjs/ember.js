@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import EmberApplication from '@ember/application';
 import {
   moduleFor,

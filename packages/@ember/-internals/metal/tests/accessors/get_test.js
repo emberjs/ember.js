@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { observer } from '@ember/object';
 import { get } from '../..';
 import { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

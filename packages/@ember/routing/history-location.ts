@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp, getHash } from './lib/location-utils';

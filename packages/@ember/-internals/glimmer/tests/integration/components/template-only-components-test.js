@@ -3,7 +3,8 @@ import { setComponentTemplate } from '@glimmer/manager';
 import templateOnlyComponent from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
-import EmberObject, { setProperties } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { setProperties } from '@ember/object';
 import Component from '@glimmer/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 

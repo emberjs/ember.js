@@ -4,7 +4,8 @@ import { addObserver } from '@ember/object/observers';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed, observer } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import {
   buildOwner,

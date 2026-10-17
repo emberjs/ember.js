@@ -14,7 +14,7 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { readOnly } from '@ember/object/computed';
 import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';

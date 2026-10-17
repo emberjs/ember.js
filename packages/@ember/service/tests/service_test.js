@@ -1,5 +1,5 @@
 import Service, { inject, service } from '@ember/service';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import {
   AbstractTestCase,
   buildOwner,

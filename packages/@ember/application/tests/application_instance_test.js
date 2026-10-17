@@ -4,7 +4,7 @@ import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
 import { privatize as P } from '@ember/-internals/container';
 import { factory } from 'internal-test-helpers';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import {
   moduleFor,
   ModuleBasedTestResolver,

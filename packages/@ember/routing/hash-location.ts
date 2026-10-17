@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';

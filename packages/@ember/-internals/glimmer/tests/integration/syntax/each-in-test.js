@@ -9,7 +9,7 @@ import {
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import ObjectProxy from '@ember/object/proxy';
 
 import {

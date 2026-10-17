@@ -1,6 +1,6 @@
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 
 class RejectTest extends AbstractTestCase {
   '@test should reject any item that does not meet the condition'() {
