@@ -5737,51 +5737,49 @@ function patchGlobalIf() {
         // `patchGlobalIf`'s scope-stash block above — this KVO-watch path shares
         // the same IfCondition, so a second registration here would be redundant.)
         const _ifWatchCb: IfWatcherCb = (notifiedTarget: object) => {
-          try {
-            const currentValue = conditionOrCell();
-            const boolVal = emberToBool(currentValue);
-            // Track the user's toggle-off intent for classic-component
-            // wrappers with a yield-only `{{#if}}`. GXT's pooling and
-            // force-rerender can cause click-toggle-on events to route
-            // through different watcher instances than click-toggle-off,
-            // so we widen the "set on false" to direct hits only (to avoid
-            // prototype-broadcast false positives) but allow "clear on
-            // true" from any hit (so a genuine toggle-on eventually lands).
-            //
-            // CRITICAL: read the "fresh" branch value from the notifiedTarget
-            // (the real live object whose property just changed) rather than
-            // exclusively from our captured conditionOrCell closure. Stale
-            // IfCondition instances from pool reuse carry closures that point
-            // at discarded controllers, so they always report their stale
-            // value and never propagate a later true-flip. The notifiedTarget
-            // is the live controller that the click-handler's set() hit, so
-            // reading watchKey on it gives the real current value.
-            let freshBoolVal = boolVal;
-            if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
-              const v2 = (notifiedTarget as any)[watchKey];
-              freshBoolVal = emberToBool(v2);
-            }
-            const ph = ifCondition.placeholder;
-            const par: any = ph && (ph as any).parentNode;
-            if (par && _isEmberViewWrapper(par) && par.id) {
-              if (notifiedTarget === watchTarget && boolVal === false) {
-                _wrapperIfUserFalse.add(par.id);
-                let s = _wrapperIfCondLookup.get(par.id);
-                if (!s) {
-                  s = new Set();
-                  _wrapperIfCondLookup.set(par.id, s);
-                }
-                s.add({ condFn: conditionOrCell, placeholder: ph, ifCondition });
-              } else if (boolVal === true || freshBoolVal === true) {
-                _wrapperIfUserFalse.delete(par.id);
-                _wrapperIfCondLookup.delete(par.id);
-              }
-            }
-
-            ifCondition.syncState(boolVal);
-          } catch (e) {
-            console.warn('[GXT] syncState error:', e);
+          // What the condition or the branch render throws is the sync's error
+          // (`_gxtSyncDomNow` throws it once the other watchers have fired).
+          const currentValue = conditionOrCell();
+          const boolVal = emberToBool(currentValue);
+          // Track the user's toggle-off intent for classic-component
+          // wrappers with a yield-only `{{#if}}`. GXT's pooling and
+          // force-rerender can cause click-toggle-on events to route
+          // through different watcher instances than click-toggle-off,
+          // so we widen the "set on false" to direct hits only (to avoid
+          // prototype-broadcast false positives) but allow "clear on
+          // true" from any hit (so a genuine toggle-on eventually lands).
+          //
+          // CRITICAL: read the "fresh" branch value from the notifiedTarget
+          // (the real live object whose property just changed) rather than
+          // exclusively from our captured conditionOrCell closure. Stale
+          // IfCondition instances from pool reuse carry closures that point
+          // at discarded controllers, so they always report their stale
+          // value and never propagate a later true-flip. The notifiedTarget
+          // is the live controller that the click-handler's set() hit, so
+          // reading watchKey on it gives the real current value.
+          let freshBoolVal = boolVal;
+          if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
+            const v2 = (notifiedTarget as any)[watchKey];
+            freshBoolVal = emberToBool(v2);
           }
+          const ph = ifCondition.placeholder;
+          const par: any = ph && (ph as any).parentNode;
+          if (par && _isEmberViewWrapper(par) && par.id) {
+            if (notifiedTarget === watchTarget && boolVal === false) {
+              _wrapperIfUserFalse.add(par.id);
+              let s = _wrapperIfCondLookup.get(par.id);
+              if (!s) {
+                s = new Set();
+                _wrapperIfCondLookup.set(par.id, s);
+              }
+              s.add({ condFn: conditionOrCell, placeholder: ph, ifCondition });
+            } else if (boolVal === true || freshBoolVal === true) {
+              _wrapperIfUserFalse.delete(par.id);
+              _wrapperIfCondLookup.delete(par.id);
+            }
+          }
+
+          ifCondition.syncState(boolVal);
         };
         // Provide the flush phase with metadata so it can sort: parent
         // {{#if}} flips going FALSE fire before child {{#if}} flips going
@@ -7445,7 +7443,7 @@ function _gxtSyncDomNow(): void {
           try {
             cb(obj);
           } catch (e) {
-            console.warn('[GXT] ifWatcher pre-flush error:', e);
+            _gxtDeferSyncError(e);
           }
         }
         // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
@@ -7562,7 +7560,7 @@ function _gxtSyncDomNow(): void {
           try {
             cb(obj);
           } catch (e) {
-            console.warn('[GXT] ifWatcher error:', e);
+            _gxtDeferSyncError(e);
           }
         }
         // Phase B: fire all TRUE-flips that still have a live placeholder. Skip
@@ -7587,7 +7585,7 @@ function _gxtSyncDomNow(): void {
           try {
             cb(obj);
           } catch (e) {
-            console.warn('[GXT] ifWatcher error:', e);
+            _gxtDeferSyncError(e);
           }
         }
         // Phase C: fire all watchers that have no flip metadata (unknown/legacy)
@@ -7598,7 +7596,7 @@ function _gxtSyncDomNow(): void {
           try {
             cb(obj);
           } catch (e) {
-            console.warn('[GXT] ifWatcher error:', e);
+            _gxtDeferSyncError(e);
           }
         }
         // Phase D: fan out the remaining (legacy) watchers via the proto/ctx
@@ -7628,7 +7626,7 @@ function _gxtSyncDomNow(): void {
               try {
                 cb(obj);
               } catch (e) {
-                console.warn('[GXT] ifWatcher error:', e);
+                _gxtDeferSyncError(e);
               }
             }
           }
