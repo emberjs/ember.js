@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T16:51:01.389Z",
+    "capturedAt": "2026-10-17T01:52:37.317Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "f921fb272b",
-    "totalTests": 10185,
-    "totalModules": 1003,
+    "emberCommit": "c338dbf8fe",
+    "totalTests": 10195,
+    "totalModules": 1011,
     "quarantinedTests": 0,
-    "totalAssertions": 60929,
-    "totalAssertionsPassing": 60534,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a route manager's own wrapper (getRouteWrapper) renders its routes (the wrapper is invoked with @Component, @bucket, @context and @outlet; a classic route's template renders with its controller as this; <@outlet /> renders the next level in classic route templates too) and a route template's action keeps its controller as this after a controller property changes; written by runner.mjs in the GitHub Actions GXT full workflow (run 38934966332, on the code of f921fb272b). 9882/10185 green (was 9871/10180), 1003 modules, no timeouts, no harness errors, no green->red. 6 tests no longer fail (Query Params - main: queryParams are updated when a controller property is set and the route is refreshed. Issue #13263; the Route manager tests manager-provided outlet, module-stable wrapper across owners, outlet composition, outlet opacity and wrapper-less rendering); the new modules GXT route manager wrappers (4/4) and GXT correctness: route template actions (1/1) pass; no module has fewer passing assertions."
+    "totalAssertions": 60960,
+    "totalAssertionsPassing": 60562,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a rendered value reads only the members of a (hash), a curried component's arguments are read when the component reads them, the fn helper reads its callback when its function is called, LinkTo re-applies class and href in the render queue while its owner lives, a rendered component's properties are scanned without running its getters, Input and Textarea read only the arguments they use, a route template reads its controller's getters when it reads them, and a dynamic component's value is read as the template it belongs to; written by runner.mjs in the GitHub Actions GXT full workflow (run 38992606004, merged from 5 shards, on the code of c338dbf8fe). 9892/10195 green (was 9882/10185), 1011 modules, no timeouts, no harness errors, no green->red. No test turned green; the new modules GXT reads: a value rendered as content (2/2), curried component arguments (2/2), the fn helper (1/1), LinkTo (1/1), the properties of a rendered component (1/1), the arguments of an internal component (1/1), a route template's controller (1/1) and a contextual component in a (hash) (1/1) pass; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2683,6 +2683,62 @@
       "assertionsPassing": 39,
       "failingTests": []
     },
+    "GXT reads: LinkTo": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT reads: a contextual component in a (hash)": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT reads: a route template's controller": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT reads: a value rendered as content": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT reads: curried component arguments": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "GXT reads: the arguments of an internal component": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT reads: the fn helper": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT reads: the properties of a rendered component": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
     "GXT renderComponent into a cursor": {
       "total": 1,
       "passing": 1,
@@ -2915,7 +2971,7 @@
     "Helpers test: {{fn}}": {
       "total": 14,
       "passing": 6,
-      "assertionsTotal": 41,
+      "assertionsTotal": 44,
       "assertionsPassing": 17,
       "failingTests": [
         {
