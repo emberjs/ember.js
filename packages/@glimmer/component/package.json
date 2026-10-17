@@ -51,5 +51,10 @@
     "type": "addon",
     "version": 2,
     "main": "addon-main.cjs"
+  },
+  "release-plan": {
+    "files": [
+      "!tsconfig.json"
+    ]
   }
 }
