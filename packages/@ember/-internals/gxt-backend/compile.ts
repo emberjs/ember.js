@@ -10916,8 +10916,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
 
             // Create default slot if there are default children
-            // Check args.__hasBlockParams__ marker for explicit block params declaration
-            if (defaultChildren.length > 0) {
+            // Check args.__hasBlockParams__ marker for explicit block params declaration.
+            // With named blocks, those are the invocation's blocks (Glimmer's
+            // componentWithNamedBlocks): the rest of its content, the
+            // whitespace text and comments between them, is not a default block.
+            if (defaultChildren.length > 0 && namedBlocks.size === 0) {
               // Get the explicit hasBlockParams flag from args if present
               const explicitHasBlockParams =
                 args.__hasBlockParams__ !== undefined

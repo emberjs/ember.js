@@ -1668,7 +1668,10 @@ function createEmberTag(original: Function) {
             slots[slotName] = createSlotFn(slotData.children, slotData.hasBlockParams);
           }
 
-          if (defaultChildren.length > 0) {
+          // With named blocks, those are the invocation's blocks (Glimmer's
+          // componentWithNamedBlocks): the rest of its content, the whitespace
+          // text and comments between them, is not a default block.
+          if (defaultChildren.length > 0 && namedBlocks.size === 0) {
             const explicitHasBlockParams =
               args.__hasBlockParams__ !== undefined
                 ? (typeof args.__hasBlockParams__ === 'function'

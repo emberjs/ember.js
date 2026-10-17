@@ -178,14 +178,24 @@ gxtModuleFor(
         template: '<header>{{yield to="header"}}</header><main>{{yield}}</main>',
       });
 
-      this.render(`
-        <FooBar>
+      // The whitespace between named blocks is not rendered (Glimmer ignores
+      // it); the invocation is the whole template, so none is around it.
+      this.render(`<FooBar>
           <:header>Header Content</:header>
           <:default>Main Content</:default>
-        </FooBar>
-      `);
+        </FooBar>`);
 
       this.assertText('Header ContentMain Content');
+    }
+
+    '@test the space between named blocks is not a default block'() {
+      this.registerComponent('foo-bar', {
+        template: '[{{yield to="header"}}][{{yield}}]',
+      });
+
+      this.render('<FooBar> <:header>A</:header> <:default>B</:default> </FooBar>');
+
+      this.assertText('[A][B]');
     }
 
     '@test it can use hasBlock'() {
