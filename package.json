@@ -112,7 +112,7 @@
     "@embroider/vite": "^1.7.2",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
-    "@nullvoxpopuli/release-plan": "^0.21.0",
+    "@nullvoxpopuli/release-plan": "^0.22.0",
     "@octokit/rest": "^22.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",
@@ -175,10 +175,7 @@
     "node": ">= 20.19"
   },
   "release-plan": {
-    "ignore": true,
-    "renameCommitters": {
-      "NullVoxPopuli-ai-agent": "NullVoxPopuli"
-    }
+    "ignore": true
   },
   "pnpm": {
     "onlyBuiltDependencies": [
