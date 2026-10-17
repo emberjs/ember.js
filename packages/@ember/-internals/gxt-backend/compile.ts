@@ -1998,21 +1998,34 @@ function _resolveCurriedArgs(curried: any): {
   return { name: curried.__name, args: resolved, positionals: resolvedPos };
 }
 
-// Helper: snapshot curried args on a render info for later comparison.
-function _snapshotCurriedArgs(info: any, curried: any) {
-  const snap = _resolveCurriedArgs(curried);
-  info.__lastSnapshot = snap;
+// Whether the curried-component region of `info` already shows `curried`: the
+// curried value it rendered last, or one of the same definition whose
+// arguments have the values the shown one's have now. Glimmer's curry
+// reference keeps its curried value while the definition stays, and the
+// curried arguments are references: a change of one updates the component the
+// value rendered (the sync re-reads a classic component's arguments, a Glimmer
+// component's `this.args` reads them) and nothing renders again. A getter that
+// makes the curried value again (a `(hash)` member, a `{{#let}}` value) gives
+// an equal one then. Another curried value renders its own component. The
+// arguments are read untracked: the region does not depend on them.
+function _curriedRegionCurrent(info: any, curried: any): boolean {
+  const shown = info.lastCurried;
+  return (
+    curried === shown ||
+    (shown !== undefined && _gxtUntracked(() => _gxtSameCurriedValue(shown, curried)))
+  );
 }
 
-// Whether the curried-component region of `info` already shows `curried`: the
-// curried value it rendered last, or one with the same definition and argument
-// values. Glimmer's curry reference keeps its curried value while the
-// definition stays, and the curried arguments are references: a change of one
-// updates the component the value rendered (the sync re-reads a classic
-// component's arguments, a Glimmer component's `this.args` reads them) and
-// nothing renders again. Another curried value renders its own component.
-function _curriedRegionCurrent(info: any, curried: any): boolean {
-  return curried === info.lastCurried || !_curriedComponentChanged(info, curried);
+// Runs `fn` with no tracking frame: what it reads is not a read of the formula
+// or effect running it.
+function _gxtUntracked<T>(fn: () => T): T {
+  const outer = _gxtGetTracker();
+  _gxtSetTracker(null);
+  try {
+    return fn();
+  } finally {
+    _gxtSetTracker(outer);
+  }
 }
 
 // Where a content mustache renders a component (a curried component, a
@@ -2040,13 +2053,17 @@ function _gxtComponentSite(): _GxtComponentSite {
 
 // Renders the current value of `site` with `render`, which renders it through
 // the Ember component manager with the given arguments (the site's invocation).
+// The render reads untracked: the component reads its curried arguments
+// itself, so the binding that renders it does not depend on them.
 function _gxtRenderInSite<T>(site: _GxtComponentSite, render: (args: object) => T): T {
   const args = {};
   _setInternalProp(args, '__thunkId', site.invocation);
   const destruction = getGxtRenderer()?.destruction;
-  return destruction?.renderInBlock
-    ? destruction.renderInBlock(site.content, site.block, () => render(args))
-    : render(args);
+  return _gxtUntracked(() =>
+    destruction?.renderInBlock
+      ? destruction.renderInBlock(site.content, site.block, () => render(args))
+      : render(args)
+  );
 }
 
 // The value `site` rendered was replaced: the next value renders as another
@@ -2066,45 +2083,23 @@ function _gxtReleaseComponentSite(site: _GxtComponentSite, removed: Node[]): voi
   }
 }
 
-// Helper: check if curried component has changed compared to last snapshot.
-function _curriedComponentChanged(info: any, curried: any): boolean {
-  const last = info.__lastSnapshot;
-  if (!last) return true; // No previous snapshot — treat as changed
-  const current = _resolveCurriedArgs(curried);
-  if (last.name !== current.name) return true;
-  // Compare named args
-  const lastKeys = Object.keys(last.args);
-  const currentKeys = Object.keys(current.args);
-  if (lastKeys.length !== currentKeys.length) return true;
-  for (const key of currentKeys) {
-    if (last.args[key] !== current.args[key]) return true;
+// Whether two curried components are of the same definition, with the same
+// argument values now.
+function _gxtSameCurriedValue(a: any, b: any): boolean {
+  const left = _resolveCurriedArgs(a);
+  const right = _resolveCurriedArgs(b);
+  if (left.name !== right.name) return false;
+  const leftKeys = Object.keys(left.args);
+  const rightKeys = Object.keys(right.args);
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (const key of rightKeys) {
+    if (left.args[key] !== right.args[key]) return false;
   }
-  // Compare positionals
-  if (last.positionals.length !== current.positionals.length) return true;
-  for (let i = 0; i < current.positionals.length; i++) {
-    if (last.positionals[i] !== current.positionals[i]) return true;
+  if (left.positionals.length !== right.positionals.length) return false;
+  for (let i = 0; i < right.positionals.length; i++) {
+    if (left.positionals[i] !== right.positionals[i]) return false;
   }
-  return false;
-}
-
-// Read a curried component's argument getters (named and positional) so the
-// running effect depends on them. What a getter throws propagates: the change
-// check that follows (`_curriedComponentChanged`) reads them all too.
-function _touchCurriedArgGetters(curried: any): void {
-  if (curried.__curriedArgs) {
-    for (const val of Object.values(curried.__curriedArgs)) {
-      if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-        val();
-      }
-    }
-  }
-  if (curried.__curriedPositionals) {
-    for (const val of curried.__curriedPositionals) {
-      if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-        val();
-      }
-    }
-  }
+  return true;
 }
 
 // Append a template child value to `target`, flattening the shapes that the
@@ -2231,7 +2226,6 @@ function _gxtShowCurriedRegionContent(info: any, value: unknown): boolean {
   for (const node of content) parent.insertBefore(node, end);
   info.shownContent = { kind, key, first: content[0]!, last: content[content.length - 1]! };
   // The region no longer shows a curried component: the next one renders.
-  info.__lastSnapshot = null;
   info.lastCurried = undefined;
   return true;
 }
@@ -13205,7 +13199,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               endMarker,
               site: _gxtComponentSite(),
               lastCurried: finalResult,
-              __lastSnapshot: null,
             };
             // A curried component, or a component name; an empty curried
             // component marker renders nothing.
@@ -13228,18 +13221,14 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               fragment.appendChild(initialNode);
             }
             fragment.appendChild(endMarker);
-            _snapshotCurriedArgs(curriedRenderInfo, finalResult);
 
             // The effect depends on what `item()` reads (e.g. `this.c` of
-            // `(if this.c (component …) (component …))`) and on the curried
-            // arguments. What the getters and the render throw propagates.
+            // `(if this.c (component …) (component …))`). What the getter and
+            // the render throw propagates.
             _gxtTemplateEffect(() => {
               const newResult = item();
               const newFinal =
                 typeof newResult === 'function' ? _gxtContentFunctionValue(newResult) : newResult;
-              if (newFinal && newFinal.__isCurriedComponent) {
-                _touchCurriedArgGetters(newFinal);
-              }
               const parent = startMarker.parentNode;
               if (!parent) return;
 
@@ -13257,7 +13246,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
               // The region shows no curried value until the next one renders
               // (also when destroying the replaced one throws).
               curriedRenderInfo.lastCurried = undefined;
-              curriedRenderInfo.__lastSnapshot = null;
               _gxtReleaseComponentSite(
                 curriedRenderInfo.site,
                 _removeNodesBetween(parent, startMarker, endMarker)
@@ -13271,10 +13259,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
                 if (newNode) {
                   parent.insertBefore(newNode, endMarker);
                 }
-                if (isCurried) {
-                  curriedRenderInfo.lastCurried = newFinal;
-                  _snapshotCurriedArgs(curriedRenderInfo, newFinal);
-                }
+                if (isCurried) curriedRenderInfo.lastCurried = newFinal;
               }
             });
 
