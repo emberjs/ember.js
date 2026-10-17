@@ -1,5 +1,5 @@
 import { tracked } from '@glimmer/tracking';
-import { module, test, skip } from 'qunit';
+import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { htmlSafe } from '@ember/template';
@@ -71,11 +71,6 @@ async function assertContentKinds(assert, state, read, around = (content) => con
   await settled();
   assert.strictEqual(read(), around(''), 'null renders nothing');
 }
-
-// The compat renderer renders a `{{value}}` that is not in an element (at the
-// top level of a template or of a block) through gxt's own text binding, which
-// has no host seam outside the gxt-native build yet.
-const outsideElement = __GXT_MODE__ ? skip : test;
 
 module('Integration | <template> | content mustache', function (hooks) {
   setupRenderingTest(hooks);
@@ -163,28 +158,20 @@ module('Integration | <template> | content mustache', function (hooks) {
     await assertContentKinds(assert, state, () => htmlOf(content));
   });
 
-  outsideElement(
-    'content at the top level of a template renders what its value is',
-    async function (assert) {
-      let state = new State('plain <b>text</b>');
+  test('content at the top level of a template renders what its value is', async function (assert) {
+    let state = new State('plain <b>text</b>');
 
-      await render(<template>{{state.value}}</template>);
+    await render(<template>{{state.value}}</template>);
 
-      await assertContentKinds(assert, state, () => htmlOf(this.element));
-    }
-  );
+    await assertContentKinds(assert, state, () => htmlOf(this.element));
+  });
 
-  outsideElement(
-    'a yielded block param at the top level of the block renders what its value is',
-    async function (assert) {
-      let state = new State('plain <b>text</b>');
-      const Yield = <template>{{yield @value}}</template>;
+  test('a yielded block param at the top level of the block renders what its value is', async function (assert) {
+    let state = new State('plain <b>text</b>');
+    const Yield = <template>{{yield @value}}</template>;
 
-      await render(
-        <template><Yield @value={{state.value}} as |value|>{{value}}</Yield></template>
-      );
+    await render(<template><Yield @value={{state.value}} as |value|>{{value}}</Yield></template>);
 
-      await assertContentKinds(assert, state, () => htmlOf(this.element));
-    }
-  );
+    await assertContentKinds(assert, state, () => htmlOf(this.element));
+  });
 });

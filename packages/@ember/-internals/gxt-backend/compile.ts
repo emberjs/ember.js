@@ -479,6 +479,9 @@ import {
   cell as _gxtCell,
   entangleSubscribers as _gxtEntangleSubscribers,
   type Cell as GxtCell,
+  // gxt's dynamic-content binding, registered for the content mustaches gxt
+  // renders itself (`contentBinding` below).
+  bindNativeContent as _gxtBindNativeContent,
 } from '@lifeart/gxt';
 // Module-local seam for Ember truthiness: the canonical `emberToBool` is
 // defined inside the wrapper-installer scope below; this ref lets other
@@ -4085,6 +4088,20 @@ function _gxtRenderContentChild(
   _appendChildValue(content, value, _gxtAppendRenderedObject, owner);
   parent.insertBefore(content, before);
 }
+
+// A content mustache that gxt renders itself (at the top level of a
+// build-time template or of a block, a yielded block param there) renders
+// what its value is, as Glimmer's dynamic content: text, the HTML of a
+// SafeString, a DOM node or the nodes of a fragment, switching kind in place.
+// gxt's own dynamic-content binding renders it; a SafeString is trusted HTML.
+// It does not make the runtime gxt's native one.
+_gxtRegisterHostHooks({
+  contentBinding: _gxtBindNativeContent,
+  classifyContent: (value: unknown) =>
+    value !== null && typeof value === 'object' && typeof (value as any).toHTML === 'function'
+      ? 'html'
+      : undefined,
+});
 
 function _gxtIsInTriggerReRender(): boolean {
   return _gxtFlags.inTriggerReRender;
