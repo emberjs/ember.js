@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T04:24:41.212Z",
+    "capturedAt": "2026-10-17T05:13:11.118Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "cf4f6349ba",
-    "totalTests": 10217,
-    "totalModules": 1013,
+    "emberCommit": "8a97df6031",
+    "totalTests": 10226,
+    "totalModules": 1018,
     "quarantinedTests": 0,
-    "totalAssertions": 61109,
-    "totalAssertionsPassing": 60714,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a classic component is destroyed with the block it renders in and a dynamic or block invocation of a classic component keeps its own instance; written by runner.mjs in the GitHub Actions GXT full workflow (run 39002387510, merged from 5 shards, on the code of cf4f6349ba). 9916/10217 green (was 9906/10207), 1013 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT components are destroyed with their block (8/8) and GXT a component instance belongs to its invocation (12/12); no module has fewer passing assertions."
+    "totalAssertions": 61121,
+    "totalAssertionsPassing": 60726,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after visit() asserts that the serialize and rehydrate render modes are not supported and helper, {{#if}} watcher, deferred-cascade and route-template re-render errors propagate instead of being logged; written by runner.mjs in the GitHub Actions GXT full workflow (run 39005389665, merged from 5 shards, on the code of 8a97df6031). 9925/10226 green (was 9916/10217), 1018 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT correctness: visit() server-side render modes (2/2), GXT errors: helpers resolved by name (4/4), {{#if}} conditions (1/1), attribute bindings of a classic component (1/1) and a change of a route controller's model (1/1). Application - visit() has one more skipped test (_renderMode: rehydration, unsupported under GXT); no other module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -495,13 +495,16 @@
     "Application - visit()": {
       "total": 18,
       "passing": 17,
-      "assertionsTotal": 56,
-      "assertionsPassing": 55,
+      "assertionsTotal": 54,
+      "assertionsPassing": 53,
       "failingTests": [
         {
           "name": " Ember Islands-style setup",
           "category": "gxt:triage"
         }
+      ],
+      "skippedTests": [
+        " _renderMode: rehydration"
       ]
     },
     "Application Dependency Injection": {
@@ -2603,6 +2606,13 @@
       "assertionsPassing": 3,
       "failingTests": []
     },
+    "GXT correctness: visit() server-side render modes": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
     "GXT correctness: {{#if}} truthiness": {
       "total": 3,
       "passing": 3,
@@ -2643,6 +2653,34 @@
       "passing": 4,
       "assertionsTotal": 7,
       "assertionsPassing": 7,
+      "failingTests": []
+    },
+    "GXT errors: a change of a route controller's model": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
+    "GXT errors: attribute bindings of a classic component": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
+    "GXT errors: helpers resolved by name": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 4,
+      "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT errors: {{#if}} conditions": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
