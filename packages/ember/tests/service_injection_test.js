@@ -34,7 +34,7 @@ moduleFor(
     }
 
     async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved
+      DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Service can be an object proxy and access owner in init GH#16484`](assert) {
       expectDeprecation(
         /The `ProxyMixin` mixin is deprecated/,
