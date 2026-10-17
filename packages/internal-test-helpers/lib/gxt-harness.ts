@@ -28,56 +28,60 @@ export const gxtHarness = __GXT_MODE__
        * being destroyed, so the next test does not see it.
        */
       teardownModifiers() {
-        try {
-          const pendingDestroys = getGxtRenderer()?.compilePipeline.getPendingModifierDestroys?.();
-          if (pendingDestroys && pendingDestroys.length > 0) {
-            const toFlush = pendingDestroys.splice(0) as any[];
-            for (const entry of toFlush) {
-              if (!entry.cached.pendingDestroy) continue;
-              try {
-                if (
-                  entry.isCustom &&
-                  entry.cached.manager?.destroyModifier &&
-                  !entry.cached.instance?.__gxtModDestroyed
-                ) {
-                  entry.cached.manager.destroyModifier(entry.cached.instance);
-                  if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
-                }
-                // Modifier destroyables are already cleaned up by gxt-backend's
-                // own teardown path.
-              } catch {
-                /* ignore individual modifier destroy errors */
-              }
-              const elCache = entry.cache?.get(entry.element);
-              if (elCache) {
-                elCache.delete(entry.modKey);
-                if (elCache.size === 0) entry.cache.delete(entry.element);
-              }
+        // What a `destroyModifier` throws fails the teardown, as an error of a
+        // modifier's destruction does in Glimmer: the first one is thrown once
+        // every other modifier is destroyed and the ambient owner reset.
+        let failed = false;
+        let failure: unknown;
+        const destroyModifier = (manager: any, instance: any): void => {
+          try {
+            manager.destroyModifier(instance);
+          } catch (error) {
+            if (!failed) {
+              failed = true;
+              failure = error;
             }
           }
-          // Also destroy any custom modifiers that are still active (their
-          // formula destructors might not have fired during cleanup).
-          const modMgr = getGxtRenderer()?.compilePipeline.getManagers?.()?.modifier;
-          if (modMgr?._updatedInstances) {
-            for (const inst of modMgr._updatedInstances) {
-              try {
-                if (inst?.__gxtModManager?.destroyModifier && !inst.__gxtModDestroyed) {
-                  inst.__gxtModManager.destroyModifier(inst);
-                  inst.__gxtModDestroyed = true;
-                }
-              } catch {
-                /* ignore */
-              }
+        };
+        const pendingDestroys = getGxtRenderer()?.compilePipeline.getPendingModifierDestroys?.();
+        if (pendingDestroys && pendingDestroys.length > 0) {
+          const toFlush = pendingDestroys.splice(0) as any[];
+          for (const entry of toFlush) {
+            if (!entry.cached.pendingDestroy) continue;
+            if (
+              entry.isCustom &&
+              entry.cached.manager?.destroyModifier &&
+              !entry.cached.instance?.__gxtModDestroyed
+            ) {
+              destroyModifier(entry.cached.manager, entry.cached.instance);
+              if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
             }
-            modMgr._updatedInstances.clear();
+            // Modifier destroyables are already cleaned up by gxt-backend's
+            // own teardown path.
+            const elCache = entry.cache?.get(entry.element);
+            if (elCache) {
+              elCache.delete(entry.modKey);
+              if (elCache.size === 0) entry.cache.delete(entry.element);
+            }
           }
-        } catch {
-          /* ignore */
+        }
+        // Also destroy any custom modifiers that are still active (their
+        // formula destructors might not have fired during cleanup).
+        const modMgr = getGxtRenderer()?.compilePipeline.getManagers?.()?.modifier;
+        if (modMgr?._updatedInstances) {
+          for (const inst of modMgr._updatedInstances) {
+            if (inst?.__gxtModManager?.destroyModifier && !inst.__gxtModDestroyed) {
+              destroyModifier(inst.__gxtModManager, inst);
+              inst.__gxtModDestroyed = true;
+            }
+          }
+          modMgr._updatedInstances.clear();
         }
 
         if (getAmbientOwner()?.isDestroyed || getAmbientOwner()?.isDestroying) {
           setAmbientOwner(null);
         }
+        if (failed) throw failure;
       },
 
       /** Clear the pending-sync flags so a sync does not leak into the next test. */

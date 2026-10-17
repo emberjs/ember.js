@@ -76,22 +76,31 @@ function gxtRunDestroy(toDestroy: any): void {
     throw e;
   }
   // In GXT mode, also destroy tracked class-based helper instances so their
-  // `willDestroy` / `destroy` lifecycle runs.
+  // `willDestroy` / `destroy` lifecycle runs. What a helper's `destroy` throws
+  // fails the teardown, as an error of a helper's destruction does in Glimmer:
+  // the first one is thrown once every other helper is destroyed and the
+  // helper bookkeeping cleared.
+  let failed = false;
+  let failure: unknown;
   const helperInstances = getGxtRenderer()?.compilePipeline.getHelperInstances?.();
   if (Array.isArray(helperInstances) && helperInstances.length > 0) {
     for (const inst of helperInstances) {
-      try {
-        if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+      if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+        try {
           inst.destroy();
+        } catch (error) {
+          if (!failed) {
+            failed = true;
+            failure = error;
+          }
         }
-      } catch {
-        /* ignore */
       }
     }
     helperInstances.length = 0;
   }
   // Also clear the helper instance cache
   getGxtRenderer()?.compilePipeline.clearHelperCache?.();
+  if (failed) throw failure;
 }
 
 export function runTask<F extends () => any>(callback: F): ReturnType<F> {
