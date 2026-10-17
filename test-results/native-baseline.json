@@ -1,9 +1,9 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-16T10:27:23.701Z",
-    "gxtVersion": "0.0.83",
-    "emberCommit": "227a04d2a4",
+    "capturedAt": "2026-10-17T18:52:10.326Z",
+    "gxtVersion": "0.0.84",
+    "emberCommit": "bcc2c7ced1",
     "totalTests": 7191,
     "totalModules": 683,
     "quarantinedTests": 0,
