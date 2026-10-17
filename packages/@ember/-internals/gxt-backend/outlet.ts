@@ -27,6 +27,7 @@
 import { getOwner, type InternalOwner } from '@ember/-internals/owner';
 import { set } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
+import { _instrumentStart } from '@ember/instrumentation';
 import { schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
@@ -208,6 +209,14 @@ const EmberOutletElement: any =
           if (ownerSwapped) {
             setAmbientOwner(owner);
           }
+          // Classic `render.outlet` instrumentation: every route level an
+          // outlet renders (a node without a view), from its render to its
+          // rendered layout.
+          const finalizeInstrumentation = _instrumentStart(
+            'render.outlet',
+            outletInstrumentationPayload,
+            nestedOutlet
+          );
           try {
             if (wrapped !== undefined) {
               renderWrappedLevel(nestedOutlet, this);
@@ -230,9 +239,16 @@ const EmberOutletElement: any =
             if (_parentViewPushed) {
               getGxtRenderer()?.viewUtils.popParentView();
             }
+            finalizeInstrumentation();
           }
         }
       };
+
+// The payload of an outlet level's `render.outlet` instrumentation, as the
+// classic outlet manager's.
+function outletInstrumentationPayload(level: GxtOutletState): { object: string } {
+  return { object: `${level.render?.name}:main` };
+}
 
 // The `this` of a classic level's route template, rendered by an
 // `<ember-outlet>`: its controller's properties through the prototype chain,
