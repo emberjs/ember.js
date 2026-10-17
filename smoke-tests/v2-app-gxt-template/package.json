@@ -19,7 +19,7 @@
     "ember-source": "workspace:*",
     "ember-strict-application-resolver": "^0.1.1",
     "vite": "^7.3.1",
-    "@lifeart/gxt": "0.0.83",
+    "@lifeart/gxt": "0.0.84",
     "decorator-transforms": "^2.3.1"
   },
   "engines": {
