@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T03:27:52.426Z",
+    "capturedAt": "2026-10-17T04:24:41.212Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "ec4f1ae128",
-    "totalTests": 10207,
+    "emberCommit": "cf4f6349ba",
+    "totalTests": 10217,
     "totalModules": 1013,
     "quarantinedTests": 0,
-    "totalAssertions": 61044,
-    "totalAssertionsPassing": 60649,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a classic component instance is only reused by its own invocation and a tagless classic component stays alive while its nodes are in the document; written by runner.mjs in the GitHub Actions GXT full workflow (run 38998804743, merged from 5 shards, on the code of ec4f1ae128). 9906/10207 green (was 9901/10202), 1013 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT a component instance belongs to its invocation (6/6) and GXT components are destroyed with their block (4/4); no module has fewer passing assertions."
+    "totalAssertions": 61109,
+    "totalAssertionsPassing": 60714,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a classic component is destroyed with the block it renders in and a dynamic or block invocation of a classic component keeps its own instance; written by runner.mjs in the GitHub Actions GXT full workflow (run 39002387510, merged from 5 shards, on the code of cf4f6349ba). 9916/10217 green (was 9906/10207), 1013 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT components are destroyed with their block (8/8) and GXT a component instance belongs to its invocation (12/12); no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2485,10 +2485,10 @@
       "failingTests": []
     },
     "GXT a component instance belongs to its invocation": {
-      "total": 6,
-      "passing": 6,
-      "assertionsTotal": 64,
-      "assertionsPassing": 64,
+      "total": 12,
+      "passing": 12,
+      "assertionsTotal": 115,
+      "assertionsPassing": 115,
       "failingTests": []
     },
     "GXT a component's template is destroyed with the block it is invoked in": {
@@ -2548,10 +2548,10 @@
       "failingTests": []
     },
     "GXT components are destroyed with their block": {
-      "total": 4,
-      "passing": 4,
-      "assertionsTotal": 22,
-      "assertionsPassing": 22,
+      "total": 8,
+      "passing": 8,
+      "assertionsTotal": 36,
+      "assertionsPassing": 36,
       "failingTests": []
     },
     "GXT correctness: @glimmer/tracking/primitives/cache": {
