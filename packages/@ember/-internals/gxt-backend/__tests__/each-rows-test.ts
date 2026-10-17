@@ -58,6 +58,37 @@ moduleFor(
       this.assertText('(b)');
     }
 
+    ['@test a keyed row shows each object it is bound to in turn']() {
+      this.render(
+        '<ul>{{#each this.list key="key" as |item|}}<li>{{item.name}}</li>{{/each}}</ul>',
+        { list: [{ key: '1', name: 'a' }] }
+      );
+      const row = this.element.querySelector('li');
+      this.assertText('a');
+
+      // The row is bound to a new object with the same key, then to another
+      // one while the list also grows.
+      runTask(() => set(this.context, 'list', [{ key: '1', name: 'b' }]));
+      this.assertText('b');
+
+      runTask(() =>
+        set(this.context, 'list', [
+          { key: '1', name: 'c' },
+          { key: '2', name: 'd' },
+        ])
+      );
+      this.assertText('cd');
+
+      runTask(() =>
+        set(this.context, 'list', [
+          { key: '1', name: 'e' },
+          { key: '2', name: 'f' },
+        ])
+      );
+      this.assertText('ef');
+      this.assert.strictEqual(this.element.querySelector('li'), row, 'the row is kept');
+    }
+
     ['@test a row that renders a component among other content leaves with all of it']() {
       this.owner.register(
         'component:row-label',

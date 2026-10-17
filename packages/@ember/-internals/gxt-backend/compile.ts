@@ -6647,12 +6647,18 @@ function _gxtDrainPendingEachRebinds(): void {
   }
 }
 
+// The holder of a row that a rebind bound to another source object, by that
+// object. syncList names a row by the object it bound the row to last, which
+// after a rebind is no longer the holder's proxy target.
+const _eachItemHolderByRebound = new WeakMap<object, _EachItemHolder>();
+
 // Rebind hook invoked by glimmer-next syncList on a KEYED REUSE where the
 // row's underlying source object changed by reference. `oldRawItem`
-// is the source object syncList originally bound this key's row to; `newRawItem`
+// is the source object syncList last bound this key's row to; `newRawItem`
 // is the new source object for the same key. We locate the body-proxy syncList
-// handed the row (memoized by `oldRawItem` in `_eachItemProxies`), swap its
-// holder target to `newRawItem` IMMEDIATELY, and QUEUE a revision-cell bump for
+// handed the row (memoized by its first object in `_eachItemProxies`, or by the
+// object a previous rebind bound it to), swap its holder target to `newRawItem`
+// IMMEDIATELY, and QUEUE a revision-cell bump for
 // the next pass so the body re-reads the new object's values IN PLACE —
 // preserving DOM identity (no row recreate). No-op when no holder-backed proxy
 // was created for `oldRawItem`.
@@ -6660,12 +6666,21 @@ const _gxtRebindEachItemHook = function gxtRebindEachItem(oldRawItem: any, newRa
   if (oldRawItem === newRawItem || !oldRawItem || typeof oldRawItem !== 'object') {
     return;
   }
-  // Fetch the holder directly by raw item. A holder exists iff a body-proxy was
-  // created for this raw item, so the raw-keyed lookup is the same guard.
-  const holder = _eachItemHolderByTarget.get(oldRawItem);
+  // Fetch the holder directly by raw item: the holder a rebind bound to
+  // `oldRawItem`, if it is still bound to it, else the holder whose proxy was
+  // created for `oldRawItem` (a holder exists iff a body-proxy was created for
+  // that raw item, so the raw-keyed lookup is the same guard).
+  const rebound = _eachItemHolderByRebound.get(oldRawItem);
+  const holder =
+    rebound !== undefined && rebound.raw === oldRawItem
+      ? rebound
+      : _eachItemHolderByTarget.get(oldRawItem);
   if (!holder) return;
   if (holder.raw === newRawItem) return;
   holder.raw = newRawItem;
+  if (newRawItem && typeof newRawItem === 'object') {
+    _eachItemHolderByRebound.set(newRawItem, holder);
+  }
   _pendingEachRebindHolders.push(holder);
   // Ensure a second sync pass runs (the rebind originated inside the first).
   _gxtSetPendingSync(true);
