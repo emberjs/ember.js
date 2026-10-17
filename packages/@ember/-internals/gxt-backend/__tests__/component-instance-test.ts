@@ -362,3 +362,89 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'GXT a curried component keeps its instance while its curried value stays',
+  class extends RenderingTestCase {
+    // `component:yield-curried`: yields `(component <name> value=this.v)`.
+    // Glimmer's curry reference keeps its curried value while the definition
+    // stays; the curried arguments are references, so a change of `v` updates
+    // the component the curried value rendered.
+    registerYieldCurried(name: string) {
+      this.owner.register(
+        'component:yield-curried',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (component "${name}" value=this.v)}}`),
+          class extends ClassicComponent {
+            tagName = '';
+          }
+        )
+      );
+    }
+
+    ['@test a classic component rendered by {{x}} is updated when a curried argument changes']() {
+      let hooks: string[] = [];
+      let instances: ClassicComponent[] = [];
+      this.owner.register(
+        'component:classic-show-arg',
+        setComponentTemplate(
+          precompileTemplate('[{{this.value}}]'),
+          class extends ClassicComponent {
+            tagName = '';
+            init(properties?: object) {
+              super.init(properties);
+              instances.push(this);
+            }
+            didUpdateAttrs() {
+              hooks.push(`didUpdateAttrs ${this.get('value')}`);
+            }
+            didInsertElement() {
+              hooks.push(`didInsertElement ${this.get('value')}`);
+            }
+            willDestroy() {
+              super.willDestroy();
+              hooks.push(`willDestroy ${this.get('value')}`);
+            }
+          }
+        )
+      );
+      this.registerYieldCurried('classic-show-arg');
+
+      this.render('{{#yield-curried v=this.v as |x|}}{{x}}{{/yield-curried}}', { v: 'a' });
+      this.assertText('[a]');
+      hooks.length = 0;
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.deepEqual(hooks, ['didUpdateAttrs b'], 'the instance is updated');
+    }
+
+    ['@test a Glimmer component rendered by {{x}} is updated when a curried argument changes']() {
+      let instances: Component<{ value: string }>[] = [];
+      this.owner.register(
+        'component:show-arg',
+        setComponentTemplate(
+          precompileTemplate('[{{@value}}]'),
+          class extends Component<{ value: string }> {
+            constructor(owner: object, args: { value: string }) {
+              super(owner, args);
+              instances.push(this);
+            }
+          }
+        )
+      );
+      this.registerYieldCurried('show-arg');
+
+      this.render('{{#yield-curried v=this.v as |x|}}{{x}}{{/yield-curried}}', { v: 'a' });
+      this.assertText('[a]');
+
+      runTask(() => set(this.context, 'v', 'b'));
+
+      this.assertText('[b]');
+      this.assert.strictEqual(instances.length, 1, 'the component keeps its instance');
+      this.assert.strictEqual(instances[0]!.args.value, 'b', 'its arguments are updated');
+    }
+  }
+);
