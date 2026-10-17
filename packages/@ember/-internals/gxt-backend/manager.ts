@@ -11633,19 +11633,6 @@ function _argsForInternalManagerWithSlots(
     const slot = { getter: initialGetter };
     namedRefSlots[key] = slot;
 
-    // Read once to tell a `(mut)` argument. Glimmer tells it from the
-    // reference and reads the value only when the component does: a getter
-    // that throws here is reported in DEBUG (the component's read throws).
-    let initialValue: any;
-    try {
-      initialValue = slot.getter();
-    } catch (error) {
-      _gxtReportDroppedRead(`the \`${key}\` argument, read to find a (mut) cell,`, error);
-      initialValue = undefined;
-    }
-    const hasMutCell = initialValue && initialValue.__isMutCell;
-    const isUpdatable = hasMutCell;
-
     const ref: any = {
       get value() {
         const v = slot.getter();
@@ -11663,17 +11650,21 @@ function _argsForInternalManagerWithSlots(
         if (d?.set) d.set(v);
       },
     };
-    if (isUpdatable) {
-      ref.update = function (v: any) {
+    // A `(mut)` argument is updatable (`isUpdatableRef` / `updateRef` read
+    // `update`). Glimmer tells it from the reference, when the component uses
+    // the reference: the argument is read then, not when the component is
+    // created.
+    const update = (v: any) => {
+      ref.value = v;
+    };
+    Object.defineProperty(ref, 'update', {
+      get() {
         const current = slot.getter();
-        if (current && current.__isMutCell) {
-          current.update(v);
-          return;
-        }
-        const d = Object.getOwnPropertyDescriptor(args, key);
-        if (d?.set) d.set(v);
-      };
-    }
+        return current && current.__isMutCell ? update : undefined;
+      },
+      enumerable: true,
+      configurable: true,
+    });
     named[key] = ref;
   }
   return {
@@ -11757,6 +11748,7 @@ function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
   }
   // What an argument's getter throws reaches the render.
   for (const key of Object.keys(slot.argGetters)) {
+    if (!_INPUT_SYNC_KEYS.has(key)) continue;
     slot.lastArgValues[key] = slot.argGetters[key]();
   }
 }
@@ -11773,6 +11765,48 @@ const _managedComponentLastGeneration = new WeakMap<object, number>();
 function _resetManagedComponentCounters(): void {
   _managedComponentGeneration++;
 }
+
+// The attributes an `<Input>` / `<Textarea>` element's sync applies (the HTML
+// attribute name and the DOM property name).
+const _INPUT_HTML_ATTRS: Array<[string, string]> = [
+  ['disabled', 'disabled'],
+  ['readonly', 'readonly'],
+  ['placeholder', 'placeholder'],
+  ['name', 'name'],
+  ['maxlength', 'maxLength'],
+  ['minlength', 'minlength'],
+  ['size', 'size'],
+  ['tabindex', 'tabIndex'],
+  ['role', 'role'],
+  ['aria-label', 'aria-label'],
+  ['aria-describedby', 'aria-describedby'],
+  ['pattern', 'pattern'],
+  ['autocomplete', 'autocomplete'],
+  ['autofocus', 'autofocus'],
+  ['form', 'form'],
+  ['multiple', 'multiple'],
+  ['step', 'step'],
+  ['min', 'min'],
+  ['max', 'max'],
+  ['accept', 'accept'],
+  ['required', 'required'],
+  ['title', 'title'],
+  ['lang', 'lang'],
+  ['dir', 'dir'],
+  ['spellcheck', 'spellcheck'],
+  ['wrap', 'wrap'],
+  ['rows', 'rows'],
+  ['cols', 'cols'],
+];
+// The arguments and attributes the sync of an `<Input>` / `<Textarea>`
+// element applies: it reads only these, as Glimmer reads an argument when
+// the component's template uses it.
+const _INPUT_SYNC_KEYS: ReadonlySet<string> = new Set([
+  'value',
+  'type',
+  'checked',
+  ..._INPUT_HTML_ATTRS.flat(),
+]);
 
 /**
  * Handle a component with an internal manager (Input, Textarea, LinkTo).
@@ -12253,6 +12287,7 @@ function handleManagedComponent(
     // argument's getter throws reaches the render (and, in the callback, the
     // sync).
     for (const key of Object.keys(argGetters)) {
+      if (!_INPUT_SYNC_KEYS.has(key)) continue;
       slotRef.lastArgValues[key] = argGetters[key]();
     }
     const lastArgValues = slotRef.lastArgValues;
@@ -12265,6 +12300,7 @@ function handleManagedComponent(
       // refresh path rewrites entries on this same object so we pick up new
       // template args transparently without re-creating the syncCallback.
       for (const key of Object.keys(slotRef.argGetters)) {
+        if (!_INPUT_SYNC_KEYS.has(key)) continue;
         const newVal = slotRef.argGetters[key]();
         if (newVal !== lastArgValues[key]) {
           lastArgValues[key] = newVal;
@@ -12305,37 +12341,7 @@ function handleManagedComponent(
 
       // HTML attrs from fw — check both HTML attribute names and DOM property
       // names (GXT normalizes some: maxlength→maxLength, tabindex→tabIndex)
-      const allHtmlAttrs: Array<[string, string]> = [
-        ['disabled', 'disabled'],
-        ['readonly', 'readonly'],
-        ['placeholder', 'placeholder'],
-        ['name', 'name'],
-        ['maxlength', 'maxLength'],
-        ['minlength', 'minlength'],
-        ['size', 'size'],
-        ['tabindex', 'tabIndex'],
-        ['role', 'role'],
-        ['aria-label', 'aria-label'],
-        ['aria-describedby', 'aria-describedby'],
-        ['pattern', 'pattern'],
-        ['autocomplete', 'autocomplete'],
-        ['autofocus', 'autofocus'],
-        ['form', 'form'],
-        ['multiple', 'multiple'],
-        ['step', 'step'],
-        ['min', 'min'],
-        ['max', 'max'],
-        ['accept', 'accept'],
-        ['required', 'required'],
-        ['title', 'title'],
-        ['lang', 'lang'],
-        ['dir', 'dir'],
-        ['spellcheck', 'spellcheck'],
-        ['wrap', 'wrap'],
-        ['rows', 'rows'],
-        ['cols', 'cols'],
-      ];
-      for (const [attr, propName] of allHtmlAttrs) {
+      for (const [attr, propName] of _INPUT_HTML_ATTRS) {
         // Only update attrs whose getter value actually changed
         if (!changedKeys.has(attr) && !changedKeys.has(propName)) continue;
         // Check both the HTML attribute name and the DOM property name

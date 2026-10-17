@@ -237,3 +237,40 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'GXT reads: the arguments of an internal component',
+  class extends RenderingTestCase {
+    ['@test an argument the component does not read is not read'](assert: QUnit['assert']) {
+      let reads: string[] = [];
+      class Root extends GlimmerComponent {
+        @tracked value = 'a';
+        get unread() {
+          reads.push('unread');
+          return 1;
+        }
+      }
+      let root: Root | undefined;
+      this.owner.register(
+        'component:root',
+        setComponentTemplate(
+          this.compile('<Input @value={{this.value}} @unread={{this.unread}} />'),
+          class extends Root {
+            constructor(owner: Owner, args: object) {
+              super(owner, args);
+              root = this;
+            }
+          }
+        )
+      );
+
+      this.render('<Root />');
+      let input = this.element.querySelector('input') as HTMLInputElement;
+      assert.strictEqual(input.value, 'a');
+
+      runTask(() => (root!.value = 'b'));
+      assert.strictEqual(input.value, 'b');
+      assert.deepEqual(reads, [], 'the argument is not read');
+    }
+  }
+);
