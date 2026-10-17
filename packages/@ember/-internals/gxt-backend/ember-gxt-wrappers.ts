@@ -35,6 +35,7 @@ import {
   keyEachInEntries,
   splatLocalNames,
   sanitizedAttrValue,
+  tagMayNameComponent,
   type EachInEntry,
 } from './utils';
 import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
@@ -1518,11 +1519,10 @@ function createEmberTag(original: Function) {
       }
     }
 
-    // Check if this looks like a component name (PascalCase or contains hyphen)
+    // Whether the tag may name a component or helper (`tagMayNameComponent`):
+    // a lowercase dashed tag (`<x-foo>`) is a custom element.
     const mightBeComponent =
-      resolvedTag &&
-      typeof resolvedTag === 'string' &&
-      (resolvedTag[0] === resolvedTag[0].toUpperCase() || resolvedTag.includes('-'));
+      resolvedTag && typeof resolvedTag === 'string' && tagMayNameComponent(resolvedTag);
 
     const managers = g.$_MANAGERS;
 
@@ -1716,7 +1716,7 @@ function createEmberTag(original: Function) {
 
     // Before falling back to HTML element, check if this is a helper
     // (e.g., {{hello-world}} → <HelloWorld /> but registered as helper:hello-world)
-    if (resolvedTag && typeof resolvedTag === 'string') {
+    if (mightBeComponent) {
       const kebab = resolvedTag
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')

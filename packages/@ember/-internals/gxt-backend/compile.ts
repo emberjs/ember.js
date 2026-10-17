@@ -24,6 +24,7 @@ import {
   sanitizedAttrValue,
   trustedStyleValue,
   keyEachInEntries,
+  tagMayNameComponent,
 } from './utils';
 import {
   initChildViews as _emberInitChildViews,
@@ -10163,11 +10164,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       return fragment;
     }
 
-    // Check if this looks like a component name (PascalCase or contains hyphen)
+    // Whether the tag may name a component or helper (`tagMayNameComponent`):
+    // a lowercase dashed tag (`<x-foo>`) is a custom element.
     const mightBeComponent =
-      resolvedTag &&
-      typeof resolvedTag === 'string' &&
-      (resolvedTag[0] === resolvedTag[0].toUpperCase() || resolvedTag.includes('-'));
+      resolvedTag && typeof resolvedTag === 'string' && tagMayNameComponent(resolvedTag);
 
     // Access managers dynamically - they may be set up after this module loads
     const managers = g.$_MANAGERS;
