@@ -1646,7 +1646,9 @@ moduleFor(
       return this.refreshModelWhileLoadingTest(true);
     }
 
-    async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
+    async [`${testUnless(
+      import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    )} @test warn user that Route's queryParams configuration must be an Object, not an Array`](
       assert
     ) {
       assert.expect(1);
