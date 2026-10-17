@@ -1,0 +1,14 @@
+{
+  "name": "@ember/scheduler",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./strategy": "./strategy.ts",
+    "./*": "./*.ts"
+  },
+  "dependencies": {
+    "@ember/debug": "workspace:*",
+    "internal-test-helpers": "workspace:*"
+  }
+}
