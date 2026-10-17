@@ -30,6 +30,7 @@ import {
   positionalArgLabel as _positionalArgLabel,
   namedArgLabel as _namedArgLabel,
   type GxtArgLabels,
+  markTemplateOnlySelf,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -5914,6 +5915,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
   // but their storage is keyed on `instance`. Using the instance directly ensures
   // `this` is consistent across getter calls and storage lookups.
   const renderContext = instance || {};
+  // No instance: a template-only component, which Glimmer renders with no
+  // self (`{{debugger}}`).
+  if (!instance) markTemplateOnlySelf(renderContext);
 
   // During force-rerender, cellFor may have installed own getters on the
   // instance that shadow PURE prototype getters (e.g., get full() { ... }).
@@ -8095,6 +8099,8 @@ function _renderTemplateOnlyComponent(
   if (!resolvedTpl?.render) return null;
   const tplArgs = args ? _templateOnlyArgs(args) : {};
   const renderCtx: any = {};
+  // Glimmer renders a template-only component with no self (`{{debugger}}`).
+  markTemplateOnlySelf(renderCtx);
   for (const key of Object.keys(tplArgs)) {
     if (key === 'args' || key.startsWith('$')) continue;
     const desc = Object.getOwnPropertyDescriptor(tplArgs, key);

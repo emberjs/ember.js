@@ -25,7 +25,9 @@ import {
   trustedStyleValue,
   keyEachInEntries,
   tagMayNameComponent,
+  isTemplateOnlySelf,
 } from './utils';
+import { getDebuggerCallback } from '@glimmer/runtime/lib/debugger-callback';
 import {
   initChildViews as _emberInitChildViews,
   getElementView as _emberGetElementView,
@@ -3280,6 +3282,35 @@ let _gxtCurrentTemplateThis: any = null;
 // host hook, through which gxt reads the module-local.
 const _gxtGetTemplateThisFn = () => _gxtCurrentTemplateThis;
 _gxtRegisterHostHooks({ getCurrentTemplateThis: _gxtGetTemplateThisFn });
+// The `{{#each}}` index of a row whose list passes it as a plain number
+// (`wrappedEachFn`): the object with the `value` the compiled block reads
+// (`index.value`), as gxt's index cell has it.
+class GxtEachIndex {
+  declare readonly value: number;
+  constructor(readonly id: number) {
+    Object.defineProperty(this, 'value', {
+      get() {
+        return id;
+      },
+      enumerable: true,
+      configurable: true,
+    });
+  }
+}
+// `{{debugger}}`: Glimmer's debugger callback (`setDebuggerCallback`), called
+// by gxt each time the statement renders, with the template's self — `null`
+// for a template-only component, which selects the template-only hint — and
+// gxt's `get(path)` (`this`, `@name`, a block param or let binding, a path on
+// the self). gxt reads a gxt cell as its value; an `{{#each}}` index that is a
+// GxtEachIndex is read as its value here.
+_gxtRegisterHostHooks({
+  debugger(self: unknown, get: (path: string) => unknown) {
+    getDebuggerCallback()(isTemplateOnlySelf(self) ? null : self, (path: string) => {
+      const value = get(path);
+      return value instanceof GxtEachIndex ? value.value : value;
+    });
+  },
+});
 // Run `fn` with `context` as the current template `this` (the bridge's
 // `compilePipeline.withTemplateThis`).
 function _gxtWithTemplateThis<T>(context: unknown, fn: () => T): T {
@@ -7010,15 +7041,7 @@ function patchGlobalEachSync() {
           withParent(() => {
             // If index is a plain number (not a cell), wrap it in a cell-like object
             if (typeof index === 'number') {
-              const cellLike: any = { id: index };
-              Object.defineProperty(cellLike, 'value', {
-                get() {
-                  return index;
-                },
-                enumerable: true,
-                configurable: true,
-              });
-              return origFn(bodyItem, cellLike, ctx0);
+              return origFn(bodyItem, new GxtEachIndex(index), ctx0);
             }
             return origFn(bodyItem, index, ctx0);
           })

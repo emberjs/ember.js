@@ -597,8 +597,10 @@ export const GXT_NATIVE_FORBIDDEN = [
     // Glimmer's URL sanitization of attribute values, the string normalization
     // it uses and `normalizeProperty`, DOM-value code with no VM dependency. The
     // native attribute hook (native/host-hooks.ts) calls them, so native
-    // sanitizes and chooses attribute or property exactly as Glimmer.
-    /packages\/@glimmer\/(?:runtime\/(?!lib\/dom\/(?:sanitized-values|normalize|props)\.ts$)|(?:opcode-compiler|program|vm|wire-format|encoder|node|global-context|reference|destroyable|manager)\/)/,
+    // sanitizes and chooses attribute or property exactly as Glimmer. And
+    // `@glimmer/runtime/lib/debugger-callback`: the `{{debugger}}` callback
+    // (no imports), which the native `debugger` hook calls.
+    /packages\/@glimmer\/(?:runtime\/(?!lib\/(?:dom\/(?:sanitized-values|normalize|props)|debugger-callback)\.ts$)|(?:opcode-compiler|program|vm|wire-format|encoder|node|global-context|reference|destroyable|manager)\/)/,
     'Glimmer VM package',
   ],
   [

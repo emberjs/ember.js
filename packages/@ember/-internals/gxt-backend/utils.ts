@@ -657,6 +657,20 @@ export function mutArgumentSources(context: unknown): Record<string, unknown> | 
     : undefined;
 }
 
+// The render contexts (`this`) of template-only components: Glimmer renders
+// those with no self (`null`), which `{{debugger}}`'s callback distinguishes.
+const templateOnlySelves = new WeakSet<object>();
+
+/** Mark `context` as the render context of a template-only component. */
+export function markTemplateOnlySelf(context: object): void {
+  templateOnlySelves.add(context);
+}
+
+/** Whether `context` renders a template-only component (Glimmer's self: `null`). */
+export function isTemplateOnlySelf(context: unknown): boolean {
+  return typeof context === 'object' && context !== null && templateOnlySelves.has(context);
+}
+
 /**
  * The source text of a helper / modifier call site's path arguments (gxt's
  * EMBER_ARG_LABELS compile flag, on in DEBUG builds; gxt's `ArgLabels`):

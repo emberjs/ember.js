@@ -13,13 +13,20 @@ import {
   trustedAttrValue,
 } from './host-hooks';
 import { helperManager } from './helper-manager';
-import { componentManager, resolveComponentName } from './managers';
+import { componentManager, instanceOfNode, resolveComponentName } from './managers';
 import { modifierManager } from './modifier-manager';
 import { Outlet } from './outlet';
 import { assertLooseBuiltins, resolveComponentOrHelper } from './resolver';
+import { getDebuggerCallback } from './runtime-helpers';
 import { classifyContent, eachInEntries, getProp, hostAssert } from './content';
 
 let installed = false;
+
+function debuggerHook(self: unknown, get: (path: string) => unknown): void {
+  const context =
+    self !== null && typeof self === 'object' && instanceOfNode(self) === null ? null : self;
+  getDebuggerCallback()(context, get);
+}
 
 export function install(): void {
   if (installed) return;
@@ -56,6 +63,11 @@ export function install(): void {
     eachInEntries,
     // gxt's Glimmer-parity runtime assertions (in-element) via @ember/debug.
     assert: hostAssert,
+    // `{{debugger}}`: Glimmer's debugger callback (`setDebuggerCallback`),
+    // each time the statement renders, with the template's self — `null` for
+    // a template-only component (no instance), which selects the
+    // template-only hint — and gxt's `get(path)`.
+    debugger: debuggerHook,
   });
   registerHostManagers({
     component: componentManager as never,

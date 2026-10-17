@@ -42,6 +42,15 @@ import { createComputeRef, UNDEFINED_REFERENCE, valueForRef, type Reference } fr
 import { createCache, getValue, type Cache } from './validator';
 
 export { TemplateOnlyComponentDefinition, templateOnlyComponent } from './template-only';
+// `{{debugger}}`'s callback (`@glimmer/runtime`'s `setDebuggerCallback` /
+// `resetDebuggerCallback`): Glimmer's own module, which has no VM dependency;
+// the native `debugger` host hook (native/install.ts) calls it.
+export {
+  type DebugCallback,
+  getDebuggerCallback,
+  resetDebuggerCallback,
+  setDebuggerCallback,
+} from '@glimmer/runtime/lib/debugger-callback';
 
 /** Glimmer CapturedArguments over native references. */
 export interface CapturedArguments {
