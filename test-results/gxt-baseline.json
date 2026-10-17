@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T18:52:07.433Z",
-    "gxtVersion": "0.0.84",
-    "emberCommit": "bcc2c7ced1",
-    "totalTests": 10261,
-    "totalModules": 1025,
+    "capturedAt": "2026-10-17T21:10:55.160Z",
+    "gxtVersion": "0.0.85",
+    "emberCommit": "0e46f9b991",
+    "totalTests": 10273,
+    "totalModules": 1028,
     "quarantinedTests": 0,
-    "totalAssertions": 61286,
-    "totalAssertionsPassing": 60924,
-    "note": "Compat full run on #21340 (gxt 0.0.84) after the gxt 0.0.84 consumption: plain function helpers with lazy named arguments and no result cache, curly component blocks keeping their block params at any depth, gxt's dynamic-content binding for build-time content mustaches, escaped binding names, dynamic components named by their tag path, lowercase dashed tags as custom elements, helper definitions in content position, the resolution error of an unknown curly component block and render.outlet for each outlet level; written by runner.mjs in the GitHub Actions GXT full workflow (run 39059905914, merged from 5 shards, on the code of bcc2c7ced1). 9993/10261 green (was 9948/10249), 1025 modules, no timeouts, no harness errors, no green->red. 33 tests turned green. The new tests pass: GXT custom elements (4/4), GXT helper args: plain function helpers (5/5), GXT block params of an invocation (6/6), GXT dynamic content (16/16)."
+    "totalAssertions": 61365,
+    "totalAssertionsPassing": 61044,
+    "note": "Compat full run on #21340 (gxt 0.0.85) after the gxt 0.0.85 consumption: a revalidation pass that a binding aborts ended by gxt, a bound style written as its text, argument labels for helper and modifier references in DEBUG compiles, {{debugger}} calling Glimmer's debugger callback, a keyed {{#each}} row re-bound by the object it was bound to last, the content between named blocks not being a default block, and Glimmer's template text in compat templates; written by runner.mjs in the GitHub Actions GXT full workflow (run 39069769817, merged from 5 shards, on the code of 0e46f9b991). 10027/10273 green (was 9993/10261), 1028 modules, no timeouts, no harness errors, no green->red. 22 tests turned green. The new tests pass: GXT template text (4/4), GXT argument labels (2/2), GXT {{debugger}} (2/2), GXT errors: {{#if}} conditions (2/2), GXT in-place updates (12/12), GXT Integration - AngleBracket Invocation (14/14), GXT {{#each}} rows (4/4)."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2458,10 +2458,10 @@
       "failingTests": []
     },
     "GXT Integration - AngleBracket Invocation": {
-      "total": 13,
-      "passing": 13,
-      "assertionsTotal": 79,
-      "assertionsPassing": 79,
+      "total": 14,
+      "passing": 14,
+      "assertionsTotal": 80,
+      "assertionsPassing": 80,
       "failingTests": []
     },
     "GXT Integration - Component Args": {
@@ -2507,6 +2507,13 @@
       "failingTests": []
     },
     "GXT a definition invoked as another kind": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
+      "failingTests": []
+    },
+    "GXT argument labels": {
       "total": 2,
       "passing": 2,
       "assertionsTotal": 2,
@@ -2710,10 +2717,10 @@
       "failingTests": []
     },
     "GXT errors: {{#if}} conditions": {
-      "total": 1,
-      "passing": 1,
-      "assertionsTotal": 2,
-      "assertionsPassing": 2,
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "GXT helper args: helper re-computation": {
@@ -2759,10 +2766,10 @@
       "failingTests": []
     },
     "GXT in-place updates": {
-      "total": 11,
-      "passing": 11,
-      "assertionsTotal": 39,
-      "assertionsPassing": 39,
+      "total": 12,
+      "passing": 12,
+      "assertionsTotal": 43,
+      "assertionsPassing": 43,
       "failingTests": []
     },
     "GXT reads: LinkTo": {
@@ -2863,6 +2870,13 @@
       "assertionsPassing": 10,
       "failingTests": []
     },
+    "GXT template text": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
+      "failingTests": []
+    },
     "GXT writes during an update": {
       "total": 5,
       "passing": 5,
@@ -2871,10 +2885,17 @@
       "failingTests": []
     },
     "GXT {{#each}} rows": {
-      "total": 3,
-      "passing": 3,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 15,
+      "assertionsPassing": 15,
+      "failingTests": []
+    },
+    "GXT {{debugger}}": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "HashLocation": {
@@ -3006,15 +3027,10 @@
     },
     "Helpers test: {{array}}": {
       "total": 12,
-      "passing": 11,
+      "passing": 12,
       "assertionsTotal": 38,
-      "assertionsPassing": 37,
-      "failingTests": [
-        {
-          "name": "the array helper can be shadowed",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 38,
+      "failingTests": []
     },
     "Helpers test: {{array}} reference identity": {
       "total": 2,
@@ -3032,25 +3048,16 @@
     },
     "Helpers test: {{element}}": {
       "total": 14,
-      "passing": 12,
+      "passing": 14,
       "assertionsTotal": 18,
-      "assertionsPassing": 16,
-      "failingTests": [
-        {
-          "name": "it works with element modifiers",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "it can be rendered multiple times",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 18,
+      "failingTests": []
     },
     "Helpers test: {{fn}}": {
       "total": 14,
-      "passing": 7,
+      "passing": 9,
       "assertionsTotal": 48,
-      "assertionsPassing": 18,
+      "assertionsPassing": 20,
       "failingTests": [
         {
           "name": "updates when arguments change",
@@ -3058,14 +3065,6 @@
         },
         {
           "name": "updates when the function changes",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "asserts if the first argument is undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "asserts if the first argument is null",
           "category": "gxt:triage"
         },
         {
@@ -3091,27 +3090,10 @@
     },
     "Helpers test: {{hash}}": {
       "total": 10,
-      "passing": 6,
+      "passing": 10,
       "assertionsTotal": 32,
-      "assertionsPassing": 21,
-      "failingTests": [
-        {
-          "name": "can have more than one key-value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "binds values when variables are used",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "binds multiple values when variables are used",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "should yield hash of internal and external properties",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 32,
+      "failingTests": []
     },
     "Helpers test: {{hash}} reference identity": {
       "total": 3,
@@ -3251,15 +3233,10 @@
     },
     "Inline style tests - warnings (static styles, namespaced elements and element modifiers)": {
       "total": 4,
-      "passing": 3,
+      "passing": 4,
       "assertionsTotal": 10,
-      "assertionsPassing": 9,
-      "failingTests": [
-        {
-          "name": " a dynamic style and an element modifier warn once",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 10,
+      "failingTests": []
     },
     "Input element tests": {
       "total": 16,
@@ -4679,8 +4656,8 @@
     "Strict Mode - renderComponent": {
       "total": 29,
       "passing": 29,
-      "assertionsTotal": 146,
-      "assertionsPassing": 146,
+      "assertionsTotal": 160,
+      "assertionsPassing": 160,
       "failingTests": [],
       "skippedTests": [
         " when args are a custom tracked class, the rendered component response appropriately",
@@ -4704,8 +4681,8 @@
     "Strict Mode <-> Loose Mode - renderComponent": {
       "total": 3,
       "passing": 1,
-      "assertionsTotal": 13,
-      "assertionsPassing": 11,
+      "assertionsTotal": 16,
+      "assertionsPassing": 14,
       "failingTests": [
         {
           "name": " strict-mode components cannot lookup things in the registry",
@@ -5594,18 +5571,10 @@
     },
     "[integration] jit :: Components :: Debugger": {
       "total": 4,
-      "passing": 0,
-      "assertionsTotal": 30,
-      "assertionsPassing": 21,
+      "passing": 2,
+      "assertionsTotal": 47,
+      "assertionsPassing": 44,
       "failingTests": [
-        {
-          "name": "can get locals",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "debugger in class-backed component logs context message with named argument hint",
-          "category": "gxt:triage"
-        },
         {
           "name": "debugger in template-only component logs template-only message",
           "category": "gxt:triage"
@@ -5618,25 +5587,16 @@
     },
     "[integration] jit :: Components :: Debugger > [integration] Glimmer": {
       "total": 2,
-      "passing": 0,
-      "assertionsTotal": 15,
-      "assertionsPassing": 11,
-      "failingTests": [
-        {
-          "name": "can get locals",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "debugger in class-backed component logs context message with named argument hint",
-          "category": "gxt:triage"
-        }
-      ]
+      "passing": 2,
+      "assertionsTotal": 24,
+      "assertionsPassing": 24,
+      "failingTests": []
     },
     "[integration] jit :: Components :: Debugger > [integration] TemplateOnly": {
       "total": 2,
       "passing": 0,
-      "assertionsTotal": 15,
-      "assertionsPassing": 10,
+      "assertionsTotal": 23,
+      "assertionsPassing": 20,
       "failingTests": [
         {
           "name": "debugger in template-only component logs template-only message",
@@ -5650,20 +5610,12 @@
     },
     "[integration] jit :: Components :: Glimmer": {
       "total": 42,
-      "passing": 39,
+      "passing": 41,
       "assertionsTotal": 199,
-      "assertionsPassing": 195,
+      "assertionsPassing": 198,
       "failingTests": [
         {
           "name": "throwing an error during rendering gives a readable error stack",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state with nested components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state with multiple prior nodes",
           "category": "gxt:triage"
         }
       ]
@@ -5677,20 +5629,12 @@
     },
     "[integration] jit :: Components :: Glimmer > [integration] TemplateOnly": {
       "total": 4,
-      "passing": 1,
+      "passing": 3,
       "assertionsTotal": 21,
-      "assertionsPassing": 17,
+      "assertionsPassing": 20,
       "failingTests": [
         {
           "name": "throwing an error during rendering gives a readable error stack",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state with nested components",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "throwing an error during component construction does not put result into a bad state with multiple prior nodes",
           "category": "gxt:triage"
         }
       ]
@@ -5872,20 +5816,12 @@
     },
     "[integration] jit :: Updating": {
       "total": 66,
-      "passing": 63,
+      "passing": 65,
       "assertionsTotal": 834,
-      "assertionsPassing": 814,
+      "assertionsPassing": 818,
       "failingTests": [
         {
-          "name": "block arguments should have higher precedence than helpers",
-          "category": "gxt:triage"
-        },
-        {
           "name": "The each helper yields the index of the current item current item when using the @index key",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "The each helper yields the index of the current item when using a non-@index key",
           "category": "gxt:triage"
         }
       ]
@@ -8494,22 +8430,13 @@
     },
     "{{on}} Modifier": {
       "total": 26,
-      "passing": 24,
+      "passing": 26,
       "assertionsTotal": 75,
-      "assertionsPassing": 73,
-      "failingTests": [
-        {
-          "name": " asserts when callback is a bound undefined value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " asserts when callback is a bound null value",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 75,
+      "failingTests": []
     }
   },
   "categories": {
-    "gxt:triage": 268
+    "gxt:triage": 246
   }
 }

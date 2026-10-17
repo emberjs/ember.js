@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T18:52:10.326Z",
-    "gxtVersion": "0.0.84",
-    "emberCommit": "bcc2c7ced1",
+    "capturedAt": "2026-10-17T21:10:54.457Z",
+    "gxtVersion": "0.0.85",
+    "emberCommit": "0e46f9b991",
     "totalTests": 7191,
     "totalModules": 683,
     "quarantinedTests": 0,
     "totalAssertions": 35847,
-    "totalAssertionsPassing": 35799
+    "totalAssertionsPassing": 35805
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2148,30 +2148,17 @@
     },
     "Helpers test: {{element}}": {
       "total": 14,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 18,
-      "assertionsPassing": 17,
-      "failingTests": [
-        {
-          "name": "it works with element modifiers",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 18,
+      "failingTests": []
     },
     "Helpers test: {{fn}}": {
       "total": 14,
-      "passing": 10,
+      "passing": 12,
       "assertionsTotal": 38,
-      "assertionsPassing": 30,
+      "assertionsPassing": 32,
       "failingTests": [
-        {
-          "name": "asserts if the first argument is undefined",
-          "category": "gxt:triage"
-        },
-        {
-          "name": "asserts if the first argument is null",
-          "category": "gxt:triage"
-        },
         {
           "name": "can be used on the result of `mut`",
           "category": "gxt:triage"
@@ -2335,15 +2322,10 @@
     },
     "Inline style tests - warnings (static styles, namespaced elements and element modifiers)": {
       "total": 4,
-      "passing": 3,
+      "passing": 4,
       "assertionsTotal": 10,
-      "assertionsPassing": 9,
-      "failingTests": [
-        {
-          "name": " a dynamic style and an element modifier warn once",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 10,
+      "failingTests": []
     },
     "Input element tests": {
       "total": 16,
@@ -5391,22 +5373,13 @@
     },
     "{{on}} Modifier": {
       "total": 26,
-      "passing": 24,
+      "passing": 26,
       "assertionsTotal": 75,
-      "assertionsPassing": 73,
-      "failingTests": [
-        {
-          "name": " asserts when callback is a bound undefined value",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " asserts when callback is a bound null value",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 75,
+      "failingTests": []
     }
   },
   "categories": {
-    "gxt:triage": 33
+    "gxt:triage": 27
   }
 }
