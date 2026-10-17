@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T01:52:37.317Z",
+    "capturedAt": "2026-10-17T02:41:08.652Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "c338dbf8fe",
-    "totalTests": 10195,
-    "totalModules": 1011,
+    "emberCommit": "1083384678",
+    "totalTests": 10202,
+    "totalModules": 1013,
     "quarantinedTests": 0,
-    "totalAssertions": 60960,
-    "totalAssertionsPassing": 60562,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after a rendered value reads only the members of a (hash), a curried component's arguments are read when the component reads them, the fn helper reads its callback when its function is called, LinkTo re-applies class and href in the render queue while its owner lives, a rendered component's properties are scanned without running its getters, Input and Textarea read only the arguments they use, a route template reads its controller's getters when it reads them, and a dynamic component's value is read as the template it belongs to; written by runner.mjs in the GitHub Actions GXT full workflow (run 38992606004, merged from 5 shards, on the code of c338dbf8fe). 9892/10195 green (was 9882/10185), 1011 modules, no timeouts, no harness errors, no green->red. No test turned green; the new modules GXT reads: a value rendered as content (2/2), curried component arguments (2/2), the fn helper (1/1), LinkTo (1/1), the properties of a rendered component (1/1), the arguments of an internal component (1/1), a route template's controller (1/1) and a contextual component in a (hash) (1/1) pass; no module has fewer passing assertions."
+    "totalAssertions": 60990,
+    "totalAssertionsPassing": 60595,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after each invocation of a custom-managed component creates its own instance, a component's template renders in the block it is invoked in, and modifiers are destroyed in the order their elements close; written by runner.mjs in the GitHub Actions GXT full workflow (run 38995813819, merged from 5 shards, on the code of 1083384678). 9901/10202 green (was 9892/10195), 1013 modules, no timeouts, no harness errors, no green->red. Turned green: Custom modifier manager: destruction order (1/1) and its variant without the debug render tree (1/1); the new modules GXT a component instance belongs to its invocation (2/2) and GXT a component's template is destroyed with the block it is invoked in (5/5) pass; no module has fewer passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1792,27 +1792,17 @@
     },
     "Custom modifier manager: destruction order": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 1,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " modifiers are destroyed child-first, after the modifiers inside their element",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 1,
+      "failingTests": []
     },
     "Custom modifier manager: destruction order without the debug render tree": {
       "total": 1,
-      "passing": 0,
+      "passing": 1,
       "assertionsTotal": 1,
-      "assertionsPassing": 0,
-      "failingTests": [
-        {
-          "name": " modifiers are destroyed child-first, after the modifiers inside their element",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 1,
+      "failingTests": []
     },
     "Destroyable Integration": {
       "total": 5,
@@ -2492,6 +2482,20 @@
       "passing": 2,
       "assertionsTotal": 2,
       "assertionsPassing": 2,
+      "failingTests": []
+    },
+    "GXT a component instance belongs to its invocation": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 19,
+      "assertionsPassing": 19,
+      "failingTests": []
+    },
+    "GXT a component's template is destroyed with the block it is invoked in": {
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "GXT a definition invoked as another kind": {
@@ -4477,7 +4481,7 @@
       "total": 3,
       "passing": 2,
       "assertionsTotal": 11,
-      "assertionsPassing": 9,
+      "assertionsPassing": 10,
       "failingTests": [
         {
           "name": " lifecycle hooks are invoked in a predictable order",
@@ -8572,6 +8576,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 303
+    "gxt:triage": 301
   }
 }
