@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T16:34:11.728Z",
+    "capturedAt": "2026-10-17T17:30:13.995Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "6a88b0abdf",
-    "totalTests": 10234,
-    "totalModules": 1022,
+    "emberCommit": "d998d6eb75",
+    "totalTests": 10245,
+    "totalModules": 1023,
     "quarantinedTests": 0,
-    "totalAssertions": 61143,
-    "totalAssertionsPassing": 60744,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after the DOM sync throws the errors the update it renders queued (an updated component's hooks, a component a new branch renders) to the code that ran it, a revalidation pass a binding aborts ends as a completed one, a re-read of a LinkTo's class reports what it throws in DEBUG, and a curried content region keeps its component while its curried value stays; written by runner.mjs in the GitHub Actions GXT full workflow (run 39049907032, merged from 5 shards, on the code of 6a88b0abdf). 9933/10234 green (was 9926/10227), 1022 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT errors: hook errors of an update (4/4), GXT errors: hook errors of an update of a route template (1/1), GXT a curried component keeps its instance while its curried value stays (2/2). Helpers test: {{fn}} has the same tests and passing assertions; its red tests now record the errors their updates throw (44 -> 48 assertions). Every other module has the same tests and passing assertions."
+    "totalAssertions": 61191,
+    "totalAssertionsPassing": 60792,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after a content mustache renders each component value as an invocation of its own (a classic instance stays with its region, a replaced value's component is destroyed), a curried region updates its component in place when a curried argument changes, and what a curried region renders after a change leaves with its render; written by runner.mjs in the GitHub Actions GXT full workflow (run 39053963711, merged from 5 shards, on the code of d998d6eb75). 9944/10245 green (was 9933/10234), 1023 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT a curried content region renders its own component (11/11). Every other module has the same tests and passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2506,6 +2506,13 @@
       "passing": 2,
       "assertionsTotal": 8,
       "assertionsPassing": 8,
+      "failingTests": []
+    },
+    "GXT a curried content region renders its own component": {
+      "total": 11,
+      "passing": 11,
+      "assertionsTotal": 48,
+      "assertionsPassing": 48,
       "failingTests": []
     },
     "GXT a definition invoked as another kind": {
