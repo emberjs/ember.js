@@ -1,22 +1,14 @@
 import type {
-  COMMENT_NODE,
-  DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE,
-  TEXT_NODE,
-} from '@glimmer/constants';
-import type {
   Maybe,
   Nullable,
   SerializableElement,
   SerializableNode,
-  SimpleComment,
-  SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
-  SimpleText,
 } from '@glimmer/interfaces';
-import { ELEMENT_NODE, INSERT_AFTER_BEGIN } from '@glimmer/constants';
+import { INSERT_AFTER_BEGIN } from '@glimmer/constants';
+import { isSimpleElement } from '@glimmer/debug-util';
 import { clearElement } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
@@ -29,85 +21,6 @@ export function toInnerHTML(parent: SimpleElement | SimpleDocumentFragment): str
 export function toOuterHTML(parent: SimpleElement | SimpleDocumentFragment): string {
   const serializer = new Serializer(voidMap);
   return serializer.serialize(parent);
-}
-
-export interface CastToBrowserDom {
-  [COMMENT_NODE]: { browser: Comment; simple: SimpleComment };
-  [TEXT_NODE]: { browser: Text; simple: SimpleText };
-  [DOCUMENT_FRAGMENT_NODE]: { browser: DocumentFragment; simple: SimpleDocumentFragment };
-  [DOCUMENT_NODE]: { browser: Document; simple: SimpleDocument };
-  [ELEMENT_NODE]: { browser: Element; simple: SimpleElement };
-  Node: { browser: Node; simple: SimpleNode };
-}
-
-export type CastableSimpleDOM<Type extends CastableNodeType = CastableNodeType> =
-  CastToBrowserDom[Type]['simple'];
-export type CastableBrowserDom<Type extends CastableNodeType = CastableNodeType> =
-  CastToBrowserDom[Type]['browser'];
-
-type NodeTypeFor<C extends CastableSimpleDOM> = C['nodeType'];
-
-export type CastableNodeType = Exclude<keyof CastToBrowserDom, 'Node'>;
-
-export function castToBrowser(node: null): null;
-export function castToBrowser<N extends CastableSimpleDOM>(
-  node: N
-): CastableBrowserDom<NodeTypeFor<N>>;
-export function castToBrowser(
-  node: SimpleNode,
-  nodeType: 'Node'
-): CastToBrowserDom['Node']['browser'];
-export function castToBrowser<N extends CastableNodeType>(
-  node: SimpleNode,
-  nodeType: N
-): CastableBrowserDom<N>;
-export function castToBrowser(
-  node: SimpleNode | null,
-  nodeType?: CastableNodeType | 'Node'
-): CastToBrowserDom[keyof CastToBrowserDom]['browser'] | null {
-  if (node === null) {
-    return null;
-  } else if (nodeType !== undefined) {
-    if (node.nodeType === nodeType) {
-      return node as unknown as CastableBrowserDom;
-    } else {
-      throw new Error(`ASSERT: invalid cast to ${nodeType}`);
-    }
-  } else {
-    return node as unknown as CastableBrowserDom;
-  }
-}
-
-export function castToSimple<Type extends CastableNodeType>(
-  node: null,
-  nodeType: Type,
-  options: { allowNull: true }
-): null;
-export function castToSimple<Type extends CastableNodeType>(
-  node: null | Node | SimpleNode,
-  nodeType: Type,
-  options: { assertPresent: true }
-): CastableSimpleDOM<Type>;
-export function castToSimple<Type extends CastableNodeType>(
-  node: Node | SimpleNode,
-  nodeType: Type
-): CastableSimpleDOM<Type>;
-export function castToSimple<Type extends CastableNodeType>(
-  node: Node | SimpleNode | null,
-  nodeType: Type,
-  { allowNull, assertPresent }: { allowNull?: true; assertPresent?: true } = {}
-): CastableSimpleDOM<Type> | null {
-  if (node === null && allowNull) {
-    return null;
-  } else if (node === null && assertPresent) {
-    throw new Error(`unexpected null element passed to castToSimple`);
-  } else if (node === null) {
-    throw new Error(`unexpected null element passed to castToSimple (add assertNull: true)`);
-  } else if (node.nodeType === nodeType) {
-    return node as unknown as CastableSimpleDOM<Type>;
-  } else {
-    throw new Error(`unexpected`);
-  }
 }
 
 export function getElementByClassName(
@@ -167,21 +80,11 @@ export function replaceHTML(parent: SimpleElement, value: string): void {
 }
 
 export function assertingElement(node: Maybe<SimpleNode>): SimpleElement {
-  if (!node || node.nodeType !== ELEMENT_NODE) {
+  if (!isSimpleElement(node)) {
     throw new Error(`Expected element, got ${node?.constructor.name}`);
   }
 
   return node;
-}
-
-export function isSimpleElement(node: Maybe<SimpleNode>): node is SimpleElement {
-  return !node || node.nodeType !== ELEMENT_NODE;
-}
-
-export function assertElement(node: Maybe<SimpleNode>): asserts node is SimpleElement {
-  if (!isSimpleElement(node)) {
-    throw new Error(`Expected element, got ${node?.constructor.name}`);
-  }
 }
 
 export function hasAttribute(parent: SimpleElement, attr: string): boolean {
@@ -192,7 +95,7 @@ export function firstElementChild(parent: SimpleElement): Nullable<SimpleElement
   let current = parent.firstChild;
 
   while (current) {
-    if (current.nodeType === ELEMENT_NODE) {
+    if (isSimpleElement(current)) {
       return current;
     }
     current = current.nextSibling;
@@ -205,7 +108,7 @@ export function nextElementSibling(node: SimpleNode): Nullable<SimpleElement> {
   let current = node.nextSibling;
 
   while (current) {
-    if (current.nodeType === ELEMENT_NODE) {
+    if (isSimpleElement(current)) {
       return current;
     }
     current = current.nextSibling;

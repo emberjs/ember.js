@@ -17,7 +17,7 @@ import type EngineInstance from '@ember/engine/instance';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import templateOnlyComponent from '@ember/component/template-only';
-import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { precompileTemplate } from '@ember/template-compilation';
 import { runTask } from 'internal-test-helpers/lib/run';
 import templateOnly from '@ember/component/template-only';
@@ -1630,22 +1630,24 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       nodeBounds(node: Node | null): CapturedBounds {
-        if (!node?.parentNode) {
+        let parent = node?.parentNode;
+
+        if (!node || !(parent instanceof Element)) {
           throw new Error('BUG: detached node');
         }
 
         return {
-          parentElement: node.parentNode as unknown as SimpleElement,
-          firstNode: node as unknown as SimpleNode,
-          lastNode: node as unknown as SimpleNode,
+          parentElement: parent,
+          firstNode: node,
+          lastNode: node,
         };
       }
 
       elementBounds(element: Element): CapturedBounds {
         return {
-          parentElement: element as unknown as SimpleElement,
-          firstNode: element.firstChild! as unknown as SimpleNode,
-          lastNode: element.lastChild! as unknown as SimpleNode,
+          parentElement: element,
+          firstNode: element.firstChild!,
+          lastNode: element.lastChild!,
         };
       }
 
