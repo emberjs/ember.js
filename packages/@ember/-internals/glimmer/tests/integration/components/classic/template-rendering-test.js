@@ -1,3 +1,4 @@
+import { set } from '@ember/object';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import {
@@ -80,7 +81,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
             'didInsertElement not invoked on displayed component'
           );
 
-          run(() => indexController.set('showFirst', false));
+          run(() => set(indexController, 'showFirst', false));
 
           assert.strictEqual(
             myComponentCounter,
