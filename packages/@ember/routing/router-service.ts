@@ -3,7 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { dependentKeyCompat } from '@ember/object/compat';
+import { dependentKeyCompat } from '@ember/object/lib/dependent-key-compat';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';

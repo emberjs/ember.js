@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, styles, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, styles, runTask, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -226,7 +226,7 @@ moduleFor(
       assert.equal(instance.get('second'), 'second', 'matches known value');
     }
 
-    ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test bound computed properties can be overridden in extensions, set during init, and passed in as attrs`]() {
       let FooClass = class extends Component {
         attributeBindings = ['style'];
         @computed('height', 'color')

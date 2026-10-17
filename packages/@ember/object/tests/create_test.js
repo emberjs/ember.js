@@ -47,7 +47,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test calls computed property setters'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test calls computed property setters`](
+      assert
+    ) {
       let MyClass = EmberObject.extend({
         foo: computed({
           get() {
@@ -86,7 +88,9 @@ moduleFor(
       }
     }
 
-    ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sets up mandatory setters for simple properties watched with computeds`](
+      assert
+    ) {
       if (DEBUG) {
         let MyClass = class extends EmberObject {
           foo = null;
@@ -193,7 +197,7 @@ moduleFor(
       assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
     }
 
-    ['@test throws if you try to define a computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test throws if you try to define a computed property`]() {
       expectAssertion(function () {
         EmberObject.create({
           foo: computed(function () {}),

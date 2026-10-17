@@ -1,10 +1,21 @@
-export { ComputedProperty as default } from '@ember/-internals/metal/lib/computed';
-export { default as expandProperties } from '@ember/-internals/metal/lib/expand_properties';
-
+import { ComputedProperty } from '@ember/-internals/metal/lib/computed';
+import internalExpandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { assert } from '@ember/debug';
 import internalAlias, { type AliasDecorator } from '@ember/-internals/metal/lib/alias';
 import { isDecoratorCall } from '@ember/-internals/metal/lib/decorator';
 import * as macros from './lib/computed/computed_macros';
+import * as arrayMacros from './lib/computed/reduce_computed_macros';
+
+const ExportedComputedProperty = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : ComputedProperty
+) as typeof ComputedProperty;
+type ExportedComputedProperty = ComputedProperty;
+
+export default ExportedComputedProperty;
+
+export const expandProperties = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalExpandProperties
+) as typeof internalExpandProperties;
 
 function aliasMacro(altKey: string): AliasDecorator {
   assert(
@@ -17,7 +28,15 @@ function aliasMacro(altKey: string): AliasDecorator {
   return internalAlias(altKey);
 }
 
-export { empty, notEmpty, none } from './lib/computed/computed_macros';
+export const empty = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : macros.empty
+) as typeof macros.empty;
+export const notEmpty = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : macros.notEmpty
+) as typeof macros.notEmpty;
+export const none = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : macros.none
+) as typeof macros.none;
 
 export const alias = (
   import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : aliasMacro
@@ -65,19 +84,58 @@ export const or = (
   import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : macros.or
 ) as typeof macros.or;
 
-export {
-  sum,
-  min,
-  max,
-  map,
-  sort,
-  setDiff,
-  mapBy,
-  filter,
-  filterBy,
-  uniq,
-  uniqBy,
-  union,
-  intersect,
-  collect,
-} from './lib/computed/reduce_computed_macros';
+export const sum = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.sum
+) as typeof arrayMacros.sum;
+
+export const min = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.min
+) as typeof arrayMacros.min;
+
+export const max = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.max
+) as typeof arrayMacros.max;
+
+export const map = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.map
+) as typeof arrayMacros.map;
+
+export const sort = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.sort
+) as typeof arrayMacros.sort;
+
+export const setDiff = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.setDiff
+) as typeof arrayMacros.setDiff;
+
+export const mapBy = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.mapBy
+) as typeof arrayMacros.mapBy;
+
+export const filter = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.filter
+) as typeof arrayMacros.filter;
+
+export const filterBy = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.filterBy
+) as typeof arrayMacros.filterBy;
+
+export const uniq = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.uniq
+) as typeof arrayMacros.uniq;
+
+export const uniqBy = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.uniqBy
+) as typeof arrayMacros.uniqBy;
+
+export const union = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.union
+) as typeof arrayMacros.union;
+
+export const intersect = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.intersect
+) as typeof arrayMacros.intersect;
+
+export const collect = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : arrayMacros.collect
+) as typeof arrayMacros.collect;
