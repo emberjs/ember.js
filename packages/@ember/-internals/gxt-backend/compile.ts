@@ -11889,7 +11889,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
 // `$_dc` wrapper. (The manager fw for splattributes is derived in
 // `$_dc_ember.renderComponent`, ember-gxt-wrappers.ts, from the invocation
-// props tuple.)
+// props tuple.) The invocation's tag path (gxt's 5th argument) is passed on.
 //
 // The block of a by-name component invocation that declared block params is a
 // `$_dc` with the `GXT_BLOCK_SCOPE_KEY` argument (`gxtBlockParamsTransform`,
@@ -11898,11 +11898,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   const __origDc = g.$_dc;
 
-  g.$_dc = function $_dc_blockScope(componentGetter: any, gxtArgs: any, ctx: any, fw?: any): any {
+  g.$_dc = function $_dc_blockScope(
+    componentGetter: any,
+    gxtArgs: any,
+    ctx: any,
+    fw?: any,
+    label?: string
+  ): any {
     if (gxtArgs && gxtArgs[GXT_BLOCK_SCOPE_KEY] === true) {
       return new GxtBlockScope(gxtArgs[$SLOTS_SYMBOL].default, ctx);
     }
-    return __origDc.call(this, componentGetter, gxtArgs, ctx, fw);
+    return __origDc.call(this, componentGetter, gxtArgs, ctx, fw, label);
   };
   (g.$_dc as any).__splatForwardWrapped = true;
   // Preserve __emberWrapped flag so ember-gxt-wrappers doesn't re-wrap

@@ -38,7 +38,7 @@ import {
   type EachInEntry,
 } from './utils';
 import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
-import { gxtDebugParent, gxtWithDebugParent } from './debug-render-tree';
+import { gxtDebugParent, gxtWithDebugParent, gxtRecordLexicalNames } from './debug-render-tree';
 import {
   destroy as destroyDestroyable,
   isDestroying as isDestroyingDestroyable,
@@ -2233,7 +2233,8 @@ function createEmberDc(original: Function) {
     ctx: any,
     initial: any,
     initialKind: DcKind,
-    initialReads: DcReads
+    initialReads: DcReads,
+    label: string | undefined
   ): any {
     let kind = initialKind;
     let identity = dcIdentity(initial, kind);
@@ -2261,6 +2262,13 @@ function createEmberDc(original: Function) {
     const debugParentOfDc = gxtDebugParent();
     let contentBlock: object = {};
     const renderContent = (value: any): any => {
+      // In DEBUG, a component definition invoked by its path (`<this.Foo />`,
+      // `<@foo />`) is named by that path in the debug render tree, unless
+      // it has a name already (the first name wins), as Glimmer names a
+      // definition by the reference's `debugLabel`.
+      if (DEBUG && label !== undefined && kind === 'definition') {
+        gxtRecordLexicalNames({ [label]: value });
+      }
       const render = () =>
         renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance, invocation);
       return gxtWithDebugParent(debugParentOfDc, () =>
@@ -2406,7 +2414,16 @@ function createEmberDc(original: Function) {
     return result;
   }
 
-  return function $_dc_ember(componentGetter: () => any, gxtArgs: any, ctx: any): any {
+  // gxt passes an angle-bracket invocation's tag path as it is written
+  // (`this.Foo`, `@foo`) as the 5th argument, after the forwarded attributes
+  // (which the props tuple of `gxtArgs` carries here).
+  return function $_dc_ember(
+    componentGetter: () => any,
+    gxtArgs: any,
+    ctx: any,
+    _fw?: unknown,
+    label?: string
+  ): any {
     // The component getter belongs to the template rendering now: every read
     // of it runs with that template as the current one, also a later one (a
     // sync's re-read, a curried argument read in the component's own render,
@@ -2497,7 +2514,8 @@ function createEmberDc(original: Function) {
       // Do not flag plain POJOs / arrays as errors — only functions/classes
       // that look like helpers/modifiers, which is the stock-Ember test case.
       if (hasHelperMgr || hasModifierMgr) {
-        const debugName = _dynamicDebugPath(componentGetter) || 'this.Foo';
+        const debugName =
+          (typeof label === 'string' ? label : _dynamicDebugPath(componentGetter)) || 'this.Foo';
         const valLabel = _dynamicDebugValueLabel(componentValue);
         const err = new Error(
           `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${debugName}>\` or \`{{${debugName}}}\`, and the incorrect definition is the value at the path \`${debugName}\`, which was: ${valLabel}`
@@ -2535,7 +2553,15 @@ function createEmberDc(original: Function) {
       typeof componentValue === 'object' ||
       typeof componentValue === 'function'
     ) {
-      return followDefinition(readComponent, gxtArgs, ctx, componentValue, kind, reads);
+      return followDefinition(
+        readComponent,
+        gxtArgs,
+        ctx,
+        componentValue,
+        kind,
+        reads,
+        typeof label === 'string' ? label : undefined
+      );
     }
 
     // Any other value (a number, `true`) goes to GXT's native $_dc.
