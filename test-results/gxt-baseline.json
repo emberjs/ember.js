@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-17T05:13:11.118Z",
+    "capturedAt": "2026-10-17T06:05:57.781Z",
     "gxtVersion": "0.0.83",
-    "emberCommit": "8a97df6031",
-    "totalTests": 10226,
-    "totalModules": 1018,
+    "emberCommit": "f697f1e1eb",
+    "totalTests": 10227,
+    "totalModules": 1019,
     "quarantinedTests": 0,
-    "totalAssertions": 61121,
-    "totalAssertionsPassing": 60726,
-    "note": "Compat full run on #21340 (gxt 0.0.83) after visit() asserts that the serialize and rehydrate render modes are not supported and helper, {{#if}} watcher, deferred-cascade and route-template re-render errors propagate instead of being logged; written by runner.mjs in the GitHub Actions GXT full workflow (run 39005389665, merged from 5 shards, on the code of 8a97df6031). 9925/10226 green (was 9916/10217), 1018 modules, no timeouts, no harness errors, no green->red. The new tests pass: GXT correctness: visit() server-side render modes (2/2), GXT errors: helpers resolved by name (4/4), {{#if}} conditions (1/1), attribute bindings of a classic component (1/1) and a change of a route controller's model (1/1). Application - visit() has one more skipped test (_renderMode: rehydration, unsupported under GXT); no other module has fewer passing assertions."
+    "totalAssertions": 61124,
+    "totalAssertionsPassing": 60729,
+    "note": "Compat full run on #21340 (gxt 0.0.83) after the GXT code outside gxt-backend stops swallowing errors: the DOM sync at the end of a run loop throws its error from the run loop's end, and renderComponent, the route root template, the classic root render, the metal and routing hooks, template()'s implicit scope and the test teardown no longer drop errors; written by runner.mjs in the GitHub Actions GXT full workflow (run 39008574626, merged from 5 shards, on the code of f697f1e1eb). 9926/10227 green (was 9925/10226), 1019 modules, no timeouts, no harness errors, no green->red. The new test passes: GXT errors: the DOM sync at the end of a run loop (1/1); every other module has the same tests and passing assertions."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2674,6 +2674,13 @@
       "passing": 4,
       "assertionsTotal": 4,
       "assertionsPassing": 4,
+      "failingTests": []
+    },
+    "GXT errors: the DOM sync at the end of a run loop": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
       "failingTests": []
     },
     "GXT errors: {{#if}} conditions": {
