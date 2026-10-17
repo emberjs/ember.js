@@ -1,3 +1,4 @@
+import { get, getProperties, set } from '@ember/object';
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
@@ -145,7 +146,7 @@ moduleFor(
       let indexController = this.getController('index');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar'),
+        getProperties(indexController, 'foo', 'bar'),
         this.indexProperties,
         'controller QP properties do not update'
       );
@@ -168,7 +169,7 @@ moduleFor(
       let indexController = this.getController('index');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar'),
+        getProperties(indexController, 'foo', 'bar'),
         this.indexProperties,
         'controller QP properties do not update'
       );
@@ -189,7 +190,7 @@ moduleFor(
       let indexController = this.getController('index');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar'),
+        getProperties(indexController, 'foo', 'bar'),
         this.indexProperties,
         'controller QP properties do not update'
       );
@@ -216,7 +217,7 @@ moduleFor(
       let indexController = this.getController('index');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar'),
+        getProperties(indexController, 'foo', 'bar'),
         { foo: '456', bar: 'abc' },
         'controller QP properties updated'
       );
@@ -245,7 +246,7 @@ moduleFor(
       let indexController = this.getController('index');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar'),
+        getProperties(indexController, 'foo', 'bar'),
         { foo: '456', bar: 'abc' },
         'controller QP properties updated'
       );
@@ -282,7 +283,7 @@ moduleFor(
       let aboutController = this.getController('about');
 
       assert.deepEqual(
-        aboutController.getProperties('baz', 'bat'),
+        getProperties(aboutController, 'baz', 'bat'),
         { baz: 'lol', bat: 'borf' },
         'about controller QP properties updated'
       );
@@ -303,7 +304,7 @@ moduleFor(
 
       assert.equal(theLink.attr('href'), '/?foo=OMG');
 
-      runTask(() => indexController.set('boundThing', 'ASL'));
+      runTask(() => set(indexController, 'boundThing', 'ASL'));
 
       assert.equal(theLink.attr('href'), '/?foo=ASL');
     }
@@ -329,14 +330,14 @@ moduleFor(
 
       assert.equal(theLink.attr('href'), '/?abool=OMG');
 
-      runTask(() => indexController.set('boundThing', false));
+      runTask(() => set(indexController, 'boundThing', false));
 
       assert.equal(theLink.attr('href'), '/?abool=false');
 
       await this.click('#the-link > a');
 
       assert.deepEqual(
-        indexController.getProperties('foo', 'bar', 'abool'),
+        getProperties(indexController, 'foo', 'bar', 'abool'),
         { foo: '123', bar: 'abc', abool: false },
         'bound bool QP properties update'
       );
@@ -361,12 +362,12 @@ moduleFor(
 
       assert.equal(theLink.attr('href'), '/?foo=lol');
 
-      runTask(() => indexController.set('bar', 'BORF'));
+      runTask(() => set(indexController, 'bar', 'BORF'));
       await runLoopSettled();
 
       assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
 
-      runTask(() => indexController.set('foo', 'YEAH'));
+      runTask(() => set(indexController, 'foo', 'YEAH'));
       await runLoopSettled();
 
       assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
@@ -418,13 +419,13 @@ moduleFor(
 
       assert.equal(router.currentRouteName, 'cars.index');
       assert.equal(router.get('url'), '/cars');
-      assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
+      assert.equal(get(carsController, 'page'), 1, 'The page query-param is 1');
 
       runTask(() => this.click('#page2-link > a'));
 
       assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
       assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
-      assert.equal(carsController.get('page'), 2, 'The query params have been updated');
+      assert.equal(get(carsController, 'page'), 2, 'The query params have been updated');
     }
 
     async ['@test it applies activeClass when query params are not changed'](assert) {
@@ -714,9 +715,9 @@ moduleFor(
 
       let parentController = this.getController('parent');
 
-      assert.equal(parentController.get('page'), 2);
+      assert.equal(get(parentController, 'page'), 2);
 
-      runTask(() => parentController.set('page', 3));
+      runTask(() => set(parentController, 'page', 3));
       await runLoopSettled();
 
       assert.equal(router.get('location.path'), '/parent?page=3');
