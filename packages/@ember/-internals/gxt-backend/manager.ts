@@ -1423,7 +1423,7 @@ function _queueModifierDestroy(entry: PendingModifierDestroyEntry): void {
 // queued as a render error, and the others still run.
 function _gxtDestroyPendingModifiers(): void {
   if (_pendingModifierDestroys.length === 0) return;
-  for (const entry of _pendingModifierDestroys.splice(0)) {
+  for (const entry of _inModifierDestroyOrder(_pendingModifierDestroys.splice(0))) {
     if (!entry.cached.pendingDestroy) continue;
     // A destroyed modifier leaves the debug render tree.
     if (entry.cached.debugNode) gxtReleaseDebugNode(entry.cached.debugNode);
@@ -1445,6 +1445,43 @@ function _gxtDestroyPendingModifiers(): void {
       if (elementCache.size === 0) entry.cache!.delete(entry.element);
     }
   }
+}
+
+// The queued destroys in the order Glimmer destroys modifiers. A modifier is a
+// destroyable of its block, added when its element is closed, and a
+// component's block when the component is created, so a block's modifiers
+// are destroyed in the order their elements close: after the modifiers inside
+// their element and those of the elements before it. The destroys whose
+// elements are in one tree (the document, or a subtree a teardown removed) are
+// put in that order; the trees keep the order of their first destroy.
+function _inModifierDestroyOrder(
+  entries: PendingModifierDestroyEntry[]
+): PendingModifierDestroyEntry[] {
+  if (entries.length < 2) return entries;
+  const trees = new Map<Node, PendingModifierDestroyEntry[]>();
+  for (const entry of entries) {
+    let root: Node = entry.element;
+    while (root.parentNode !== null) root = root.parentNode;
+    const tree = trees.get(root);
+    if (tree === undefined) trees.set(root, [entry]);
+    else tree.push(entry);
+  }
+  if (trees.size === entries.length) return entries;
+  const ordered: PendingModifierDestroyEntry[] = [];
+  for (const tree of trees.values()) {
+    tree.sort((a, b) => _closingOrder(a.element, b.element));
+    for (const entry of tree) ordered.push(entry);
+  }
+  return ordered;
+}
+
+// The order two elements of one tree close in.
+function _closingOrder(a: Node, b: Node): number {
+  if (a === b) return 0;
+  const position = a.compareDocumentPosition(b);
+  if (position & Node.DOCUMENT_POSITION_CONTAINED_BY) return 1;
+  if (position & Node.DOCUMENT_POSITION_CONTAINS) return -1;
+  return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
 }
 
 // Sentinel object for root-level components (no parent view)
