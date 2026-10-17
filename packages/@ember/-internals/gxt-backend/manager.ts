@@ -814,11 +814,12 @@ function _gxtDestroyCustomManagedInstances(errors: unknown[]): void {
 // each template with the shared root as gxt's parent context), so linked
 // blocks are destroyed together here.
 
-// What a block holds: the custom-managed components rendered in it and the
-// blocks created in it. Made when a component rendered in it, or in a block
-// created in it, is tracked.
+// What a block holds: the custom-managed components and the classic component
+// instances rendered in it, and the blocks created in it. Made when a component
+// rendered in it, or in a block created in it, is tracked.
 interface BlockContent {
   components: Set<CustomManagedEntry>;
+  classics: Set<any>;
   blocks: Set<object>;
   destroyed: boolean;
 }
@@ -836,6 +837,13 @@ let _gxtCurrentBlock: object | null = null;
 // `_gxtDestroyComponentsOfDestroyedBlocks` destroys them.
 const _componentsOfDestroyedBlocks: CustomManagedEntry[] = [];
 let _customManagedOrder = 0;
+// The block each classic component instance renders in now
+// (`_trackClassicBlock`), and its place in the creation order.
+const _classicBlocks = new WeakMap<object, object>();
+const _classicOrders = new WeakMap<object, number>();
+// The classic component instances of destroyed blocks, until
+// `_gxtDestroyClassicsOfDestroyedBlocks` destroys them.
+let _classicsOfDestroyedBlocks: any[] = [];
 
 /**
  * The block a component rendered now is in: the block whose content is
@@ -865,9 +873,9 @@ export function gxtRenderInBlock<T>(block: object, parent: object | null, render
 }
 
 /**
- * Destroy the custom-managed components rendered in `block` and in the blocks
- * created in it. Inside a sync they are destroyed at its end, once it changed
- * the DOM and ran the insert hooks; outside a sync, now.
+ * Destroy the components (custom-managed and classic) rendered in `block` and
+ * in the blocks created in it. Inside a sync they are destroyed at its end,
+ * once it changed the DOM and ran the insert hooks; outside a sync, now.
  */
 export function gxtDestroyBlock(block: object): void {
   const queued = _componentsOfDestroyedBlocks.length;
@@ -911,7 +919,7 @@ function _gxtBlockOf(ctx: unknown): object | null {
 function _blockContent(block: object): BlockContent {
   let content = _blockContents.get(block);
   if (content === undefined) {
-    content = { components: new Set(), blocks: new Set(), destroyed: false };
+    content = { components: new Set(), classics: new Set(), blocks: new Set(), destroyed: false };
     _blockContents.set(block, content);
     if (!_blocksWithDestructor.has(block)) {
       _blocksWithDestructor.add(block);
@@ -924,33 +932,63 @@ function _blockContent(block: object): BlockContent {
   return content;
 }
 
+// The content of `block`, a block a component renders in now, linked to the
+// blocks it was created in, up to one already linked; null when it, or a block
+// it was created in, is destroyed already.
+function _liveBlockContent(block: object): BlockContent | null {
+  const content = _blockContent(block);
+  if (content.destroyed) return null;
+  let child = block;
+  let parent = _blockParents.get(child);
+  while (parent !== undefined) {
+    const parentContent = _blockContent(parent);
+    if (parentContent.destroyed) return null;
+    if (parentContent.blocks.has(child)) break;
+    parentContent.blocks.add(child);
+    child = parent;
+    parent = _blockParents.get(child);
+  }
+  return content;
+}
+
 // A new custom-managed component, destroyed with its block.
 function _trackBlockComponent(entry: CustomManagedEntry): void {
   const block = entry.block;
   if (block === null) return;
-  const content = _blockContent(block);
-  // Link the block to the blocks it was created in, up to one already linked.
-  let dead = content.destroyed;
-  let child = block;
-  let parent = _blockParents.get(child);
-  while (!dead && parent !== undefined) {
-    const parentContent = _blockContent(parent);
-    if (parentContent.destroyed) {
-      dead = true;
-    } else if (parentContent.blocks.has(child)) {
-      break;
-    } else {
-      parentContent.blocks.add(child);
-      child = parent;
-      parent = _blockParents.get(child);
-    }
-  }
-  if (dead) {
+  const content = _liveBlockContent(block);
+  if (content === null) {
     // Rendered in a block already destroyed.
     _queueComponentOfDestroyedBlock(entry);
   } else {
     content.components.add(entry);
   }
+}
+
+// A classic component instance renders in `block` (`_gxtBlockOf`): it is
+// destroyed with that block, as Glimmer destroys a component with the block
+// it renders in. An instance its invocation renders again (a pooled one)
+// belongs to the block it renders in now.
+function _trackClassicBlock(instance: any, block: object | null): void {
+  if (block === null || _classicBlocks.get(instance) === block) return;
+  const previous = _classicBlocks.get(instance);
+  if (previous !== undefined) _blockContents.get(previous)?.classics.delete(instance);
+  _classicBlocks.set(instance, block);
+  if (!_classicOrders.has(instance)) _classicOrders.set(instance, ++_customManagedOrder);
+  const content = _liveBlockContent(block);
+  if (content === null) {
+    // Rendered in a block already destroyed.
+    _classicsOfDestroyedBlocks.push(instance);
+  } else {
+    content.classics.add(instance);
+  }
+}
+
+// A classic component instance destroyed another way leaves its block.
+function _untrackClassicBlock(instance: any): void {
+  const block = _classicBlocks.get(instance);
+  if (block === undefined) return;
+  _classicBlocks.delete(instance);
+  _blockContents.get(block)?.classics.delete(instance);
 }
 
 function _queueComponentOfDestroyedBlock(entry: CustomManagedEntry): void {
@@ -990,13 +1028,20 @@ function _markBlockDestroyed(block: object): void {
   if (content === undefined) {
     // Nothing is tracked in it yet: a component rendered in it later is in a
     // destroyed block.
-    _blockContents.set(block, { components: new Set(), blocks: new Set(), destroyed: true });
+    _blockContents.set(block, {
+      components: new Set(),
+      classics: new Set(),
+      blocks: new Set(),
+      destroyed: true,
+    });
     return;
   }
   if (content.destroyed) return;
   content.destroyed = true;
   for (const entry of content.components) _queueComponentOfDestroyedBlock(entry);
   content.components.clear();
+  for (const instance of content.classics) _classicsOfDestroyedBlocks.push(instance);
+  content.classics.clear();
   const blocks = Array.from(content.blocks);
   content.blocks.clear();
   for (const child of blocks) _markBlockDestroyed(child);
@@ -1009,16 +1054,20 @@ function _markBlockDestroyed(block: object): void {
  * created, in one run loop: Glimmer destroys a block's components as it tears
  * the block down, and their managers' scheduled destructors run before that
  * run loop ends. With no run loop open (the sync after a `runTask`) this is
- * that run loop; inside one, they run when it ends. The blocks their
- * destruction tears down are destroyed in turn. Throws the first error once
- * every component was destroyed.
+ * that run loop; inside one, they run when it ends. The classic components
+ * are destroyed first (`_gxtDestroyClassicsOfDestroyedBlocks`). The blocks
+ * their destruction tears down are destroyed in turn. Throws the first error
+ * once every component was destroyed.
  */
 function _gxtDestroyComponentsOfDestroyedBlocks(): void {
   const errors: unknown[] = [];
-  while (_componentsOfDestroyedBlocks.length > 0) {
+  while (_componentsOfDestroyedBlocks.length > 0 || _classicsOfDestroyedBlocks.length > 0) {
+    const classics = _classicsOfDestroyedBlocks;
+    _classicsOfDestroyedBlocks = [];
     const entries = _componentsOfDestroyedBlocks.splice(0).sort((a, b) => a.order - b.order);
     try {
       join(() => {
+        if (__GXT_CLASSIC_COMPONENTS__) _gxtDestroyClassicsOfDestroyedBlocks(classics, errors);
         for (const entry of entries) {
           if (entry.destroyed) continue;
           entry.destroyed = true;
@@ -4827,12 +4876,13 @@ function _destroyIfAlive(instance: any): void {
   }
 }
 
-// Drop a destroyed instance from the live/created sets and from the first
-// arg-cell and wrapper entry that hold it (and, with `fromPools`, from the
-// instance pools).
+// Drop a destroyed instance from the live/created sets, from its block and
+// from the first arg-cell and wrapper entry that hold it (and, with
+// `fromPools`, from the instance pools).
 function _untrackDestroyedInstance(instance: any, fromPools: boolean): void {
   _allLiveInstances.delete(instance);
   _allCreatedInstances.delete(instance);
+  _untrackClassicBlock(instance);
   if (fromPools) removeInstanceFromPools(instance);
   for (const entry of trackedArgCells) {
     if (entry.instance === instance) {
@@ -5406,6 +5456,54 @@ function _gxtDestroyEmberComponentInstance(instance: any): void {
   try {
     _destroyIfAlive(instance);
   } finally {
+    _untrackDestroyedInstance(instance, true);
+  }
+}
+
+/**
+ * Destroy the classic component instances of destroyed blocks (`queued`, see
+ * `_trackClassicBlock`) that are still alive and that no render took back into
+ * a live block since. Glimmer destroys a classic component with the block it
+ * renders in: its willDestroyElement and willClearRender run, then its
+ * didDestroyElement, then `destroy()` (its willDestroy), each phase for all of
+ * them in the order they were created. The element hooks run for the
+ * instances that were inserted, and not twice: an `{{#each}}` row's teardown
+ * runs willDestroyElement and willClearRender before it removes the row
+ * (compile.ts `_gxtFireRowPreDestroy`). What `destroy()` throws is added to
+ * `errors`, and the others are still destroyed.
+ */
+function _gxtDestroyClassicsOfDestroyedBlocks(queued: readonly any[], errors: unknown[]): void {
+  const instances: any[] = [];
+  for (const instance of queued) {
+    if (instance.isDestroyed || instance.isDestroying || instances.includes(instance)) continue;
+    const block = _classicBlocks.get(instance);
+    if (block === undefined || _blockContents.get(block)?.destroyed !== true) continue;
+    instances.push(instance);
+  }
+  if (instances.length === 0) return;
+  instances.sort((a, b) => _classicOrders.get(a)! - _classicOrders.get(b)!);
+  const viewRegistry = _lookupViewRegistry();
+  const cycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+  for (const instance of instances) {
+    if (instance.__gxtEverInserted && instance.__gxtWDEFiredCycle !== cycle) {
+      _firePreDestroyHooks(instance);
+    }
+  }
+  for (const instance of instances) {
+    _clearViewForDestroy(instance, viewRegistry);
+    if (instance.__gxtEverInserted) triggerLifecycleHook(instance, 'didDestroyElement');
+  }
+  for (const instance of instances) {
+    try {
+      _destroyIfAlive(instance);
+      // Its willDestroy runs now, not when the run loop ends (the wrapper
+      // `createComponentInstance` installs runs it once).
+      if (typeof instance.willDestroy === 'function' && !instance.__gxtWillDestroyFired) {
+        instance.willDestroy();
+      }
+    } catch (error) {
+      errors.push(error);
+    }
     _untrackDestroyedInstance(instance, true);
   }
 }
@@ -10325,7 +10423,8 @@ function handleStringComponent(
           args,
           fw,
           factory?.class,
-          owner
+          owner,
+          _gxtBlockOf(ctx)
         );
       } else {
         result = renderGlimmerComponent(
@@ -12425,7 +12524,15 @@ function handleClassicComponent(factory: any, args: any, fw: any, ctx: any, owne
       return null;
     }
 
-    const result = renderClassicComponent(instance, template, args, fw, factory.class, owner);
+    const result = renderClassicComponent(
+      instance,
+      template,
+      args,
+      fw,
+      factory.class,
+      owner,
+      _gxtBlockOf(ctx)
+    );
     _cachedResult = result;
     _cachedRenderPassId = currentRenderPassId;
     return result;
@@ -12437,7 +12544,8 @@ function handleClassicComponent(factory: any, args: any, fw: any, ctx: any, owne
 // =============================================================================
 
 /**
- * Render a classic Ember component with wrapper element.
+ * Render a classic Ember component with wrapper element, in `block` (see
+ * `_trackClassicBlock`).
  */
 function renderClassicComponent(
   instance: any,
@@ -12445,7 +12553,8 @@ function renderClassicComponent(
   args: any,
   fw: any,
   componentDef: any,
-  owner: any
+  owner: any,
+  block: object | null
 ): any {
   // Check if this is a reused instance from the pool during force-rerender.
   // If so, skip initial lifecycle hooks (willRender, willInsertElement, etc.)
@@ -12504,6 +12613,8 @@ function renderClassicComponent(
     // Track this instance for destroy detection during force-rerender
     if (instance) {
       _allLiveInstances.add(instance);
+      // It is destroyed with the block it renders in.
+      _trackClassicBlock(instance, block);
       // Associate this instance with the `{{#each}}` row whose body is
       // currently rendering (no-op when not inside an each row) so the row's
       // pre-destroy destructor can fire its willDestroyElement /
