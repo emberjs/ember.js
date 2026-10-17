@@ -83,11 +83,6 @@ function _normalizeStringValue(value: unknown): string {
 // at module load.
 let _drainInElementDeferQueue: (() => void) | undefined;
 
-/** Replace all hyphens with underscores without regex */
-function hyphenToUnderscore(str: string): string {
-  return str.split('-').join('_');
-}
-
 /**
  * Module-local counter for fallback render-context IDs, used by the `$_tag`
  * wrapper when no `gxtRoot` id is available. The first id is 101.
@@ -391,6 +386,9 @@ import {
   setupGlobalScope,
   isGlobalScopeReady,
   GXT_RUNTIME_SYMBOLS,
+  // The identifier gxt declares and references a template binding under
+  // (`some-helper` → `__bp_some$2d$helper`, `debugger` → `__bp_debugger`).
+  escapeBindingName as _gxtEscapeBindingName,
 } from '@lifeart/gxt/runtime-compiler';
 // The GXT Ember-dialect AST transforms live in ./ast-transforms.
 // `precompileTemplate` calls `buildGxtDialectTransforms` and annotates its
@@ -12048,13 +12046,11 @@ function _scopeNameAppearsAsReference(template: string, name: string): boolean {
 // which gives ember components gxt-native destroy sequencing.
 // scopeValues are threaded into gxtCompileTemplate (gxt binds them as real
 // Function parameters) when EVERY key is a plain valid JS identifier —
-// matching gxt's emitted identifier references verbatim. Keys needing the
-// legacy normalization machinery (hyphens → underscore rewrite, reserved-word
-// `__scope_` prefixing, kebab-identifier code surgery) keep the legacy path; a
+// matching gxt's emitted identifier references verbatim. Keys that are not
+// (hyphenated names, reserved words) keep the legacy path, which declares each
+// under the identifier gxt references it under (`_gxtEscapeBindingName`); a
 // leading `$` is rejected too so user scope can never collide with gxt's own
-// `$a`/`$slots`/`$fw` preamble locals or `$_*` params. (gxt's own scope-name
-// validation THROWS on invalid identifiers — this guard is what makes passing
-// scopeValues safe for the shared compile call.)
+// `$a`/`$slots`/`$fw` preamble locals or `$_*` params.
 const _GXT_NATIVE_SCOPE_IDENT_RE = /^[a-zA-Z_][a-zA-Z0-9_$]*$/;
 // Names that pass the identifier regex but are NOT usable as Function
 // parameter names (literals + strict-mode-restricted). JS_RESERVED_WORDS
@@ -12622,36 +12618,23 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     // creates `const get = __gxtGetScope(storeKey)["get"]`, but the compiled code
     // references the string "get" — this fix bridges that gap.
     //
-    // Only keys the compiler reports are rewritten: a quoted lookup is listed in
-    // `maybeHelperNames`, and a kebab binding that gxt emitted verbatim as an
-    // unquoted identifier (`$_maybeHelper(say-hello, …)`, invalid JS parsed as
-    // `say - hello`) is listed in `referencedBindings`.
+    // Only keys the compiler reports as quoted lookups (`maybeHelperNames`) are
+    // rewritten. A binding gxt references as a variable is referenced under the
+    // identifier gxt declares it under (`_gxtEscapeBindingName`), which the
+    // scope injection below declares.
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
-      const _jsReserved = JS_RESERVED_WORDS;
       const quotedLookups = new Set(compilationResult.maybeHelperNames);
-      const referencedBindings = new Set(compilationResult.referencedBindings);
       const scopeKeySet = new Set(Object.keys(options.scopeValues));
       for (const key of scopeKeySet) {
-        const quoted = quotedLookups.has(key);
-        const bareKebab = key.indexOf('-') !== -1 && referencedBindings.has(key);
-        if (!quoted && !bareKebab) continue;
-        let jsKey = hyphenToUnderscore(key);
-        if (_jsReserved.has(jsKey)) {
-          jsKey = `__scope_${jsKey}`;
-        }
+        if (!quotedLookups.has(key)) continue;
+        const jsKey = _gxtEscapeBindingName(key);
         const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-        if (quoted) {
-          // Replace $_maybeHelper("key", with $_maybeHelper(jsKey,
-          // Use a regex that matches both quote styles
-          const pattern = new RegExp(`\\$_maybeHelper\\("${escapedKey}",`, 'g');
-          modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsKey},`);
-          const pattern2 = new RegExp(`\\$_maybeHelper\\('${escapedKey}',`, 'g');
-          modifiedCode = modifiedCode.replace(pattern2, `$_maybeHelper(${jsKey},`);
-        }
-        if (bareKebab) {
-          const pattern3 = new RegExp(`\\$_maybeHelper\\(${escapedKey},`, 'g');
-          modifiedCode = modifiedCode.replace(pattern3, `$_maybeHelper(${jsKey},`);
-        }
+        // Replace $_maybeHelper("key", with $_maybeHelper(jsKey,
+        // Use a regex that matches both quote styles
+        const pattern = new RegExp(`\\$_maybeHelper\\("${escapedKey}",`, 'g');
+        modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsKey},`);
+        const pattern2 = new RegExp(`\\$_maybeHelper\\('${escapedKey}',`, 'g');
+        modifiedCode = modifiedCode.replace(pattern2, `$_maybeHelper(${jsKey},`);
       }
     }
 
@@ -12765,12 +12748,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
         scopeStoreKey = `__gxtScope_${(h >>> 0).toString(36)}`;
         _gxtScopeStore.set(scopeStoreKey, scopeVals);
         for (const key of scopeKeys) {
-          // Use valid JS identifier (convert hyphens, etc.)
-          let jsKey = hyphenToUnderscore(key);
-          // Prefix reserved words so they can be used as variable names
-          if (JS_RESERVED_WORDS.has(jsKey)) {
-            jsKey = `__scope_${jsKey}`;
-          }
+          // The identifier gxt references the binding under: the key itself,
+          // or for a key that is not a plain JS identifier (`some-helper`,
+          // `debugger`) its escaped name.
+          const jsKey = _gxtEscapeBindingName(key);
           // Block-param shadow fix for scoped helpers like `hash`, `get`,
           // `fn` that the template also shadows via `{{#let ... as |hash|}}`.
           // GXT emits `(() => { let hash = () => $_maybeHelper(hash, ...); })()`
