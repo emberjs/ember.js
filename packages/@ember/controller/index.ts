@@ -308,7 +308,12 @@ export function inject(
   return metalInject('controller', ...args);
 }
 
-export { Controller as default, ControllerMixin };
+const ExportedControllerMixin = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : ControllerMixin
+) as typeof ControllerMixin;
+type ExportedControllerMixin<T> = ControllerMixin<T>;
+
+export { Controller as default, ExportedControllerMixin as ControllerMixin };
 
 /**
   A type registry for Ember `Controller`s. Meant to be declaration-merged so string
