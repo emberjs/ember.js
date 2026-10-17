@@ -129,70 +129,37 @@ function _unboundSnapshot(value: any): any {
   return out;
 }
 
+// The values `(hash)` built (`$__hash_ember` below). Glimmer reads every
+// member of a hash when the hash value is read (`reifyNamed`), and no property
+// of any other object.
+const _gxtHashValues = new WeakSet<object>();
+
 /**
- * Touch every sub-value of a `{{hash}}` / `{{array}}` so each member's source
- * cell is captured by the surrounding tracker frame. MUST be called while a
- * tracker is active (see the capture-replay block in `itemToNode`).
+ * Read every member of each `(hash)` value in `value` (the value itself, or
+ * the members of an array it is), so the cell each member reads is captured by
+ * the surrounding tracker frame. MUST be called while a tracker is active (see
+ * the capture-replay block in `itemToNode`).
  *
- * `$__hash` (glimmer-next helpers/hash.ts) returns a plain object whose keys
- * are lazy getters; reading a key invokes the underlying `() => this.x`
- * getter and reads its cell. A consumer that references only some keys leaves
- * the sibling keys' cells unsubscribed, so when a sibling's source changes the
- * effect never re-fires. Reading EVERY key here registers all of their cells
- * into the active tracker.
+ * `$__hash` (glimmer-next helpers/hash.ts) returns an object whose keys are
+ * lazy getters; reading a key invokes the underlying `() => this.x` getter and
+ * reads its cell. Rendering the hash reads it, and Glimmer's hash reads all of
+ * its members then; reading them here subscribes the binding to all of them.
  *
- * `$__array` (helpers/array.ts) eagerly `unwrap`s its members at construction
- * (no lazy getters survive), so an already-built array of primitives can't be
- * re-read to recapture cells; that case (array sub-values consumed by
- * `{{#each}}`) is not handled here, pending a reactive-array source. The Array
- * branch here still captures any live member getters (when present) and
- * recurses into nested hashes inside an array.
- *
- * Read-only. A plain object's getters and an array's arrow functions are read
- * whatever their source, also a user object's (rendered as text, Glimmer reads
- * none of them): a member that throws is skipped, reported in DEBUG
- * (`_gxtReportDroppedRead`). Bounded depth guards against cycles.
+ * Any other object or function is left alone: rendering a user object, or an
+ * array of functions, reads none of its properties and calls none of its
+ * functions. `$__array` (helpers/array.ts) resolves its members when it is
+ * built, so an array is only searched for hashes. Bounded depth guards against
+ * cycles.
  */
 function _gxtCaptureHashArrayDeps(value: any, depth = 0): void {
-  if (value == null || depth > 4) return;
-  const t = typeof value;
-  if (t !== 'object') return;
-  if (value instanceof Node) return;
+  if (value === null || typeof value !== 'object' || depth > 4) return;
   if (Array.isArray(value)) {
-    for (const member of value) {
-      // A live member getter (kept by the $_array wrapper) — invoke to read
-      // its cell; otherwise recurse into nested hashes.
-      if (typeof member === 'function' && !(member as any).prototype) {
-        let sub: unknown;
-        try {
-          sub = (member as any)();
-        } catch (error) {
-          _gxtReportDroppedRead('An array member', error);
-          continue;
-        }
-        _gxtCaptureHashArrayDeps(sub, depth + 1);
-      } else {
-        _gxtCaptureHashArrayDeps(member, depth + 1);
-      }
-    }
+    for (let i = 0; i < value.length; i++) _gxtCaptureHashArrayDeps(value[i], depth + 1);
     return;
   }
-  // Only walk plain hash-shaped objects ($__hash output). Never touch
-  // component instances, DOM, cells, curried components, etc.
-  const proto = Object.getPrototypeOf(value);
-  if (proto !== Object.prototype && proto !== null) return;
-  if ((value as any).__isCurriedComponent) return;
+  if (!_gxtHashValues.has(value)) return;
   for (const key of Object.keys(value)) {
-    // Reading the key invokes the $__hash lazy getter → reads the source
-    // cell → captured by the active tracker. Recurse for nested hashes.
-    let sub: unknown;
-    try {
-      sub = (value as any)[key];
-    } catch (error) {
-      _gxtReportDroppedRead(`The \`${key}\` member of a hash`, error);
-      continue;
-    }
-    _gxtCaptureHashArrayDeps(sub, depth + 1);
+    _gxtCaptureHashArrayDeps(value[key], depth + 1);
   }
 }
 
@@ -2442,6 +2409,7 @@ function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
           }
         }
         const result = origHash.call(this, wrappedObj);
+        _gxtHashValues.add(result);
         // Mark the produced object so `$__cellFor_ember` knows to read members
         // through their (live, source-entangling) getters instead of snapshotting
         // a `cellFor(hashObject,key)` cell. Stamp the construction context so the
@@ -2465,7 +2433,9 @@ function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
         }
         return result;
       }
-      return origHash.call(this, inputObj);
+      const result = origHash.call(this, inputObj);
+      if (result !== null && typeof result === 'object') _gxtHashValues.add(result);
+      return result;
     };
     g.$__hash.__emberHashWrapped = true;
   }
