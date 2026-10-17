@@ -11,10 +11,36 @@
 // frame, a binding formula) subscribes to exactly the arguments it reads.
 import { DEBUG } from '@glimmer/env';
 
+/**
+ * The source text of a call site's path arguments (gxt's EMBER_ARG_LABELS
+ * compile flag, on in DEBUG builds): `positional[i]` for the i-th argument
+ * (`null` when it is not a path), `named[key]` for a named one. They are the
+ * debug labels of the argument references, as Glimmer labels a path
+ * reference with its path (`this.foo`).
+ */
+export interface ArgLabels {
+  readonly positional?: readonly (string | null)[];
+  readonly named?: Readonly<Record<string, string>>;
+}
+
 /** The current arguments of one call site (literal-or-thunk values). */
 export interface ArgsSource {
   positional: readonly unknown[];
   named: Readonly<Record<string, unknown>>;
+  /** The call site's argument labels (DEBUG builds). */
+  labels?: ArgLabels | undefined;
+}
+
+/**
+ * The labels of a call site whose curried value supplies `curried` leading
+ * positional arguments: those have no label at this call site.
+ */
+export function shiftLabels(labels: ArgLabels | undefined, curried: number): ArgLabels | undefined {
+  if (labels === undefined || curried === 0 || labels.positional === undefined) return labels;
+  return {
+    positional: [...new Array<null>(curried).fill(null), ...labels.positional],
+    named: labels.named,
+  };
 }
 
 export interface Arguments {

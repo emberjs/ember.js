@@ -27,6 +27,9 @@ import {
   argumentValue,
   isReadingArgumentReference,
   setMutArgumentSources,
+  positionalArgLabel as _positionalArgLabel,
+  namedArgLabel as _namedArgLabel,
+  type GxtArgLabels,
 } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
@@ -8969,7 +8972,16 @@ const $_MANAGERS = {
       return false;
     },
 
-    handle(modifier: any, element: HTMLElement, props: any[], hashArgs: any): any {
+    handle(
+      modifier: any,
+      element: HTMLElement,
+      props: any[],
+      hashArgs: any,
+      _ctx?: unknown,
+      // gxt EMBER_ARG_LABELS (DEBUG builds): the source paths of the
+      // arguments, the debug labels of their references.
+      labels?: GxtArgLabels
+    ): any {
       // In non-interactive (SSR-style) rendering, modifiers — which exist to
       // imperatively interact with DOM — must not install. Stock Ember uses
       // an `InertRenderer` that skips modifier installation wholesale; we
@@ -9168,8 +9180,8 @@ const $_MANAGERS = {
             // Build fresh Glimmer ConstRefs for positional/named args — this
             // matches what's built at install time so OnModifierManager and
             // friends can call `valueForRef()` on them successfully.
-            const freshPositional = (props || []).map((v: any) => {
-              return _createConstRef(v, DEBUG ? 'modifier-arg' : false);
+            const freshPositional = (props || []).map((v: any, i: number) => {
+              return _createConstRef(v, DEBUG ? _positionalArgLabel(labels, i) : false);
             });
             const rawHash = hashArgs
               ? typeof hashArgs === 'function'
@@ -9182,7 +9194,7 @@ const $_MANAGERS = {
               const val = rawHash[k];
               const resolved =
                 typeof val === 'function' && !(val as any).__isCurriedComponent ? val() : val;
-              freshNamed[k] = _createConstRef(resolved, DEBUG ? k : false);
+              freshNamed[k] = _createConstRef(resolved, DEBUG ? _namedArgLabel(labels, k) : false);
             }
 
             if (cached.instance.args) {
@@ -9390,8 +9402,8 @@ const $_MANAGERS = {
           // (e.g., "click", this.callback), not reactive getters. We must not
           // call them — concise methods and arrow callbacks lack .prototype and
           // would be mistaken for getters.
-          const positional = (props || []).map((v: any) => {
-            return _createConstRef(v, DEBUG ? 'modifier-arg' : false);
+          const positional = (props || []).map((v: any, i: number) => {
+            return _createConstRef(v, DEBUG ? _positionalArgLabel(labels, i) : false);
           });
           // Named args: GXT wraps dynamic named values in () => getters
           // (e.g., once: () => this.once), but passes literals directly
@@ -9403,7 +9415,7 @@ const $_MANAGERS = {
             const val = rawHash[k];
             const resolved =
               typeof val === 'function' && !(val as any).__isCurriedComponent ? val() : val;
-            named[k] = _createConstRef(resolved, DEBUG ? k : false);
+            named[k] = _createConstRef(resolved, DEBUG ? _namedArgLabel(labels, k) : false);
           }
           return { positional, named };
         };

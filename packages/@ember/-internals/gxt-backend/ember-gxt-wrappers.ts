@@ -37,6 +37,7 @@ import {
   sanitizedAttrValue,
   tagMayNameComponent,
   type EachInEntry,
+  type GxtArgLabels,
 } from './utils';
 import { GXT_ANGLE_BRACKET_KEY, GXT_HELPER_SITE_KEY } from './ast-transforms';
 import { gxtDebugParent, gxtWithDebugParent, gxtRecordLexicalNames } from './debug-render-tree';
@@ -542,7 +543,11 @@ function createEmberMaybeHelper(original: Function) {
     nameOrFn: string | Function,
     args: any[],
     hashOrCtx?: any,
-    maybeCtx?: any
+    maybeCtx?: any,
+    _site?: unknown,
+    // gxt EMBER_ARG_LABELS (DEBUG builds): the source paths of the arguments,
+    // the debug labels of an internal helper's argument references.
+    labels?: GxtArgLabels
   ): any {
     // Which argument is the call site's named-argument hash and which its
     // render context. gxt's emission (compiler `we`): a call by NAME passes the
@@ -810,17 +815,23 @@ function createEmberMaybeHelper(original: Function) {
         // (possibly getter-valued) args. Using the real `createComputeRef` keeps
         // `valueForRef` working; the internal element helper only calls
         // `valueForRef(positional[0])` and reads `positional.length`.
-        const makeRef = (argVal: any) => {
+        // A path argument's reference is labelled with its path (DEBUG), as
+        // Glimmer's is: its `fn` assertion names the callback by it.
+        const makeRef = (argVal: any, label: string | null | undefined) => {
           const isGetter = typeof argVal === 'function' && !(argVal as any).prototype;
           const getter = isGetter ? () => argVal() : () => argVal;
-          return createComputeRef(getter, null, 'element-arg');
+          const ref = createComputeRef(getter, null, 'element-arg');
+          if (DEBUG && typeof label === 'string') ref.debugLabel = label;
+          return ref;
         };
-        const positionalRefs = (args || []).map(makeRef);
+        const positionalRefs = (args || []).map((argVal: any, i: number) =>
+          makeRef(argVal, labels?.positional?.[i])
+        );
         const namedObj = hash && typeof hash === 'object' ? hash : {};
         const named: Record<string, any> = {};
         for (const k of Object.keys(namedObj)) {
           if (k.startsWith('$')) continue;
-          named[k] = makeRef((namedObj as any)[k]);
+          named[k] = makeRef((namedObj as any)[k], labels?.named?.[k]);
         }
         const captured = { positional: positionalRefs, named, length: positionalRefs.length };
         let ref: any;

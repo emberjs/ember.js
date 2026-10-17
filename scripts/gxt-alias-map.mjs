@@ -307,6 +307,20 @@ export const NATIVE_FLAGS = Object.freeze({
   EMBER_LOOSE_COMPONENTS: true,
 });
 
+/**
+ * NATIVE_FLAGS for DEBUG compiles (the native runtime compile in a DEBUG build,
+ * the test harness): gxt's EMBER_ARG_LABELS on as well. A helper / modifier
+ * call site then passes the source paths of its path arguments, which the
+ * native managers give the argument references as their debug labels
+ * (Glimmer's `{{on}}` / `{{fn}}` assertions name an argument by its path:
+ * "While rendering: this.foo"). Compile-only and debug-only: production
+ * compiles keep NATIVE_FLAGS, without the label strings.
+ */
+export const NATIVE_DEBUG_FLAGS = Object.freeze({
+  ...NATIVE_FLAGS,
+  EMBER_ARG_LABELS: true,
+});
+
 const nativeTarget = (name) => `${GXT_NATIVE_DIR}/${name}`;
 
 /**

@@ -45,7 +45,7 @@ import {
   registerDestructor as gxtRegisterDestructor,
   resolveCurried,
 } from '@lifeart/gxt';
-import { argsProxyFor, unwrapArg, type ArgsSource } from './args';
+import { argsProxyFor, shiftLabels, unwrapArg, type ArgLabels, type ArgsSource } from './args';
 import { _hasDestroyableChildren, destroy, isDestroying } from './destroyable';
 import {
   DEFAULT_HELPER_MANAGER,
@@ -126,6 +126,14 @@ function describe(value: unknown): string {
  * per template + owner). The owner is looked up (a render-tree walk from
  * `ctx`) only for the shapes that use it.
  */
+// The reference of one argument of a call site: its label is the argument's
+// source path (gxt EMBER_ARG_LABELS, DEBUG builds), when it is a path.
+function argumentRef(read: () => unknown, label: string | null | undefined): Reference {
+  const ref = createComputeRef(read);
+  if (DEBUG && typeof label === 'string') ref.debugLabel = label;
+  return ref;
+}
+
 function createInstance(key: object | string, ctx: unknown, source: ArgsSource): HelperInstance {
   let owner: object | undefined;
   let definition: object;
@@ -154,12 +162,15 @@ function createInstance(key: object | string, ctx: unknown, source: ArgsSource):
     // Internal helper (Glimmer protocol): one reference per argument over the
     // call site's source (a call site's arity and named keys never change),
     // the helper invoked ONCE per call site.
+    // DEBUG: a path argument's reference is labelled with its path, as
+    // Glimmer's is (its `fn` assertion names the callback by it).
+    const { labels } = source;
     const positional = source.positional.map((_, i) =>
-      createComputeRef(() => unwrapArg(source.positional[i]))
+      argumentRef(() => unwrapArg(source.positional[i]), labels?.positional?.[i])
     );
     const named: Record<string, Reference> = {};
     for (const key of Object.keys(source.named)) {
-      named[key] = createComputeRef(() => unwrapArg(source.named[key]));
+      named[key] = argumentRef(() => unwrapArg(source.named[key]), labels?.named?.[key]);
     }
     const ref = manager({ positional, named }, owner);
     return {
@@ -209,7 +220,8 @@ function instanceFor(
   site: number,
   definition: object | string,
   positional: readonly unknown[],
-  named: Readonly<Record<string, unknown>>
+  named: Readonly<Record<string, unknown>>,
+  labels: ArgLabels | undefined
 ): HelperInstance {
   let sites = SITES.get(ctx);
   if (sites === undefined) {
@@ -232,7 +244,7 @@ function instanceFor(
   // First evaluation — or a dynamic helper (`{{(this.helper) …}}`) whose
   // definition changed: a new instance; the outgoing one is destroyed.
   if (instance !== undefined) destroyInstance(instance);
-  instance = createInstance(definition, ctx, { positional, named });
+  instance = createInstance(definition, ctx, { positional, named, labels });
   sites.set(site, instance);
   return instance;
 }
@@ -250,7 +262,9 @@ function handle(
   args: readonly unknown[],
   named: Readonly<Record<string, unknown>> | undefined,
   ctx?: unknown,
-  site?: number
+  site?: number,
+  // gxt EMBER_ARG_LABELS (DEBUG builds): the source paths of the arguments.
+  labels?: ArgLabels
 ): unknown {
   let definition: unknown = value;
   let positional = args;
@@ -261,17 +275,21 @@ function handle(
     definition = resolved.definition;
     if (resolved.positional.length > 0) positional = [...resolved.positional, ...args];
     if (resolved.named.length > 0) namedArgs = Object.assign({}, ...resolved.named, namedArgs);
+    labels = shiftLabels(labels, resolved.positional.length);
   }
 
   if (definition === null || definition === undefined || definition === '') return undefined;
 
   if (ctx !== null && typeof ctx === 'object' && typeof site === 'number') {
-    return valueOf(instanceFor(ctx, site, definition as object | string, positional, namedArgs));
+    return valueOf(
+      instanceFor(ctx, site, definition as object | string, positional, namedArgs, labels)
+    );
   }
   // No call site to own it (not compiler-emitted): a one-shot invocation.
   const instance = createInstance(definition as object | string, ctx, {
     positional,
     named: namedArgs,
+    labels,
   });
   try {
     return valueOf(instance);

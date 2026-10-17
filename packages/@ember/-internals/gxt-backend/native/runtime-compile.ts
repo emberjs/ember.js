@@ -30,7 +30,7 @@ import * as gxtRuntime from '@lifeart/gxt';
 import { $SELF, $_tpl } from '@lifeart/gxt';
 import { compileTemplateSource, type TemplateSource } from '@lifeart/gxt/runtime-compiler';
 // The ONE flag constant shared with the AOT vite plugin (vite.config.mjs).
-import { NATIVE_FLAGS } from '../../../../../scripts/gxt-alias-map.mjs';
+import { NATIVE_DEBUG_FLAGS, NATIVE_FLAGS } from '../../../../../scripts/gxt-alias-map.mjs';
 import { setComponentTemplate } from './manager-api';
 import {
   factoryForTemplate,
@@ -113,7 +113,9 @@ function compileToFunction(
   }
 ): GxtTemplate {
   const result = compileTemplateSource(templateSource, {
-    flags: NATIVE_FLAGS,
+    // DEBUG: also the argument labels (the debug labels of helper / modifier
+    // argument references).
+    flags: DEBUG ? NATIVE_DEBUG_FLAGS : NATIVE_FLAGS,
     bindings: new Set(bindings),
     moduleName,
     lexicalScope,

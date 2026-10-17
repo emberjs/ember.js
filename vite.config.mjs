@@ -18,7 +18,7 @@ import {
   GXT_SUBPATH_REDIRECTS,
   GXT_NATIVE_ALIASES,
   GXT_NATIVE_DIR,
-  NATIVE_FLAGS,
+  NATIVE_DEBUG_FLAGS,
   gxtNativeAliasMatcher,
   gxtNativeSpecifierForPath,
   gxtSubpathRegExp,
@@ -137,6 +137,9 @@ export default defineConfig(({ mode }) => {
                 WITH_HELPER_MANAGER: true,
                 WITH_MODIFIER_MANAGER: true,
                 TRY_CATCH_ERROR_HANDLING: false,
+                // A helper / modifier call site passes its arguments' source
+                // paths: their references' debug labels (DEBUG).
+                EMBER_ARG_LABELS: true,
               },
             })
           )
@@ -263,6 +266,7 @@ export default defineConfig(({ mode }) => {
             EMBER_PROPERTY_TAGS: 'false',
             EMBER_SELF: 'false',
             EMBER_LOOSE_COMPONENTS: 'false',
+            EMBER_ARG_LABELS: 'false',
           },
         }),
     build,
@@ -541,7 +545,9 @@ function nativeConfig(mode) {
       gxtNativeRelativeRedirect(),
       gxtNativeTestModules(),
       gxtNativeTestHelpersTemplates(),
-      ...isolateTestCompileErrors(compiler(mode, { flags: { ...NATIVE_FLAGS } })),
+      // The test harness compiles with the DEBUG flags (argument labels), as
+      // the runtime compile of a DEBUG build does.
+      ...isolateTestCompileErrors(compiler(mode, { flags: { ...NATIVE_DEBUG_FLAGS } })),
       // NO gxtEmberWrapperRedirect: AOT templates import the gxt runtime directly.
       ...isolateTestCompileErrors(
         babel({
@@ -580,7 +586,7 @@ function nativeConfig(mode) {
     },
     publicDir: 'tests/public',
     server: { hmr: { overlay: false } },
-    // The gxt compiler plugin inlines NATIVE_FLAGS (+ IS_DEV_MODE) via its own
+    // The gxt compiler plugin inlines NATIVE_DEBUG_FLAGS (+ IS_DEV_MODE) via its own
     // `define`, so no classic `define:` block here.
     build: { minify: mode === 'production' },
     esbuild: false,

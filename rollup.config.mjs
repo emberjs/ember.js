@@ -16,6 +16,7 @@ import {
   GXT_DIST_VM_STUBS,
   GXT_NATIVE_DIST_DROPPED_ENTRIES,
   NATIVE_FLAGS,
+  NATIVE_DEBUG_FLAGS,
   gxtNativeSpecifierForPath,
   gxtSubpathRegExp,
   matchGxtNativeAlias,
@@ -966,10 +967,11 @@ function gxtNativeFile(target, why) {
 //     `../templates/link-to`) — vite's gxtNativeRelativeRedirect twin, sharing
 //     gxtNativeSpecifierForPath — so an intra-package edge cannot pull the real
 //     VM module back in,
-//   - native/runtime-compile.ts's `NATIVE_FLAGS` import from
-//     scripts/gxt-alias-map.mjs (the one flag constant shared with the AOT
-//     compiler): the dist inlines the constant as a virtual module instead of
-//     bundling the build-script module.
+//   - native/runtime-compile.ts's `NATIVE_FLAGS` / `NATIVE_DEBUG_FLAGS` import
+//     from scripts/gxt-alias-map.mjs (the flag constants shared with the AOT
+//     compiler; DEBUG builds compile with NATIVE_DEBUG_FLAGS): the dist inlines
+//     the constants as a virtual module instead of bundling the build-script
+//     module.
 function gxtNativeResolve() {
   const packagesDir = resolve(projectRoot, 'packages') + '/';
   const FLAGS_ID = '\0gxt-native-flags';
@@ -996,7 +998,10 @@ function gxtNativeResolve() {
     },
     load(id) {
       if (id !== FLAGS_ID) return null;
-      return `export const NATIVE_FLAGS = Object.freeze(${JSON.stringify(NATIVE_FLAGS)});\n`;
+      return (
+        `export const NATIVE_FLAGS = Object.freeze(${JSON.stringify(NATIVE_FLAGS)});\n` +
+        `export const NATIVE_DEBUG_FLAGS = Object.freeze(${JSON.stringify(NATIVE_DEBUG_FLAGS)});\n`
+      );
     },
   };
 }

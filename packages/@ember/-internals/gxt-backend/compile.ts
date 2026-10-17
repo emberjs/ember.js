@@ -8286,11 +8286,17 @@ function _gxtClearTagHelperCache(): void {
       typeof owner === 'object' &&
       owner.isDestroyed !== true &&
       owner.isDestroying !== true;
-    const dispatch = (modifier: any, element: HTMLElement, props: any[], hashArgs: any) => {
+    const dispatch = (
+      modifier: any,
+      element: HTMLElement,
+      props: any[],
+      hashArgs: any,
+      labels: unknown
+    ) => {
       // Always try our manager first
       const mgrs = (globalThis as any).$_MANAGERS;
       if (mgrs?.modifier?.canHandle?.(modifier)) {
-        return mgrs.modifier.handle(modifier, element, props, hashArgs);
+        return mgrs.modifier.handle(modifier, element, props, hashArgs, undefined, labels);
       }
       // An object or function without a modifier manager is not a modifier.
       // Glimmer throws for it (`getInternalModifierManager`; its dynamic
@@ -8311,7 +8317,10 @@ function _gxtClearTagHelperCache(): void {
       modifier: any,
       element: HTMLElement,
       props: any[],
-      hashArgs: any
+      hashArgs: any,
+      _ctx?: unknown,
+      // gxt EMBER_ARG_LABELS (DEBUG builds): the arguments' source paths.
+      labels?: unknown
     ) {
       const ambient = getAmbientOwner();
       let owner: object | undefined = element ? elementOwners.get(element) : undefined;
@@ -8320,11 +8329,11 @@ function _gxtClearTagHelperCache(): void {
         if (owner !== undefined && element) elementOwners.set(element, owner);
       }
       if (owner === undefined || owner === ambient) {
-        return dispatch(modifier, element, props, hashArgs);
+        return dispatch(modifier, element, props, hashArgs, labels);
       }
       setAmbientOwner(owner);
       try {
-        return dispatch(modifier, element, props, hashArgs);
+        return dispatch(modifier, element, props, hashArgs, labels);
       } finally {
         setAmbientOwner(ambient);
       }
@@ -12538,6 +12547,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       // EMBER_IN_ELEMENT: {{#in-element}} insertBefore semantics emit as
       // $_inElement's 4th MODE arg (1=clear, 0=append, literal=dev-assert).
       EMBER_IN_ELEMENT: true,
+      // EMBER_ARG_LABELS (DEBUG): a helper / modifier call site passes the
+      // source paths of its arguments, the debug labels of their references
+      // ("While rendering: this.foo" in an `{{on}}` / `{{fn}}` assertion).
+      EMBER_ARG_LABELS: DEBUG,
       // EMBER_TRUSTED_HTML stays off. With it on, the rehydration tests for
       // top-level unescaped tr/td inside a tr contextualElement regress:
       // `$_html`'s create+insert range conflicts with rehydration's

@@ -168,16 +168,21 @@ function callFn(callback: unknown, args: unknown[], invocationArgs: unknown[]): 
 //
 // Direct form (a compiler-emitted call site, native/helper-manager.ts): the
 // same function over the call site's literal-or-thunk arguments, which it
-// reads when invoked — no compute reference per argument. The arguments carry
-// no source label, so the assertion's label is `undefined`, as for an
-// unlabeled reference.
+// reads when invoked — no compute reference per argument. The assertion names
+// the callback by its source path (the call site's labels, DEBUG builds), as
+// Glimmer's does by its reference's label; `undefined` without one.
 function fnForCallSite(source: ArgsSource): unknown {
-  if (DEBUG) assertCallbackIsFn(unwrapArg(source.positional[0]), undefined);
+  if (DEBUG) {
+    assertCallbackIsFn(
+      unwrapArg(source.positional[0]),
+      source.labels?.positional?.[0] ?? undefined
+    );
+  }
   // a regular function: never mistaken for a compiler getter by gxt
   return function fnHelper(...invocationArgs: unknown[]): unknown {
     const positional = source.positional;
     const callback = unwrapArg(positional[0]);
-    if (DEBUG) assertCallbackIsFn(callback, undefined);
+    if (DEBUG) assertCallbackIsFn(callback, source.labels?.positional?.[0] ?? undefined);
     const args: unknown[] = [];
     for (let i = 1; i < positional.length; i++) args.push(unwrapArg(positional[i]));
     return callFn(callback, args, invocationArgs);
@@ -469,7 +474,7 @@ class OnModifierState {
       throw new Error(
         `You must pass a function as the second argument to the \`on\` modifier; you passed ${
           userProvidedCallback === null ? 'null' : typeof userProvidedCallback
-        }. While rendering:\n\n(unknown) on ${selector}`
+        }. While rendering:\n\n${source.labels?.positional?.[1] ?? '(unknown)'} on ${selector}`
       );
     }
     if (DEBUG && positional.length !== 2) {

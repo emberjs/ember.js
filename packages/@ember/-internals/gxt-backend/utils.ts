@@ -657,6 +657,28 @@ export function mutArgumentSources(context: unknown): Record<string, unknown> | 
     : undefined;
 }
 
+/**
+ * The source text of a helper / modifier call site's path arguments (gxt's
+ * EMBER_ARG_LABELS compile flag, on in DEBUG builds; gxt's `ArgLabels`):
+ * `positional[i]` for the i-th argument (`null` when it is not a path),
+ * `named[key]` for a named one. They are the debug labels of the argument
+ * references, as Glimmer labels a path reference with its path (`this.foo`).
+ */
+export interface GxtArgLabels {
+  readonly positional?: readonly (string | null)[];
+  readonly named?: Readonly<Record<string, string>>;
+}
+
+/** The debug label of a modifier's i-th positional argument reference. */
+export function positionalArgLabel(labels: GxtArgLabels | undefined, index: number): string {
+  return labels?.positional?.[index] ?? 'modifier-arg';
+}
+
+/** The debug label of a modifier's named argument reference. */
+export function namedArgLabel(labels: GxtArgLabels | undefined, key: string): string {
+  return labels?.named?.[key] ?? key;
+}
+
 export interface FnHelperValue {
   (...args: unknown[]): unknown;
   __isFnHelper: true;

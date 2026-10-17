@@ -39,7 +39,7 @@ import {
   resolveCurried,
   setTracker,
 } from '@lifeart/gxt';
-import { argsProxyFor, unwrapArg, type ArgsSource } from './args';
+import { argsProxyFor, shiftLabels, unwrapArg, type ArgLabels, type ArgsSource } from './args';
 import { destroy, registerDestructor } from './destroyable';
 import {
   CustomModifierManager,
@@ -328,7 +328,9 @@ function handle(
   element: Element,
   props: readonly unknown[],
   named: Readonly<Record<string, unknown>> | (() => Readonly<Record<string, unknown>>) | undefined,
-  ctx?: unknown
+  ctx?: unknown,
+  // gxt EMBER_ARG_LABELS (DEBUG builds): the source paths of the arguments.
+  labels?: ArgLabels
 ): (() => void) | undefined {
   const renderCtx = ctx !== null && typeof ctx === 'object' ? ctx : undefined;
   if (renderCtx !== undefined && getContext(renderCtx as never, INTERACTIVE, false) === false) {
@@ -344,6 +346,7 @@ function handle(
     definition = resolved.definition;
     if (resolved.positional.length > 0) positional = [...resolved.positional, ...props];
     if (resolved.named.length > 0) namedArgs = Object.assign({}, ...resolved.named, namedArgs);
+    labels = shiftLabels(labels, resolved.positional.length);
   }
 
   // The render tree's owner — looked up only when it is used (a modifier
@@ -361,7 +364,7 @@ function handle(
   }
   if (definition === null || definition === undefined) return undefined;
 
-  const source: ArgsSource = { positional, named: namedArgs };
+  const source: ArgsSource = { positional, named: namedArgs, labels };
   const instance = createInstance(definition as object, element, source, ownerFor);
   if (ENV._DEBUG_RENDER_TREE && renderCtx !== undefined) {
     recordDebugModifier(renderCtx, instance, definition as object, resolvedName, source);
