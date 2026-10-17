@@ -9,7 +9,7 @@
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { ApplicationTestCase, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import EmberObject, { computed, set } from '@ember/object';
+import EmberObject, { computed, get, set } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import Component from '@ember/component';
 import type Controller from '@ember/controller';
@@ -189,6 +189,109 @@ moduleFor(
         runTask(() => set(controller, 'model', { show: false }));
       }, /the teardown failed/);
       this.assertText('[]');
+    }
+  }
+);
+
+// A classic component whose `didReceiveAttrs` throws once its `value` is
+// 'boom'. An update runs the hook while it renders: what it throws is an error
+// of the update, as Glimmer's curly component manager throws it from the
+// revalidation of the run loop.
+class ReceiveAttrsBoom extends Component {
+  didReceiveAttrs() {
+    super.didReceiveAttrs();
+    if (get(this, 'value') === 'boom') throw new Error('didReceiveAttrs failed');
+  }
+}
+
+moduleFor(
+  'GXT errors: hook errors of an update',
+  class extends RenderingTestCase {
+    ["@test what an updated component's didReceiveAttrs throws reaches runTask"](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register('component:foo-bar', ReceiveAttrsBoom);
+      this.render('{{foo-bar value=this.value}}', { value: 'ok' });
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'value', 'boom'));
+      }, /didReceiveAttrs failed/);
+    }
+
+    ["@test what an updated component's didReceiveAttrs throws reaches a bare run loop"](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register('component:foo-bar', ReceiveAttrsBoom);
+      this.render('{{foo-bar value=this.value}}', { value: 'ok' });
+
+      // The sync runs at the end of the run loop (`runTask` syncs after it).
+      assert.throws(() => {
+        run(() => set(this.context, 'value', 'boom'));
+      }, /didReceiveAttrs failed/);
+      assert.strictEqual(_getCurrentRunLoop(), null, 'the run loop has ended');
+    }
+
+    ['@test what the constructor of a component in a new {{#if}} branch throws reaches runTask'](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init();
+            throw new Error('init failed');
+          }
+        }
+      );
+      this.render('{{#if this.show}}{{foo-bar}}{{/if}}', { show: false });
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'show', true));
+      }, /init failed/);
+    }
+
+    ['@test the next update after an update error renders and throws nothing'](
+      assert: QUnit['assert']
+    ) {
+      this.owner.register('component:foo-bar', ReceiveAttrsBoom);
+      this.render('[{{this.label}}]{{foo-bar value=this.value}}', { label: 'a', value: 'ok' });
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'value', 'boom'));
+      }, /didReceiveAttrs failed/);
+
+      runTask(() => {
+        set(this.context, 'value', 'ok');
+        set(this.context, 'label', 'b');
+      });
+      this.assertText('[b]');
+    }
+  }
+);
+
+moduleFor(
+  'GXT errors: hook errors of an update of a route template',
+  class extends ApplicationTestCase {
+    async ["@test what an updated component's didReceiveAttrs throws reaches the change of the controller"](
+      assert: QUnit['assert']
+    ) {
+      this.add('component:foo-bar', ReceiveAttrsBoom);
+      this.add(
+        'route:application',
+        class extends Route {
+          model() {
+            return { value: 'ok' };
+          }
+        }
+      );
+      this.add('template:application', precompileTemplate('[{{foo-bar value=this.model.value}}]'));
+
+      await this.visit('/');
+      const controller = this.applicationInstance!.lookup('controller:application') as Controller;
+
+      assert.throws(() => {
+        runTask(() => set(controller, 'model', { value: 'boom' }));
+      }, /didReceiveAttrs failed/);
     }
   }
 );
