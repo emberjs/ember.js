@@ -117,3 +117,38 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'GXT reads: the fn helper',
+  class extends RenderingTestCase {
+    ['@test the callback is read when the function is called'](assert: QUnit['assert']) {
+      let reads: string[] = [];
+      let calls: unknown[] = [];
+      class Root extends GlimmerComponent {
+        get handler() {
+          reads.push('handler');
+          return (value: unknown) => calls.push(value);
+        }
+      }
+      this.owner.register(
+        'component:x-child',
+        setComponentTemplate(
+          this.compile('{{#if @onClick}}<button {{on "click" @onClick}}>has</button>{{/if}}'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:root',
+        setComponentTemplate(this.compile('<XChild @onClick={{fn this.handler 1}} />'), Root)
+      );
+
+      this.render('<Root />');
+      this.assertText('has');
+      assert.deepEqual(reads, [], 'the callback is not read before the call');
+
+      runTask(() => (this.element.querySelector('button') as HTMLButtonElement).click());
+      assert.deepEqual(calls, [1], 'the call reaches the callback');
+      assert.deepEqual(reads, ['handler'], 'the call reads the callback');
+    }
+  }
+);

@@ -1841,6 +1841,8 @@ _gxtRegisterHostHooks({
 // context within the callback" test). buildUntouchableThis encodes exactly
 // that mode split.
 const _fnHelperThis = buildUntouchableThis('`fn` helper');
+// The callback an `(fn)` call site binds through a getter (`$__fn_ember`).
+const _fnGetterCallback = Object.freeze({});
 {
   const g = globalThis as any;
   const originalFn = g.$__fn;
@@ -1854,41 +1856,16 @@ const _fnHelperThis = buildUntouchableThis('`fn` helper');
           fn(...resolvePartials(), ...callArgs)
         );
       }
-      // The callback this call binds, as far as it is known now: what a
-      // 0-arg getter resolves to, else the function itself.
-      let target: unknown = fn;
-      // Also check if the first arg is a function that, when called, returns a mut cell
-      // GXT wraps helper results in getters. ONLY probe 0-arg functions — a
-      // function with declared parameters (like `handleClick = (v) => {}`) is a
-      // direct handler, NOT a GXT-generated getter; probing would fire side
-      // effects (e.g. test assertions) at install time, causing double-invoke
-      // in {{on "click" (fn handleClick 123)}}. Getters are always 0-arg arrows.
-      if (
-        typeof fn === 'function' &&
-        !fn.__isMutCell &&
-        !fn.prototype &&
-        !fn.__isFnHelper &&
-        fn.length === 0
-      ) {
-        let fnResult: any;
-        try {
-          fnResult = fn();
-        } catch (error) {
-          // Glimmer reads the callback only when the helper's function is
-          // called: the call resolves the getter again and throws there.
-          _gxtReportDroppedRead("The `fn` helper's callback", error);
-          fnResult = fn;
-        }
-        if (fnResult && fnResult.__isMutCell) {
-          return createFnHelperValue(fnResult, (...callArgs: any[]) => {
-            const resolvedArgs = resolvePartials();
-            // Re-evaluate the getter to get the current mut cell
-            const currentMut = fn();
-            return currentMut(...resolvedArgs, ...callArgs);
-          });
-        }
-        target = fnResult;
-      }
+      // The callback this call binds, as far as it is known without reading
+      // it: the function itself, or, for a 0-arg getter (the compiled
+      // `() => this.x`; a function with declared parameters is a direct
+      // handler), `_fnGetterCallback`: Glimmer reads the callback when the
+      // function is called, and the function of a call site stays the same
+      // while it is re-evaluated (`keepArgValue`).
+      const target: unknown =
+        typeof fn === 'function' && !fn.prototype && !fn.__isFnHelper && fn.length === 0
+          ? _fnGetterCallback
+          : fn;
       // Create a partially-applied function that resolves all getters at call time.
       // The fn arg may be a getter (arrow fn wrapping this.X) — we wrapped it
       // in compile.ts to support reactive function swaps.
