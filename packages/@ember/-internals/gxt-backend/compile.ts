@@ -3069,11 +3069,12 @@ function _drainCascadeQueue(): void {
     // where `_arrayOwnerMap` retains stale {obj, key} from afterEach-nulled
     // controllers).
     if (!_isOwnerAlive(obj)) continue;
+    // What an entry throws (a classic component's binding read) is the sync's
+    // error; the rest of the queue still drains.
     try {
       _gxtWithInTriggerReRender(() => _gxtTriggerReRenderDeferred(obj, keyName));
     } catch (drainErr) {
-      // Surface drain errors rather than swallowing them.
-      console.warn('[gxt] Phase 2b drain entry failed', { keyName, drainErr });
+      _gxtDeferSyncError(drainErr);
     }
   }
   if (i >= _MAX_DRAIN) {
@@ -4967,7 +4968,8 @@ function _gxtTriggerReRenderDeferred(obj: object, keyName: string): void {
     if (typeof watcher === 'function') watcher();
   }
   // Sync wrapper element if the object has attribute/class bindings. What
-  // a binding's read throws reaches `_drainCascadeQueue`, which reports it.
+  // a binding's read throws reaches `_drainCascadeQueue`, which keeps it as the
+  // sync's error.
   getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
 }
 

@@ -11,6 +11,7 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import EmberObject, { computed, set } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
+import Component from '@ember/component';
 
 const BoomClass = EmberObject.extend({
   init() {
@@ -85,6 +86,41 @@ moduleFor(
       assert.throws(() => {
         runTask(() => set(this.context, 'value', BoomProxy.create({ content: {} })));
       }, /the truthiness failed/);
+    }
+  }
+);
+
+moduleFor(
+  'GXT errors: attribute bindings of a classic component',
+  class extends RenderingTestCase {
+    ['@test what a bound property throws after a change reaches the run loop'](
+      assert: QUnit['assert']
+    ) {
+      let instance: FooBar | undefined;
+      class FooBar extends Component {
+        _title = 'ok';
+        get title(): string {
+          if (this._title === 'boom') throw new Error('the bound property failed');
+          return this._title;
+        }
+        set title(value: string) {
+          this._title = value;
+        }
+        init() {
+          super.init();
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          instance = this;
+        }
+      }
+      FooBar.reopen({ attributeBindings: ['title'] });
+      this.owner.register('component:foo-bar', FooBar);
+
+      this.render('{{foo-bar}}');
+      assert.strictEqual(this.$('div').attr('title'), 'ok');
+
+      assert.throws(() => {
+        runTask(() => set(instance!, 'title', 'boom'));
+      }, /the bound property failed/);
     }
   }
 );
