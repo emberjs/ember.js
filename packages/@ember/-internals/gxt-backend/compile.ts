@@ -9622,9 +9622,10 @@ function _gxtTagFastPathEligible(tag: unknown, tagProps: any): boolean {
 
 // The getter of a bound `style` attribute, as Glimmer's style attribute
 // manager sets it: a SafeString is its HTML, no warning needed; null,
-// undefined, false and '' remove the attribute (null, which the post-render
-// step cleans up); any other value is set as it is, with the style-binding XSS
-// warning, once per render pass of the binding.
+// undefined, false and '' remove the attribute (null, which gxt removes);
+// any other value is set as it is, with the style-binding XSS warning, once
+// per render pass of the binding. gxt writes the text as the style attribute,
+// as Glimmer's normalizeProperty maps `style` to an attribute.
 function _gxtStyleBindingGuard(origGetter: () => any): () => any {
   // Track whether we've warned for this style binding in this render pass
   // to avoid duplicate warnings from reactive re-evaluations.
@@ -11404,10 +11405,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
     );
-    // Fix: GXT uses element.style = value (prop assignment) which sets
-    // style.cssText. When value is "" or null, this leaves style="" on the element.
-    // Ember expects the style attribute to be removed entirely for empty values.
-    // Intercept by wrapping the style prop getter to never return empty string.
+    // A bound `style` of the element, which gets the style guard below
+    // (`_gxtStyleBindingGuard`).
     let hasReactiveStyle = false;
     let styleEntryRef: any[] | null = null;
     if (tagProps && tagProps !== g.$_edp) {
@@ -11513,7 +11512,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (!/^\d+$/.test(key)) guardedFw[key] = fw[key];
         }
         tagProps = [tagProps[0], tagProps[1], tagProps[2], guardedFw];
-        hasReactiveStyle = true;
       }
     }
 
@@ -11898,27 +11896,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
         }
       }
-    }
-
-    // After GXT renders, the element may have style="" from null→"" conversion.
-    // GXT's prop handler does: el.style = (null === s ? "" : s)
-    // When our getter returns null, GXT converts to "" and sets el.style = "".
-    // Clean up: remove style attr if it's empty, and watch for future changes.
-    if (hasReactiveStyle && result instanceof HTMLElement) {
-      const el = result;
-      // Initial cleanup
-      if (el.getAttribute('style') === '') {
-        el.removeAttribute('style');
-      }
-      // Watch for future empty style via MutationObserver
-      const observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          if (m.attributeName === 'style' && el.getAttribute('style') === '') {
-            el.removeAttribute('style');
-          }
-        }
-      });
-      observer.observe(el, { attributes: true, attributeFilter: ['style'] });
     }
 
     return result;

@@ -19,12 +19,15 @@
  *   its definition is the same, so the modifier updates only when an argument
  *   changes, and a `(modifier)` of a missing definition is no modifier;
  * - the text of an element whose content is one mustache updates in its text
- *   node.
+ *   node;
+ * - a bound `style` is the text of the style attribute, set as it is (not
+ *   re-serialized through the element's `style` property).
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { set } from '@ember/object';
+import { htmlSafe } from '@ember/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
@@ -276,6 +279,21 @@ moduleFor(
         text,
         'the text node is kept'
       );
+    }
+
+    ['@test a bound style is set as its text and removed with its value']() {
+      this.render('<div style={{this.style}}></div>', { style: htmlSafe('display:flex') });
+      let div = this.element.querySelector('div')!;
+      this.assert.strictEqual(div.getAttribute('style'), 'display:flex');
+
+      runTask(() => set(this.context, 'style', htmlSafe('color:red')));
+      this.assert.strictEqual(div.getAttribute('style'), 'color:red');
+
+      runTask(() => set(this.context, 'style', null));
+      this.assert.false(div.hasAttribute('style'), 'null removes the attribute');
+
+      runTask(() => set(this.context, 'style', htmlSafe('width:1px')));
+      this.assert.strictEqual(div.getAttribute('style'), 'width:1px');
     }
   }
 );
