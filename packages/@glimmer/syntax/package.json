@@ -52,8 +52,8 @@
   },
   "release-plan": {
     "files": [
-      "!test",
-      "!.npmignore"
+      "index.ts",
+      "lib/**"
     ]
   }
 }

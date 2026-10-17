@@ -54,7 +54,8 @@
   },
   "release-plan": {
     "files": [
-      "!tsconfig.json"
+      "src/**",
+      "addon-main.cjs"
     ]
   }
 }
