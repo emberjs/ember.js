@@ -131,8 +131,8 @@ moduleFor(
       this.add(
         'route:parent.index',
         class extends Route {
-          init() {
-            super.init();
+          constructor(owner) {
+            super(owner);
             set(this._router, 'rootURL', '/homepage');
           }
         }

@@ -3,6 +3,7 @@ import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import { destroy } from '@ember/destroyable';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
@@ -111,7 +112,7 @@ moduleFor(
       runTask(() => router.destroy());
       assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
-      runTask(() => route.destroy());
+      runTask(() => destroy(route));
       assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
 
       runTask(() => this.application.destroy());

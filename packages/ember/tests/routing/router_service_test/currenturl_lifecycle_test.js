@@ -15,8 +15,8 @@ let InstrumentedRoute = class extends Route {
   @service('router')
   routerService;
 
-  init() {
-    super.init(...arguments);
+  constructor(owner) {
+    super(owner);
     let service = get(this, 'routerService');
     service.on('routeWillChange', (transition) => {
       results.push([
