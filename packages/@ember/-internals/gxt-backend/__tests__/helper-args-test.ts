@@ -640,6 +640,31 @@ moduleFor(
       assert.strictEqual(calls, 2, 'each call site calls the function once');
     }
 
+    ['@test sibling calls of a plain function helper with no arguments get their own values'](
+      assert: QUnit['assert']
+    ) {
+      let calls = 0;
+      let next = () => `id-${++calls}`;
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<p>{{(next)}}</p><p>{{(next)}}</p>{{@other}}', {
+            strictMode: true,
+            scope: () => ({ next }),
+          }),
+          templateOnly()
+        )
+      );
+
+      this.render('<Bar @other={{this.other}} />', { other: 'x' });
+      this.assertText('id-1id-2x');
+      assert.strictEqual(calls, 2, 'each call site calls the function once');
+
+      runTask(() => set(this.context, 'other', 'y'));
+      this.assertText('id-1id-2y');
+      assert.strictEqual(calls, 2, 'an unrelated change keeps both values');
+    }
+
     ['@test a plain function helper reads a named argument when it uses it'](
       assert: QUnit['assert']
     ) {
