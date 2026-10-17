@@ -5,6 +5,7 @@ import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { Resolver } from '@ember/-internals/owner';
 import Namespace from '@ember/application/namespace';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module @ember/debug/container-debug-adapter
@@ -107,3 +108,5 @@ export default class ContainerDebugAdapter extends EmberObject {
     return types;
   }
 }
+
+setFrameworkClass(ContainerDebugAdapter);

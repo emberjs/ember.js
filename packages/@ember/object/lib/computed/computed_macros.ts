@@ -16,6 +16,12 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 */
 
 export function deprecateComputedMacro(name: string) {
+  if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    throw new Error(
+      `\`${name}\` from \`@ember/object/computed\` is not available, because the \`EMBER_DROP_CLASSIC_FEATURES\` build flag is set. Use a getter instead.`
+    );
+  }
+
   deprecateUntil(
     `\`${name}\` from \`@ember/object/computed\` is deprecated. Use a getter instead.`,
     DEPRECATIONS.DEPRECATE_COMPUTED_MACROS

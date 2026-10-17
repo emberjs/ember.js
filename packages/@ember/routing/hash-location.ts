@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module @ember/routing/hash-location
@@ -170,3 +171,5 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     }
   }
 }
+
+setFrameworkClass(HashLocation);

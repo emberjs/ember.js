@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
  @module @ember/test
@@ -57,5 +58,7 @@ const Adapter = EmberObject.extend({
     throw error;
   },
 });
+
+setFrameworkClass(Adapter);
 
 export default Adapter;

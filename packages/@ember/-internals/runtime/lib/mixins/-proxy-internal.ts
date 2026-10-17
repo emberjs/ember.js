@@ -78,7 +78,7 @@ const InternalProxyMixin = /*@__PURE__*/ InternalMixin.create({
   },
 
   willDestroy() {
-    this.set('content', null);
+    set(this, 'content', null);
     this._super(...arguments);
   },
 
