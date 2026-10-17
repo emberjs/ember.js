@@ -1,5 +1,54 @@
 # Ember Changelog
 
+## Release (2026-10-17)
+
+* @glimmer/component 2.2.0 (minor)
+* @glimmer/syntax 0.96.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#21641](https://github.com/emberjs/ember.js/pull/21641) Cleanup: remove action keyword handling ([@ef4](https://github.com/ef4))
+  * [#21560](https://github.com/emberjs/ember.js/pull/21560) Correct dependency declarations for `@glimmer/syntax` so that it can be published ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21321](https://github.com/emberjs/ember.js/pull/21321) Perf: avoid array spread in PathExpression.original getter ([@johanrd](https://github.com/johanrd))
+  * [#21320](https://github.com/emberjs/ember.js/pull/21320) [CLEANUP] Rename localAssert → assert, enable babel-plugin-debug-macros stripping ([@johanrd](https://github.com/johanrd))
+  * [#21318](https://github.com/emberjs/ember.js/pull/21318) Perf: Eliminate double normalization of params in callParts ([@johanrd](https://github.com/johanrd))
+  * [#21314](https://github.com/emberjs/ember.js/pull/21314) Perf: cache newline offsets in Source for O(log n) loc conversion ([@johanrd](https://github.com/johanrd))
+  * [#21232](https://github.com/emberjs/ember.js/pull/21232) Clean up scope bag, wire format, and debug render tree ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21069](https://github.com/emberjs/ember.js/pull/21069) Internalize @handlebars/parser ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#20908](https://github.com/emberjs/ember.js/pull/20908) Internalize the glimmer-vm repo ([@ef4](https://github.com/ef4))
+* `@glimmer/component`
+  * [#21575](https://github.com/emberjs/ember.js/pull/21575) Manage destruction with symbol-properties, rather than weakmap ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21561](https://github.com/emberjs/ember.js/pull/21561) Update @glimmer/component's package.json to declare type=module ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21558](https://github.com/emberjs/ember.js/pull/21558) Prepare `@glimmer/component` for being published and remove `@glimmer/env`, using export conditions for dev and prod ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#21635](https://github.com/emberjs/ember.js/pull/21635) [BUGFIX] parser crashes and mis-parsed HTML comments and closing tags ([@ef4](https://github.com/ef4))
+  * [#21188](https://github.com/emberjs/ember.js/pull/21188) Get @glimmer/syntax publishable again and get some smoke tests going for prettier ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21562](https://github.com/emberjs/ember.js/pull/21562) correct repository meta for @glimmer/component and @glimmer/syntax ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :memo: Documentation
+* `@glimmer/component`
+  * [#21547](https://github.com/emberjs/ember.js/pull/21547) [DOC release] Display newly added keywords and organize template helpers into one module ([@kategengler](https://github.com/kategengler))
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21468](https://github.com/emberjs/ember.js/pull/21468) Update some API docs to use template tag where appropriate ([@kategengler](https://github.com/kategengler))
+
+#### :house: Internal
+* `@glimmer/syntax`
+  * [#21381](https://github.com/emberjs/ember.js/pull/21381) Update linting deps ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21320](https://github.com/emberjs/ember.js/pull/21320) [CLEANUP] Rename localAssert → assert, enable babel-plugin-debug-macros stripping ([@johanrd](https://github.com/johanrd))
+  * [#21317](https://github.com/emberjs/ember.js/pull/21317) Add tests for parser escape-sequence and error-case contract ([@johanrd](https://github.com/johanrd))
+  * [#21070](https://github.com/emberjs/ember.js/pull/21070) Upgrade embroider deps (inc rollup) from #21068 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21350](https://github.com/emberjs/ember.js/pull/21350) Remove barrel file imports from internal code for better tree-shaking ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 4
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Johan Røed ([@johanrd](https://github.com/johanrd))
+- Katie Gengler ([@kategengler](https://github.com/kategengler))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v7.4.0-beta.2 (October 13, 2026)
 
 - [#21619](https://github.com/emberjs/ember.js/pull/21619) [BUGFIX] Type overload for one of the new tracked forms was not appropriately allowing the equality options
