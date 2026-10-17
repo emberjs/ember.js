@@ -178,6 +178,14 @@
     "ignore": true,
     "renameCommitters": {
       "NullVoxPopuli-ai-agent": "NullVoxPopuli"
+    },
+    "labels": {
+      "breaking": ":boom: Breaking Change",
+      "enhancement": ":rocket: Enhancement",
+      "bug": ":bug: Bug Fix",
+      "bugfix": ":bug: Bug Fix",
+      "documentation": ":memo: Documentation",
+      "internal": ":house: Internal"
     }
   },
   "pnpm": {
