@@ -1007,8 +1007,13 @@ function renderReactiveHtml(getHtml: () => any): DocumentFragment {
 }
 
 // Render `comp` through the Ember component manager; `handle` returns either
-// the rendered nodes or a thunk producing them.
+// the rendered nodes or a thunk producing them. `namedArgs` are the arguments
+// of one invocation: it is the invocation the component instance belongs to
+// (manager.ts `getCachedOrCreateInstance`), as a `$_tag` invocation's thunk id.
 function handleEmberComponent(managers: any, comp: any, namedArgs: any, fw: any, ctx: any): any {
+  if (namedArgs !== null && typeof namedArgs === 'object' && !('__thunkId' in namedArgs)) {
+    _setInternalProp(namedArgs, '__thunkId', Symbol('component invocation'));
+  }
   return _gxtRenderInvokedIn(ctx, () => {
     const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
     return typeof handleResult === 'function' ? handleResult() : handleResult;

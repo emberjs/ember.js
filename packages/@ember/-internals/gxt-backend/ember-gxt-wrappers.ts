@@ -2109,11 +2109,16 @@ function createEmberDc(original: Function) {
     return [];
   }
 
+  // Renders the component of `componentValue` for the invocation `invocation`
+  // (see `followDefinition`); `captureInstance` receives the Ember component
+  // instance the render creates.
   function renderComponent(
     componentValue: any,
     gxtArgs: any,
     ctx: any,
-    allowPositionalParams = false
+    allowPositionalParams: boolean,
+    invocation: symbol,
+    captureInstance: (instance: any) => void
   ): any {
     if (typeof componentValue === 'string') {
       const stringError = dcStringDefinitionError(componentValue, gxtArgs);
@@ -2156,19 +2161,25 @@ function createEmberDc(original: Function) {
         });
       }
     }
-    // Propagate the per-render dc-capture callback (stashed by $_dc_ember) onto
-    // mergedArgs so renderClassicComponent / renderGlimmerComponent can fire it
-    // when the Ember instance is created. Stored as a non-enumerable own property
-    // so extractArgsAndSlots' enumerable-key copy doesn't reach it on either side.
-    const _dcCap = gxtArgs && (gxtArgs as any).__gxtDcCapture;
-    if (typeof _dcCap === 'function') {
-      Object.defineProperty(mergedArgs, '__gxtDcCapture', {
-        value: _dcCap,
-        configurable: true,
-        enumerable: false,
-        writable: true,
-      });
-    }
+    // The per-render dc-capture callback: renderClassicComponent /
+    // renderGlimmerComponent fire it when the Ember instance is created. A
+    // non-enumerable own property of these arguments, which only this render
+    // reads (not of the invocation's arguments: gxt's arguments proxy calls a
+    // function it reads from them).
+    Object.defineProperty(mergedArgs, '__gxtDcCapture', {
+      value: captureInstance,
+      configurable: true,
+      enumerable: false,
+      writable: true,
+    });
+    // The invocation the component instance belongs to (manager.ts
+    // `getCachedOrCreateInstance`), as a `$_tag` invocation's thunk id.
+    Object.defineProperty(mergedArgs, '__thunkId', {
+      value: invocation,
+      configurable: true,
+      enumerable: false,
+      writable: true,
+    });
     const handleResult = managers.component.handle(componentValue, mergedArgs, __fw, ctx);
     if (typeof handleResult === 'function') {
       return handleResult();
@@ -2183,17 +2194,16 @@ function createEmberDc(original: Function) {
   // definition. The component getter is the current dc getter while it
   // renders (a curried component's arguments read the latest curried value
   // through it), and `captureInstance` receives the Ember component instance
-  // the render creates (renderComponent passes `__gxtDcCapture` on to
-  // renderClassicComponent / renderGlimmerComponent). Its lifetime is this
-  // render: it is a non-enumerable property of the arguments only while it
-  // runs.
+  // the render creates (renderComponent passes it on to renderClassicComponent
+  // / renderGlimmerComponent as `__gxtDcCapture`).
   function renderDcValue(
     value: any,
     kind: DcKind,
     componentGetter: any,
     gxtArgs: any,
     ctx: any,
-    captureInstance: (instance: any) => void
+    captureInstance: (instance: any) => void,
+    invocation: symbol
   ): any {
     if (kind === 'empty') return null;
     if (kind === 'string') {
@@ -2211,22 +2221,19 @@ function createEmberDc(original: Function) {
     // arguments to the component's `positionalParams` (after the curried
     // ones, see manager.ts `handle`).
     const allowPositionalParams = kind !== 'definition';
-    const hasArgs = gxtArgs !== null && typeof gxtArgs === 'object';
     const prevDcGetter = getDcComponentGetter();
     setDcComponentGetter(componentGetter);
-    if (hasArgs) {
-      Object.defineProperty(gxtArgs, '__gxtDcCapture', {
-        value: captureInstance,
-        configurable: true,
-        enumerable: false,
-        writable: true,
-      });
-    }
     try {
-      return renderComponent(value, gxtArgs, ctx, allowPositionalParams);
+      return renderComponent(
+        value,
+        gxtArgs,
+        ctx,
+        allowPositionalParams,
+        invocation,
+        captureInstance
+      );
     } finally {
       setDcComponentGetter(prevDcGetter);
-      if (hasArgs) delete gxtArgs.__gxtDcCapture;
     }
   }
 
@@ -2282,6 +2289,10 @@ function createEmberDc(original: Function) {
     const captureInstance = (created: any) => {
       instance = created;
     };
+    // The invocation: what it renders is its own, as Glimmer creates a
+    // component instance per invocation; another invocation of the component
+    // never takes its instance.
+    const invocation = Symbol('dynamic component');
     // The current content is a block created in the block the invocation is
     // in: the components with a custom manager it renders are destroyed when
     // it is replaced, or with that block (manager.ts `gxtRenderInBlock`).
@@ -2292,7 +2303,7 @@ function createEmberDc(original: Function) {
     let contentBlock: object = {};
     const renderContent = (value: any): any => {
       const render = () =>
-        renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance);
+        renderDcValue(value, kind, componentGetter, gxtArgs, ctx, captureInstance, invocation);
       return gxtWithDebugParent(debugParentOfDc, () =>
         destruction?.renderInBlock
           ? destruction.renderInBlock(contentBlock, blockOfDc, render)
