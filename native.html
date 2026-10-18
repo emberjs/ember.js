@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ember.js — gxt native</title>
+  </head>
+  <body>
+    <!--
+      Test page for the gxt NATIVE layer. Serve with
+        EMBER_RENDER_BACKEND=gxt-native npx vite --port 5181 --strictPort --force
+      and run
+        node scripts/gxt-test-runner/runner.mjs --url http://localhost:5181/native.html --full
+      Test modules come from scripts/gxt-test-runner/native-modules.json; tests
+      listed in native-skip.json run as QUnit.skip.
+    -->
+    <script type="module">
+      // By package name, as in the tests (and index.html). The dev server then
+      // gives this page and the tests the same copy of QUnit.
+      import 'qunit';
+      import 'qunit/qunit/qunit.css';
+
+      // Modules are imported asynchronously below; start once all registered.
+      QUnit.config.autostart = false;
+      QUnit.config.testTimeout = 10000;
+
+      window.EmberENV = {
+        // Same as the classic suite (index.html: `!__GXT_MODE__`).
+        _DEFAULT_ASYNC_OBSERVERS: true,
+        RAISE_ON_DEPRECATION: QUnit.urlParams.RAISE_ON_DEPRECATION
+          ? QUnit.urlParams.RAISE_ON_DEPRECATION === 'true'
+          : true,
+      };
+      if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
+        EmberENV.ENABLE_OPTIONAL_FEATURES = true;
+      }
+      if (QUnit.urlParams.ALL_DEPRECATIONS_ENABLED) {
+        EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
+      }
+      if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
+        EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
+      }
+    </script>
+    <script type="module">
+      import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
+      import setupTestHelpers from './packages/internal-test-helpers/lib/ember-dev/setup-test-helpers.js';
+      import { setTesting } from './packages/@ember/debug/index.ts';
+      import { modules, skips } from 'virtual:gxt-native-tests';
+
+      setupQUnit();
+      setupTestHelpers();
+      setTesting(true);
+
+      // native-skip.json: "<module> :: <test>" -> reason. Installed before any
+      // test module evaluates (they capture QUnit.test at import time).
+      const originalTest = QUnit.test;
+      const skippingTest = function (name, ...rest) {
+        const moduleName = QUnit.config.currentModule && QUnit.config.currentModule.name;
+        if (Object.prototype.hasOwnProperty.call(skips, `${moduleName} :: ${name}`)) {
+          return QUnit.skip(name, ...rest);
+        }
+        return originalTest.call(this, name, ...rest);
+      };
+      Object.assign(skippingTest, originalTest);
+      QUnit.test = skippingTest;
+
+      const paths = Object.keys(modules).sort();
+      const results = await Promise.allSettled(paths.map((path) => modules[path]()));
+      results.forEach((result, i) => {
+        if (result.status === 'rejected') {
+          // A module that fails to load must be loud: register a failing test
+          // under its path so the runner reports it instead of dropping it.
+          console.error(`[native.html] failed to load ${paths[i]}`, result.reason);
+          QUnit.module(`native.html: load ${paths[i]}`);
+          originalTest('module loads', (assert) => {
+            assert.ok(false, String(result.reason && (result.reason.stack || result.reason)));
+          });
+        }
+      });
+      QUnit.start();
+    </script>
+
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+  </body>
+</html>

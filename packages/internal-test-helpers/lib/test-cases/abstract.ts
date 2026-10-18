@@ -3,29 +3,16 @@
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
-import { assertInvariants, getElement, takeSnapshot } from '../element-helpers';
+import { assertInvariants, getElement, isMarker, takeSnapshot } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
 import { runLoopSettled } from '../run';
 import { assert } from '@ember/debug';
 import { rerenderComponent } from '../component-helper';
 import { _resetRenderers, renderSettled } from '@ember/-internals/glimmer';
 import { destroy } from '@glimmer/destroyable';
+import { gxtHarness } from '../gxt-harness';
 
-const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
-const Comment = window.Comment;
-
-function isMarker(node: unknown): node is Comment | typeof TextNode {
-  if (node instanceof Comment && node.textContent === '') {
-    return true;
-  }
-
-  if (node instanceof TextNode && node.textContent === '') {
-    return true;
-  }
-
-  return false;
-}
 
 export type TestCase = AbstractStrictTestCase | AbstractTestCase;
 
@@ -47,10 +34,22 @@ export abstract class AbstractStrictTestCase {
 
   async afterEach() {
     try {
+      if (__GXT_MODE__) {
+        gxtHarness!.cleanupActiveComponents();
+      }
+
       destroy(this);
       await renderSettled();
+
+      if (__GXT_MODE__) {
+        gxtHarness!.teardownModifiers();
+      }
     } finally {
       _resetRenderers();
+      if (__GXT_MODE__) {
+        gxtHarness!.resetSyncFlags();
+        gxtHarness!.clearRenderErrors();
+      }
     }
   }
 
