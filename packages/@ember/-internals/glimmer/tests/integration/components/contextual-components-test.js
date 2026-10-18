@@ -1396,6 +1396,44 @@ moduleFor(
 
       this.assertText('true');
     }
+
+    ['@test a {{component}} mustache passed as an argument is a curried component']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{@greeting}} {{@name}}'),
+          class extends Component {}
+        )
+      );
+
+      this.owner.register(
+        'component:receiver',
+        setComponentTemplate(
+          precompileTemplate(
+            '[<@comp @name="world" />][{{component @comp name="you"}}][<@comp @greeting="Hi" @name="all" />]'
+          ),
+          class extends Component {}
+        )
+      );
+
+      this.render('<Receiver @comp={{component "-looked-up" greeting=this.greeting}} />', {
+        greeting: 'Hello',
+      });
+
+      this.assertText('[Hello world][Hello you][Hi all]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Hello world][Hello you][Hi all]');
+
+      runTask(() => this.context.set('greeting', 'Hola'));
+
+      this.assertText('[Hola world][Hola you][Hi all]');
+
+      runTask(() => this.context.set('greeting', 'Hello'));
+
+      this.assertText('[Hello world][Hello you][Hi all]');
+    }
   }
 );
 
