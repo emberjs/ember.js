@@ -3,6 +3,7 @@ import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-se
 import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -51,6 +52,12 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     `The key provided to set must be a string or number, you passed ${keyName}`,
     typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
+
+  // GXT: normalize numeric keys to strings for consistent downstream handling.
+  if (__GXT_MODE__ && typeof keyName === 'number') {
+    keyName = String(keyName);
+  }
+
   assert(
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
@@ -62,6 +69,15 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
       tolerant
     );
     return value;
+  }
+
+  if (__GXT_MODE__ && DEBUG) {
+    const result = isPath(keyName)
+      ? _setPath(obj, keyName, value, tolerant)
+      : _setProp(obj, keyName, value);
+    // GXT backtracking detection: check AFTER set so toString() reflects the new value.
+    getGxtRenderer()?.backtracking.checkBacktracking?.(obj, keyName);
+    return result;
   }
 
   return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
@@ -98,7 +114,11 @@ export function _setProp(obj: object, keyName: string, value: any) {
     }
 
     if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName);
+      if (__GXT_MODE__) {
+        // Forward `value` so the GXT trigger can update the property's cell
+        // synchronously without re-reading `obj[keyName]`.
+        notifyPropertyChange(obj, keyName, null, value);
+      } else notifyPropertyChange(obj, keyName);
     }
   }
 
@@ -114,6 +134,18 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
+    if (__GXT_MODE__) {
+      const result = set(newRoot, keyName, value);
+      // GXT integration: also notify the root object about the full path change.
+      // When set(component, 'model.lookupComponent', val) is called, _setPath resolves
+      // to set(model, 'lookupComponent', val) which only notifies on the leaf object.
+      // But GXT templates track `this.model` (cell on the component), so we need to
+      // dirty the root property cell too.
+      if (newRoot !== root) {
+        notifyPropertyChange(root, path);
+      }
+      return result;
+    }
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
     throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);

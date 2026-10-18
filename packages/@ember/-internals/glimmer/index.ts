@@ -111,7 +111,43 @@
  @public
  */
 
-export { default as template, templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
+import _templateFactory, { templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
+export { templateCacheCounters };
+
+// `compileTemplate` and `instrumentFactory` are contributed to the bridge by
+// gxt-backend. Classic builds never load gxt-backend, and the GXT branch below
+// is dropped under `__GXT_MODE__ = false`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+
+// GXT-aware `template`. In GXT mode `precompile()` emits a marker
+// `{ __gxtTemplate, source, moduleName }` instead of a Glimmer block spec,
+// which the classic `templateFactory` cannot read. Compile such markers with
+// the GXT runtime compiler and wrap them with the same cache-counter
+// instrumentation that `compile()` uses. Classic builds export
+// `templateFactory` itself.
+function gxtTemplate(spec: unknown): ReturnType<typeof _templateFactory> {
+  if (spec && typeof spec === 'object') {
+    const anySpec = spec as Record<string, unknown>;
+    if (anySpec['__gxtTemplate'] === true) {
+      const cp = getGxtRenderer()?.compilePipeline;
+      const gxtCompile = cp?.compileTemplate;
+      const instrument = cp?.instrumentFactory;
+      const source = anySpec['source'];
+      const moduleName = anySpec['moduleName'];
+      if (typeof gxtCompile === 'function' && typeof source === 'string') {
+        const factory = gxtCompile(source, { moduleName });
+        const out =
+          typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
+        return out as ReturnType<typeof _templateFactory>;
+      }
+    }
+  }
+  return _templateFactory(spec as Parameters<typeof _templateFactory>[0]);
+}
+const template: typeof _templateFactory = __GXT_MODE__
+  ? (gxtTemplate as typeof _templateFactory)
+  : _templateFactory;
+export { template };
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

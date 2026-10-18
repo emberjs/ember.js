@@ -19,7 +19,7 @@ import { IS_CLASSIC_HELPER } from './helper-brand';
 
 export { isClassicHelper } from './helper-brand';
 
-const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
+export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
