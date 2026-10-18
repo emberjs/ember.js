@@ -536,6 +536,54 @@ moduleFor(
       assert.equal(updateCount, 1);
     }
 
+    '@test each use of a modifier on one element is its own instance'(assert) {
+      let destroyed = [];
+
+      let ModifierClass = setModifierManager(
+        (owner) => {
+          return new this.CustomModifierManager(owner);
+        },
+        class extends EmberObject {
+          didInsertElement() {}
+          didUpdate() {}
+          willDestroyElement() {}
+        }
+      );
+
+      this.registerModifier(
+        'foo-bar',
+        class extends ModifierClass {
+          didInsertElement([name, value]) {
+            this.name = name;
+            assert.step(`insert ${name} ${value}`);
+          }
+
+          didUpdate([name, value]) {
+            assert.step(`update ${name} ${value}`);
+          }
+
+          willDestroyElement() {
+            destroyed.push(this.name);
+          }
+        }
+      );
+
+      this.render(
+        '{{#if this.show}}<h1 {{foo-bar "one" this.one}} {{foo-bar "two" this.two}}>hello world</h1>{{/if}}',
+        { show: true, one: 1, two: 1 }
+      );
+      assert.verifySteps(['insert one 1', 'insert two 1']);
+
+      runTask(() => set(this.context, 'two', 2));
+      assert.verifySteps(['update two 2']);
+
+      runTask(() => set(this.context, 'one', 2));
+      assert.verifySteps(['update one 2']);
+
+      runTask(() => set(this.context, 'show', false));
+      assert.deepEqual(destroyed.sort(), ['one', 'two'], 'both instances are destroyed');
+    }
+
     '@test modifers only track named arguments they consume'(assert) {
       let insertCount = 0;
       let updateCount = 0;

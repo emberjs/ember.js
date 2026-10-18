@@ -28,6 +28,7 @@ import templateOnlyComponent from '@ember/component/template-only';
 import {
   createTemplate,
   defineSimpleModifier,
+  isGxtMarkerNode,
   JitRenderDelegate,
   RenderTest,
   suite,
@@ -816,7 +817,14 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   nodeBounds(_node: SimpleNode | null): CapturedBounds {
-    let node = expect(_node, 'BUG: Expected node');
+    // Under GXT an `{{#if}}` block's content is followed by the block's anchor
+    // comment (see `isGxtMarkerNode`), so the last node of an element can be
+    // that comment: the node rendered last is the one before it.
+    let last = _node;
+    while (last !== null && isGxtMarkerNode(last)) {
+      last = last.previousSibling;
+    }
+    let node = expect(last, 'BUG: Expected node');
 
     return {
       parentElement: expect(
