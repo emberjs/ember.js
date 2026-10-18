@@ -5,6 +5,7 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import templateFactory from '@glimmer/opcode-compiler/lib/template';
 import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type ComponentClass = abstract new (...args: any[]) => object;
 
@@ -237,6 +238,21 @@ export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
+  // In GXT mode, use the GXT runtime compiler instead of Glimmer compiler.
+  // This branch always returns or throws: a wire-format template cannot render
+  // without the Glimmer VM, so GXT mode has no Glimmer-compiler fallback (and
+  // the GXT rollup dist stubs @glimmer/compiler out — GXT_DIST_VM_STUBS).
+  if (__GXT_MODE__) {
+    // gxt-backend's template-function.ts compiles it (installed by compile.ts).
+    const gxtTemplate = getGxtRenderer()?.compilePipeline.template;
+    if (gxtTemplate) {
+      return gxtTemplate(templateString, providedOptions);
+    }
+    throw new Error(
+      'template(): the GXT template compile pipeline is not installed (@ember/-internals/gxt-backend/compile.ts has not loaded)'
+    );
+  }
+
   const options = { strictMode: true, ...providedOptions };
 
   const evaluate = buildEvaluator(options);
