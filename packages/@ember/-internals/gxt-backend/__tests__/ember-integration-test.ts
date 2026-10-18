@@ -1,0 +1,290 @@
+/**
+ * Ember Integration Tests for GXT
+ *
+ * GXT rendering-integration tests built on the Ember test infrastructure.
+ */
+
+// Import test infrastructure
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+
+// GXT-only suites: skip registration entirely under the classic VM backend
+// (these verify gxt-backend rendering integration; the machinery is
+// intentionally inert there). __GXT_MODE__ is inlined per build.
+declare const __GXT_MODE__: boolean;
+const gxtModuleFor: typeof moduleFor = __GXT_MODE__ ? moduleFor : ((() => {}) as any);
+
+import { set } from '@ember/object';
+import Component from '@ember/component';
+import { setComponentTemplate } from '@ember/component';
+
+/**
+ * Local replacement for the removed `RenderingTestCase#registerComponent`
+ * helper (commit 176b87e8e4 unified test infrastructure on
+ * `precompileTemplate`). These GXT integration tests still use the legacy
+ * runtime-compile registration API, so we restore it as a local mixin to
+ * avoid rewriting every test body. When no `ComponentClass` is supplied
+ * we default to the curly `Component` so the rendered output carries the
+ * standard `<div class="ember-view">` wrapper that `assertComponentElement`
+ * defaults to expecting (matches the legacy registerComponent behavior).
+ */
+class RegisterableRenderingTestCase extends RenderingTestCase {
+  registerComponent(
+    name: string,
+    options: { template?: string | null; ComponentClass?: any } = {}
+  ): void {
+    let { template = null } = options;
+    // Default ComponentClass to the curly `Component` so the rendered
+    // output gets the standard wrapping `<div class="ember-view">` element
+    // that `assertComponentElement` defaults to expecting. Callers that
+    // explicitly pass a class get exactly that class.
+    let ComponentClass = options.ComponentClass ?? Component;
+    let { owner } = this;
+
+    // Avoid re-setting a template on the shared base Component class.
+    if (ComponentClass === Component) {
+      ComponentClass = class extends Component {};
+    }
+    owner.register(`component:${name}`, ComponentClass);
+    if (typeof template === 'string') {
+      setComponentTemplate(this.compile(template), ComponentClass);
+    }
+  }
+}
+
+// Basic angle-bracket invocation tests
+gxtModuleFor(
+  'GXT Integration - AngleBracket Invocation',
+  class extends RegisterableRenderingTestCase {
+    '@test it can resolve <XBlah /> to x-blah'() {
+      this.registerComponent('x-blah', { template: 'hello' });
+
+      this.render('<XBlah />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+    }
+
+    '@test it can render a basic template only component'() {
+      this.registerComponent('foo-bar', { template: 'hello' });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+    }
+
+    '@test it can render a basic component with template and javascript'() {
+      this.registerComponent('foo-bar', {
+        template: 'FIZZ BAR {{this.local}}',
+        ComponentClass: class extends Component {
+          local = 'hey';
+        },
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'FIZZ BAR hey' });
+    }
+
+    '@test it can render a single word component name'() {
+      this.registerComponent('foo', { template: 'hello' });
+
+      this.render('<Foo />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+    }
+
+    '@test it can have a custom id and it is not bound'() {
+      this.registerComponent('foo-bar', { template: '[{{this.id}}] {{this.localId}}' });
+
+      this.render('<FooBar @localId={{this.id}} id="bizz" />', { id: 'bar' });
+
+      // The id attribute sets the element's id; it is not an argument, so
+      // `this.id` stays unset (as in Glimmer).
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: '[] bar',
+      });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: '[] bar',
+      });
+
+      runTask(() => set(this.context, 'id', 'qux'));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: '[] qux',
+      });
+    }
+
+    '@test it can render a self-closing component'() {
+      this.registerComponent('foo-bar', { template: 'hello' });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+    }
+
+    '@test it can render a component with block content'() {
+      this.registerComponent('foo-bar', { template: '{{yield}}' });
+
+      this.render('<FooBar>block content</FooBar>');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'block content' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'block content' });
+    }
+
+    '@test it can yield values from template'() {
+      this.registerComponent('foo-bar', { template: '{{yield "hello"}}' });
+
+      this.render('<FooBar as |value|>{{value}}</FooBar>');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello' });
+    }
+
+    '@test it can yield multiple values'() {
+      this.registerComponent('foo-bar', { template: '{{yield "hello" "world"}}' });
+
+      this.render('<FooBar as |greeting name|>{{greeting}} {{name}}</FooBar>');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello world' });
+    }
+
+    '@test it renders named blocks'() {
+      this.registerComponent('foo-bar', {
+        template: '<header>{{yield to="header"}}</header><main>{{yield}}</main>',
+      });
+
+      // The whitespace between named blocks is not rendered (Glimmer ignores
+      // it); the invocation is the whole template, so none is around it.
+      this.render(`<FooBar>
+          <:header>Header Content</:header>
+          <:default>Main Content</:default>
+        </FooBar>`);
+
+      this.assertText('Header ContentMain Content');
+    }
+
+    '@test the space between named blocks is not a default block'() {
+      this.registerComponent('foo-bar', {
+        template: '[{{yield to="header"}}][{{yield}}]',
+      });
+
+      this.render('<FooBar> <:header>A</:header> <:default>B</:default> </FooBar>');
+
+      this.assertText('[A][B]');
+    }
+
+    '@test it can use hasBlock'() {
+      this.registerComponent('foo-bar', {
+        template: '{{#if (has-block)}}has block{{else}}no block{{/if}}',
+      });
+
+      this.render('<FooBar>content</FooBar>');
+      this.assertText('has block');
+
+      // Note: Can't easily test without block in same test
+    }
+
+    '@test it can render curly component invocation in template'() {
+      // Test that {{foo-bar-baz}} curly syntax gets transformed to <foo-bar-baz />
+      this.registerComponent('foo-bar', { template: 'outer {{foo-bar-baz}}' });
+      this.registerComponent('foo-bar-baz', { template: 'inner' });
+
+      this.render('<FooBar />');
+
+      this.assertText('outer inner');
+    }
+
+    '@test it can render nested curly components'() {
+      // Test nested curly component invocations
+      this.registerComponent('parent-comp', { template: 'parent: {{child-comp}}' });
+      this.registerComponent('child-comp', { template: 'child: {{grandchild-comp}}' });
+      this.registerComponent('grandchild-comp', { template: 'grandchild' });
+
+      this.render('<ParentComp />');
+
+      this.assertText('parent: child: grandchild');
+    }
+  }
+);
+
+// Component with args tests
+gxtModuleFor(
+  'GXT Integration - Component Args',
+  class extends RegisterableRenderingTestCase {
+    '@test it can pass args to component'() {
+      this.registerComponent('foo-bar', { template: '{{@greeting}} {{@name}}' });
+
+      this.render('<FooBar @greeting="Hello" @name="World" />');
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'Hello World' });
+    }
+
+    '@test args are reactive'() {
+      this.registerComponent('foo-bar', { template: '{{@value}}' });
+
+      this.render('<FooBar @value={{this.value}} />', { value: 'initial' });
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'initial' });
+
+      runTask(() => set(this.context, 'value', 'updated'));
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'updated' });
+    }
+
+    '@test it supports splattributes'() {
+      this.registerComponent('foo-bar', { template: '<div ...attributes>content</div>' });
+
+      this.render('<FooBar class="custom" data-test="value" />');
+
+      const element = this.firstChild!.firstChild as Element;
+      this.assert.equal(element.className, 'custom');
+      this.assert.equal(element.getAttribute('data-test'), 'value');
+    }
+  }
+);
+
+// Nested components tests
+gxtModuleFor(
+  'GXT Integration - Nested Components',
+  class extends RegisterableRenderingTestCase {
+    '@test it can render nested components'() {
+      this.registerComponent('outer', { template: '<div class="outer">{{yield}}</div>' });
+      this.registerComponent('inner', { template: '<span class="inner">inner content</span>' });
+
+      this.render('<Outer><Inner /></Outer>');
+
+      this.assertText('inner content');
+    }
+
+    '@test it can pass data through nested components'() {
+      this.registerComponent('outer', { template: '{{yield "from outer"}}' });
+      this.registerComponent('inner', { template: '{{@message}}' });
+
+      this.render('<Outer as |msg|><Inner @message={{msg}} /></Outer>');
+
+      this.assertText('from outer');
+    }
+  }
+);
