@@ -32,6 +32,14 @@ export default [
       'packages/@handlebars/parser/lib/parser.js',
       'packages/@handlebars/parser/src/**',
       'tracerbench-testing/',
+      'scripts/gxt-test-runner/**',
+      // Assembled ember-source-gxt package output (git-ignored build artifact;
+      // scripts/build-gxt-package.mjs) — lint the sources, not the dist.
+      'dist-gxt-package/',
+      'dist-gxt-native-package/',
+      // Type declarations shipped by the gxt-native package; not part of the
+      // root tsconfig project that typed linting uses.
+      'scripts/gxt-native-package/*.d.ts',
     ],
   },
   pluginJs.configs.recommended,
@@ -161,6 +169,10 @@ export default [
         DOMRect: true,
         DOMRectList: true,
         globalThis: true,
+        // Build-time constant: inlined to true/false by the vite/rollup GXT
+        // wiring (see scripts/gxt-alias-map.mjs consumers); declared ambiently
+        // for TS in types/gxt-ambient.d.ts.
+        __GXT_MODE__: true,
       },
 
       ecmaVersion: 2017,
@@ -205,6 +217,9 @@ export default [
       'packages/@ember/*/tests/**/*.[jt]s',
       'packages/@ember/-internals/*/tests/**/*.[jt]s',
       'packages/internal-test-helpers/**/*.[jt]s',
+      // The QUnit tests of the GXT backends.
+      'packages/@ember/-internals/gxt-backend/**/__tests__/**/*.[jt]s',
+      'packages/@glimmer/component-gxt/__tests__/**/*.[jt]s',
     ],
 
     languageOptions: {
@@ -232,6 +247,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -253,6 +270,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -273,6 +292,15 @@ export default [
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
+    },
+  },
+  {
+    files: ['**/vite.config.mjs', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'n/no-process-exit': 'off',
+      'n/hashbang': 'off',
+      'n/no-unpublished-bin': 'off',
     },
   },
   {
@@ -504,6 +532,41 @@ export default [
     ignores: ['packages/@ember/**/tests/**', 'packages/@glimmer/**/test/**'],
     rules: {
       'ember-local/no-barrel-imports': 'error',
+    },
+  },
+  {
+    files: [
+      'packages/@ember/-internals/gxt-backend/**/*.{ts,js}',
+      'packages/@glimmer/component-gxt/**/*.ts',
+    ],
+    rules: {
+      // The GXT builds alias exact barrel specifiers (`@glimmer/validator`,
+      // `@glimmer/manager`, ...; scripts/gxt-alias-map.mjs): a deep import
+      // would bypass the alias and load the classic module. The tests import
+      // the public modules, as an app does.
+      'ember-local/no-barrel-imports': 'off',
+      // A catch block handles, reports or rethrows what it caught; a block with
+      // no statements (empty or comment-only) would hide the error.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CatchClause > BlockStatement[body.length=0]',
+          message: 'Handle, report or rethrow the caught error.',
+        },
+      ],
+    },
+  },
+  {
+    // These tests assert on whichever build- or compile-dependent shape they
+    // find: a debug-only export, a template's compiled form.
+    files: [
+      'packages/@ember/-internals/gxt-backend/__tests__/destroyable-test.ts',
+      'packages/@ember/-internals/gxt-backend/__tests__/integration-test.ts',
+    ],
+    rules: {
+      'qunit/no-assert-logical-expression': 'off',
+      'qunit/no-conditional-assertions': 'off',
+      'qunit/no-early-return': 'off',
     },
   },
   {

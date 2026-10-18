@@ -9,6 +9,22 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Under the Vite/GXT test harness (GXT_MODE=true) the @lifeart/gxt compiler
+// owns template compilation, so the classic
+// `babel-plugin-ember-template-compilation` below is skipped.
+//
+// The gxt builds skip it too: their `precompileTemplate` call sites are left
+// for the gxt compiler, which compiles them at build time into template makers
+// for their own `@ember/template-compilation` — the native layer
+// (`EMBER_RENDER_BACKEND=gxt-native`, the native vite config AND the rollup
+// native dist: rollup.config.mjs gxtNativeCompiler) and the compat dist
+// (`EMBER_RENDER_BACKEND=gxt`: rollup.config.mjs gxtCompatTemplates). Neither
+// has wire-format templates. The classic build keeps the pass.
+const useGxt =
+  process.env.GXT_MODE === 'true' ||
+  process.env.EMBER_RENDER_BACKEND === 'gxt' ||
+  process.env.EMBER_RENDER_BACKEND === 'gxt-native';
+
 export default {
   plugins: [
     [
@@ -35,14 +51,22 @@ export default {
               },
             ],
           ]),
-    [
-      'babel-plugin-ember-template-compilation',
-      {
-        compilerPath: resolve(
-          dirname(fileURLToPath(import.meta.url)),
-          './broccoli/glimmer-template-compiler.mjs'
-        ),
-      },
-    ],
+    // In GXT mode, template compilation is handled by Vite via the gxt compiler
+    // or templateTag plugin. In classic mode, we must pre-compile
+    // `precompileTemplate` calls here so they don't survive into the runtime
+    // bundle (which would throw at module evaluation time).
+    ...(useGxt
+      ? []
+      : [
+          [
+            'babel-plugin-ember-template-compilation',
+            {
+              compilerPath: resolve(
+                dirname(fileURLToPath(import.meta.url)),
+                './broccoli/glimmer-template-compiler.mjs'
+              ),
+            },
+          ],
+        ]),
   ],
 };

@@ -14,3 +14,5 @@ package.json
 pnpm-lock.yaml
 internal-docs/**/*.md
 tracerbench-testing/
+dist-gxt-package/
+test-results/
