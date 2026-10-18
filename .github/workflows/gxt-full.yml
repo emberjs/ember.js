@@ -1,0 +1,153 @@
+name: GXT Full (nightly)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The suite runs in 5 shards in parallel (runner.mjs --shard i/5: every 5th
+# module of the sorted list). `GXT full suite` merges them into the
+# gxt-summary.json / gxt-last-run.json of one unsharded run and gates that:
+# its `gxt-full-run` and `gxt-candidate-baseline` artifacts are the same files
+# an unsharded run uploads.
+jobs:
+  shard:
+    name: GXT full suite shard ${{ matrix.shard }}/5
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install-playwright: 'true'
+      # runner.mjs exits 1 on any failing test, known reds included, so the
+      # verdict comes from baseline-gate.mjs: no test of the shard's modules
+      # red that the baseline lists green, no timeout or harness error. That
+      # every baseline module ran is checked on the merged run.
+      - name: Run GXT full suite shard ${{ matrix.shard }}/5 vs baseline
+        env:
+          GXT_MODE: 'true'
+          SHARD: ${{ matrix.shard }}/5
+        run: |
+          status=0
+          node scripts/gxt-test-runner/runner.mjs \
+            --full \
+            --shard "$SHARD" \
+            --auto-serve \
+            --url http://localhost:5180/ \
+            --baseline test-results/gxt-baseline.json || status=$?
+          echo "$status" > test-results/gxt-runner-exit.txt
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/gxt-baseline.json \
+            --subset \
+            --runner-exit "$status"
+      - name: Upload shard run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-full-run-shard-${{ matrix.shard }}
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+            test-results/gxt-runner-exit.txt
+          if-no-files-found: ignore
+
+  gxt-full:
+    name: GXT full suite
+    needs: shard
+    # Also after a failed shard: the merged gate then names every regression.
+    # The job fails whenever a shard failed.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+          package-manager-cache: false
+      - name: Download shard run artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gxt-full-run-shard-*
+          path: shard-runs
+      # Fails when a shard left no artifact (it never got to run the suite).
+      - name: Merge the shard runs
+        run: |
+          node scripts/gxt-test-runner/merge-runs.mjs \
+            --shards 5 \
+            --out-dir test-results \
+            shard-runs/gxt-full-run-shard-*
+      # The unsharded verdict: no regressions, timeouts or harness errors, and
+      # every baseline module ran in some shard.
+      - name: Gate the merged GXT full suite vs baseline
+        id: gxt-run
+        run: |
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/gxt-baseline.json \
+            --runner-exit "$(cat test-results/gxt-runner-exit.txt || echo unknown)"
+      - name: Fail when a shard failed
+        if: ${{ needs.shard.result != 'success' }}
+        env:
+          SHARD_RESULT: ${{ needs.shard.result }}
+        run: |
+          echo "::error::A GXT full suite shard did not succeed (result: $SHARD_RESULT)."
+          exit 1
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-full-run
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+          if-no-files-found: ignore
+      - name: Upload candidate baseline
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-candidate-baseline
+          path: test-results/gxt-summary.json
+          if-no-files-found: ignore
+      - name: File regression issue
+        if: failure() && steps.gxt-run.outcome == 'failure'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = `GXT nightly regression on ${context.sha.substring(0,7)}`;
+            const body = [
+              'The nightly GXT full-suite run failed against',
+              '`test-results/gxt-baseline.json`.',
+              '',
+              `- commit: ${context.sha}`,
+              `- run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              'Download the `gxt-full-run` artifact and diff it:',
+              '',
+              '```',
+              'node scripts/gxt-test-runner/diff.mjs \\',
+              '  test-results/gxt-baseline.json \\',
+              '  gxt-summary.json',
+              '```',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['gxt', 'regression', 'nightly'],
+            });
