@@ -11,6 +11,7 @@ import {
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
+import { getRouteOutletHooks } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { default as BucketCache } from './lib/cache';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -31,7 +32,7 @@ import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { once, scheduleOnce } from '@ember/runloop';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
@@ -948,6 +949,11 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     @public
    */
   refresh(): Transition {
+    // GXT: copy the query-param values that the route template's render
+    // contexts shadow back onto the controller (gxt-backend/outlet.ts).
+    if (__GXT_MODE__) {
+      getRouteOutletHooks()?.refreshRoute(this);
+    }
     let managed = getRouteManagement(this);
     assert('Expected a classic route manager to refresh', managed !== undefined);
     return this._router._routerMicrolib.refresh(managed.bucket);
@@ -988,6 +994,12 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
 
     let states = queryParams.states;
 
+    // GXT: pin the controller's meta `proto` to its class prototype
+    // (gxt-backend/outlet.ts).
+    if (__GXT_MODE__) {
+      getRouteOutletHooks()?.pinControllerMeta(controller);
+    }
+
     controller._qpDelegate = states.allowOverrides;
 
     if (transition) {
@@ -1016,7 +1028,16 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
 
     // `_setOutlets` itself is the single `shouldRender` gate (it returns
     // early when the app was booted with `shouldRender: false`).
-    once(this._router, '_setOutlets');
+    if (__GXT_MODE__) {
+      // GXT mode: record this route's render state for GXT's outlet machinery
+      // (gxt-backend/outlet.ts), as the pre-route-manager `[RENDER]()` did.
+      // Scheduling _setOutlets via once() (actions queue) from the
+      // routerTransitions queue causes it to be skipped because backburner
+      // doesn't re-visit earlier queues. Use scheduleOnce('render', ...) to
+      // ensure it runs after routerTransitions in the same runloop iteration.
+      getRouteOutletHooks()?.renderRoute(this);
+      scheduleOnce('render', this._router, '_setOutlets');
+    } else once(this._router, '_setOutlets');
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
@@ -1526,8 +1547,13 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     @method teardownViews
   */
   teardownViews() {
+    if (__GXT_MODE__) {
+      getRouteOutletHooks()?.teardownRoute(this);
+    }
     if (this._router) {
-      once(this._router, '_setOutlets');
+      if (__GXT_MODE__) {
+        scheduleOnce('render', this._router, '_setOutlets');
+      } else once(this._router, '_setOutlets');
     }
   }
 
