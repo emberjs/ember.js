@@ -24,7 +24,7 @@ import type { NodesSnapshot } from './snapshot';
 import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
 import { assertElementShape } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
-import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
+import { equalTokens, isServerMarker, normalizeSnapshot, skipGxtMarkers } from './snapshot';
 import { defineComponent } from './test-helpers/define';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
@@ -795,7 +795,9 @@ export class RenderTest implements IRenderTest {
   }
 
   protected assertComponent(content: string, attrs: object = {}) {
-    let element = assertingElement(this.element.firstChild);
+    // Under GXT the component's element can follow GXT marker comments (the
+    // `curried-start` boundary of a curried component); see `skipGxtMarkers`.
+    let element = assertingElement(skipGxtMarkers(this.element.firstChild));
 
     assertElementShape(element, 'div', attrs, content);
 

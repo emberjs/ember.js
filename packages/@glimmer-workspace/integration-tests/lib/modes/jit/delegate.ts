@@ -22,6 +22,11 @@ import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import { captureRenderTree } from '@ember/debug';
 import { renderComponent } from '@ember/renderer';
+import {
+  getAmbientOwner,
+  getCreateCurriedComponent,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
@@ -128,6 +133,10 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
+    if (__GXT_MODE__) {
+      return this.createGxtCurriedComponent(name) as CurriedValue | null;
+    }
+
     let definition = this.resolver.lookupComponent(dasherize(name), this.owner);
 
     if (definition === null) return null;
@@ -139,6 +148,30 @@ export class JitRenderDelegate implements RenderDelegate {
       null,
       true
     );
+  }
+
+  /**
+   * GXT: the value `(component "name")` evaluates to in a template of this delegate's owner,
+   * made by the factory the GXT `component` helper uses. The curried component resolves the name
+   * through the owner that is current when it is made, as the helper's does. `null` if the owner
+   * has no such component.
+   */
+  private createGxtCurriedComponent(name: string): unknown {
+    let componentName = dasherize(name);
+    if (this.owner.factoryFor(`component:${componentName}`) === undefined) return null;
+
+    let createCurried = getCreateCurriedComponent();
+    if (createCurried === null) {
+      throw new Error('JitRenderDelegate: the GXT curried-component factory is not installed');
+    }
+
+    let ambientOwner = getAmbientOwner() as unknown;
+    setAmbientOwner(this.owner);
+    try {
+      return createCurried(componentName, {}, []) as unknown;
+    } finally {
+      setAmbientOwner(ambientOwner);
+    }
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {

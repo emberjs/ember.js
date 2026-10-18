@@ -1,5 +1,6 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { EventDispatcher } from '@ember/-internals/views';
 import { setComponentTemplate } from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
@@ -15,8 +16,31 @@ import { define } from '../module-for';
 import { runDestroy, runTask } from '../run';
 import TopLevelComponent from '../top-level-component';
 import AbstractTestCase from './abstract';
+import { gxtHarness } from '../gxt-harness';
 
 const TextNode = window.Text;
+
+// GXT steps of this test case beyond the shared harness (see gxt-harness.ts
+// for why they are a module-level value), `undefined` in classic builds.
+const gxtRenderingHarness = __GXT_MODE__
+  ? {
+      // Replace #qunit-fixture to drop accumulated event listeners
+      // (EventDispatcher.setup adds listeners that aren't always cleaned up).
+      replaceFixture() {
+        const fixture = document.getElementById('qunit-fixture');
+        if (fixture) {
+          const fresh = fixture.cloneNode(false) as HTMLElement;
+          fixture.parentNode?.replaceChild(fresh, fixture);
+        }
+      },
+      incrementRenderPassId() {
+        getGxtRenderer()?.viewUtils.incrementRenderPassId?.();
+      },
+      clearPendingSyncFromPropertyChange() {
+        getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
+      },
+    }
+  : undefined;
 
 export default abstract class RenderingTestCase extends AbstractTestCase {
   owner: EngineInstance;
@@ -83,13 +107,25 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
+      if (__GXT_MODE__) {
+        gxtHarness!.cleanupActiveComponents();
+      }
+
       runDestroy(this.root);
       runDestroy(this.component);
       if (this.owner) {
         runDestroy(this.owner);
       }
+
+      if (__GXT_MODE__) {
+        gxtHarness!.teardownModifiers();
+      }
     } finally {
       _resetRenderers();
+      if (__GXT_MODE__) {
+        gxtHarness!.resetSyncFlags();
+        gxtRenderingHarness!.replaceFixture();
+      }
     }
   }
 
@@ -111,6 +147,23 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
     setComponentTemplate(this.compile(templateStr, { moduleName: '-top-level' }), Root);
 
+    if (__GXT_MODE__) {
+      // Increment the render pass ID before starting a new render transaction
+      // so all components in this render share the same pass ID.
+      gxtRenderingHarness!.incrementRenderPassId();
+      // The render runs as `runAppend` runs one (see `gxtHarness.runRender`).
+      this.root = gxtHarness!.runRender(() =>
+        this.renderer.render(Root, {
+          into: this.element,
+        })
+      );
+      // Property changes made during the initial render (e.g. from
+      // EmberObject.create in modifier managers) must not trigger a fallback
+      // re-sync; the DOM is already correct.
+      gxtRenderingHarness!.clearPendingSyncFromPropertyChange();
+      return;
+    }
+
     this.root = runTask(() =>
       this.renderer.render(Root, {
         into: this.element,
@@ -127,6 +180,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   rerender() {
     this.#assertNotAwaiting('rerender');
+    if (__GXT_MODE__) {
+      // Increment render pass ID for re-renders too
+      gxtRenderingHarness!.incrementRenderPassId();
+    }
     this.component!.rerender();
   }
 
