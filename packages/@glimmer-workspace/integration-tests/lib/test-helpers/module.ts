@@ -8,6 +8,35 @@ import type { DeclaredComponentKind } from '../test-decorator';
 
 import { JitRenderDelegate } from '../modes/jit/delegate';
 import { JitSerializationDelegate, NodeJitRenderDelegate } from '../modes/node/env';
+import { GxtRehydrationDelegate, gxtUnsupportedReason } from '../modes/rehydration/gxt-delegate';
+import { gxtVmOnlyReason } from './gxt-unsupported';
+
+/**
+ * Under GXT (`__GXT_MODE__`) the rehydration suites render through GXT, with
+ * `GxtRehydrationDelegate`, instead of through the Glimmer VM.
+ */
+function overrideRehydrationDelegate<D extends RenderDelegate>(
+  Delegate: RenderDelegateConstructor<D>
+): RenderDelegateConstructor<D> {
+  if (Delegate.style !== 'rehydration') return Delegate;
+  return GxtRehydrationDelegate as unknown as RenderDelegateConstructor<D>;
+}
+
+// Under GXT, tests that check Glimmer VM internals (see `gxtVmOnlyReason`) and
+// tests the GXT rehydration delegate cannot run (see `gxtUnsupportedReason`)
+// are registered as `QUnit.skip`.
+function isUnsupportedUnderGxt(
+  Delegate: RenderDelegateConstructor<RenderDelegate>,
+  suiteName: string,
+  testName: string
+): boolean {
+  return (
+    __GXT_MODE__ &&
+    (gxtVmOnlyReason(suiteName, testName) !== undefined ||
+      ((Delegate as unknown) === GxtRehydrationDelegate &&
+        gxtUnsupportedReason(suiteName, testName) !== undefined))
+  );
+}
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
   suiteName: string;
@@ -75,6 +104,9 @@ export function suite<D extends RenderDelegate>(
     kinds?: DeclaredComponentKind[];
   } = {}
 ): void {
+  if (__GXT_MODE__) {
+    Delegate = overrideRehydrationDelegate(Delegate);
+  }
   let suiteName = klass.suiteName;
 
   if (options.componentModule) {
@@ -103,7 +135,9 @@ export function suite<D extends RenderDelegate>(
 
     for (let [prop, test] of testFunctions(klass.prototype)) {
       if (shouldRunTest<D>(Delegate)) {
-        if (isSkippedTest(test)) {
+        if (isUnsupportedUnderGxt(Delegate, suiteName, prop)) {
+          QUnit.skip(prop);
+        } else if (isSkippedTest(test)) {
           QUnit.skip(prop, (assert) => {
             test.call(instance!, assert, instance!.count);
             instance!.count.assert();
@@ -142,7 +176,9 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
     }
 
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
-      if (!shouldSkip) {
+      if (isUnsupportedUnderGxt(Delegate, klass.suiteName, prop)) {
+        QUnit.skip(prop);
+      } else if (!shouldSkip) {
         QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
           current = instance;
@@ -188,6 +224,16 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   tests: ComponentTests
 ): void {
   keys(tests).forEach((type) => {
+    // GXT: skip sub-modules with zero tests — otherwise QUnit registers an
+    // empty `[integration] X` module and the GXT runner, which loads one
+    // module per page, reports "FAIL 0/1 — global failure: No tests matched
+    // the module". This happens when a suite declares all tests with a single
+    // `kind` (e.g. TemplateOnlyComponents is all `kind: 'templateOnly'`) so
+    // the other three sub-modules end up empty.
+    if (__GXT_MODE__ && tests[type].length === 0) {
+      return;
+    }
+
     let formattedType = upperFirst(type);
 
     QUnit.module(`[integration] ${formattedType}`, () => {
