@@ -1,4 +1,5 @@
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import { getGxtRenderer, installViewUtilsPart } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
@@ -41,6 +42,11 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
 */
 export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM.
+  if (__GXT_MODE__) {
+    getGxtRenderer()?.viewUtils.rebuildViewTreeBeforeRead?.(registry);
+  }
 
   let rootViews: View[] = [];
 
@@ -117,6 +123,16 @@ export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM
+  // ancestry before reading the registry. The force-rerender path can leave
+  // parentView=null or CHILD_VIEW_IDS stale when a component is created while
+  // the render-time parent-view stack was empty. Passing the registry tells
+  // the rebuild which registry the caller will read.
+  if (__GXT_MODE__) {
+    getGxtRenderer()?.viewUtils.rebuildViewTreeBeforeRead?.(registry);
+  }
+
   return collectChildViews(view, registry);
 }
 
@@ -203,4 +219,10 @@ export function getViewClientRects(view: View): DOMRectList {
 export function getViewBoundingClientRect(view: View): DOMRect {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
+}
+
+if (__GXT_MODE__) {
+  // gxt-backend's view-tree rebuild (manager.ts, compile.ts) resets the child
+  // views of the views it re-links.
+  installViewUtilsPart({ initChildViews });
 }
