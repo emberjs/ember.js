@@ -171,7 +171,7 @@ export const DEPRECATIONS = {
   DEPRECATE_COMPUTED_MACROS: deprecation({
     id: 'deprecate-computed-macros',
     for: 'ember-source',
-    since: { available: '7.5.0' },
+    since: { available: '7.5.0', enabled: '7.5.0' },
     until: '9.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-computed-macros',
   }),
