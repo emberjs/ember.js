@@ -35,7 +35,7 @@ module('Helpers test: {{log}}', function (hooks) {
   }
 
   test('correctly logs primitives', async function (assert) {
-    await render(<template>{{log "one" 1 true}}</template>);
+    await render(<template>{{log 'one' 1 true}}</template>);
 
     assertLog(assert, ['one', 1, true]);
   });
@@ -56,7 +56,7 @@ module('Helpers test: {{log}}', function (hooks) {
     class Subject extends Component {
       value = 'one';
 
-      <template>{{log "my variable:" this.value}}</template>
+      <template>{{log 'my variable:' this.value}}</template>
     }
 
     await render(<template><Subject /></template>);
