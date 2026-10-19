@@ -164,7 +164,7 @@ export const DEPRECATIONS = {
   DEPRECATE_EMBER_UTILS: deprecation({
     id: 'deprecate-ember-utils',
     for: 'ember-source',
-    since: { available: '7.5.0' },
+    since: { available: '7.5.0', enabled: '7.5.0' },
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-utils',
   }),
