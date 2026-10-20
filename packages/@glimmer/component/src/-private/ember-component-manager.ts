@@ -1,9 +1,13 @@
 import { destroy } from '@ember/destroyable';
 import { capabilities } from '@ember/component';
 import { schedule } from '@ember/runloop';
-import BaseComponentManager from './base-component-manager';
+import BaseComponentManager from './base-component-manager.js';
 
-import { type default as GlimmerComponent, IS_DESTROYING_KEY, IS_DESTROYED_KEY } from './component';
+import {
+  type default as GlimmerComponent,
+  IS_DESTROYING_KEY,
+  IS_DESTROYED_KEY,
+} from './component.js';
 import type { Arguments } from '@glimmer/interfaces';
 
 const CAPABILITIES = capabilities('3.13', {
