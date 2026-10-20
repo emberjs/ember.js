@@ -42,6 +42,6 @@
     "ember-template-compiler": "workspace:*",
     "router_js": "workspace:*",
     "rsvp": "^4.8.5",
-    "simple-html-tokenizer": "^0.5.11"
+    "simple-html-tokenizer": "^1.0.0"
   }
 }

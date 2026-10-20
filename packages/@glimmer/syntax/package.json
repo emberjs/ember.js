@@ -35,7 +35,7 @@
     "test:publint": "publint"
   },
   "dependencies": {
-    "simple-html-tokenizer": "^0.5.11"
+    "simple-html-tokenizer": "^1.0.0"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",
