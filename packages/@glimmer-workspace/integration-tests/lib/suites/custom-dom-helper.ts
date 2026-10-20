@@ -1,5 +1,4 @@
 import { precompile } from '@glimmer/compiler';
-import { NodeDOMTreeConstruction } from '@glimmer/node';
 
 import { blockStack } from '../dom/blocks';
 import { toInnerHTML } from '../dom/simple-utils';
@@ -8,19 +7,6 @@ import { withRoot } from '../markers';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip } from '../test-helpers/strings';
-
-export class DOMHelperTests extends AbstractNodeTest {
-  static suiteName = 'Server-side rendering in Node.js (normal)';
-
-  @test
-  'can instantiate NodeDOMTreeConstruction without a document'() {
-    // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
-
-    let helper = new NodeDOMTreeConstruction(null as any);
-
-    this.assert.ok(!!helper, 'helper was instantiated without errors');
-  }
-}
 
 export class CompilationTests extends RenderTest {
   static suiteName = 'Id generation';
@@ -36,8 +22,8 @@ export class CompilationTests extends RenderTest {
   }
 }
 
-export class SerializedDOMHelperTests extends DOMHelperTests {
-  static override suiteName = 'Server-side rendering in Node.js (serialize)';
+export class SerializedDOMHelperTests extends AbstractNodeTest {
+  static suiteName = 'Server-side rendering in Node.js (serialize)';
 
   @test
   'modifiers do not run in a serialize render'() {

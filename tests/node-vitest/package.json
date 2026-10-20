@@ -8,9 +8,13 @@
     "test:node": "vitest run"
   },
   "dependencies": {
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/serializer": "^1.4.0",
+    "@simple-dom/void-map": "^1.4.0",
     "agadoo": "^3.0.0",
     "ember-source": "workspace:*",
     "enhanced-resolve": "^5.21.0",
+    "happy-dom": "^21.0.1",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"
   },

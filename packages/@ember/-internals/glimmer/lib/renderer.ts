@@ -30,7 +30,7 @@ import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';

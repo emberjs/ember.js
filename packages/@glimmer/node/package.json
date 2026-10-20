@@ -39,8 +39,7 @@
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/runtime": "workspace:*",
-    "@glimmer/util": "workspace:*",
-    "@simple-dom/document": "^1.4.0"
+    "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/compiler": "workspace:*",

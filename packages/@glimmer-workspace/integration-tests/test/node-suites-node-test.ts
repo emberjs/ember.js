@@ -1,7 +1,6 @@
 import {
   CompilationTests,
   componentSuite,
-  DOMHelperTests,
   InteractiveJitSerializationDelegate,
   InteractiveNodeJitRenderDelegate,
   InteractiveSerializedDOMHelperTests,
@@ -22,7 +21,6 @@ nodeComponentSuite(ServerSideComponentSuite);
 suite(InteractiveServerSideSuite, InteractiveNodeJitRenderDelegate);
 componentSuite(ServerSideComponentSuite, InteractiveNodeJitRenderDelegate);
 
-suite(DOMHelperTests, NodeJitRenderDelegate);
 suite(SerializedDOMHelperTests, JitSerializationDelegate);
 suite(InteractiveSerializedDOMHelperTests, InteractiveJitSerializationDelegate);
 

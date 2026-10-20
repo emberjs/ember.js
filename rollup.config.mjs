@@ -24,6 +24,7 @@ const testDependencies = [
   'qunit-dom',
   'vite',
   'js-reporters',
+  '@simple-dom/document',
   '@simple-dom/serializer',
   '@simple-dom/void-map',
   'expect-type',
@@ -286,7 +287,6 @@ export function exposedDependencies() {
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
       '@glimmer/node',
-      '@simple-dom/document',
       '@glimmer/manager',
       '@glimmer/destroyable',
       '@glimmer/owner',
@@ -336,7 +336,7 @@ function walkGlimmerDeps(packageNames) {
     }
     seen.add(pkg);
 
-    if (!pkg.name.startsWith('@glimmer/') && !pkg.name.startsWith('@simple-dom/')) {
+    if (!pkg.name.startsWith('@glimmer/')) {
       continue;
     }
 

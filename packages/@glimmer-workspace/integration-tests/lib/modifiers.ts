@@ -37,7 +37,7 @@ class LegacyHookModifierManager implements ModifierManager<TestModifierInstance>
     let named = { ...args.named };
 
     if (instance.didInsertElement) {
-      instance.element = element as unknown as SimpleElement;
+      instance.element = element;
       instance.didInsertElement(positional, named);
     }
   }

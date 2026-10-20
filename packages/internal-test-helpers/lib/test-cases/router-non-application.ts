@@ -4,7 +4,6 @@ import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
 import Component from '@ember/component';
 import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
-import type { SimpleElement } from '@simple-dom/interface';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
@@ -45,7 +44,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
       renderRootComponent: (component: object) => {
         setRenderer(owner, this.renderer);
         renderComponent(component, {
-          into: { element: this.element as unknown as SimpleElement, nextSibling: null },
+          into: { element: this.element, nextSibling: null },
           owner,
         });
       },

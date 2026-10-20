@@ -1,4 +1,3 @@
-import { castToSimple } from '@glimmer/debug-util';
 import { JitRenderDelegate, RenderTest } from '@glimmer-workspace/integration-tests';
 
 import { module } from './support';
@@ -6,7 +5,7 @@ import { module } from './support';
 // "I-N-U-R" cycle
 // initial render -> no-op rerender -> update(s) via mutation(s) -> reset via replacement
 module('Render Tests: I-N-U-R', ({ test }) => {
-  let doc = castToSimple(document);
+  let doc = document;
 
   test('Can set properties', (assert) => {
     new (class extends RenderTest {

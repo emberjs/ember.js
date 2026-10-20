@@ -23,7 +23,6 @@
     "test:publint": "publint"
   },
   "dependencies": {
-    "@simple-dom/interface": "^1.4.0",
     "type-fest": "^4.35.0"
   },
   "devDependencies": {
