@@ -8,7 +8,7 @@ import {
   ARGS_SET,
   IS_DESTROYING_KEY,
   IS_DESTROYED_KEY,
-} from './component';
+} from './component.js';
 import type { Arguments, ComponentManager } from '@glimmer/interfaces';
 
 const CAPABILITIES = capabilities('3.13', {
