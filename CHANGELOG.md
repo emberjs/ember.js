@@ -2,6 +2,22 @@
 
 ## Release (2026-10-20)
 
+* @glimmer/syntax 0.97.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#21730](https://github.com/emberjs/ember.js/pull/21730) Upgrade simple-html-tokenizer for html entity parsing bugfix ([@ef4](https://github.com/ef4))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#21756](https://github.com/emberjs/ember.js/pull/21756) [BUGFIX] Publish type declarations for @glimmer/syntax ([@johanrd](https://github.com/johanrd))
+
+#### Committers: 2
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Johan Røed ([@johanrd](https://github.com/johanrd))
+
+## Release (2026-10-20)
+
 * @glimmer/component 2.2.0 (minor)
 * @glimmer/syntax 0.96.0 (minor)
 
