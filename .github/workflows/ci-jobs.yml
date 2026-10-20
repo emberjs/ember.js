@@ -171,10 +171,8 @@ jobs:
 
       - name: test:browserstack
         env:
-          BROWSERSTACK_USERNAME: emberjscoreteam_A3VLS
-          # This is in plaintext on purpose. It has no privileged access to anything (this is a free
-          # account) and it allows us to run browserstack tests against PRs.
-          BROWSERSTACK_ACCESS_KEY: ZDM256rfimuXwkpamsUe
+          BROWSERSTACK_USERNAME: ${{ env.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ env.BROWSERSTACK_ACCESS }}
         run: pnpm test:browserstack
 
   smoke-test:
