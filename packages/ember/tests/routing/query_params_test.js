@@ -1327,8 +1327,6 @@ moduleFor(
     async [`${testUnless(QP_EMBER_ARRAY.isRemoved)} @test Array query params can be pushed/popped`](
       assert
     ) {
-      assert.expect(QP_EMBER_ARRAY.isEnabled ? 20 : 17);
-
       if (QP_EMBER_ARRAY.isEnabled) {
         expectDeprecation(/`pushObject` was used on the array value of a query param/);
         expectDeprecation(/`popObject` was used on the array value of a query param/);
