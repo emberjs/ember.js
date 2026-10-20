@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig/compiler-options.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@glimmer/env": ["../env/index.ts"]
+    }
+  },
+  "include": ["index.ts", "lib/**/*.ts"]
+}
