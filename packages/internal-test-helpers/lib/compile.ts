@@ -6,7 +6,7 @@ import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/
 import { templateFactory } from '@glimmer/opcode-compiler';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compileOptions } from 'ember-template-compiler';
+import { compile as etcCompile, compileOptions } from 'ember-template-compiler';
 
 /**
   The options of `compile`, in the shape of the conformance adapter's `compile`.
@@ -64,6 +64,18 @@ function build(
   options: Partial<EmberPrecompileOptions>,
   scopeValues: Record<string, unknown>
 ): TemplateFactory {
+  // In GXT mode, use GXT compilation via ember-template-compiler's compile
+  // (which is aliased to the GXT compat version). The options reach it as they
+  // reach `precompileJSON` below: without a module name, compile errors name
+  // 'an unknown module', as Glimmer's do.
+  if (__GXT_MODE__) {
+    return etcCompile(templateSource, {
+      strictMode: options.strictMode ?? false,
+      ...options,
+      scopeValues: Object.keys(scopeValues).length > 0 ? scopeValues : undefined,
+    } as any);
+  }
+
   let withLocals = { ...options, locals: options.locals ?? Object.keys(scopeValues) };
   let [block, usedLocals] = precompileJSON(templateSource, compileOptions(withLocals));
   let reifiedScope: Record<string, unknown> = {};

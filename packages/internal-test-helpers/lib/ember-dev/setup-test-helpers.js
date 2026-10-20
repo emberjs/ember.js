@@ -6,7 +6,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { trackedValue } from '@glimmer/validator';
 import { setup as setupQUnitDOM } from 'qunit-dom';
 import { isMarker } from '../element-helpers';
-import equalTokens from '../equal-tokens';
+import equalTokens, { isGxtMarkerComment } from '../equal-tokens';
 import { ModuleBasedResolver } from '../test-resolver';
 
 /*
@@ -59,7 +59,56 @@ export default function setupTestHelpers() {
 
   setupQUnitDOM(QUnit.assert, { getRootElement });
 
+  if (__GXT_MODE__) {
+    let dom = QUnit.assert.dom;
+    QUnit.assert.dom = function (...args) {
+      return withGxtAwareHasHtml(dom.apply(this, args));
+    };
+  }
+
   QUnit.assert.stableRender = stableRender;
+}
+
+/*
+  GXT mode: the comments GXT renders for its own bookkeeping (see
+  `isGxtMarkerComment`), and the empty `<!---->` marker, removed from `html`.
+  Other comments stay.
+*/
+function withoutGxtMarkerComments(html) {
+  return html.replace(/<!--([\s\S]*?)-->/g, (comment, text) =>
+    text === '' || isGxtMarkerComment(text) ? '' : comment
+  );
+}
+
+/*
+  GXT mode: qunit-dom's `hasHtml` compares the element's `innerHTML` without
+  GXT's marker comments (for example the anchor a dynamic `{{#let}}`-bound
+  component leaves after its element), on both sides. Everything else,
+  including white space between elements and attribute order, is compared by
+  qunit-dom as before.
+*/
+function withGxtAwareHasHtml(assertions) {
+  let hasHtml = assertions.hasHtml;
+
+  assertions.hasHtml = function (expected, message) {
+    let element = this.findTargetElement();
+    if (!element) return this;
+
+    // qunit-dom's `hasHtml` reads the element through `findTargetElement()`.
+    let normalized = Object.create(this, {
+      findTargetElement: {
+        value: () => ({ innerHTML: withoutGxtMarkerComments(element.innerHTML) }),
+      },
+    });
+    hasHtml.call(
+      normalized,
+      typeof expected === 'string' ? withoutGxtMarkerComments(expected) : expected,
+      message
+    );
+    return this;
+  };
+
+  return assertions;
 }
 
 function takeSnapshot() {

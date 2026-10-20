@@ -3,14 +3,31 @@
   "compilerOptions": {
     "outDir": "dist",
     "noEmit": true,
+    // The repository root, not packages/: gxt-backend/native/runtime-compile.ts
+    // imports scripts/gxt-alias-map.mjs. Nothing is emitted from this config.
+    "rootDir": ".",
     "paths": {
       // We compile away @glimmer/env during all our builds
       "@glimmer/env": ["./packages/@glimmer/env/index.ts"],
       // @glimmer/component is published as its own addon and only gets a
       // dist/ from rollup, so point at the source for type-checking
-      "@glimmer/component": ["./packages/@glimmer/component/src/index.ts"]
+      "@glimmer/component": ["./packages/@glimmer/component/src/index.ts"],
+      // gxt-backend has a package.json of its own, so its imports of other
+      // @ember/-internals modules do not resolve through @ember/-internals'
+      // exports, and it and @glimmer/component-gxt have no workspace links for
+      // the specifiers below. The GXT builds resolve them through their alias
+      // map (scripts/gxt-alias-map.mjs) and package resolver
+      // (rollup.config.mjs resolvePackages); these entries point at the same
+      // files.
+      "@ember/-internals/*": ["./packages/@ember/-internals/*"],
+      "@ember/renderer": ["./packages/@ember/renderer/index.ts"],
+      "@ember/template": ["./packages/@ember/template/index.ts"],
+      "@glimmer/debug-util": ["./packages/@glimmer/debug-util/index.ts"],
+      "@glimmer/tracking": ["./packages/@glimmer/tracking/index.ts"],
+      "@glimmer/validator": ["./packages/@glimmer/validator/index.ts"],
+      "internal-test-helpers/lib/*": ["./packages/internal-test-helpers/lib/*"]
     }
   },
-  "include": ["packages/**/*.ts"],
-  "exclude": ["dist", "node_modules", "tmp", "types"]
+  "include": ["packages/**/*.ts", "types/gxt-ambient.d.ts"],
+  "exclude": ["dist", "node_modules", "tmp", "types/stable", "types/preview"]
 }
