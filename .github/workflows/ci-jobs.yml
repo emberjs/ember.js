@@ -171,8 +171,8 @@ jobs:
 
       - name: test:browserstack
         env:
-          BROWSERSTACK_USERNAME: ${{ env.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ env.BROWSERSTACK_ACCESS }}
+          BROWSERSTACK_USERNAME: ${{ vars.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ vars.BROWSERSTACK_ACCESS }}
         run: pnpm test:browserstack
 
   smoke-test:
