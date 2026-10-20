@@ -20,13 +20,20 @@
     "exports": {
       ".": {
         "node": {
-          "require": "./dist/cjs/index.cjs",
-          "import": "./dist/es/index.js"
+          "require": {
+            "types": "./dist/cjs/index.d.cts",
+            "default": "./dist/cjs/index.cjs"
+          },
+          "import": {
+            "types": "./dist/es/index.d.ts",
+            "default": "./dist/es/index.js"
+          }
         },
+        "types": "./dist/es/index.d.ts",
         "default": "./dist/es/index.js"
       }
     },
-    "types": "dist/dev/index.d.ts"
+    "types": "dist/es/index.d.ts"
   },
   "files": [
     "dist"

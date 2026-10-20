@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { globSync } from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
+import { dts } from 'rollup-plugin-dts';
 import sharedBabelConfig from './babel.config.mjs';
 
 // eslint-disable-next-line no-redeclare
@@ -36,6 +37,7 @@ let configs = [
   glimmerComponent({ prod: true }),
   glimmerSyntaxESM(),
   glimmerSyntaxCJS(),
+  glimmerSyntaxTypes(),
 ];
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
@@ -171,6 +173,19 @@ function glimmerSyntaxCJS() {
       resolveTS(),
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
+  };
+}
+
+function glimmerSyntaxTypes() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: [
+      { file: 'packages/@glimmer/syntax/dist/es/index.d.ts' },
+      { file: 'packages/@glimmer/syntax/dist/cjs/index.d.cts' },
+    ],
+    external: ['simple-html-tokenizer'],
+    plugins: [dts({ respectExternal: true, tsconfig: './packages/@glimmer/syntax/tsconfig.json' })],
   };
 }
 
