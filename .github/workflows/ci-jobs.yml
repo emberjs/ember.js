@@ -169,10 +169,12 @@ jobs:
           BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
 
+      - id: bs-setup
+        uses: ./.github/actions/browserstack-setup
       - name: test:browserstack
         env:
-          BROWSERSTACK_USERNAME: ${{ vars.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ vars.BROWSERSTACK_ACCESS }}
+          BROWSERSTACK_USERNAME: ${{ steps.bs-setup.outputs.username }}
+          BROWSERSTACK_ACCESS_KEY: ${{ steps.bs-setup.outputs.access-key }}
         run: pnpm test:browserstack
 
   smoke-test:
