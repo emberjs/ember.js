@@ -12,6 +12,9 @@ on:
     paths:
       - ".release-plan.json"
 
+permissions:
+  contents: read
+  
 concurrency:
   group: publish-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
