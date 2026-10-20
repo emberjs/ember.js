@@ -181,8 +181,8 @@ function glimmerSyntaxTypes() {
     onLog: handleRollupWarnings,
     input: './packages/@glimmer/syntax/index.ts',
     output: [
-      { format: 'es', file: 'packages/@glimmer/syntax/dist/es/index.d.ts' },
-      { format: 'es', file: 'packages/@glimmer/syntax/dist/cjs/index.d.cts' },
+      { file: 'packages/@glimmer/syntax/dist/es/index.d.ts' },
+      { file: 'packages/@glimmer/syntax/dist/cjs/index.d.cts' },
     ],
     external: ['simple-html-tokenizer'],
     plugins: [dts({ respectExternal: true, tsconfig: './packages/@glimmer/syntax/tsconfig.json' })],
