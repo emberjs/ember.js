@@ -11,10 +11,10 @@ import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 moduleFor(
-  'Components test: send',
+  'Components test: send (classic component)',
   class extends RenderingTestCase {
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
