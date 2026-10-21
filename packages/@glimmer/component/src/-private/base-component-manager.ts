@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import type { Arguments, ComponentManager, ComponentCapabilities } from '@glimmer/interfaces';
-import { type default as BaseComponent, ARGS_SET } from './component';
+import { type default as BaseComponent, ARGS_SET } from './component.js';
 
 export interface Constructor<T> {
   new (owner: unknown, args: Record<string, unknown>): T;

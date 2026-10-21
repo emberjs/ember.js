@@ -56,6 +56,7 @@
     "build": "npm-run-all build:*",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
+    "check:packages": "node ./bin/check-packages.mjs",
     "docs": "ember ember-cli-yuidoc",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
     "lint:docs": "qunit tests/docs/coverage-test.cjs",
@@ -101,6 +102,7 @@
     "simple-html-tokenizer": "^1.0.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@aws-sdk/client-s3": "^3.731.0",
     "@babel/plugin-proposal-decorators": "^7.25.9",
     "@babel/plugin-transform-typescript": "^7.26.8",
@@ -152,6 +154,7 @@
     "mocha": "^11.0.0",
     "npm-run-all2": "^8.0.0",
     "prettier": "^3.5.3",
+    "publint": "^0.3.25",
     "qunit": "^2.19.4",
     "qunit-dom": "^3.6.0",
     "recast": "^0.22.0",
