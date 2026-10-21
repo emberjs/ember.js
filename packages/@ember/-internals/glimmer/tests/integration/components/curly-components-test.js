@@ -18,6 +18,7 @@ import EmberObject, { set, computed } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
+import { PositionalComponent } from '../../utils/positional-component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1672,6 +1673,75 @@ moduleFor(
       this.render(`{{foo-bar}}`);
 
       this.assertText('things');
+    }
+
+    ['@test static arbitrary number of positional parameters'](assert) {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      <div id="args-3">{{sample-component "Foo" 4 "Bar"}}</div>
+      <div id="args-5">{{sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+    }
+
+    ['@test dynamic arbitrary number of positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional key="@index" as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{sample-component this.user1 this.user2}}', { user1: 'Foo', user2: 4 });
+
+      this.assertText('Foo4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Foo4');
+
+      runTask(() => set(this.context, 'user1', 'Bar'));
+
+      this.assertText('Bar4');
+
+      runTask(() => set(this.context, 'user2', '5'));
+
+      this.assertText('Bar5');
+
+      runTask(() => {
+        set(this.context, 'user1', 'Foo');
+        set(this.context, 'user2', 4);
+      });
+
+      this.assertText('Foo4');
+    }
+
+    ['@test can access properties off of the positional arguments array']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.positional.length}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+      this.assertText('3');
     }
   }
 );

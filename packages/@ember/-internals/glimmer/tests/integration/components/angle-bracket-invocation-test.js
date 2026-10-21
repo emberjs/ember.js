@@ -10,6 +10,8 @@ import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
 
+import { PositionalComponent } from '../../utils/positional-component';
+
 class CustomModifierManager {
   constructor(owner) {
     this.capabilities = modifierCapabilities('3.22');
@@ -944,6 +946,20 @@ moduleFor(
         attrs: {},
         content: 'Outside the let',
       });
+    }
+
+    '@test positional parameters are not allowed'() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.positional.length}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('<SampleComponent one two />');
+
+      this.assertText('0');
     }
   }
 );
