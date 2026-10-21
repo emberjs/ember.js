@@ -23,6 +23,28 @@ class BasicComponentManager extends EmberObject {
   }
 }
 
+class NativeComponentManager {
+  capabilities = componentCapabilities('3.13');
+
+  createComponent(ComponentClass, args) {
+    return new ComponentClass(args);
+  }
+
+  updateComponent() {}
+
+  getContext(component) {
+    return component;
+  }
+}
+
+class NativeComponent {
+  constructor(args) {
+    this.args = args;
+  }
+}
+
+setComponentManager(() => new NativeComponentManager(), NativeComponent);
+
 /* eslint-disable */
 function createBasicManager(owner) {
   return BasicComponentManager.create({ owner });
@@ -305,15 +327,12 @@ moduleFor(
     }
 
     ['@test it can set positional params on the component instance']() {
-      let ComponentClass = setComponentManager(
-        createBasicManager,
-        class extends EmberObject {
-          @computed('args.positional.[]')
-          get salutation() {
-            return this.args.positional[0] + ' ' + this.args.positional[1];
-          }
+      let ComponentClass = class extends NativeComponent {
+        @computed('args.positional.[]')
+        get salutation() {
+          return this.args.positional[0] + ' ' + this.args.positional[1];
         }
-      );
+      };
 
       this.owner.register(
         'component:foo-bar',
@@ -326,15 +345,12 @@ moduleFor(
     }
 
     ['@test positional params are updated if they change (computed, arr tag)']() {
-      let ComponentClass = setComponentManager(
-        createBasicManager,
-        class extends EmberObject {
-          @computed('args.positional.[]')
-          get salutation() {
-            return this.args.positional[0] + ' ' + this.args.positional[1];
-          }
+      let ComponentClass = class extends NativeComponent {
+        @computed('args.positional.[]')
+        get salutation() {
+          return this.args.positional[0] + ' ' + this.args.positional[1];
         }
-      );
+      };
 
       this.owner.register(
         'component:foo-bar',
@@ -359,15 +375,12 @@ moduleFor(
     }
 
     ['@test positional params are updated if they change (computed, individual tags)']() {
-      let ComponentClass = setComponentManager(
-        createBasicManager,
-        class extends EmberObject {
-          @computed('args.positional.0', 'args.positional.1')
-          get salutation() {
-            return this.args.positional[0] + ' ' + this.args.positional[1];
-          }
+      let ComponentClass = class extends NativeComponent {
+        @computed('args.positional.0', 'args.positional.1')
+        get salutation() {
+          return this.args.positional[0] + ' ' + this.args.positional[1];
         }
-      );
+      };
 
       this.owner.register(
         'component:foo-bar',
@@ -392,14 +405,11 @@ moduleFor(
     }
 
     ['@test positional params are updated if they change (native)']() {
-      let ComponentClass = setComponentManager(
-        createBasicManager,
-        class extends EmberObject {
-          get salutation() {
-            return this.args.positional[0] + ' ' + this.args.positional[1];
-          }
+      let ComponentClass = class extends NativeComponent {
+        get salutation() {
+          return this.args.positional[0] + ' ' + this.args.positional[1];
         }
-      );
+      };
 
       this.owner.register(
         'component:foo-bar',
