@@ -52,5 +52,23 @@ moduleFor(
         this.assertInnerHTML('<main class="wrapper"><p class="child">child content</p></main>');
       });
     }
+
+    ['@test {{outlet}} in a strict-mode component renders the child route']() {
+      let LayoutWrapper = setComponentTemplate(
+        precompileTemplate('<main class="wrapper">{{outlet}}</main>', { strictMode: true }),
+        templateOnly()
+      );
+      this.add(
+        'template:application',
+        precompileTemplate('<LayoutWrapper />', {
+          strictMode: true,
+          scope: () => ({ LayoutWrapper }),
+        })
+      );
+
+      return this.visit('/child').then(() => {
+        this.assertInnerHTML('<main class="wrapper"><p class="child">child content</p></main>');
+      });
+    }
   }
 );

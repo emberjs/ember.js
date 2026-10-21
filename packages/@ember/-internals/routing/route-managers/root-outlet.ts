@@ -3,6 +3,7 @@
 import type {
   CapturedArguments,
   CustomRenderNode,
+  DynamicScope,
   InternalComponentCapabilities,
   InternalComponentManager,
   WithCreateInstance,
@@ -15,6 +16,7 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
+import { assert } from '@ember/debug';
 import type { OutletParent, OutletState } from './outlet-state';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
@@ -163,6 +165,12 @@ class OutletArgProvider {
   }
 }
 
+const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
+  ...CAPABILITIES,
+  // Carries the child outlet to `{{outlet}}` in components below this level.
+  dynamicScope: true,
+};
+
 class OutletArgProviderManager
   implements
     InternalComponentManager<OutletArgProvider, OutletArgProvider>,
@@ -170,10 +178,20 @@ class OutletArgProviderManager
     WithCustomDebugRenderTree<OutletArgProvider, OutletArgProvider>
 {
   getCapabilities(): InternalComponentCapabilities {
-    return CAPABILITIES;
+    return PROVIDER_CAPABILITIES;
   }
 
-  create(_owner: object, definition: OutletArgProvider): OutletArgProvider {
+  create(
+    _owner: object,
+    definition: OutletArgProvider,
+    _args: unknown,
+    _env: unknown,
+    dynamicScope: DynamicScope | null
+  ): OutletArgProvider {
+    assert('Expected the outlet to be created with a dynamic scope', dynamicScope !== null);
+
+    dynamicScope.set('outletState', definition.childOutletRef);
+
     return definition;
   }
 
@@ -242,6 +260,22 @@ function childOutletRefFor(
 
   return ref;
 }
+
+/**
+  `{{outlet}}` compiles to `{{component (-outlet)}}`.
+  It reads the dynamic scope, not `@outlet`, so it also works in a component
+  that a route template renders, for example a layout wrapper.
+*/
+export const outletHelper = /*@__PURE__*/ internalHelper(
+  (_args: CapturedArguments, _owner?: object, scope?: DynamicScope) => {
+    assert(
+      'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
+      scope
+    );
+
+    return scope.get('outletState');
+  }
+);
 
 setInternalComponentManager(new RootOutletManager(), RootOutlet.prototype);
 setComponentTemplate(ROOT_OUTLET_TEMPLATE, RootOutlet.prototype);
