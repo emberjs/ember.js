@@ -36,7 +36,6 @@ import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
-import type { OutletState } from '../../routing/route-managers/outlet-state';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
 
@@ -66,14 +65,14 @@ export interface View {
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: View | null,
-    public outletState: Reference<OutletState | undefined>
+    public outletState: Reference<object | null | undefined>
   ) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState);
   }
 
-  get(key: 'outletState'): Reference<OutletState | undefined> {
+  get(key: 'outletState'): Reference<object | null | undefined> {
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -81,7 +80,7 @@ export class DynamicScope implements GlimmerDynamicScope {
     return this.outletState;
   }
 
-  set(key: 'outletState', value: Reference<OutletState | undefined>) {
+  set(key: 'outletState', value: Reference<object | null | undefined>) {
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
