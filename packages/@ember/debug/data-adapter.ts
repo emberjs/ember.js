@@ -5,7 +5,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { dasherize } from '@ember/-internals/string';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import Namespace from '@ember/application/namespace';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import type { Cache } from '@glimmer/validator/lib/tracking';
 import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';

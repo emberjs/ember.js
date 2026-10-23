@@ -6,11 +6,9 @@ import type {
 } from '@ember/-internals/metal/lib/decorator';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import expandProperties from '@ember/-internals/metal/lib/expand_properties';
-import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import CoreObject from '@ember/object/core';
-import InternalObservable from '@ember/object/observable-internal';
+import EmberObject from '@ember/object/lib/ember-object';
 import {
   type Decorator,
   identifyModernDecoratorArgs,
@@ -31,25 +29,15 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 
 /**
-  `EmberObject` is the main base class for all Ember objects. It is a subclass
-  of `CoreObject` with the `Observable` mixin applied. For details,
-  see the documentation for each of these.
-
-  @class EmberObject
-  @extends CoreObject
-  @uses Observable
-  @public
+  Framework code imports the class from `@ember/object/lib/ember-object`, so
+  that it keeps working when the build flag removes this export.
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface EmberObject extends InternalObservable {}
-class EmberObject extends CoreObject.extend(InternalObservable) {
-  get _debugContainerKey() {
-    let factory = getFactoryFor(this);
-    return factory !== undefined && factory.fullName;
-  }
-}
+const ExportedEmberObject = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : EmberObject
+) as typeof EmberObject;
+type ExportedEmberObject = EmberObject;
 
-export default EmberObject;
+export default ExportedEmberObject;
 
 /**
   Decorator that turns the target function into an Action which can be accessed

@@ -8,7 +8,7 @@ import {
 
 import { action, set } from '@ember/object';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../utils/helpers';

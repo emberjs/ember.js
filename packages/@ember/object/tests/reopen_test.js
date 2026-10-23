@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 // TODO: Update these tests (or the title) to match each other.
