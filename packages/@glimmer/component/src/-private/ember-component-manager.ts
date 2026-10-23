@@ -1,16 +1,25 @@
+import { DEBUG } from '@glimmer/env';
 import { destroy } from '@ember/destroyable';
 import { capabilities } from '@ember/component';
 import { schedule } from '@ember/runloop';
-import BaseComponentManager from './base-component-manager';
 
-import { type default as GlimmerComponent, IS_DESTROYING_KEY, IS_DESTROYED_KEY } from './component';
-import type { Arguments } from '@glimmer/interfaces';
+import {
+  type default as GlimmerComponent,
+  ARGS_SET,
+  IS_DESTROYING_KEY,
+  IS_DESTROYED_KEY,
+} from './component';
+import type { Arguments, ComponentManager } from '@glimmer/interfaces';
 
 const CAPABILITIES = capabilities('3.13', {
   destructor: true,
   asyncLifecycleCallbacks: false,
   updateHook: false,
 });
+
+interface Constructor<T> {
+  new (owner: unknown, args: Record<string, unknown>): T;
+}
 
 function scheduledDestroyComponent(component: GlimmerComponent): void {
   if (component.isDestroyed) {
@@ -22,13 +31,34 @@ function scheduledDestroyComponent(component: GlimmerComponent): void {
 }
 
 /**
- * This component manager runs in Ember.js environments and extends the base component manager to:
+ * This component manager runs in Ember.js environments and:
  *
- * 1. Properly destroy the component's associated `meta` data structure
- * 2. Schedule destruction using Ember's runloop
+ * 1. Properly destroys the component's associated `meta` data structure
+ * 2. Schedules destruction using Ember's runloop
  */
-class EmberGlimmerComponentManager extends BaseComponentManager<GlimmerComponent> {
+class EmberGlimmerComponentManager implements ComponentManager<GlimmerComponent> {
   capabilities = CAPABILITIES;
+
+  private owner: unknown;
+
+  constructor(owner: unknown) {
+    this.owner = owner;
+  }
+
+  createComponent(
+    ComponentClass: Constructor<GlimmerComponent>,
+    args: Arguments
+  ): GlimmerComponent {
+    if (DEBUG) {
+      ARGS_SET.set(args.named, true);
+    }
+
+    return new ComponentClass(this.owner, args.named);
+  }
+
+  getContext(component: GlimmerComponent): GlimmerComponent {
+    return component;
+  }
 
   destroyComponent(component: GlimmerComponent): void {
     if (component.isDestroying) {
