@@ -32,6 +32,7 @@ import {
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type { Tag } from '@glimmer/interfaces';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
@@ -394,7 +395,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
       this._arrangedContentTag === null ||
       !validateTag(this._arrangedContentTag, this._arrangedContentRevision!)
     ) {
-      let arrangedContent = this.get('arrangedContent');
+      let arrangedContent = get(this, 'arrangedContent');
 
       if (this._arrangedContentTag === null) {
         // This is the first time the proxy has been setup, only add the observer
@@ -422,5 +423,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
 ArrayProxy.reopen(InternalMutableArray, {
   arrangedContent: alias('content'),
 });
+
+setFrameworkClass(ArrayProxy);
 
 export default ArrayProxy;

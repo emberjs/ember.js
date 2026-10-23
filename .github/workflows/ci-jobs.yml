@@ -124,6 +124,8 @@ jobs:
             VITE_STABLE_DECORATORS: "true"
           - name: "Stable decorators (TypeScript emit)"
             VITE_STABLE_DECORATORS: "typescript"
+          - name: "Classic features dropped"
+            EMBER_DROP_CLASSIC_FEATURES: "true"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -139,6 +141,7 @@ jobs:
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
           VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
+          EMBER_DROP_CLASSIC_FEATURES: ${{ matrix.EMBER_DROP_CLASSIC_FEATURES }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}

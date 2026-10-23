@@ -6,6 +6,7 @@ import EmberObject from '@ember/object';
 import { getElementView } from './utils';
 import type { BootEnvironment } from '@ember/engine/instance';
 import type Component from '@ember/-internals/glimmer/lib/component';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module ember
@@ -316,3 +317,5 @@ export default class EventDispatcher extends EmberObject {
     return '(EventDispatcher)';
   }
 }
+
+setFrameworkClass(EventDispatcher);

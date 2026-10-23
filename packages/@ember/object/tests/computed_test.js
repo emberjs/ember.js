@@ -204,7 +204,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test can iterate over a list of computed properties for a class`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can iterate over a list of computed properties for a class`](
       assert
     ) {
       expectDeprecation(
@@ -363,7 +363,7 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test observing prop installed with computed macro reads and overriding it in create() works`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing prop installed with computed macro reads and overriding it in create() works`](
       assert
     ) {
       expectDeprecation(
@@ -528,7 +528,7 @@ moduleFor(
       assert.deepEqual(n.normalized, ['bar']);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lazy computation cannot cause infinite cycles`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lazy computation cannot cause infinite cycles`](
       assert
     ) {
       expectDeprecation(
