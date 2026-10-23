@@ -23,7 +23,7 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
     reference: Nullable<SimpleNode>,
     html: string
   ): Bounds {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated, @typescript-eslint/no-non-null-assertion
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let raw = this.document.createRawHTMLSection!(html);
     parent.insertBefore(raw, reference);
     return new ConcreteBounds(parent, raw, raw);

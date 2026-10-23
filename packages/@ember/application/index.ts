@@ -28,7 +28,7 @@ import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
-import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleElement } from '@glimmer/interfaces';
 
 /**
  * @deprecated Use `import { getOwner } from '@ember/owner';` instead.

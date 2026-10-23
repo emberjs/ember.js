@@ -26,7 +26,7 @@ import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleElement } from '@glimmer/interfaces';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
@@ -435,7 +435,7 @@ export class BaseRenderer {
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...options },
-      document as SimpleDocument,
+      document,
       new ResolverImpl(),
       clientBuilder
     );
@@ -711,7 +711,7 @@ const isCursor = (into: IntoTarget): into is Cursor => 'element' in into;
 const isDOMElement = (into: IntoTarget): into is Element => 'innerHTML' in into;
 
 function toCursor(into: IntoTarget): Cursor {
-  return isCursor(into) ? into : { element: into as SimpleElement, nextSibling: null };
+  return isCursor(into) ? into : { element: into, nextSibling: null };
 }
 
 /**
@@ -740,7 +740,7 @@ function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): 
   if (last?.glimmerResult) {
     last.result.destroy();
 
-    return { element: element as SimpleElement, nextSibling: last.glimmerResult.firstNode() };
+    return { element, nextSibling: last.glimmerResult.firstNode() };
   }
 
   if (!last && isDOMElement(into)) {

@@ -1,4 +1,4 @@
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '../../dom/simple';
 
 import type { Destroyable } from '../../core.js';
 import type { Owner } from '../../runtime.js';

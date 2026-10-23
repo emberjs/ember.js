@@ -30,9 +30,6 @@ importers:
       '@embroider/addon-shim':
         specifier: ^1.10.2
         version: 1.10.2
-      '@simple-dom/interface':
-        specifier: ^1.4.0
-        version: 1.4.0
       backburner.js:
         specifier: ^2.8.0
         version: 2.8.0
@@ -394,9 +391,6 @@ importers:
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../../@glimmer/vm
-      '@simple-dom/interface':
-        specifier: ^1.4.0
-        version: 1.4.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -470,6 +464,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
@@ -747,6 +744,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
@@ -1838,9 +1838,6 @@ importers:
 
   packages/@glimmer/interfaces:
     dependencies:
-      '@simple-dom/interface':
-        specifier: ^1.4.0
-        version: 1.4.0
       type-fest:
         specifier: ^4.35.0
         version: 4.41.0

@@ -1,4 +1,4 @@
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '../dom/simple';
 
 import type { Nullable } from '../core.js';
 import type { AppendingBlock } from '../dom/attributes.js';
