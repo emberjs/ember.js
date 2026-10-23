@@ -25,6 +25,11 @@
     "url": "git+https://github.com/emberjs/ember.js.git",
     "directory": "packages/@glimmer/component"
   },
+  "files": [
+    "addon-main.cjs",
+    "dist",
+    "src"
+  ],
   "scripts": {},
   "dependencies": {
     "@embroider/addon-shim": "^1.10.2"
