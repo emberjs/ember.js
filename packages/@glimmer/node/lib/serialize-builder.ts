@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type {
   Bounds,
   Environment,
@@ -14,19 +13,15 @@ import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
 import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
-const TEXT_NODE = 3;
-
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
-function currentNode(
-  cursor: TreeBuilder | { element: SimpleElement; nextSibling: SimpleNode }
-): Nullable<SimpleNode> {
-  let { element, nextSibling } = cursor;
+function currentNode(cursor: TreeBuilder): Nullable<SimpleNode> {
+  let { dom, element, nextSibling } = cursor;
 
   if (nextSibling === null) {
-    return element.lastChild;
+    return dom.lastChild(element);
   } else {
-    return nextSibling.previousSibling;
+    return dom.previousSibling(nextSibling);
   }
 }
 
@@ -34,7 +29,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
-    let { tagName } = this.element;
+    let tagName = this.dom.tagName(this.element);
 
     if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
       let depth = this.serializeBlockDepth++;
@@ -45,7 +40,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __closeBlock(): void {
-    let { tagName } = this.element;
+    let tagName = this.dom.tagName(this.element);
 
     super.__closeBlock();
 
@@ -56,7 +51,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendHTML(html: string): Bounds {
-    let { tagName } = this.element;
+    let tagName = this.dom.tagName(this.element);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
       return super.__appendHTML(html);
@@ -84,7 +79,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    let { tagName } = this.element;
+    let tagName = this.dom.tagName(this.element);
     let current = currentNode(this);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
@@ -92,7 +87,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     } else if (string === '') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return this.__appendComment('% %') as any as SimpleText;
-    } else if (current && current.nodeType === TEXT_NODE) {
+    } else if (current && this.dom.isText(current)) {
       this.__appendComment('%|%');
     }
 
@@ -110,11 +105,9 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
   override openElement(tag: string) {
     if (tag === 'tr') {
-      if (
-        this.element.tagName !== 'TBODY' &&
-        this.element.tagName !== 'THEAD' &&
-        this.element.tagName !== 'TFOOT'
-      ) {
+      let parentTag = this.dom.tagName(this.element);
+
+      if (parentTag !== 'TBODY' && parentTag !== 'THEAD' && parentTag !== 'TFOOT') {
         this.openElement('tbody');
         // This prevents the closeBlock comment from being re-parented
         // under the auto inserted tbody. Rehydration builder needs to
@@ -136,7 +129,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   ): RemoteBlock {
     let { dom } = this;
     let script = dom.createElement('script');
-    script.setAttribute('glmr', cursorId);
+    dom.setAttribute(script, 'glmr', cursorId);
     dom.insertBefore(element, script, insertBefore);
     return super.pushRemoteElement(element, cursorId, insertBefore);
   }

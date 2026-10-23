@@ -1,4 +1,4 @@
-import type { SimpleText, UpdatingOpcode } from '@glimmer/interfaces';
+import type { SimpleText, UpdatingOpcode, UpdatingVM } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { valueForRef } from '@glimmer/reference/lib/reference';
 
@@ -11,7 +11,7 @@ export default class DynamicTextContent implements UpdatingOpcode {
     private lastValue: string
   ) {}
 
-  evaluate() {
+  evaluate(vm: UpdatingVM) {
     let value = valueForRef(this.reference);
 
     let { lastValue } = this;
@@ -29,8 +29,7 @@ export default class DynamicTextContent implements UpdatingOpcode {
     }
 
     if (normalized !== lastValue) {
-      let textNode = this.node;
-      textNode.nodeValue = this.lastValue = normalized;
+      vm.dom.setNodeValue(this.node, (this.lastValue = normalized));
     }
   }
 }

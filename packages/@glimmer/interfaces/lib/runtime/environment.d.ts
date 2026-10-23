@@ -6,7 +6,7 @@ import type {
   ComponentInstanceState,
 } from '../components.js';
 import type { Nullable } from '../core.js';
-import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes.js';
+import type { DOMRenderer } from '../dom/renderer.js';
 import type { WithCreateInstance } from '../managers.js';
 import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
@@ -14,9 +14,12 @@ import type { ModifierInstance } from './modifier.js';
 import type { Program } from './runtime.js';
 
 export interface EnvironmentOptions {
+  /**
+   * The environment makes a `DOMRenderer` for this document.
+   * `dom` has priority over `document`.
+   */
   document?: SimpleDocument;
-  appendOperations?: GlimmerTreeConstruction;
-  updateOperations?: GlimmerTreeChanges;
+  dom?: DOMRenderer;
 }
 
 export type Transaction = object;
@@ -42,8 +45,10 @@ export interface Environment {
   begin(): void;
   commit(): void;
 
-  getDOM(): GlimmerTreeChanges;
-  getAppendOperations(): GlimmerTreeConstruction;
+  /**
+   * Every operation on the output tree goes through this object.
+   */
+  readonly dom: DOMRenderer;
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;

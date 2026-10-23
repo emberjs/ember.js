@@ -1,4 +1,9 @@
-import type { CompilableTemplate, Nullable, UpdatingOpcode } from '@glimmer/interfaces';
+import type {
+  CompilableTemplate,
+  DOMRenderer,
+  Nullable,
+  UpdatingOpcode,
+} from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
@@ -268,14 +273,15 @@ export class AssertFilter<T, U> implements UpdatingOpcode {
 
   constructor(
     private ref: Reference<T>,
-    private filter: (from: T) => U
+    private filter: (from: T, dom: DOMRenderer) => U,
+    dom: DOMRenderer
   ) {
-    this.last = filter(valueForRef(ref));
+    this.last = filter(valueForRef(ref), dom);
   }
 
   evaluate(vm: UpdatingVM) {
     let { last, ref, filter } = this;
-    let current = filter(valueForRef(ref));
+    let current = filter(valueForRef(ref), vm.dom);
 
     if (last !== current) {
       vm.throw();
