@@ -1,5 +1,16 @@
 # Ember Changelog
 
+## Release (2026-10-23)
+
+* @glimmer/component 2.2.1 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/component`
+  * [#21766](https://github.com/emberjs/ember.js/pull/21766) [BUGFIX] Point @glimmer/component typesVersions at the emitted types ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2026-10-20)
 
 * @glimmer/syntax 0.97.0 (minor)
