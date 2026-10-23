@@ -1,5 +1,6 @@
 import { run } from '@ember/runloop';
 import Controller from '@ember/controller';
+import { isDestroying } from '@ember/destroyable';
 import Router from '@ember/routing/router';
 import { EventDispatcher } from '@ember/-internals/views';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
@@ -56,7 +57,7 @@ moduleFor(
       );
 
       assert.ok(
-        firstController.isDestroying,
+        isDestroying(firstController),
         'controllers are destroyed when their application is reset'
       );
 

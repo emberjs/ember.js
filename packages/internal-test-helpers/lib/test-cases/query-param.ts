@@ -1,6 +1,7 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
-import type EmberObject from '@ember/object';
+import { set, setProperties } from '@ember/object';
+import type Owner from '@ember/owner';
 import NoneLocation from '@ember/routing/none-location';
 
 import ApplicationTestCase from './application';
@@ -73,13 +74,13 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     };
   }
 
-  async setAndFlush(obj: EmberObject, prop: Record<string, unknown>): Promise<void>;
-  async setAndFlush(obj: EmberObject, prop: string, value: unknown): Promise<void>;
-  async setAndFlush(obj: EmberObject, prop: Record<string, unknown> | string, value?: unknown) {
+  async setAndFlush(obj: object, prop: Record<string, unknown>): Promise<void>;
+  async setAndFlush(obj: object, prop: string, value: unknown): Promise<void>;
+  async setAndFlush(obj: object, prop: Record<string, unknown> | string, value?: unknown) {
     if (typeof prop === 'object') {
-      obj.setProperties(prop);
+      setProperties(obj, prop);
     } else {
-      obj.set(prop, value);
+      set(obj, prop, value);
     }
 
     await runLoopSettled();
@@ -99,13 +100,12 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: [param],
-          [param]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        constructor(owner: Owner) {
+          super(owner);
+          Object.assign(this, { queryParams: [param], [param]: defaultValue }, options);
+        }
+      }
     );
   }
 
@@ -124,15 +124,12 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   ) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: {
-            [prop]: urlKey,
-          },
-          [prop]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        constructor(owner: Owner) {
+          super(owner);
+          Object.assign(this, { queryParams: [{ [prop]: urlKey }], [prop]: defaultValue }, options);
+        }
+      }
     );
   }
 }
