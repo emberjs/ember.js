@@ -18,6 +18,7 @@ import {
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
+import { destroy } from '@ember/destroyable';
 import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
@@ -729,7 +730,7 @@ moduleFor(
           model() {}
           setupController() {
             postsTemplateRendered = true;
-            this._super(...arguments);
+            super.setupController(...arguments);
           }
         }
       );
@@ -968,8 +969,8 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
               expectDeprecation(
@@ -1012,8 +1013,8 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
               expectDeprecation(
@@ -1478,7 +1479,7 @@ moduleFor(
       this.add(
         'route:boom',
         class extends Route {
-          init() {
+          constructor() {
             throw new Error('boom!');
           }
         }
@@ -1494,7 +1495,7 @@ moduleFor(
       this.add(
         'route:boom',
         class extends Route {
-          init() {
+          constructor() {
             throw new Error('boom!');
           }
         }
@@ -1618,8 +1619,8 @@ moduleFor(
       }
       this.add('engine:blog', BlogEngine);
       class EngineIndexRoute extends Route {
-        init() {
-          this._super(...arguments);
+        constructor(owner) {
+          super(owner);
           engineInstance = getOwner(this);
         }
       }
@@ -1649,7 +1650,7 @@ moduleFor(
           run(router, 'destroy');
           assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
-          run(route, 'destroy');
+          run(() => destroy(route));
           assert.equal(
             router._updatableRootOutletState,
             null,
