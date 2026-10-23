@@ -17,6 +17,7 @@ import {
   isModernDecoratorArgs,
   onClassFinalized,
 } from '@ember/-internals/metal/lib/decorator-util';
+import internalComputed from '@ember/-internals/metal/lib/computed';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -24,7 +25,10 @@ export { get } from '@ember/-internals/metal/lib/property_get';
 export { set, trySet } from '@ember/-internals/metal/lib/property_set';
 export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
 export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
-export { default as computed } from '@ember/-internals/metal/lib/computed';
+
+export const computed = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalComputed
+) as typeof internalComputed;
 
 /**
 @module @ember/object

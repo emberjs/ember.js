@@ -3,7 +3,7 @@ import { action, computed } from '@ember/object';
 import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import { get } from '@ember/object';
-import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { RouterTestCase, moduleFor, testUnless } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -299,7 +299,9 @@ moduleFor(
         });
     }
 
-    async ['@test a computed property can depend on RouterService#currentURL'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a computed property can depend on RouterService#currentURL`](
+      assert
+    ) {
       await this.visit('/');
 
       let routerService = this.routerService;

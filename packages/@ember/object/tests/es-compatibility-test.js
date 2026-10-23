@@ -266,7 +266,9 @@ moduleFor(
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
-    ['@test calling metaForProperty on a native class works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test calling metaForProperty on a native class works`](
+      assert
+    ) {
       assert.expect(0);
 
       class SubEmberObject extends EmberObject {}
@@ -383,7 +385,9 @@ moduleFor(
       });
     }
 
-    '@test super and _super interop between old and new methods'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test super and _super interop between old and new methods`](
+      assert
+    ) {
       let calls = [];
       let changes = [];
       let events = [];

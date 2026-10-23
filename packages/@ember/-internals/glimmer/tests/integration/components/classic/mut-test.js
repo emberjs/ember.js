@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, styles, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, styles, runTask, testUnless } from 'internal-test-helpers';
 import { set, get, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -266,7 +266,7 @@ moduleFor(
       this.assertText('12');
     }
 
-    ['@test a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023`]() {
       let bottom, middle;
 
       this.owner.register(
@@ -456,7 +456,7 @@ moduleFor(
 moduleFor(
   'Mutable Bindings used in Computed Properties that are bound as attributeBindings (classic component)',
   class extends RenderingTestCase {
-    ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes`]() {
       let input, output;
 
       this.owner.register(
@@ -529,7 +529,7 @@ moduleFor(
       this.assert.strictEqual(get(input, 'height'), 60);
     }
 
-    ['@test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes`]() {
       let input, output;
 
       this.owner.register(

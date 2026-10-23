@@ -50,7 +50,7 @@ class ArrayMacroTestCase extends AbstractTestCase {
   }
 }
 
-if (!isRemoved && !EMBER_A_REMOVED) {
+if (!isRemoved && !EMBER_A_REMOVED && !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
   let obj;
   moduleFor(
     'map',

@@ -296,7 +296,7 @@ moduleFor(
       this.assertCurrentPath('/?foo=v5');
     }
 
-    async ['@test Can override inherited QP behavior by specifying queryParams as a computed property'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Can override inherited QP behavior by specifying queryParams as a computed property`](
       assert
     ) {
       assert.expect(3);

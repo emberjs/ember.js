@@ -262,6 +262,7 @@ function packages() {
 
       // private helpers that must not become importable module paths
       '@ember/array/lib/sort-compare.ts',
+      '@ember/object/lib/dependent-key-compat.ts',
     ],
     cwd: 'packages',
   });
