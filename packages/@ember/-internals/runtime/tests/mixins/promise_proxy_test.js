@@ -40,13 +40,13 @@ moduleFor(
       proxy = undefined;
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test present on ember namespace`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test present on ember namespace`](
       assert
     ) {
       assert.ok(PromiseProxyMixin, 'expected PromiseProxyMixin to exist');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test no promise, invoking then should raise`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test no promise, invoking then should raise`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -65,7 +65,7 @@ moduleFor(
       }, new RegExp("PromiseProxy's promise must be set"));
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test fulfillment`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test fulfillment`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -183,7 +183,7 @@ moduleFor(
       // rest of the promise semantics are tested in directly in RSVP
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test rejection`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test rejection`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -291,7 +291,7 @@ moduleFor(
     }
 
     // https://github.com/emberjs/ember.js/issues/15694
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test rejection without specifying reason`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test rejection without specifying reason`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -364,7 +364,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test unhandled rejects still propagate to RSVP.on('error', ...) `](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test unhandled rejects still propagate to RSVP.on('error', ...) `](
       assert
     ) {
       assert.expect(1);
@@ -404,7 +404,7 @@ moduleFor(
       RSVP.off('error', onerror);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should work with promise inheritance`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should work with promise inheritance`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -418,7 +418,7 @@ moduleFor(
       assert.ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should reset isFulfilled and isRejected when promise is reset`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should reset isFulfilled and isRejected when promise is reset`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -521,7 +521,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should have content when isFulfilled is set`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should have content when isFulfilled is set`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -537,7 +537,7 @@ moduleFor(
       run(deferred, 'resolve', true);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should have reason when isRejected is set`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should have reason when isRejected is set`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -558,7 +558,7 @@ moduleFor(
       }
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should not error if promise is resolved after proxy has been destroyed`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not error if promise is resolved after proxy has been destroyed`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -584,7 +584,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should not error if promise is rejected after proxy has been destroyed`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not error if promise is rejected after proxy has been destroyed`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -610,7 +610,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test promise chain is not broken if promised is resolved after proxy has been destroyed`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test promise chain is not broken if promised is resolved after proxy has been destroyed`](
       assert
     ) {
       this.expectProxyDeprecations();
@@ -644,7 +644,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test promise chain is not broken if promised is rejected after proxy has been destroyed`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test promise chain is not broken if promised is rejected after proxy has been destroyed`](
       assert
     ) {
       this.expectProxyDeprecations();
