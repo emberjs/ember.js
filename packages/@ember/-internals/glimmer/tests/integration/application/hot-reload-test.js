@@ -31,8 +31,8 @@ moduleFor(
       this.add(
         'service:reloader',
         class extends Service {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             this.revisions = {};
             this.callbacks = [];
 
