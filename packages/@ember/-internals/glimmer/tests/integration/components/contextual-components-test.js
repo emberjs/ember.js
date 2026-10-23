@@ -5,9 +5,10 @@ import { action } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+
+import { PositionalComponent } from '../../utils/positional-component';
 
 moduleFor(
   'Components test: contextual components',
@@ -27,207 +28,6 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText(expectedText);
-    }
-
-    ['@test renders with component helper with invocation params, hash']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{@greeting}} {{this.name}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      this.render(strip`
-      {{component (component "-looked-up") "Hodari" greeting="Hodi"}}`);
-
-      this.assertText('Hodi Hodari');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hodi Hodari');
-    }
-
-    ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
-        model: {
-          greeting: 'Gabon ',
-          name: 'Zack',
-        },
-      });
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack');
-
-      runTask(() => this.context.set('model.name', 'Matthew'));
-
-      this.assertText('Good morning Matthew');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
-
-      this.assertText('Gabon Zack');
-    }
-
-    // Take a look at this one. Seems to pass even when currying isn't implemented.
-    ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack ',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack Zack Good morning ');
-
-      runTask(() => this.context.set('model.name', 'Matthew '));
-
-      this.assertText('Good morning Matthew Matthew Good morning ');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
-
-      this.assertText('Gabon Zack Zack Gabon ');
-    }
-
-    ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack');
-
-      runTask(() => this.context.set('model.name', 'Matthew'));
-
-      this.assertText('Good morning Matthew');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
-
-      this.assertText('Gabon Zack');
-    }
-
-    ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack ',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack Zack Good morning ');
-
-      runTask(() => this.context.set('model.name', 'Matthew '));
-
-      this.assertText('Good morning Matthew Matthew Good morning ');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
-
-      this.assertText('Gabon Zack Zack Gabon ');
-    }
-
-    ['@test renders with component helper with curried params, hash']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{@greeting}} {{this.name}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      this.render(strip`
-      {{component (component "-looked-up" "Hodari" greeting="Hodi")
-                  greeting="Hola"}}`);
-
-      this.assertText('Hola Hodari');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hola Hodari');
     }
 
     ['@test updates when component path is bound']() {
@@ -322,48 +122,6 @@ moduleFor(
       this.assertText('Hodi');
     }
 
-    ['@test nested components do not overwrite positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}'
-      );
-
-      this.assertText('Sergio 29');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Sergio 29');
-    }
-
-    ['@test positional parameters are combined not clobbered']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['greeting', 'name', 'age'];
-          }
-        )
-      );
-
-      this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
-
-      this.assertText('Hi Max 9');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hi Max 9');
-    }
-
     ['@test nested components overwrite hash parameters']() {
       this.owner.register(
         'component:-looked-up',
@@ -400,61 +158,6 @@ moduleFor(
       runTask(() => this.context.set('model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi Sigmundur 33');
-    }
-
-    ['@test bound outer named parameters get updated in the right scope']() {
-      this.owner.register(
-        'component:-inner-component',
-        setComponentTemplate(
-          precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['comp'];
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends ClassicComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render(
-        '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
-        {
-          model: {
-            outerName: 'Outer',
-            outerAge: 28,
-          },
-        }
-      );
-
-      this.assertText('Outer 28');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Outer 28');
-
-      runTask(() => this.context.set('model.outerAge', 29));
-
-      this.assertText('Outer 29');
-
-      runTask(() => this.context.set('model.outerName', 'Not outer'));
-
-      this.assertText('Not outer 29');
-
-      runTask(() => {
-        this.context.set('model', {
-          outerName: 'Outer',
-          outerAge: 28,
-        });
-      });
-
-      this.assertText('Outer 28');
     }
 
     ['@test bound outer hash parameters get updated in the right scope']() {
@@ -718,80 +421,6 @@ moduleFor(
       runTask(() => this.context.set('model', { expectedText }));
 
       this.assertText(expectedText);
-    }
-
-    ['@test renders with dot path and with rest positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.params}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      let expectedText = 'Hodi';
-
-      this.render(
-        strip`
-      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
-        {{object.lookedup this.model.expectedText "Hola"}}
-      {{/let}}`,
-        {
-          model: {
-            expectedText,
-          },
-        }
-      );
-
-      this.assertText(`${expectedText},Hola`);
-
-      runTask(() => this.rerender());
-
-      this.assertText(`${expectedText},Hola`);
-
-      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
-
-      this.assertText('Kaixo,Hola');
-
-      runTask(() => this.context.set('model', { expectedText }));
-
-      this.assertText(`${expectedText},Hola`);
-    }
-
-    ['@test renders with dot path and rest parameter does not leak'](assert) {
-      // In the original implementation, positional parameters were not handled
-      // correctly causing the first positional parameter to be the contextual
-      // component itself.
-      let value = false;
-
-      this.owner.register(
-        'component:my-component',
-        setComponentTemplate(
-          precompileTemplate(''),
-          class extends ClassicComponent {
-            static positionalParams = ['value'];
-
-            // a classic component gets its positional params as properties before `init`,
-            // not in the constructor
-            init() {
-              super.init(...arguments);
-              value = this.value;
-            }
-          }
-        )
-      );
-
-      this.render(
-        strip`
-      {{#let (hash my-component=(component 'my-component' this.first)) as |c|}}
-        {{c.my-component}}
-      {{/let}}`,
-        { first: 'first' }
-      );
-
-      assert.equal(value, 'first', 'value is the expected parameter');
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
@@ -1215,32 +844,6 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#17121 local variable should win over helper (with arguments)']() {
-      this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(
-            'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
-          ),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(strip`
-        {{#let (component 'foo-bar') as |foo|}}
-          {{foo 1 2 3}}
-        {{/let}}
-      `);
-
-      this.assertText('foo-bar component: 1 2 3');
-
-      this.assertStableRerender();
-    }
-
     ['@test RFC#311 invoking named args (without arguments)']() {
       this.owner.register(
         'component:x-outer',
@@ -1254,29 +857,6 @@ moduleFor(
       this.render('{{x-outer inner=(component "x-inner")}}');
 
       this.assertText('inner');
-
-      this.assertStableRerender();
-    }
-
-    ['@test RFC#311 invoking named args (with arguments)']() {
-      this.owner.register(
-        'component:x-outer',
-        setComponentTemplate(precompileTemplate('{{@inner 1 2 3}}'), class extends Component {})
-      );
-
-      this.owner.register(
-        'component:x-inner',
-        setComponentTemplate(
-          precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render('{{x-outer inner=(component "x-inner")}}');
-
-      this.assertText('inner: 1 2 3');
 
       this.assertStableRerender();
     }
@@ -1395,6 +975,393 @@ moduleFor(
       this.render('{{test-component}}');
 
       this.assertText('true');
+    }
+
+    ['@test renders with component helper with invocation params, hash']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{@greeting}} {{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      {{component (component "-looked-up") "Hodari" greeting="Hodi"}}`);
+
+      this.assertText('Hodi Hodari');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Hodi Hodari');
+    }
+
+    ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
+        model: {
+          greeting: 'Gabon ',
+          name: 'Zack',
+        },
+      });
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack');
+
+      runTask(() => this.context.set('model.name', 'Matthew'));
+
+      this.assertText('Good morning Matthew');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+
+      this.assertText('Gabon Zack');
+    }
+
+    ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack ',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack Zack Good morning ');
+
+      runTask(() => this.context.set('model.name', 'Matthew '));
+
+      this.assertText('Good morning Matthew Matthew Good morning ');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+
+      this.assertText('Gabon Zack Zack Gabon ');
+    }
+
+    ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack');
+
+      runTask(() => this.context.set('model.name', 'Matthew'));
+
+      this.assertText('Good morning Matthew');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+
+      this.assertText('Gabon Zack');
+    }
+
+    ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack ',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack Zack Good morning ');
+
+      runTask(() => this.context.set('model.name', 'Matthew '));
+
+      this.assertText('Good morning Matthew Matthew Good morning ');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+
+      this.assertText('Gabon Zack Zack Gabon ');
+    }
+
+    ['@test renders with component helper with curried params, hash']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{@greeting}} {{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      {{component (component "-looked-up" "Hodari" greeting="Hodi")
+                  greeting="Hola"}}`);
+
+      this.assertText('Hola Hodari');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Hola Hodari');
+    }
+
+    ['@test nested components do not overwrite positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}'
+      );
+
+      this.assertText('[Sergio][29][Marvin][21][Hodari]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Sergio][29][Marvin][21][Hodari]');
+    }
+
+    ['@test positional parameters are combined not clobbered']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
+
+      this.assertText('[Hi][Max][9]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Hi][Max][9]');
+    }
+
+    ['@test bound outer named parameters get updated in the right scope']() {
+      this.owner.register(
+        'component:-inner-component',
+        setComponentTemplate(
+          precompileTemplate('{{component (get this.positional 0) "Inner"}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
+        {
+          model: {
+            outerName: 'Outer',
+            outerAge: 28,
+          },
+        }
+      );
+
+      this.assertText('[Outer][28][Inner]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Outer][28][Inner]');
+
+      runTask(() => this.context.set('model.outerAge', 29));
+
+      this.assertText('[Outer][29][Inner]');
+
+      runTask(() => this.context.set('model.outerName', 'Not outer'));
+
+      this.assertText('[Not outer][29][Inner]');
+
+      runTask(() => {
+        this.context.set('model', {
+          outerName: 'Outer',
+          outerAge: 28,
+        });
+      });
+
+      this.assertText('[Outer][28][Inner]');
+    }
+
+    ['@test renders with dot path and with rest positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      let expectedText = 'Hodi';
+
+      this.render(
+        strip`
+      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
+        {{object.lookedup this.model.expectedText "Hola"}}
+      {{/let}}`,
+        {
+          model: {
+            expectedText,
+          },
+        }
+      );
+
+      this.assertText(`[${expectedText}][Hola]`);
+
+      runTask(() => this.rerender());
+
+      this.assertText(`[${expectedText}][Hola]`);
+
+      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
+
+      this.assertText('[Kaixo][Hola]');
+
+      runTask(() => this.context.set('model', { expectedText }));
+
+      this.assertText(`[${expectedText}][Hola]`);
+    }
+
+    ['@test renders with dot path and rest parameter does not leak'](assert) {
+      let value = false;
+
+      this.owner.register(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends PositionalComponent {
+            constructor(args) {
+              super(args);
+              value = this.positional[0];
+            }
+          }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#let (hash my-component=(component 'my-component' this.first)) as |c|}}
+        {{c.my-component}}
+      {{/let}}`,
+        { first: 'first' }
+      );
+
+      assert.equal(value, 'first', 'value is the expected parameter');
+    }
+
+    ['@test GH#17121 local variable should win over helper (with arguments)']() {
+      this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            'foo-bar component:{{#each this.positional as |param|}} {{param}}{{/each}}'
+          ),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+        {{#let (component 'foo-bar') as |foo|}}
+          {{foo 1 2 3}}
+        {{/let}}
+      `);
+
+      this.assertText('foo-bar component: 1 2 3');
+
+      this.assertStableRerender();
+    }
+
+    ['@test RFC#311 invoking named args (with arguments)']() {
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(precompileTemplate('{{@inner 1 2 3}}'), class extends Component {})
+      );
+
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('inner:{{#each this.positional as |param|}} {{param}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{x-outer inner=(component "x-inner")}}');
+
+      this.assertText('inner: 1 2 3');
+
+      this.assertStableRerender();
     }
   }
 );
