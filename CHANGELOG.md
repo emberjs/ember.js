@@ -2,6 +2,17 @@
 
 ## Release (2026-10-23)
 
+* @glimmer/component 2.2.2 (patch)
+
+#### :house: Internal
+* `@glimmer/component`
+  * [#21758](https://github.com/emberjs/ember.js/pull/21758) [CLEANUP] Inline BaseComponentManager in @glimmer/component ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2026-10-23)
+
 * @glimmer/component 2.2.1 (patch)
 
 #### :bug: Bug Fix
