@@ -43,6 +43,57 @@ moduleFor(
       assert.equal(validateTag(tag, snapshot), true);
     }
 
+    [`@test a write dirties the tag that tagForProperty gave before the first read or write`](
+      assert
+    ) {
+      class Tracked {
+        @tracked first = 'Tom';
+      }
+
+      let obj = new Tracked();
+
+      let tag = tagForProperty(obj, 'first');
+      let snapshot = valueForTag(tag);
+
+      obj.first = 'Thomas';
+
+      assert.equal(validateTag(tag, snapshot), false);
+    }
+
+    [`@test notifyPropertyChange dirties the tag that a read of a tracked field consumed`](assert) {
+      class Tracked {
+        @tracked first = 'Tom';
+      }
+
+      let obj = new Tracked();
+
+      let tag = track(() => obj.first);
+      let snapshot = valueForTag(tag);
+
+      notifyPropertyChange(obj, 'first');
+
+      assert.equal(validateTag(tag, snapshot), false);
+    }
+
+    [`@test a first write does not run the initializer of a tracked field`](assert) {
+      let runs = 0;
+
+      class Tracked {
+        @tracked first = ++runs;
+      }
+
+      let obj = new Tracked();
+
+      // Stable decorators run the initializer in the constructor.
+      let expected = import.meta.env.VITE_STABLE_DECORATORS ? 1 : 0;
+
+      obj.first = 10;
+
+      assert.equal(runs, expected);
+      assert.equal(obj.first, 10);
+      assert.equal(runs, expected);
+    }
+
     [`@test autotracking should work with initializers (${import.meta.env.VITE_STABLE_DECORATORS ? 'stable' : 'legacy'} decorators)`](
       assert
     ) {
