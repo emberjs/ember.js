@@ -16,7 +16,12 @@
  * - a `renderComponent` root argument is read as Glimmer's `getProp` reads it:
  *   a binding that reads `@a` runs again when `@a` changes (a `trackedObject`
  *   write, or `set()` on a plain args object), and not when another argument
- *   changes.
+ *   changes;
+ * - a component whose custom manager creates it with its arguments and does
+ *   not replace them in `updateComponent` reads the new values of its named
+ *   arguments after a change, in a plain getter and in a computed property
+ *   over `args.named.*` (`Component Manager - Curly Invocation` covers the
+ *   positional ones).
  *
  * The test page loads this file only in GXT builds (`virtual:gxt-tests`).
  */
@@ -28,14 +33,20 @@ import {
   RenderingTestCase,
   runTask,
 } from 'internal-test-helpers';
-import { set } from '@ember/object';
+import { setComponentManager } from '@ember/-internals/glimmer';
+import { computed, set, setProperties } from '@ember/object';
 import type Owner from '@ember/owner';
 import { trackedObject } from '@ember/reactive/collections';
 import { renderComponent, renderSettled } from '@ember/renderer';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
-import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
+import {
+  componentCapabilities,
+  modifierCapabilities,
+  setComponentTemplate,
+  setModifierManager,
+} from '@glimmer/manager';
 import { tracked } from '@glimmer/tracking';
 
 // A modifier definition whose manager records each install, with the first
@@ -254,6 +265,67 @@ moduleFor(
       runTask(() => set(args, 'a', 2));
       await renderSettled();
       assertHTML('<p>2</p><p>1</p>');
+    }
+  }
+);
+
+// A component that its custom manager creates with its arguments and does not
+// update: `updateComponent` leaves `args` as it was.
+class NativeArgsComponent {
+  args: { named: { firstName: string; lastName: string } };
+  constructor(args: NativeArgsComponent['args']) {
+    this.args = args;
+  }
+}
+
+class NativeArgsComponentManager {
+  capabilities = componentCapabilities('3.13');
+
+  createComponent(ComponentClass: object, args: unknown) {
+    return new (ComponentClass as typeof NativeArgsComponent)(args as NativeArgsComponent['args']);
+  }
+
+  updateComponent() {}
+
+  getContext(component: unknown) {
+    return component;
+  }
+}
+
+setComponentManager(() => new NativeArgsComponentManager(), NativeArgsComponent);
+
+moduleFor(
+  'GXT custom component manager arguments',
+  class extends RenderingTestCase {
+    ['@test a component reads its changed named arguments']() {
+      class FooBar extends NativeArgsComponent {
+        @computed('args.named.firstName', 'args.named.lastName')
+        get salutation() {
+          return `${this.args.named.firstName} ${this.args.named.lastName}`;
+        }
+
+        get initials() {
+          return this.args.named.firstName.charAt(0) + this.args.named.lastName.charAt(0);
+        }
+      }
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<p>{{this.salutation}}</p><p>{{this.initials}}</p>'),
+          FooBar
+        )
+      );
+      this.render('{{foo-bar firstName=this.firstName lastName=this.lastName}}', {
+        firstName: 'Yehuda',
+        lastName: 'Katz',
+      });
+      this.assertHTML('<p>Yehuda Katz</p><p>YK</p>');
+
+      runTask(() => setProperties(this.context, { firstName: 'Chad', lastName: 'Hietala' }));
+      this.assertHTML('<p>Chad Hietala</p><p>CH</p>');
+
+      runTask(() => set(this.context, 'firstName', 'Yehuda'));
+      this.assertHTML('<p>Yehuda Hietala</p><p>YH</p>');
     }
   }
 );

@@ -10639,7 +10639,8 @@ function handleCustomManagedComponent(
     }
 
     // Build named/positional args from the GXT args object
-    const { liveNamed, livePositional, argGetters, posGetters } = buildCustomManagedArgs(args);
+    const { liveNamed, livePositional, argGetters, posGetters, seedLiveArgs } =
+      buildCustomManagedArgs(args);
 
     // Each invocation creates its own component, as Glimmer's
     // `CreateComponentOpcode` does: an instance is never handed to another
@@ -10937,6 +10938,7 @@ function handleCustomManagedComponent(
       posGetters,
       liveNamed,
       livePositional,
+      seedLiveArgs,
     });
 
     // Yielded-content and forwarded-attribute reactivity: when the host's
@@ -10983,6 +10985,7 @@ function _installCustomManagedArgEffect(o: {
   posGetters: (() => any)[];
   liveNamed: Record<string, any>;
   livePositional: any[];
+  seedLiveArgs: (named: Record<string, any>, positional: any[]) => void;
 }): void {
   const { instance, context, renderContext, actualManager, asyncCaps } = o;
   const argGetters = o.argGetters || {};
@@ -11041,7 +11044,7 @@ function _installCustomManagedArgEffect(o: {
       if (v !== lastNamed[k]) changedNamed.push(k);
     }
     const newPos: any[] = [];
-    let posChanged = false;
+    const changedPos: number[] = [];
     for (let i = 0; i < posGetters.length; i++) {
       let v: any;
       try {
@@ -11051,8 +11054,9 @@ function _installCustomManagedArgEffect(o: {
         v = lastPos[i];
       }
       newPos[i] = v;
-      if (v !== lastPos[i]) posChanged = true;
+      if (v !== lastPos[i]) changedPos.push(i);
     }
+    const posChanged = changedPos.length > 0;
 
     if (!primed) {
       primed = true;
@@ -11064,14 +11068,28 @@ function _installCustomManagedArgEffect(o: {
     for (const k of namedKeys) lastNamed[k] = newNamed[k];
     for (let i = 0; i < posGetters.length; i++) lastPos[i] = newPos[i];
 
+    // The component reads its arguments through `liveNamed` /
+    // `livePositional` (its `this.args.named` / `.positional` when its
+    // manager does not replace `args` in updateComponent). They memoize per
+    // render pass, and this effect runs in the pass that rendered them: give
+    // them the values just read, so the component's reads see the new ones.
+    o.seedLiveArgs(newNamed, newPos);
+    // A computed property of the component that depends on an argument
+    // (`@computed('args.named.x')`, `'args.positional.[]'`,
+    // `'args.positional.0'`) depends on the tag of that key of `liveNamed` /
+    // `livePositional` (its chain tags). Glimmer's args proxy gives those keys
+    // the tags of the argument references, which the change invalidated; here
+    // the change dirties them, so the property recomputes in step (2) below.
+    for (const k of changedNamed) _dirtyCustomManagedArgTag(o.liveNamed, k);
+    if (posChanged) {
+      _dirtyCustomManagedArgTag(o.livePositional, '[]');
+      for (const i of changedPos) _dirtyCustomManagedArgTag(o.livePositional, String(i));
+    }
+
     // (1) Re-dispatch manager lifecycle hooks. updateComponent receives a
-    // freshly-captured args object built from the just-read source values.
-    // We deliberately do not reuse `o.liveNamed` / `o.livePositional` here:
-    // those proxies memoize per render-pass id, and this effect fires without
-    // advancing the pass id (no re-render runs), so their getters would
-    // return the stale snapshot from initial render. Building plain objects
-    // from `newNamed` / `newPos` ensures `this.args.named.<key>` reads fresh
-    // after a manager that does `set(component, 'args', args)`.
+    // freshly-captured args object built from the just-read source values,
+    // so `this.args.named.<key>` reads fresh after a manager that does
+    // `set(component, 'args', args)`.
     const freshNamed: Record<string, any> = {};
     for (const k of namedKeys) freshNamed[k] = newNamed[k];
     const freshPositional: any[] = newPos.slice();
@@ -11127,6 +11145,15 @@ function _installCustomManagedArgEffect(o: {
       }
     }
   });
+}
+
+// Dirty the classic tag of `key` on a custom-managed component's live
+// arguments object (`buildCustomManagedArgs`), if something created it: a
+// computed property's chain tags through `args.named` / `args.positional`.
+// An arg propagation (`withArgPropagation`): it fires no classic reactor.
+function _dirtyCustomManagedArgTag(liveArgs: object, key: string): void {
+  if (_gxtPeekTagFor(liveArgs, key) === undefined) return;
+  withArgPropagation(() => classicDirtyTagForGuarded(liveArgs, key));
 }
 
 /**
@@ -11320,6 +11347,13 @@ function buildCustomManagedArgs(args: any) {
   // fire repeatedly. Glimmer avoids this via per-component tag caching; we
   // approximate it by caching per render-pass id so that repeated reads of the
   // same arg within one render pass share a value.
+  //
+  // An argument change re-renders without a new render pass: the arg effect
+  // (`_installCustomManagedArgEffect`) hands the values it read to these
+  // memos (`seedLiveArgs`), so the component's reads see the new values, as
+  // they do through Glimmer's argument references.
+  const namedSeeds: Record<string, (value: any) => void> = {};
+  const positionalSeeds: ((value: any) => void)[] = [];
   const liveNamed: Record<string, any> = {};
   for (const key of Object.keys(namedArgs)) {
     if (argGetters[key]) {
@@ -11335,6 +11369,10 @@ function buildCustomManagedArgs(args: any) {
         lastPassId = currentPassId;
         cachedValue = v;
         return v;
+      };
+      namedSeeds[key] = (value) => {
+        lastPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+        cachedValue = value;
       };
       Object.defineProperty(liveNamed, key, { get: memoGet, enumerable: true, configurable: true });
     } else {
@@ -11356,6 +11394,10 @@ function buildCustomManagedArgs(args: any) {
       cachedValue = v;
       return v;
     };
+    positionalSeeds[i] = (value) => {
+      lastPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
+      cachedValue = value;
+    };
     Object.defineProperty(livePositional, i, {
       get: memoGet,
       enumerable: true,
@@ -11364,7 +11406,20 @@ function buildCustomManagedArgs(args: any) {
   }
   Object.defineProperty(livePositional, 'length', { value: positionalArgs.length, writable: true });
 
-  return { namedArgs, positionalArgs, liveNamed, livePositional, argGetters, posGetters };
+  const seedLiveArgs = (named: Record<string, any>, positional: any[]) => {
+    for (const key of Object.keys(named)) namedSeeds[key]?.(named[key]);
+    for (let i = 0; i < positional.length; i++) positionalSeeds[i]?.(positional[i]);
+  };
+
+  return {
+    namedArgs,
+    positionalArgs,
+    liveNamed,
+    livePositional,
+    argGetters,
+    posGetters,
+    seedLiveArgs,
+  };
 }
 
 /**
