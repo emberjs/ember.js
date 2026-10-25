@@ -201,6 +201,22 @@ export function isTracking(): boolean {
 // so frame boundaries are observable without depending on gxt internals.
 const _manualTrackFrameStack: Set<any>[] = [];
 
+// The last cache read in a manual frame, and that frame. A cache read
+// forwards the tags its fn() consumed to the frame reading it (`createCache`),
+// so a frame that read one cache and consumed nothing else holds exactly the
+// cache's tags: such a frame ends with the cache's tag (`endTrackFrame`), as
+// Glimmer's frame that consumed only a cache's tag does.
+let _cacheReadFrame: Set<any> | null = null;
+let _cacheReadTag: any = undefined;
+
+function _noteCacheRead(tag: any): void {
+  const frame = _trackingTagStack![_trackingTagStack!.length - 1];
+  if (frame !== undefined && frame === _manualTrackFrameStack[_manualTrackFrameStack.length - 1]) {
+    _cacheReadFrame = frame;
+    _cacheReadTag = tag;
+  }
+}
+
 // Wrap tagFor to handle Symbol keys properly
 // GXT's tagFor might try to convert the key to a string for debugging
 export function tagFor(obj: object, key?: string | symbol, _meta?: any) {
@@ -290,6 +306,10 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
   // gxt cells read during fn() and their revisions at that time
   let _cells: any[] = [];
   let _cellRevisions: unknown[] = [];
+  // The cache's tag (Glimmer's `cache[TAG]`): the combination of the tags
+  // fn() consumed, kept from one run to the next while a run consumes the
+  // same tags in the same order (`_combineForCache`).
+  let _tag: any = undefined;
   // If the most recent _evaluate() call threw, store the error so that
   // subsequent .value reads observed by validation as "still valid" can
   // re-throw the same error rather than serving the previous successful
@@ -376,6 +396,7 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
             // forwards to gxt's validator.consumeTag() for the gxt frame.
             consumeTag(tag);
           }
+          if (classicTrackingActive && _localUntrackDepth === 0) _noteCacheRead(_tag);
         }
       }
       return _lastValue;
@@ -418,6 +439,7 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       // invalidation. A tag cycle throws its DEBUG assertion, as classic
       // `valueForTag` does.
       _consumedTags = Array.from(consumed);
+      _tag = _combineForCache(_tag, _consumedTags);
       _consumedTagSnapshots = _consumedTags.map((t) => currentTagRevision(t));
       // Store nested caches
       _nestedCaches = Array.from(nested);
@@ -1148,6 +1170,32 @@ export function combine(tags: any[]) {
   return combinedTag;
 }
 
+// Whether `tag` is a combined tag of exactly `tags`, in order (Glimmer's
+// `isCombinationOf`).
+function _isCombinationOf(tag: any, tags: any[]): boolean {
+  if (tag === null || typeof tag !== 'object' || tag._isCombinedTag !== true) return false;
+  const constituents = combinedTagConstituents.get(tag);
+  if (constituents === undefined || constituents.length !== tags.length) return false;
+  for (let i = 0; i < tags.length; i++) {
+    if (constituents[i] !== tags[i]) return false;
+  }
+  return true;
+}
+
+// The tag of a cache whose fn() consumed `tags` (Glimmer's `combineForCache`):
+// CONSTANT_TAG for none, the tag itself for one, else a combined tag; that is
+// `previous`, the cache's tag from its last run, when it combines the same
+// tags in the same order, so the cache keeps its tag.
+function _combineForCache(previous: any, consumed: any[]): any {
+  const tags = consumed.includes(CONSTANT_TAG)
+    ? consumed.filter((t) => t !== CONSTANT_TAG)
+    : consumed;
+  if (tags.length === 0) return CONSTANT_TAG;
+  if (tags.length === 1) return tags[0];
+  if (_isCombinationOf(previous, tags)) return previous;
+  return combine(tags);
+}
+
 // globalRevisionCounter is the single source of truth for all revisions, so
 // dirty tags and snapshot revisions are comparable.
 
@@ -1331,6 +1379,8 @@ export function validateTag(tag: any, revision?: number): boolean {
 // isTracking() true for every later test.
 export function resetTracking() {
   _manualTrackFrameStack.length = 0;
+  _cacheReadFrame = null;
+  _cacheReadTag = undefined;
   _trackingTagStack = null;
   _localUntrackDepth = 0;
   _cacheTagTracker.length = 0;
@@ -1589,10 +1639,16 @@ export function endTrackFrame() {
   // number of times), else a "combined"-like tag that tracks only the tags
   // consumed within this frame, so validateTag only invalidates when one of
   // those tags changes — not on any global counter bump.
+  const cacheTag = _cacheReadFrame === consumed ? _cacheReadTag : undefined;
+  _cacheReadFrame = null;
+  _cacheReadTag = undefined;
   consumed.delete(CONSTANT_TAG);
   if (consumed.size === 0) return CONSTANT_TAG;
   const deps = Array.from(consumed);
   if (deps.length === 1) return deps[0];
+  // A frame that consumed exactly the tags of the cache it read, in order,
+  // ends with the cache's tag: a combined tag of the same tags.
+  if (_isCombinationOf(cacheTag, deps)) return cacheTag;
   const tag: any = { _isCombinedTag: true };
   Object.defineProperty(tag, 'value', {
     get() {

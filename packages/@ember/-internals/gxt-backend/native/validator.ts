@@ -288,6 +288,48 @@ function combineTracker(tracker: Tracker): Tag {
   }
 }
 
+/**
+ * Whether `tag` is a combinator of exactly the leaves of `tracker`, in their
+ * order (Glimmer's `isCombinationOf`). Such a combinator is the tag
+ * `combineTracker(tracker)` would make: same members, so same revisions.
+ */
+function isCombinationOf(tag: Tag | null | undefined, tracker: Tracker): tag is Combinator {
+  if (!(tag instanceof Combinator)) return false;
+  const members = tag.tags;
+  if (members.length !== tracker.size) return false;
+  let i = 0;
+  for (const leaf of tracker) {
+    if (leaf !== members[i++]) return false;
+  }
+  return true;
+}
+
+// The last combinator `consumeTag` added to a frame while an Ember frame is
+// open, and the gxt tracker it went into. A frame that consumed only that
+// combinator's leaves ends with that combinator, as Glimmer's frame that
+// consumed one tag ends with that tag: a frame that reads one cache gets the
+// cache's tag. Reset when a frame ends, so it holds nothing once the frames
+// are closed.
+let LAST_COMBINATOR: Combinator | null = null;
+let LAST_COMBINATOR_TRACKER: Tracker | null = null;
+
+/**
+ * The tag of a frame that ends with the leaves of `tracker`.
+ *
+ * `previous` is the tag the frame's cache got on its last run (`getValue`):
+ * a cache that consumed the same tags again, in the same order, keeps its tag
+ * (and its memoized revision), as Glimmer's `combineForCache` does. Every
+ * other frame has no previous tag.
+ */
+function frameTag(tracker: Tracker, previous: Tag | undefined): Tag {
+  const candidate = LAST_COMBINATOR_TRACKER === tracker ? LAST_COMBINATOR : null;
+  LAST_COMBINATOR = null;
+  LAST_COMBINATOR_TRACKER = null;
+  if (isCombinationOf(previous, tracker)) return previous;
+  if (isCombinationOf(candidate, tracker)) return candidate;
+  return combineTracker(tracker);
+}
+
 const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
 export function beginTrackFrame(debuggingContext?: string | false): void {
@@ -297,6 +339,12 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 }
 
 export function endTrackFrame(): Tag {
+  return endFrame(undefined);
+}
+
+// `endTrackFrame`, for a cache's frame with the cache's `previous` tag
+// (`frameTag`).
+function endFrame(previous: Tag | undefined): Tag {
   const current = getTracker();
   if (DEBUG) {
     if (OPEN_TRACK_FRAMES.length === 0) {
@@ -305,7 +353,7 @@ export function endTrackFrame(): Tag {
     debug.endTrackingTransaction!();
   }
   setTracker(OPEN_TRACK_FRAMES.pop() ?? null);
-  return current === null ? CONSTANT_TAG : combineTracker(current);
+  return current === null ? CONSTANT_TAG : frameTag(current, previous);
 }
 
 export function beginUntrackFrame(): void {
@@ -323,6 +371,8 @@ export function endUntrackFrame(): void {
 // This function is only for handling errors and resetting to a valid state
 export function resetTracking(): string | void {
   OPEN_TRACK_FRAMES.length = 0;
+  LAST_COMBINATOR = null;
+  LAST_COMBINATOR_TRACKER = null;
   setTracker(null);
   if (DEBUG) return debug.resetTrackingTransaction!();
 }
@@ -336,6 +386,10 @@ export function consumeTag(tag: Tag): void {
   if (tracker !== null) {
     if (DEBUG) debug.markTagAsConsumed!(tag);
     addLeaves(tracker, tag);
+    if (OPEN_TRACK_FRAMES.length > 0 && tag instanceof Combinator) {
+      LAST_COMBINATOR = tag;
+      LAST_COMBINATOR_TRACKER = tracker;
+    }
   }
 }
 
@@ -407,7 +461,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame();
+      tag = endFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);
