@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-23T17:00:40.575Z",
+    "capturedAt": "2026-10-25T15:17:18.967Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "057856d",
-    "totalTests": 10376,
-    "totalModules": 1037,
+    "emberCommit": "b021ea6",
+    "totalTests": 10377,
+    "totalModules": 1038,
     "quarantinedTests": 0,
-    "totalAssertions": 61595,
-    "totalAssertionsPassing": 61298,
-    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 21a5f6c228, with the fixes of lifeart:gxt-ember-easy-fixes and lifeart:gxt-ember-hard-fixes folded in; written by runner.mjs in the GitHub Actions GXT full workflow (run 39991374779, merged from 5 shards, on the code of 057856d), and re-gated on the final tree. 10135/10376 green, 1037 modules, no timeouts, no harness errors. Against the baseline before this rebase: main moved six classic-component test files into components/classic/ and renamed their modules (suffix ' (classic component)'), same tests and results; the folded fixes turn nine tests green (the loose-mode {{attrs}} assertions, the {{fn}} updates, the EmberArray helper argument, the template-only {{debugger}} self, the modifier-install error recovery); main's rewrite of the positional-params tests of 'Component Manager - Curly Invocation' to a native class with a no-op updateComponent (51a761e28b) makes three of them known reds: the compat custom-manager arguments do not update a native component's positional params unless updateComponent writes them. The module 'Basic Custom Modifier Manager: 3.22' keeps its entry from the previous baseline: run 39991374779 had one more red there, which the review fix of the modifier-install change (a non-Error throw propagates as is) restores."
+    "totalAssertions": 61598,
+    "totalAssertionsPassing": 61306,
+    "note": "Compat full run on #21340 (gxt 0.0.86) on main 21a5f6c228; written by runner.mjs in the GitHub Actions GXT full workflow (run 40206126537, merged from 5 shards, on the code of b021ea6). 10141/10377 green, 1038 modules, no timeouts, no harness errors. Against the previous baseline: a cache keeps its tag when a run consumes the same tags again, as main's validator does (#21664), which turns 'it keeps its tag if it consumes the same tags in the next run' green; a custom-managed component whose manager does not replace its arguments in updateComponent reads their new values, which turns the three 'positional params are updated if they change' tests of 'Component Manager - Curly Invocation' green (main's 51a761e28b rewrote them to such a native component); the new module 'GXT custom component manager arguments' (1 test, the named arguments of such a component) is green."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -284,15 +284,10 @@
     },
     "@glimmer/validator: tracking": {
       "total": 40,
-      "passing": 39,
+      "passing": 40,
       "assertionsTotal": 121,
-      "assertionsPassing": 120,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 121,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > debug": {
       "total": 4,
@@ -324,15 +319,10 @@
     },
     "@glimmer/validator: tracking > tracking cache": {
       "total": 14,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 70,
-      "assertionsPassing": 69,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 70,
+      "failingTests": []
     },
     "@glimmer/validator: validators": {
       "total": 22,
@@ -1433,23 +1423,10 @@
     },
     "Component Manager - Curly Invocation": {
       "total": 15,
-      "passing": 12,
+      "passing": 15,
       "assertionsTotal": 34,
-      "assertionsPassing": 31,
-      "failingTests": [
-        {
-          "name": " positional params are updated if they change (computed, arr tag)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " positional params are updated if they change (computed, individual tags)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " positional params are updated if they change (native)",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 34,
+      "failingTests": []
     },
     "Component Rendering": {
       "total": 6,
@@ -2699,6 +2676,13 @@
     "GXT correctness: {{#if}} truthiness": {
       "total": 3,
       "passing": 3,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT custom component manager arguments": {
+      "total": 1,
+      "passing": 1,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
       "failingTests": []
@@ -8483,6 +8467,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 241
+    "gxt:triage": 236
   }
 }

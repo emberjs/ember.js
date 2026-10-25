@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-23T17:00:54.807Z",
+    "capturedAt": "2026-10-25T15:17:05.871Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "057856d",
+    "emberCommit": "b021ea6",
     "totalTests": 7203,
     "totalModules": 684,
     "quarantinedTests": 0,
     "totalAssertions": 36008,
-    "totalAssertionsPassing": 35990
+    "totalAssertionsPassing": 35992
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -272,15 +272,10 @@
     },
     "@glimmer/validator: tracking": {
       "total": 40,
-      "passing": 39,
+      "passing": 40,
       "assertionsTotal": 121,
-      "assertionsPassing": 120,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 121,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > debug": {
       "total": 4,
@@ -312,15 +307,10 @@
     },
     "@glimmer/validator: tracking > tracking cache": {
       "total": 14,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 70,
-      "assertionsPassing": 69,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 70,
+      "failingTests": []
     },
     "@glimmer/validator: validators": {
       "total": 22,
@@ -5325,6 +5315,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 13
+    "gxt:triage": 11
   }
 }
