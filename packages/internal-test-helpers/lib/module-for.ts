@@ -27,7 +27,7 @@ interface TestContext<T extends TestCase> {
 }
 
 const ASSERT_DESTROYABLES = (() => {
-  if (typeof URLSearchParams === 'undefined' || typeof document !== 'object') {
+  if (typeof document !== 'object') {
     return false;
   }
 

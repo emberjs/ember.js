@@ -1,7 +1,6 @@
 import { isArray } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import EmberObject from '@ember/object';
-import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -57,14 +56,10 @@ moduleFor(
     }
 
     ['@test Ember.isArray(fileList)'](assert) {
-      if (window && typeof window.FileList === 'function') {
-        let fileListElement = document.createElement('input');
-        fileListElement.type = 'file';
-        let fileList = fileListElement.files;
-        assert.equal(isArray(fileList), false, 'fileList');
-      } else {
-        assert.ok(true, 'FileList is not present on window');
-      }
+      let fileListElement = document.createElement('input');
+      fileListElement.type = 'file';
+      let fileList = fileListElement.files;
+      assert.equal(isArray(fileList), false, 'fileList');
     }
   }
 );

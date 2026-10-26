@@ -1368,43 +1368,42 @@ moduleFor(
 );
 
 /* globals MutationObserver: false */
-if (typeof MutationObserver === 'function') {
-  moduleFor(
-    'Syntax test: {{#each as}} DOM mutation test',
-    class extends RenderingTestCase {
-      constructor() {
-        super(...arguments);
-        this.observer = null;
+moduleFor(
+  'Syntax test: {{#each as}} DOM mutation test',
+  class extends RenderingTestCase {
+    constructor() {
+      super(...arguments);
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = (this.observer = new MutationObserver(function () {}));
+      observer.observe(element, { childList: true, characterData: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
       }
 
-      observe(element) {
-        let observer = (this.observer = new MutationObserver(function () {}));
-        observer.observe(element, { childList: true, characterData: true });
-      }
+      super.teardown();
+    }
 
-      teardown() {
-        if (this.observer) {
-          this.observer.disconnect();
-        }
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
 
-        super.teardown();
-      }
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
 
-      assertNoMutation() {
-        this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
-      }
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
+      let page = { title: 'Blog Posts' };
 
-      expectMutations() {
-        this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
-      }
+      let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
 
-      ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
-        let page = { title: 'Blog Posts' };
-
-        let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
-
-        this.render(
-          strip`
+      this.render(
+        strip`
           <h1>{{this.page.title}}</h1>
 
           <ul id="posts">
@@ -1413,10 +1412,10 @@ if (typeof MutationObserver === 'function') {
             {{/each}}
           </ul>
           `,
-          { page, model }
-        );
+        { page, model }
+      );
 
-        this.assertHTML(strip`
+      this.assertHTML(strip`
         <h1>Blog Posts</h1>
 
         <ul id="posts">
@@ -1425,18 +1424,19 @@ if (typeof MutationObserver === 'function') {
         </ul>
       `);
 
-        this.observe(this.$('#posts')[0]);
+      this.observe(this.$('#posts')[0]);
 
-        // MutationObserver is async
-        return RSVP.Promise.resolve(() => {
+      // MutationObserver is async
+      return RSVP.Promise.resolve()
+        .then(() => {
           this.assertStableRerender();
         })
-          .then(() => {
-            this.assertNoMutation();
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context, 'page', { title: 'Essays' }));
+          runTask(() => set(this.context, 'page', { title: 'Essays' }));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Essays</h1>
 
           <ul id="posts">
@@ -1444,13 +1444,13 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            this.assertNoMutation();
+        })
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+          runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Think Pieces™</h1>
 
           <ul id="posts">
@@ -1458,13 +1458,12 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            // The last set is localized to the `page` object, so we do not expect Glimmer
-            // to re-iterate the list
-            this.assertNoMutation();
-          });
-      }
+        })
+        .then(() => {
+          // The last set is localized to the `page` object, so we do not expect Glimmer
+          // to re-iterate the list
+          this.assertNoMutation();
+        });
     }
-  );
-}
+  }
+);

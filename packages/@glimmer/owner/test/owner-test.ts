@@ -14,14 +14,12 @@ module('Owner', () => {
     assert.strictEqual(getOwner(obj), owner, 'owner has been set');
   });
 
-  if (typeof Symbol !== 'undefined') {
-    test('Setting the owner does not add an enumerable property in modern browsers', (assert) => {
-      let owner = {};
-      let obj = {};
+  test('Setting the owner does not add an enumerable property', (assert) => {
+    let owner = {};
+    let obj = {};
 
-      setOwner(obj, owner);
+    setOwner(obj, owner);
 
-      assert.strictEqual(Object.keys(obj).length, 0, 'no enumerable props were added');
-    });
-  }
+    assert.strictEqual(Object.keys(obj).length, 0, 'no enumerable props were added');
+  });
 });
