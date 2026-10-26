@@ -150,6 +150,42 @@ moduleFor(
 
       this.assertText('Link To Child');
     }
+
+    async ['@test it does not read unknown properties from the model'](assert) {
+      // WarpDrive records in PolarisMode throw on fields that are not in their schema.
+      let rental = new Proxy(
+        { id: 'grand-old-mansion' },
+        {
+          get(target, key, receiver) {
+            if (typeof key === 'string' && !(key in target)) {
+              throw new Error(`No field named ${key} on rental`);
+            }
+
+            return Reflect.get(target, key, receiver);
+          },
+        }
+      );
+
+      this.add(
+        'template:application',
+        precompileTemplate('<LinkTo @route="rental" @model={{this.rental}}>Rental</LinkTo>')
+      );
+
+      this.add(
+        'controller:application',
+        class extends Controller {
+          rental = rental;
+        }
+      );
+
+      this.router.map(function () {
+        this.route('rental', { path: '/rentals/:rental_id' });
+      });
+
+      await this.visit('/');
+
+      assert.strictEqual(this.firstChild.getAttribute('href'), '/rentals/grand-old-mansion');
+    }
   }
 );
 

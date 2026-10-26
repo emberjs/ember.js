@@ -13,6 +13,7 @@ import type { Maybe } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
+import QueryParams from '@ember/routing/lib/query_params';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
@@ -33,16 +34,9 @@ function isPresent<T>(value: Maybe<T>): value is T {
   return !isMissing(value);
 }
 
-interface QueryParams {
-  isQueryParams: true;
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  values: Nullable<{}>;
-}
-
+// Models can throw on unknown properties, so do not read `isQueryParams` from them.
 function isQueryParams(value: unknown): value is QueryParams {
-  return (
-    typeof value === 'object' && value !== null && (value as QueryParams)['isQueryParams'] === true
-  );
+  return value instanceof QueryParams;
 }
 
 /**
