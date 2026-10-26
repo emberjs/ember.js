@@ -147,8 +147,8 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('maxlength', '10');
       this.assertAttr('minlength', '5');
-      // this.assertAttr('size', '20'); //NOTE: failing in IE  (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '20');
+      this.assertAttr('tabindex', '30');
 
       runTask(() => this.rerender());
 
@@ -159,8 +159,8 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('maxlength', '10');
       this.assertAttr('minlength', '5');
-      // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '20');
+      this.assertAttr('tabindex', '30');
 
       runTask(() => {
         set(this.context, 'value', 'Updated value');
@@ -170,8 +170,8 @@ moduleFor(
         set(this.context, 'name', 'updated-name');
         set(this.context, 'maxlength', 11);
         set(this.context, 'minlength', 6);
-        // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
-        // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
+        set(this.context, 'size', 21);
+        set(this.context, 'tabindex', 31);
       });
 
       this.assertDisabled();
@@ -181,8 +181,8 @@ moduleFor(
       this.assertAttr('name', 'updated-name');
       this.assertAttr('maxlength', '11');
       this.assertAttr('minlength', '6');
-      // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '21');
+      this.assertAttr('tabindex', '31');
 
       runTask(() => {
         set(this.context, 'value', 'Original value');
@@ -192,8 +192,8 @@ moduleFor(
         set(this.context, 'name', 'original-name');
         set(this.context, 'maxlength', 10);
         set(this.context, 'minlength', 5);
-        // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
-        // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
+        set(this.context, 'size', 20);
+        set(this.context, 'tabindex', 30);
       });
 
       this.assertNotDisabled();
@@ -203,8 +203,8 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('maxlength', '10');
       this.assertAttr('minlength', '5');
-      // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '20');
+      this.assertAttr('tabindex', '30');
     }
 
     ['@test static attributes (HTML attribute)']() {
@@ -229,8 +229,8 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('maxlength', '10');
       this.assertAttr('minlength', '5');
-      // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '20');
+      this.assertAttr('tabindex', '30');
 
       runTask(() => this.rerender());
 
@@ -242,8 +242,8 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('maxlength', '10');
       this.assertAttr('minlength', '5');
-      // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
-      // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
+      this.assertAttr('size', '20');
+      this.assertAttr('tabindex', '30');
     }
 
     ['@test cursor selection range']() {
@@ -256,11 +256,11 @@ moduleFor(
       let input = this.$input()[0];
 
       // See https://ember-twiddle.com/33e506329f8176ae874422644d4cc08c?openFiles=components.input-component.js%2Ctemplates.components.input-component.hbs
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => this.rerender());
 
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => {
         input.selectionStart = 2;
@@ -273,13 +273,13 @@ moduleFor(
 
       this.assertSelectionRange(2, 4);
 
-      // runTask(() => set(this.context, 'value', 'updated'));
-      //
-      // this.assertSelectionRange(7, 7); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
-      //
-      // runTask(() => set(this.context, 'value', 'original'));
-      //
-      // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
+      runTask(() => set(this.context, 'value', 'updated'));
+
+      this.assertSelectionRange(7, 7);
+
+      runTask(() => set(this.context, 'value', 'original'));
+
+      this.assertSelectionRange(8, 8);
     }
 
     [`@test sends an action with \`<Input @enter={{this.foo}} />\` when <enter> is pressed`](

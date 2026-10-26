@@ -275,15 +275,11 @@ if (DEBUG) {
 let _warnIfUsingStrippedFeatureFlags;
 
 if (DEBUG && !isTesting() && ENV.LOG_INSPECTOR_HINT) {
-  if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
+  if (isFirefox || isChrome) {
     window.addEventListener(
       'load',
       () => {
-        if (
-          document.documentElement &&
-          document.documentElement.dataset &&
-          !document.documentElement.dataset['emberExtension']
-        ) {
+        if (!document.documentElement.dataset['emberExtension']) {
           let downloadURL;
 
           if (isChrome) {

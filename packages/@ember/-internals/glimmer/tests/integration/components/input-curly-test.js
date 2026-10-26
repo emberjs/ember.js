@@ -125,11 +125,11 @@ moduleFor(
       let input = this.$input()[0];
 
       // See https://ember-twiddle.com/33e506329f8176ae874422644d4cc08c?openFiles=components.input-component.js%2Ctemplates.components.input-component.hbs
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => this.rerender());
 
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => {
         input.selectionStart = 2;
@@ -142,13 +142,13 @@ moduleFor(
 
       this.assertSelectionRange(2, 4);
 
-      // runTask(() => set(this.context, 'value', 'updated'));
-      //
-      // this.assertSelectionRange(7, 7); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
-      //
-      // runTask(() => set(this.context, 'value', 'original'));
-      //
-      // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
+      runTask(() => set(this.context, 'value', 'updated'));
+
+      this.assertSelectionRange(7, 7);
+
+      runTask(() => set(this.context, 'value', 'original'));
+
+      this.assertSelectionRange(8, 8);
     }
 
     ['@test sends an action with `{{input enter=this.foo}}` when <enter> is pressed'](assert) {
