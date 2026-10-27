@@ -997,7 +997,7 @@ moduleFor(
       );
 
       let Parent = setComponentTemplate(
-        precompileTemplate('parent:{{outlet}}<Layout />(<@outlet />)', {
+        precompileTemplate('parent:{{outlet}}<Layout />', {
           strictMode: true,
           scope: () => ({ Layout }),
         }),
@@ -1009,8 +1009,12 @@ moduleFor(
       setRouteManager(() => new PlainRouteManager({ parent: Parent }), PlainRoute);
 
       this.add('route:parent', PlainRoute);
+      this.add(
+        'component:child-layout',
+        setComponentTemplate(precompileTemplate('[child-layout:{{outlet}}]'), templateOnly())
+      );
       this.add('template:application', precompileTemplate('app:{{outlet}}'));
-      this.add('template:parent.child', precompileTemplate('child:{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('child:<ChildLayout />'));
       this.add('template:parent.child.leaf', precompileTemplate('leaf'));
 
       this.router.map(function () {
@@ -1022,13 +1026,13 @@ moduleFor(
       });
     }
 
-    async ['@test {{outlet}} renders only below classic levels'](assert) {
+    async ['@test {{outlet}} in a component renders only below a classic level'](assert) {
       await this.visit('/parent/child/leaf');
 
       assert.strictEqual(
         this.element.textContent,
-        'app:parent:[layout:](child:leaf)',
-        'the non-classic level renders its child through <@outlet /> only, and the classic child below it renders {{outlet}} again'
+        'app:parent:child:[child-layout:leaf][layout:]',
+        'the non-classic invokable renders {{outlet}}, its component does not, and a component below the classic child does again'
       );
     }
   }
