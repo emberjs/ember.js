@@ -1,5 +1,5 @@
 import Route from '@ember/routing/route';
-import { setRouteManager } from '@ember/routing';
+import { routeCapabilities, setRouteManager } from '@ember/routing';
 import { setComponentTemplate } from '@ember/component';
 import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
@@ -939,6 +939,96 @@ moduleFor(
         this.element.textContent,
         'app:stamp[local](local:L)',
         'round-trip back to the application owner renders correctly'
+      );
+    }
+  }
+);
+
+/**
+  The smallest manager without classic interop.
+  Each route renders the component that `invokables` maps its name to.
+
+  @private
+*/
+class PlainRouteManager {
+  capabilities = routeCapabilities('1.0', { classicInterop: false });
+
+  constructor(invokables) {
+    this.invokables = invokables;
+  }
+
+  createRoute(_factory, { name }) {
+    return { name };
+  }
+
+  getDestroyable() {
+    return null;
+  }
+
+  willEnter() {}
+
+  enter() {
+    return resolve(undefined);
+  }
+
+  didEnter() {}
+  willExit() {}
+  exit() {}
+  didExit() {}
+
+  getRouteWrapper() {
+    return ContextOutlet;
+  }
+
+  getInvokable({ name }) {
+    return resolve(this.invokables[name]);
+  }
+}
+
+moduleFor(
+  'Route manager - {{outlet}} under a non-classic level',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let Layout = setComponentTemplate(
+        precompileTemplate('[layout:{{outlet}}]', { strictMode: true }),
+        templateOnly()
+      );
+
+      let Parent = setComponentTemplate(
+        precompileTemplate('parent:{{outlet}}<Layout />(<@outlet />)', {
+          strictMode: true,
+          scope: () => ({ Layout }),
+        }),
+        templateOnly()
+      );
+
+      class PlainRoute {}
+
+      setRouteManager(() => new PlainRouteManager({ parent: Parent }), PlainRoute);
+
+      this.add('route:parent', PlainRoute);
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('child:{{outlet}}'));
+      this.add('template:parent.child.leaf', precompileTemplate('leaf'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child', function () {
+            this.route('leaf');
+          });
+        });
+      });
+    }
+
+    async ['@test {{outlet}} renders only below classic levels'](assert) {
+      await this.visit('/parent/child/leaf');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:[layout:](child:leaf)',
+        'the non-classic level renders its child through <@outlet /> only, and the classic child below it renders {{outlet}} again'
       );
     }
   }

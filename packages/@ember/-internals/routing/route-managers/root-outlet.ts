@@ -11,7 +11,13 @@ import type {
 } from '@glimmer/interfaces';
 import { internalHelper } from '@ember/-internals/glimmer/lib/helpers/internal-helper';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  createConstRef,
+  NULL_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
+import { hasClassicInterop } from 'router_js';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -139,6 +145,13 @@ const PROVIDER_TEMPLATE = precompileTemplate(
 
 export class OutletArgProvider {
   readonly childOutletRef: Reference<OutletArgProvider | null>;
+
+  /**
+    What `{{outlet}}` renders in the templates below this level.
+    Only classic levels support it. Other route managers use `<@outlet />`.
+  */
+  readonly scopeOutletRef: Reference<OutletArgProvider | null>;
+
   readonly self: Reference;
 
   // Without it, an exiting level renders whatever route replaced it.
@@ -151,6 +164,9 @@ export class OutletArgProvider {
   ) {
     this.childOutletRef = childOutletRefFor(outletRef);
     this.lastState = valueForRef(outletRef)!;
+    this.scopeOutletRef = hasClassicInterop(this.lastState.manager)
+      ? this.childOutletRef
+      : NULL_REFERENCE;
     this.self = createConstRef(this, 'this');
   }
 
@@ -167,7 +183,11 @@ export class OutletArgProvider {
 
 const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
   ...CAPABILITIES,
-  // Carries the child outlet to `{{outlet}}` in components below this level.
+  /**
+    Carries the child outlet to `{{outlet}}` in components below this level.
+    A non-classic level clears it. Else its own `{{outlet}}` reads the value
+    of the parent level, which is this level, and renders it again.
+  */
   dynamicScope: true,
 };
 
@@ -190,7 +210,7 @@ class OutletArgProviderManager
   ): OutletArgProvider {
     assert('Expected the outlet to be created with a dynamic scope', dynamicScope !== null);
 
-    dynamicScope.set('outletState', definition.childOutletRef);
+    dynamicScope.set('outletState', definition.scopeOutletRef);
 
     return definition;
   }
