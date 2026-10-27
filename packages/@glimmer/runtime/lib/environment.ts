@@ -3,7 +3,6 @@ import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
   Environment,
-  EnvironmentOptions,
   DOMRenderer,
   ModifierInstance,
   Nullable,
@@ -19,7 +18,6 @@ import { track } from '@glimmer/validator/lib/tracking';
 import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
 import DebugRenderTree from './debug-render-tree';
-import { DOMRendererImpl } from './dom/renderer';
 import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
@@ -98,8 +96,6 @@ class TransactionImpl implements Transaction {
 export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Nullable<TransactionImpl> = null;
 
-  declare readonly dom: DOMRenderer;
-
   // Delegate methods and values
   public isInteractive: boolean;
 
@@ -108,19 +104,12 @@ export class EnvironmentImpl implements Environment {
   debugRenderTree: DebugRenderTree<object> | undefined;
 
   constructor(
-    options: EnvironmentOptions,
+    readonly dom: DOMRenderer,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
     this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
-    if (options.dom) {
-      this.dom = options.dom;
-    } else if (options.document) {
-      this.dom = new DOMRendererImpl(options.document);
-    } else if (DEBUG) {
-      throw new Error('you must pass document or dom to a new runtime');
-    }
   }
 
   begin() {
@@ -188,13 +177,13 @@ export interface EnvironmentDelegate {
 }
 
 export function runtimeOptions(
-  options: EnvironmentOptions,
+  dom: DOMRenderer,
   delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
   resolver: Nullable<ClassicResolver>
 ): RuntimeOptions {
   return {
-    env: new EnvironmentImpl(options, delegate),
+    env: new EnvironmentImpl(dom, delegate),
     program: new ProgramImpl(artifacts.constants, artifacts.heap),
     resolver,
   };

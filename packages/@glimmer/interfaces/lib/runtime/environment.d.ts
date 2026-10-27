@@ -1,5 +1,3 @@
-import type { SimpleDocument } from '@simple-dom/interface';
-
 import type {
   ComponentDefinitionState,
   ComponentInstance,
@@ -12,15 +10,6 @@ import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
 import type { ModifierInstance } from './modifier.js';
 import type { Program } from './runtime.js';
-
-export interface EnvironmentOptions {
-  /**
-   * The environment makes a `DOMRenderer` for this document.
-   * `dom` has priority over `document`.
-   */
-  document?: SimpleDocument;
-  dom?: DOMRenderer;
-}
 
 export type Transaction = object;
 

@@ -15,7 +15,6 @@ import type {
   DebugRenderTree,
   DOMRenderer,
   Environment,
-  EnvironmentOptions,
   RenderResult as GlimmerRenderResult,
   EvaluationContext,
   TreeBuilder,
@@ -24,6 +23,7 @@ import type {
 
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
+import { DOMRendererImpl } from '@glimmer/runtime/lib/dom/renderer';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
@@ -431,13 +431,13 @@ export class BaseRenderer {
    */
   static strict(
     owner: object,
-    output: SimpleDocument | Document | DOMRenderer,
+    dom: DOMRenderer,
     options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...options },
-      isDocument(output) ? { document: output as SimpleDocument } : { dom: output },
+      dom,
       new ResolverImpl(),
       clientBuilder
     );
@@ -448,7 +448,7 @@ export class BaseRenderer {
   constructor(
     owner: object,
     envOptions: { isInteractive: boolean; hasDOM: boolean },
-    output: EnvironmentOptions,
+    dom: DOMRenderer,
     resolver: ClassicResolver,
     builder: IBuilder
   ) {
@@ -462,7 +462,7 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    let options = runtimeOptions(output, env, sharedArtifacts, resolver);
+    let options = runtimeOptions(dom, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
       (heap) => new RuntimeOpImpl(heap),
@@ -691,14 +691,14 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
     /**
      * `dom` renders into an output that is not the DOM, for example a terminal.
      */
-    let output =
+    let dom =
       env && 'dom' in env
         ? (env['dom'] as DOMRenderer)
-        : env && 'document' in env
-          ? (env['document'] as SimpleDocument | Document)
-          : globalThis.document;
+        : new DOMRendererImpl(
+            (env && 'document' in env ? env['document'] : globalThis.document) as SimpleDocument
+          );
 
-    renderer = BaseRenderer.strict(owner, output, {
+    renderer = BaseRenderer.strict(owner, dom, {
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env['hasDOM']) : true,
@@ -708,10 +708,6 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
   return renderer;
 }
-
-const isDocument = (
-  output: SimpleDocument | Document | DOMRenderer
-): output is SimpleDocument | Document => 'nodeType' in output;
 
 const isCursor = (into: IntoTarget): into is Cursor => 'element' in into;
 

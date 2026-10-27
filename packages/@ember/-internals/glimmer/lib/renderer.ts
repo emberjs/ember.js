@@ -11,6 +11,7 @@ import {
   isDestroying,
 } from '@glimmer/destroyable';
 import type {
+  DOMRenderer,
   Bounds,
   Environment,
   RenderResult as GlimmerRenderResult,
@@ -25,6 +26,7 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { DOMRendererImpl } from '@glimmer/runtime/lib/dom/renderer';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
@@ -187,26 +189,26 @@ export class Renderer extends BaseRenderer {
     let { _viewRegistry } = props;
     let owner = getOwner(props);
     assert('Renderer is unexpectedly missing an owner', owner);
-    let document = owner.lookup('service:-document') as SimpleDocument;
+    let dom = new DOMRendererImpl(owner.lookup('service:-document') as SimpleDocument);
     let env = owner.lookup('-environment:main') as {
       isInteractive: boolean;
       hasDOM: boolean;
     };
     let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
     let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(owner, document, env, rootTemplate, _viewRegistry, builder);
+    return new this(owner, dom, env, rootTemplate, _viewRegistry, builder);
   }
 
   constructor(
     owner: InternalOwner,
-    document: SimpleDocument,
+    dom: DOMRenderer,
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     builder = clientBuilder,
     resolver = new RouterResolver()
   ) {
-    super(owner, env, { document }, resolver, builder);
+    super(owner, env, dom, resolver, builder);
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
   }

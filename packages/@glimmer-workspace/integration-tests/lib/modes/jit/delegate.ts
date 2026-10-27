@@ -17,7 +17,7 @@ import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToBrowser, castToSimple } from '@glimmer/debug-util';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
-import { clientBuilder, curry } from '@glimmer/runtime';
+import { clientBuilder, curry, DOMRendererImpl } from '@glimmer/runtime';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import { captureRenderTree } from '@ember/debug';
@@ -67,7 +67,7 @@ export class JitRenderDelegate implements RenderDelegate {
     if (this._renderer === null) {
       this._renderer = createRenderer(
         this.owner,
-        this.doc,
+        new DOMRendererImpl(this.doc),
         this.resolver,
         (env, cursor) => this.getElementBuilder(env, cursor),
         this.debugRenderTree,
