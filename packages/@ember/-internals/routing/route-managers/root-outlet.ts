@@ -137,8 +137,8 @@ const PROVIDER_TEMPLATE = precompileTemplate(
   }
 );
 
-class OutletArgProvider {
-  readonly childOutletRef: Reference<object | null>;
+export class OutletArgProvider {
+  readonly childOutletRef: Reference<OutletArgProvider | null>;
   readonly self: Reference;
 
   // Without it, an exiting level renders whatever route replaced it.
@@ -221,10 +221,10 @@ setInternalComponentManager(new OutletArgProviderManager(), OutletArgProvider.pr
 setComponentTemplate(PROVIDER_TEMPLATE, OutletArgProvider.prototype);
 
 // bucket -> the provider wrapping its manager's wrapper
-const managerOutlets = new WeakMap<object, object>();
+const managerOutlets = new WeakMap<object, OutletArgProvider>();
 
 /** One outlet level, or `null`. */
-function outletFor(outletStateRef: Reference<OutletState | undefined>): object | null {
+function outletFor(outletStateRef: Reference<OutletState | undefined>): OutletArgProvider | null {
   let state = valueForRef(outletStateRef);
 
   if (state === undefined) {
@@ -248,7 +248,7 @@ function outletFor(outletStateRef: Reference<OutletState | undefined>): object |
 
 function childOutletRefFor(
   parentRef: Reference<OutletParent | undefined>
-): Reference<object | null> {
+): Reference<OutletArgProvider | null> {
   let outletStateRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
   let ref = createComputeRef(() => outletFor(outletStateRef));
