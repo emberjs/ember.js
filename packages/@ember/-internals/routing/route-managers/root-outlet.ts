@@ -147,8 +147,8 @@ export class OutletArgProvider {
   readonly childOutletRef: Reference<OutletArgProvider | null>;
 
   /**
-    What `{{outlet}}` renders in the templates below this level.
-    Only classic levels support it. Other route managers use `<@outlet />`.
+    What `{{outlet}}` renders in components below this level.
+    Only classic levels support it. A route template reads `@outlet` instead.
   */
   readonly scopeOutletRef: Reference<OutletArgProvider | null>;
 
@@ -185,7 +185,7 @@ const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
   ...CAPABILITIES,
   /**
     Carries the child outlet to `{{outlet}}` in components below this level.
-    A non-classic level clears it. Else its own `{{outlet}}` reads the value
+    A non-classic level clears it. Else a component below it reads the value
     of the parent level, which is this level, and renders it again.
   */
   dynamicScope: true,
@@ -282,18 +282,27 @@ function childOutletRefFor(
 }
 
 /**
-  `{{outlet}}` compiles to `{{component (-outlet)}}`.
-  It reads the dynamic scope, not `@outlet`, so it also works in a component
-  that a route template renders, for example a layout wrapper.
+  `{{outlet}}` compiles to `{{component (-outlet @outlet)}}`.
+
+  A route template has `@outlet`, for every route manager.
+  A component has no `@outlet`, so it reads the dynamic scope.
+  Only classic levels fill the scope, for example for a layout wrapper.
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
-  (_args: CapturedArguments, _owner?: object, scope?: DynamicScope) => {
+  ({ positional }: CapturedArguments, _owner?: object, scope?: DynamicScope) => {
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
       scope
     );
 
-    return scope.get('outletState');
+    let argRef = positional[0]!;
+    let scopeRef = scope.get('outletState');
+
+    return createComputeRef(() => {
+      let outlet = valueForRef(argRef) as OutletArgProvider | null | undefined;
+
+      return outlet === undefined ? valueForRef(scopeRef) : outlet;
+    });
   }
 );
 

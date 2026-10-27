@@ -29,7 +29,7 @@ import { isPath, trackLocals } from './utils';
   with
 
   ```handlebars
-  {{component (-outlet)}}
+  {{component (-outlet @outlet)}}
   ```
 
   @private
@@ -52,9 +52,10 @@ export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironme
         }
 
         if (node.path.original === 'mount' || node.path.original === 'outlet') {
+          let params = node.path.original === 'outlet' ? [b.path('@outlet')] : node.params;
           let subexpression = b.sexpr(
             b.path(`-${node.path.original}`),
-            node.params,
+            params,
             node.hash,
             node.loc
           );
