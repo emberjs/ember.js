@@ -23,7 +23,6 @@ import type {
 
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
-import { DOMRenderAdapter } from '@glimmer/runtime/lib/dom/render-adapter';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
@@ -32,6 +31,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
+import { adapterForDocument, getRenderAdapter } from './render-adapter';
 import { renderers } from './renderers';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
@@ -694,9 +694,9 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
     let adapter =
       env && 'adapter' in env
         ? (env['adapter'] as RenderAdapter)
-        : new DOMRenderAdapter(
-            (env && 'document' in env ? env['document'] : globalThis.document) as SimpleDocument
-          );
+        : env && 'document' in env
+          ? adapterForDocument(env['document'] as SimpleDocument)
+          : getRenderAdapter(owner);
 
     renderer = BaseRenderer.strict(owner, adapter, {
       ...env,

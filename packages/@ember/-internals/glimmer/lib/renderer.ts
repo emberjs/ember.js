@@ -26,13 +26,12 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
-import { DOMRenderAdapter } from '@glimmer/runtime/lib/dom/render-adapter';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -41,6 +40,7 @@ import RouterResolver from './router-resolver';
 import type { OutletState } from '../../routing/route-managers/outlet-state';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
+import { getRenderAdapter } from './render-adapter';
 
 export {
   type IBuilder,
@@ -189,14 +189,13 @@ export class Renderer extends BaseRenderer {
     let { _viewRegistry } = props;
     let owner = getOwner(props);
     assert('Renderer is unexpectedly missing an owner', owner);
-    let adapter = new DOMRenderAdapter(owner.lookup('service:-document') as SimpleDocument);
     let env = owner.lookup('-environment:main') as {
       isInteractive: boolean;
       hasDOM: boolean;
     };
     let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
     let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(owner, adapter, env, rootTemplate, _viewRegistry, builder);
+    return new this(owner, getRenderAdapter(owner), env, rootTemplate, _viewRegistry, builder);
   }
 
   constructor(
