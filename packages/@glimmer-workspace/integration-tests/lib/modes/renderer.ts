@@ -47,7 +47,13 @@ export function createRenderer(
   let renderer: BaseRenderer;
 
   try {
-    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, doc, resolver, builder);
+    renderer = new BaseRenderer(
+      owner,
+      { isInteractive, hasDOM: true },
+      { document: doc },
+      resolver,
+      builder
+    );
   } finally {
     ENV._DEBUG_RENDER_TREE = previous;
   }

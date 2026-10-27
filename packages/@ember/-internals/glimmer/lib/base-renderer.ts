@@ -15,6 +15,7 @@ import type {
   DebugRenderTree,
   DOMRenderer,
   Environment,
+  EnvironmentOptions,
   RenderResult as GlimmerRenderResult,
   EvaluationContext,
   TreeBuilder,
@@ -430,13 +431,13 @@ export class BaseRenderer {
    */
   static strict(
     owner: object,
-    document: SimpleDocument | Document,
+    output: SimpleDocument | Document | DOMRenderer,
     options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...options },
-      document as SimpleDocument,
+      isDocument(output) ? { document: output as SimpleDocument } : { dom: output },
       new ResolverImpl(),
       clientBuilder
     );
@@ -447,7 +448,7 @@ export class BaseRenderer {
   constructor(
     owner: object,
     envOptions: { isInteractive: boolean; hasDOM: boolean },
-    document: SimpleDocument,
+    output: EnvironmentOptions,
     resolver: ClassicResolver,
     builder: IBuilder
   ) {
@@ -461,7 +462,7 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
+    let options = runtimeOptions(output, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
       (heap) => new RuntimeOpImpl(heap),
@@ -688,15 +689,16 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
   if (!renderer) {
     /**
-     * SAFETY: we should figure out what we need out of a `document` and narrow the API.
-     *         this exercise should also end up beginning to define what we need for CLI rendering (or to other outputs)
+     * `dom` renders into an output that is not the DOM, for example a terminal.
      */
-    let document =
-      env && 'document' in env
-        ? (env['document'] as SimpleDocument | Document)
-        : globalThis.document;
+    let output =
+      env && 'dom' in env
+        ? (env['dom'] as DOMRenderer)
+        : env && 'document' in env
+          ? (env['document'] as SimpleDocument | Document)
+          : globalThis.document;
 
-    renderer = BaseRenderer.strict(owner, document, {
+    renderer = BaseRenderer.strict(owner, output, {
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env['hasDOM']) : true,
@@ -706,6 +708,10 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
   return renderer;
 }
+
+const isDocument = (
+  output: SimpleDocument | Document | DOMRenderer
+): output is SimpleDocument | Document => 'nodeType' in output;
 
 const isCursor = (into: IntoTarget): into is Cursor => 'element' in into;
 

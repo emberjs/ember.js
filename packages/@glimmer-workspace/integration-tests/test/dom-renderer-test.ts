@@ -2,7 +2,6 @@ import type {
   Bounds,
   DOMRenderer,
   Nullable,
-  RenderResult,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
@@ -10,19 +9,11 @@ import type {
   SimpleText,
 } from '@glimmer/interfaces';
 import { on } from '@ember/modifier';
+import { renderComponent } from '@ember/renderer';
 import { run } from '@ember/runloop';
 import { template } from '@ember/template-compiler/runtime';
-import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import {
-  clientBuilder,
-  ConcreteBounds,
-  inTransaction,
-  renderComponent,
-  runtimeOptions,
-} from '@glimmer/runtime';
+import { ConcreteBounds } from '@glimmer/runtime';
 import { tracked } from '@glimmer/tracking';
-import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 
 type Kind = 'element' | 'text' | 'comment';
 
@@ -242,43 +233,39 @@ function find(target: TreeNode, tag: string): TreeNode | undefined {
   return undefined;
 }
 
+const rendered: { destroy(): void }[] = [];
+
 function setup(component: object) {
   let dom = new TreeRenderer();
-  let sharedArtifacts = artifacts();
-  let context = new EvaluationContextImpl(
-    sharedArtifacts,
-    (heap) => new RuntimeOpImpl(heap),
-    runtimeOptions(
-      { dom },
-      { isInteractive: true, enableDebugTooling: false, onTransactionCommit() {} },
-      sharedArtifacts,
-      new ResolverImpl()
-    )
-  );
-  let { env } = context;
   let root = node(dom.createElement('root'));
-  let result: RenderResult | undefined;
+  let result = run(() =>
+    renderComponent(component, {
+      owner: {},
+      into: simple<SimpleElement>(root) as unknown as Element,
+      env: { dom },
+    })
+  );
 
-  inTransaction(env, () => {
-    result = renderComponent(
-      context,
-      clientBuilder(env, { element: simple(root), nextSibling: null }),
-      {},
-      component
-    ).sync();
-  });
+  rendered.push(result);
 
   return {
     root,
     html: () => root.children.map(print).join(''),
     /**
-     * The run loop runs the destructors of the removed content before `rerender` returns.
+     * The run loop renders, and it runs the destructors of the removed content.
      */
-    rerender: () => run(() => inTransaction(env, () => result?.rerender())),
+    rerender: () => run(() => {}),
   };
 }
 
-QUnit.module('[integration] DOMRenderer that is not a DOM');
+QUnit.module('[integration] DOMRenderer that is not a DOM', {
+  afterEach() {
+    run(() => {
+      for (let result of rendered) result.destroy();
+    });
+    rendered.length = 0;
+  },
+});
 
 QUnit.test('it renders and updates elements, attributes, and text', (assert) => {
   class State {

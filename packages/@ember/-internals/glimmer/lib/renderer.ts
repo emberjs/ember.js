@@ -206,7 +206,7 @@ export class Renderer extends BaseRenderer {
     builder = clientBuilder,
     resolver = new RouterResolver()
   ) {
-    super(owner, env, document, resolver, builder);
+    super(owner, env, { document }, resolver, builder);
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
   }
