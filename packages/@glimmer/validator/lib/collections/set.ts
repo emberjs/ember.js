@@ -3,6 +3,7 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
+import { dirtyTagFor, tagFor } from '../meta';
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
@@ -17,25 +18,6 @@ export function trackedSet<Value = unknown>(
   const collection = createUpdatableTag();
   const storages = new Map<Value, Tag>();
 
-  function storageFor(key: Value): Tag {
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
-    }
-
-    return storage;
-  }
-
-  function dirtyStorageFor(key: Value): void {
-    const storage = storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
-
   const proxy: Set<Value> = new Proxy(target, {
     get(target, prop, receiver) {
       if (prop === 'add') {
@@ -47,7 +29,7 @@ export function trackedSet<Value = unknown>(
             DIRTY_TAG(collection);
           }
 
-          dirtyStorageFor(value);
+          dirtyTagFor(target, value, storages);
 
           target.add(value);
 
@@ -59,7 +41,7 @@ export function trackedSet<Value = unknown>(
         return function (value: Value): boolean {
           if (!target.has(value)) return false;
 
-          dirtyStorageFor(value);
+          dirtyTagFor(target, value, storages);
           DIRTY_TAG(collection);
 
           storages.delete(value);
@@ -81,7 +63,7 @@ export function trackedSet<Value = unknown>(
 
       if (prop === 'has') {
         return function (value: Value): boolean {
-          consumeTag(storageFor(value));
+          consumeTag(tagFor(target, value, storages));
 
           return target.has(value);
         };
