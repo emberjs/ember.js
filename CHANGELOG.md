@@ -1,5 +1,37 @@
 # Ember Changelog
 
+## v7.5.0-beta.1 (October 28, 2026)
+
+- [#21460](https://github.com/emberjs/ember.js/pull/21460) [FEATURE] Implement the Route Manager API per [RFC #1169](https://rfcs.emberjs.com/id/1169-route-manager-api/).
+- [#21517](https://github.com/emberjs/ember.js/pull/21517) [DEPRECATION] Deprecate `send` and `TargetActionSupport` mixins and related per [RFC #1041](https://rfcs.emberjs.com/id/1041-deprecate-target-action-support/).
+- [#21542](https://github.com/emberjs/ember.js/pull/21542) [DEPRECATION] Deprecate the `Evented` mixin, its event methods, and public event utilities per [RFC #1111](https://rfcs.emberjs.com/id/1111-deprecate-evented-mixin/).
+- [#21577](https://github.com/emberjs/ember.js/pull/21577) [DEPRECATION] Deprecate `Mixin.create()` and classic mixin usage per [RFC #1116](https://rfcs.emberjs.com/id/1116-deprecate-mixins/).
+- [#21579](https://github.com/emberjs/ember.js/pull/21579) [DEPRECATION] Deprecate `ArrayProxy`, `ObjectProxy`, and `PromiseProxyMixin` per [RFC #1112](https://rfcs.emberjs.com/id/1112-deprecate-proxy/).
+- [#21632](https://github.com/emberjs/ember.js/pull/21632) [DEPRECATION] Deprecate utilities from `@ember/utils` and the `empty`, `notEmpty`, and `none` computed macros per [RFC #334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils/).
+- [#21688](https://github.com/emberjs/ember.js/pull/21688) [DEPRECATION] Deprecate classic computed property macros from `@ember/object/computed` per [RFC #1234](https://github.com/emberjs/rfcs/pull/1234).
+- [#21588](https://github.com/emberjs/ember.js/pull/21588) [DEPRECATION] Deprecate the `Observable`, `Enumerable`, `MutableEnumerable`, `EmberArray`, `MutableArray`, `NativeArray`, `ControllerMixin`, `ActionHandler`, `ProxyMixin`, `ContainerProxyMixin`, and `RegistryProxyMixin` mixins per [RFC #1116](https://rfcs.emberjs.com/id/1116-deprecate-mixins/).
+- [#21687](https://github.com/emberjs/ember.js/pull/21687) [DEPRECATION] Deprecate `A()`, array computed macros, and Ember array methods on array-valued query parameters per [RFC #1114](https://rfcs.emberjs.com/id/1114-deprecate-ember-array/).
+- [#21635](https://github.com/emberjs/ember.js/pull/21635) [BUGFIX] Fix parser crashes and mis-parsed HTML comments and closing tags
+- [#21636](https://github.com/emberjs/ember.js/pull/21636) [BUGFIX] @tracked accessor should dirty the SELF_TAG
+- [#21639](https://github.com/emberjs/ember.js/pull/21639) [BUGFIX] Modifier destruction order varied between dev and prod
+- [#21694](https://github.com/emberjs/ember.js/pull/21694) [BUGFIX] Do not hide a change after a read of a dependentKeyCompat getter
+- [#21707](https://github.com/emberjs/ember.js/pull/21707) [BUGFIX] Fix published types related to ModifierManager and HelperManager
+- [#21727](https://github.com/emberjs/ember.js/pull/21727) [BUGFIX] Keep generic classes generic through extend()
+- [#21663](https://github.com/emberjs/ember.js/pull/21663) [PERFORMANCE] Pool the trackers of tracking frames
+- [#21664](https://github.com/emberjs/ember.js/pull/21664) [PERFORMANCE] Reuse the combined tag of a cache that reads the same tags again
+- [#21665](https://github.com/emberjs/ember.js/pull/21665) [PERFORMANCE] Use an index in the loop over the subtags of a combined tag
+- [#21666](https://github.com/emberjs/ember.js/pull/21666) [PERFORMANCE] Make the functions of a TrackedValue on their first use
+- [#21667](https://github.com/emberjs/ember.js/pull/21667) [PERFORMANCE] Make the value field of a TrackedValue general from the first instance
+- [#21601](https://github.com/emberjs/ember.js/pull/21601) [PERFORMANCE] Skip Object.keys allocation in FunctionHelperManager.getValue
+- [#21600](https://github.com/emberjs/ember.js/pull/21600) [PERFORMANCE] Avoid closure allocation in destroy()
+- [#21598](https://github.com/emberjs/ember.js/pull/21598) [PERFORMANCE] Simplify ArrayIterator to a cached length and a position counter
+- [#21770](https://github.com/emberjs/ember.js/pull/21770) [CLEANUP] Remove more dead browser guards, re-enable IE-disabled tests
+- [#21641](https://github.com/emberjs/ember.js/pull/21641) [CLEANUP] Remove action keyword handling
+- [#21627](https://github.com/emberjs/ember.js/pull/21627) [CLEANUP] Remove dead EXTEND_PROTOTYPES and EMBER_LOAD_HOOKS env flags
+- [#21696](https://github.com/emberjs/ember.js/pull/21696) Modernize EmberRouter: no computed, get() or set()
+- [#21725](https://github.com/emberjs/ember.js/pull/21725) Keep pushObject/removeObject on DataAdapter#releaseMethods until 8.0.0
+- [#21602](https://github.com/emberjs/ember.js/pull/21602) Decode the opcode header once per instruction via RuntimeOp.seek
+
 ## v7.4.0 (October 26, 2026)
 
 - [#21586](https://github.com/emberjs/ember.js/pull/21586) Update browser support per Ember's browser support policy (RFC #685). Support is now Support is now Chrome >= 109, Edge >= 149 Firefox >= 121, Safari >= 16.6, ChromeAndroid >= 151, FirefoxAndroid >= 153
