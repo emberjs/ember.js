@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   AppendingBlock,
   Bounds,
-  DOMRenderer,
+  RenderAdapter,
   DynamicScope,
   Environment,
   EvaluationContext,
@@ -34,14 +34,14 @@ import { NewTreeBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
   public env: Environment;
-  public dom: DOMRenderer;
+  public adapter: RenderAdapter;
   public alwaysRevalidate: boolean;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
-    this.dom = env.dom;
+    this.adapter = env.adapter;
     this.alwaysRevalidate = alwaysRevalidate;
   }
 
@@ -232,18 +232,18 @@ export class ListBlockOpcode extends BlockOpcode {
 
     if (this.lastIterator !== iterator) {
       let { bounds } = this;
-      let { dom } = vm;
+      let { adapter } = vm;
 
-      let marker = (this.marker = dom.createComment(''));
-      dom.insertBefore(
+      let marker = (this.marker = adapter.createComment(''));
+      adapter.insertBefore(
         bounds.parentElement(),
         marker,
-        dom.nextSibling(expect(bounds.lastNode(), "can't insert after an empty bounds"))
+        adapter.nextSibling(expect(bounds.lastNode(), "can't insert after an empty bounds"))
       );
 
       this.sync(iterator);
 
-      dom.removeChild(this.parentElement(), marker);
+      adapter.removeChild(this.parentElement(), marker);
       this.marker = null;
       this.lastIterator = iterator;
     }
@@ -382,7 +382,7 @@ export class ListBlockOpcode extends BlockOpcode {
     before: ListItemOpcode | undefined
   ) {
     let { children } = this;
-    let { dom } = this.context.env;
+    let { adapter } = this.context.env;
 
     updateRef(opcode.memo, item.memo);
     updateRef(opcode.value, item.value);
@@ -391,9 +391,9 @@ export class ListBlockOpcode extends BlockOpcode {
     let currentSibling, nextSibling;
 
     if (before === undefined) {
-      moveBounds(dom, opcode, this.marker);
+      moveBounds(adapter, opcode, this.marker);
     } else {
-      currentSibling = dom.nextSibling(opcode.lastNode());
+      currentSibling = adapter.nextSibling(opcode.lastNode());
       nextSibling = before.firstNode();
 
       // Items are moved throughout the algorithm, so there are cases where the
@@ -401,7 +401,7 @@ export class ListBlockOpcode extends BlockOpcode {
       // moved before this move happened). Check to see if they are siblings
       // first before doing the move.
       if (currentSibling !== nextSibling) {
-        moveBounds(dom, opcode, nextSibling);
+        moveBounds(adapter, opcode, nextSibling);
       }
     }
 
@@ -422,7 +422,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     destroy(opcode);
-    clear(this.context.env.dom, opcode);
+    clear(this.context.env.adapter, opcode);
     this.opcodeMap.delete(opcode.key);
   }
 }

@@ -4,7 +4,7 @@ import type {
   ComponentInstanceState,
 } from '../components.js';
 import type { Nullable } from '../core.js';
-import type { DOMRenderer } from '../dom/renderer.js';
+import type { RenderAdapter } from '../render-adapter.js';
 import type { WithCreateInstance } from '../managers.js';
 import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
@@ -37,7 +37,7 @@ export interface Environment {
   /**
    * Every operation on the output tree goes through this object.
    */
-  readonly dom: DOMRenderer;
+  readonly adapter: RenderAdapter;
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;

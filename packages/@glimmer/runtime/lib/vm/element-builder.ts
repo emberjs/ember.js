@@ -3,7 +3,7 @@ import type {
   AttrNamespace,
   Bounds,
   Cursor,
-  DOMRenderer,
+  RenderAdapter,
   ElementOperations,
   Environment,
   Maybe,
@@ -83,7 +83,7 @@ export class NewTreeBuilder implements TreeBuilder {
     cursors: Cursor[];
   };
 
-  public dom: DOMRenderer;
+  public adapter: RenderAdapter;
   public constructing: Nullable<SimpleElement> = null;
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
@@ -108,7 +108,7 @@ export class NewTreeBuilder implements TreeBuilder {
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     this.env = env;
-    this.dom = env.dom;
+    this.adapter = env.adapter;
     this.pushElement(parentNode, nextSibling);
 
     if (LOCAL_DEBUG) {
@@ -196,7 +196,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __openElement(tag: string): SimpleElement {
-    return this.dom.createElement(tag, this.element);
+    return this.adapter.createElement(tag, this.element);
   }
 
   flushElement(modifiers: Nullable<ModifierInstance[]>) {
@@ -217,7 +217,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __flushElement(parent: SimpleElement, constructing: SimpleElement) {
-    this.dom.insertBefore(parent, constructing, this.nextSibling);
+    this.adapter.insertBefore(parent, constructing, this.nextSibling);
   }
 
   closeElement(): Nullable<ModifierInstance[]> {
@@ -242,10 +242,10 @@ export class NewTreeBuilder implements TreeBuilder {
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
-      this.dom.clearChildren(element);
+      this.adapter.clearChildren(element);
     }
 
-    let block = new RemoteBlock(this.dom, element);
+    let block = new RemoteBlock(this.adapter, element);
 
     return this.pushBlock(block, true);
   }
@@ -293,24 +293,24 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __appendText(text: string): SimpleText {
-    let { dom, element, nextSibling } = this;
-    let node = dom.createTextNode(text);
-    dom.insertBefore(element, node, nextSibling);
+    let { adapter, element, nextSibling } = this;
+    let node = adapter.createTextNode(text);
+    adapter.insertBefore(element, node, nextSibling);
     return node;
   }
 
   __appendNode(node: SimpleNode): SimpleNode {
-    this.dom.insertBefore(this.element, node, this.nextSibling);
+    this.adapter.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
-    let first = this.dom.firstChild(fragment);
+    let first = this.adapter.firstChild(fragment);
 
     if (first) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      let ret = new ConcreteBounds(this.element, first, this.dom.lastChild(fragment)!);
-      this.dom.insertBefore(this.element, fragment, this.nextSibling);
+      let ret = new ConcreteBounds(this.element, first, this.adapter.lastChild(fragment)!);
+      this.adapter.insertBefore(this.element, fragment, this.nextSibling);
       return ret;
     } else {
       const comment = this.__appendComment('');
@@ -319,7 +319,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __appendHTML(html: string): Bounds {
-    return this.dom.insertHTMLBefore(this.element, this.nextSibling, html);
+    return this.adapter.insertHTMLBefore(this.element, this.nextSibling, html);
   }
 
   appendDynamicHTML(value: string): void {
@@ -357,20 +357,20 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __appendComment(string: string): SimpleComment {
-    let { dom, element, nextSibling } = this;
-    let node = dom.createComment(string);
-    dom.insertBefore(element, node, nextSibling);
+    let { adapter, element, nextSibling } = this;
+    let node = adapter.createComment(string);
+    adapter.insertBefore(element, node, nextSibling);
     return node;
   }
 
   __setAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    this.dom.setAttribute(this.constructing!, name, value, namespace);
+    this.adapter.setAttribute(this.constructing!, name, value, namespace);
   }
 
   __setProperty(name: string, value: unknown): void {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    this.dom.setProperty(this.constructing!, name, value);
+    this.adapter.setProperty(this.constructing!, name, value);
   }
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
@@ -385,7 +385,7 @@ export class NewTreeBuilder implements TreeBuilder {
   ): DynamicAttribute {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let element = this.constructing!;
-    let attribute = dynamicAttribute(this.dom, element, name, namespace, trusting);
+    let attribute = dynamicAttribute(this.adapter, element, name, namespace, trusting);
     attribute.set(this, value, this.env);
     return attribute;
   }
@@ -470,7 +470,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(dom: DOMRenderer, parent: SimpleElement) {
+  constructor(adapter: RenderAdapter, parent: SimpleElement) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -500,8 +500,8 @@ export class RemoteBlock extends AppendingBlockImpl {
       // and avoid clearing the node if it was. In most cases this shouldn't happen,
       // so this might hide bugs where the code clears nested nodes unnecessarily,
       // so we should eventually try to do the correct fix.
-      if (this.parentElement() === dom.parentNode(this.firstNode())) {
-        clear(dom, this);
+      if (this.parentElement() === adapter.parentNode(this.firstNode())) {
+        clear(adapter, this);
       }
     });
   }
@@ -515,7 +515,7 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 
   reset(env: Environment): Nullable<SimpleNode> {
     destroy(this);
-    let nextSibling = clear(env.dom, this);
+    let nextSibling = clear(env.adapter, this);
 
     this.first = null;
     this.last = null;

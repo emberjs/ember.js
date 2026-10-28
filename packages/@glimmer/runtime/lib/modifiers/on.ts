@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
-  DOMRenderer,
+  RenderAdapter,
   Environment,
   InternalModifierManager,
   Owner,
@@ -41,33 +41,33 @@ export class OnModifierState {
   public element: SimpleElement;
   public args: CapturedArguments;
   public listener: Listener | null = null;
-  private dom: DOMRenderer;
+  private adapter: RenderAdapter;
 
-  constructor(dom: DOMRenderer, element: SimpleElement, args: CapturedArguments) {
-    this.dom = dom;
+  constructor(adapter: RenderAdapter, element: SimpleElement, args: CapturedArguments) {
+    this.adapter = adapter;
     this.element = element;
     this.args = args;
 
     registerDestructor(this, () => {
-      let { dom, element, listener } = this;
+      let { adapter, element, listener } = this;
       if (listener) {
         let { eventName, callback, options } = listener;
-        removeEventListener(dom, element, eventName, callback, options);
+        removeEventListener(adapter, element, eventName, callback, options);
       }
     });
   }
 
   // Update this.listener if needed
   updateListener(): void {
-    let { dom, element, args, listener } = this;
+    let { adapter, element, args, listener } = this;
 
     let selector: string | undefined;
     if (DEBUG) {
-      let id = dom.getAttribute(element, 'id');
-      let classes = dom.getAttribute(element, 'class')?.trim();
+      let id = adapter.getAttribute(element, 'id');
+      let classes = adapter.getAttribute(element, 'class')?.trim();
 
       selector =
-        dom.tagName(element).toLowerCase() +
+        adapter.tagName(element).toLowerCase() +
         (id ? `#${id}` : '') +
         (classes
           ? classes
@@ -223,10 +223,16 @@ export class OnModifierState {
       };
 
       if (listener) {
-        removeEventListener(dom, element, listener.eventName, listener.callback, listener.options);
+        removeEventListener(
+          adapter,
+          element,
+          listener.eventName,
+          listener.callback,
+          listener.options
+        );
       }
 
-      addEventListener(dom, element, eventName, callback, options);
+      addEventListener(adapter, element, eventName, callback, options);
     }
   }
 }
@@ -235,7 +241,7 @@ let adds = 0;
 let removes = 0;
 
 function removeEventListener(
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   element: SimpleElement,
   eventName: string,
   callback: EventListener,
@@ -243,18 +249,18 @@ function removeEventListener(
 ): void {
   removes++;
 
-  dom.removeEventListener(element, eventName, callback, options);
+  adapter.removeEventListener(element, eventName, callback, options);
 }
 
 function addEventListener(
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   element: SimpleElement,
   eventName: string,
   callback: EventListener,
   options?: AddEventListenerOptions
 ): void {
   adds++;
-  dom.addEventListener(element, eventName, callback, options);
+  adapter.addEventListener(element, eventName, callback, options);
 }
 
 /**
@@ -417,7 +423,7 @@ class OnModifierManager implements InternalModifierManager<OnModifierState> {
     args: CapturedArguments,
     env: Environment
   ): OnModifierState {
-    return new OnModifierState(env.dom, element, args);
+    return new OnModifierState(env.adapter, element, args);
   }
 
   getTag({ tag }: OnModifierState): UpdatableTag {

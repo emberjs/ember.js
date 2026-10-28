@@ -2,7 +2,7 @@ import type { Maybe, Nullable } from '../core.js';
 import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
 import type { Stack } from '../stack.js';
 import type { Bounds, Cursor } from './bounds.js';
-import type { DOMRenderer } from './renderer.js';
+import type { RenderAdapter } from '../render-adapter.js';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -98,7 +98,7 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   };
 
   nextSibling: Nullable<SimpleNode>;
-  dom: DOMRenderer;
+  adapter: RenderAdapter;
   constructing: Nullable<SimpleElement>;
   element: SimpleElement;
 
@@ -122,6 +122,6 @@ export interface AttributeCursor {
 
 export interface AttributeOperation {
   attribute: AttributeCursor;
-  set(dom: TreeBuilder, value: unknown, env: Environment): void;
+  set(adapter: TreeBuilder, value: unknown, env: Environment): void;
   update(value: unknown, env: Environment): void;
 }

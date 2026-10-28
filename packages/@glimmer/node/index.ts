@@ -1,2 +1,2 @@
-export { default as NodeDOMRenderer } from './lib/node-dom-helper';
+export { default as NodeDOMRenderAdapter } from './lib/node-dom-helper';
 export { serializeBuilder } from './lib/serialize-builder';

@@ -2,7 +2,7 @@ import type {
   AttrNamespace,
   Bounds,
   Dict,
-  DOMRenderer,
+  RenderAdapter,
   ElementNamespace,
   Indexable,
   Namespace,
@@ -88,19 +88,19 @@ const BLACKLIST_TABLE = Object.create(null) as Dict<1>;
 ].forEach((tag) => (BLACKLIST_TABLE[tag] = 1));
 
 /**
- * The `DOMRenderer` for a browser `Document`, and for a SimpleDOM document.
+ * The `RenderAdapter` for a browser `Document`, and for a SimpleDOM document.
  *
  * Do not read or write a member of a DOM node in other runtime code.
- * Add a method here and to `DOMRenderer`.
+ * Add a method here and to `RenderAdapter`.
  */
-export class DOMRendererImpl implements DOMRenderer {
+export class DOMRenderAdapter implements RenderAdapter {
   declare protected uselessElement: SimpleElement; // Set by this.setupUselessElement() in constructor
 
   constructor(protected document: SimpleDocument) {
     this.setupUselessElement();
   }
 
-  // split into separate method so that NodeDOMRenderer
+  // split into separate method so that NodeDOMRenderAdapter
   // can override it.
   protected setupUselessElement() {
     this.uselessElement = this.document.createElement('div');

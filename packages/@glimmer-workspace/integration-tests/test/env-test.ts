@@ -1,12 +1,12 @@
 import { castToSimple } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
-import { DOMRendererImpl, EnvironmentImpl } from '@glimmer/runtime';
+import { DOMRenderAdapter, EnvironmentImpl } from '@glimmer/runtime';
 
 QUnit.module('[integration] env');
 
 if (DEBUG) {
   QUnit.test('assert against nested transactions', (assert) => {
-    let env = new EnvironmentImpl(new DOMRendererImpl(castToSimple(document)), {
+    let env = new EnvironmentImpl(new DOMRenderAdapter(castToSimple(document)), {
       onTransactionCommit() {},
       isInteractive: true,
       enableDebugTooling: false,
@@ -20,7 +20,7 @@ if (DEBUG) {
 }
 
 QUnit.test('ensure commit cleans up when it can', (assert) => {
-  let env = new EnvironmentImpl(new DOMRendererImpl(castToSimple(document)), {
+  let env = new EnvironmentImpl(new DOMRenderAdapter(castToSimple(document)), {
     onTransactionCommit() {},
     isInteractive: true,
     enableDebugTooling: false,

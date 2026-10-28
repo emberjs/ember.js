@@ -13,7 +13,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   Cursor,
   DebugRenderTree,
-  DOMRenderer,
+  RenderAdapter,
   Environment,
   RenderResult as GlimmerRenderResult,
   EvaluationContext,
@@ -23,7 +23,7 @@ import type {
 
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
-import { DOMRendererImpl } from '@glimmer/runtime/lib/dom/renderer';
+import { DOMRenderAdapter } from '@glimmer/runtime/lib/dom/render-adapter';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
@@ -431,13 +431,13 @@ export class BaseRenderer {
    */
   static strict(
     owner: object,
-    dom: DOMRenderer,
+    adapter: RenderAdapter,
     options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...options },
-      dom,
+      adapter,
       new ResolverImpl(),
       clientBuilder
     );
@@ -448,7 +448,7 @@ export class BaseRenderer {
   constructor(
     owner: object,
     envOptions: { isInteractive: boolean; hasDOM: boolean },
-    dom: DOMRenderer,
+    adapter: RenderAdapter,
     resolver: ClassicResolver,
     builder: IBuilder
   ) {
@@ -462,7 +462,7 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    let options = runtimeOptions(dom, env, sharedArtifacts, resolver);
+    let options = runtimeOptions(adapter, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
       (heap) => new RuntimeOpImpl(heap),
@@ -689,16 +689,16 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
   if (!renderer) {
     /**
-     * `dom` renders into an output that is not the DOM, for example a terminal.
+     * `adapter` renders into an output that is not the DOM, for example a terminal.
      */
-    let dom =
-      env && 'dom' in env
-        ? (env['dom'] as DOMRenderer)
-        : new DOMRendererImpl(
+    let adapter =
+      env && 'adapter' in env
+        ? (env['adapter'] as RenderAdapter)
+        : new DOMRenderAdapter(
             (env && 'document' in env ? env['document'] : globalThis.document) as SimpleDocument
           );
 
-    renderer = BaseRenderer.strict(owner, dom, {
+    renderer = BaseRenderer.strict(owner, adapter, {
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env['hasDOM']) : true,
@@ -736,7 +736,7 @@ function toCursor(into: IntoTarget): Cursor {
  * A `Cursor` target is never cleared.
  */
 function replaceLastRender(
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   into: IntoTarget,
   element: Element | SimpleElement
 ): IntoTarget {
@@ -748,8 +748,8 @@ function replaceLastRender(
     return { element: element as SimpleElement, nextSibling: last.glimmerResult.firstNode() };
   }
 
-  if (!last && !isCursor(into) && dom.hasProperty(into as SimpleElement, 'innerHTML')) {
-    dom.clearChildren(into as SimpleElement);
+  if (!last && !isCursor(into) && adapter.hasProperty(into as SimpleElement, 'innerHTML')) {
+    adapter.clearChildren(into as SimpleElement);
   }
 
   return into;
@@ -811,7 +811,7 @@ export function renderComponent(
   let element = isCursor(into) ? into.element : into;
 
   let root = renderer.render(component, {
-    into: replaceLastRender(renderer.state.env.dom, into, element),
+    into: replaceLastRender(renderer.state.env.adapter, into, element),
     args,
   });
   let glimmerResult = root.result;

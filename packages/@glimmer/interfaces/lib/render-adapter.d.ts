@@ -1,5 +1,5 @@
-import type { Nullable } from '../core.js';
-import type { Bounds } from './bounds.js';
+import type { Nullable } from './core.js';
+import type { Bounds } from './dom/bounds.js';
 import type {
   AttrNamespace,
   ElementNamespace,
@@ -8,10 +8,13 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from './simple.js';
+} from './dom/simple.js';
 
 /**
  * Every operation that the VM does on the output tree.
+ *
+ * A renderer (`BaseRenderer`, the classic `Renderer`) owns the roots and the render loop.
+ * It does each output operation through its adapter.
  *
  * The VM holds nodes only as handles.
  * It gets them from this interface, and it gives them back to this interface.
@@ -28,7 +31,7 @@ import type {
  *
  * These are the same for each output.
  */
-export interface DOMRenderer {
+export interface RenderAdapter {
   /**
    * ---------------------------------------------------------------------------
    * Create

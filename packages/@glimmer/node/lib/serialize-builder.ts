@@ -16,12 +16,12 @@ import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
 function currentNode(cursor: TreeBuilder): Nullable<SimpleNode> {
-  let { dom, element, nextSibling } = cursor;
+  let { adapter, element, nextSibling } = cursor;
 
   if (nextSibling === null) {
-    return dom.lastChild(element);
+    return adapter.lastChild(element);
   } else {
-    return dom.previousSibling(nextSibling);
+    return adapter.previousSibling(nextSibling);
   }
 }
 
@@ -29,7 +29,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
-    let tagName = this.dom.tagName(this.element);
+    let tagName = this.adapter.tagName(this.element);
 
     if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
       let depth = this.serializeBlockDepth++;
@@ -40,7 +40,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __closeBlock(): void {
-    let tagName = this.dom.tagName(this.element);
+    let tagName = this.adapter.tagName(this.element);
 
     super.__closeBlock();
 
@@ -51,7 +51,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendHTML(html: string): Bounds {
-    let tagName = this.dom.tagName(this.element);
+    let tagName = this.adapter.tagName(this.element);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
       return super.__appendHTML(html);
@@ -79,7 +79,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    let tagName = this.dom.tagName(this.element);
+    let tagName = this.adapter.tagName(this.element);
     let current = currentNode(this);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
@@ -87,7 +87,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     } else if (string === '') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return this.__appendComment('% %') as any as SimpleText;
-    } else if (current && this.dom.isText(current)) {
+    } else if (current && this.adapter.isText(current)) {
       this.__appendComment('%|%');
     }
 
@@ -105,7 +105,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
   override openElement(tag: string) {
     if (tag === 'tr') {
-      let parentTag = this.dom.tagName(this.element);
+      let parentTag = this.adapter.tagName(this.element);
 
       if (parentTag !== 'TBODY' && parentTag !== 'THEAD' && parentTag !== 'TFOOT') {
         this.openElement('tbody');
@@ -127,10 +127,10 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
-    let { dom } = this;
-    let script = dom.createElement('script');
-    dom.setAttribute(script, 'glmr', cursorId);
-    dom.insertBefore(element, script, insertBefore);
+    let { adapter } = this;
+    let script = adapter.createElement('script');
+    adapter.setAttribute(script, 'glmr', cursorId);
+    adapter.insertBefore(element, script, insertBefore);
     return super.pushRemoteElement(element, cursorId, insertBefore);
   }
 }

@@ -1,7 +1,7 @@
 import type {
   AttrNamespace,
   Bounds,
-  DOMRenderer,
+  RenderAdapter,
   Environment,
   Maybe,
   Nullable,
@@ -49,45 +49,45 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
-    const { dom } = this;
+    const { adapter } = this;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    let node = dom.firstChild(this.currentCursor!.element);
+    let node = adapter.firstChild(this.currentCursor!.element);
 
     while (node !== null) {
-      if (isOpenBlock(dom, node)) {
+      if (isOpenBlock(adapter, node)) {
         break;
       }
-      node = dom.nextSibling(node);
+      node = adapter.nextSibling(node);
     }
 
     assert(node, 'Must have opening comment for rehydration.');
     this.candidate = node;
-    const startingBlockOffset = getBlockDepth(dom, node);
+    const startingBlockOffset = getBlockDepth(adapter, node);
     if (startingBlockOffset !== 0) {
       // We are rehydrating from a partial tree and not the root component
       // We need to add an extra block before the first block to rehydrate correctly
       // The extra block is needed since the renderComponent API creates a synthetic component invocation which generates the extra block
       const newBlockDepth = startingBlockOffset - 1;
-      const newCandidate = dom.createComment(`%+b:${newBlockDepth}%`);
+      const newCandidate = adapter.createComment(`%+b:${newBlockDepth}%`);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      const parent = dom.parentNode(node)! as SimpleElement;
+      const parent = adapter.parentNode(node)! as SimpleElement;
 
-      dom.insertBefore(parent, newCandidate, this.candidate);
-      let closingNode = dom.nextSibling(node);
+      adapter.insertBefore(parent, newCandidate, this.candidate);
+      let closingNode = adapter.nextSibling(node);
       while (closingNode !== null) {
         if (
-          isCloseBlock(dom, closingNode) &&
-          getBlockDepth(dom, closingNode) === startingBlockOffset
+          isCloseBlock(adapter, closingNode) &&
+          getBlockDepth(adapter, closingNode) === startingBlockOffset
         ) {
           break;
         }
-        closingNode = dom.nextSibling(closingNode);
+        closingNode = adapter.nextSibling(closingNode);
       }
 
       assert(closingNode, 'Must have closing comment for starting block comment');
-      const newClosingBlock = dom.createComment(`%-b:${newBlockDepth}%`);
-      dom.insertBefore(parent, newClosingBlock, dom.nextSibling(closingNode));
+      const newClosingBlock = adapter.createComment(`%-b:${newBlockDepth}%`);
+      adapter.insertBefore(parent, newClosingBlock, adapter.nextSibling(closingNode));
       this.candidate = newCandidate;
       this.startingBlockOffset = newBlockDepth;
     } else {
@@ -156,8 +156,8 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
      *   <!--%-b:1%-->  <------  becomes currentCursor.candidate
      */
     if (this.candidate !== null) {
-      cursor.candidate = this.dom.firstChild(element);
-      this.candidate = this.dom.nextSibling(element);
+      cursor.candidate = this.adapter.firstChild(element);
+      this.candidate = this.adapter.nextSibling(element);
     }
 
     this.cursors.push(cursor);
@@ -172,9 +172,9 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const openBlockDepth = currentCursor.openBlockDepth;
       if (openBlockDepth >= currentCursor.startingBlockDepth) {
         while (current) {
-          if (isCloseBlock(this.dom, current)) {
+          if (isCloseBlock(this.adapter, current)) {
             const closeBlockDepth = getBlockDepthWithOffset(
-              this.dom,
+              this.adapter,
               current,
               this.startingBlockOffset
             );
@@ -206,11 +206,11 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const { candidate } = currentCursor;
     if (candidate === null) return;
 
-    const tagName = this.dom.tagName(currentCursor.element);
+    const tagName = this.adapter.tagName(currentCursor.element);
 
     if (
-      isOpenBlock(this.dom, candidate) &&
-      getBlockDepthWithOffset(this.dom, candidate, this.startingBlockOffset) === blockDepth
+      isOpenBlock(this.adapter, candidate) &&
+      getBlockDepthWithOffset(this.adapter, candidate, this.startingBlockOffset) === blockDepth
     ) {
       this.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
@@ -241,8 +241,9 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       //);
 
       if (
-        isCloseBlock(this.dom, candidate) &&
-        getBlockDepthWithOffset(this.dom, candidate, this.startingBlockOffset) === openBlockDepth
+        isCloseBlock(this.adapter, candidate) &&
+        getBlockDepthWithOffset(this.adapter, candidate, this.startingBlockOffset) ===
+          openBlockDepth
       ) {
         const nextSibling = this.remove(candidate);
         this.candidate = nextSibling;
@@ -263,8 +264,9 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const nextSibling = currentCursor.nextSibling;
       if (
         nextSibling !== null &&
-        isCloseBlock(this.dom, nextSibling) &&
-        getBlockDepthWithOffset(this.dom, nextSibling, this.startingBlockOffset) === this.blockDepth
+        isCloseBlock(this.adapter, nextSibling) &&
+        getBlockDepthWithOffset(this.adapter, nextSibling, this.startingBlockOffset) ===
+          this.blockDepth
       ) {
         // restore rehydration state
         const candidate = this.remove(nextSibling);
@@ -299,15 +301,15 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const newBounds = new ConcreteBounds(
         this.element,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        this.dom.nextSibling(first)!,
+        this.adapter.nextSibling(first)!,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        this.dom.previousSibling(last)!
+        this.adapter.previousSibling(last)!
       );
 
       const possibleEmptyMarker = this.remove(first);
       this.remove(last);
 
-      if (possibleEmptyMarker !== null && isEmpty(this.dom, possibleEmptyMarker)) {
+      if (possibleEmptyMarker !== null && isEmpty(this.adapter, possibleEmptyMarker)) {
         this.candidate = this.remove(possibleEmptyMarker);
 
         if (this.candidate !== null) {
@@ -322,24 +324,27 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   protected remove(node: SimpleNode): Nullable<SimpleNode> {
-    const { dom } = this;
-    const element = expect(dom.parentNode(node), `cannot remove a detached node`) as SimpleElement;
-    const next = dom.nextSibling(node);
-    dom.removeChild(element, node);
+    const { adapter } = this;
+    const element = expect(
+      adapter.parentNode(node),
+      `cannot remove a detached node`
+    ) as SimpleElement;
+    const next = adapter.nextSibling(node);
+    adapter.removeChild(element, node);
     return next;
   }
 
   private markerBounds(): Nullable<Bounds> {
     const _candidate = this.candidate;
 
-    const { dom } = this;
+    const { adapter } = this;
 
-    if (_candidate && isMarker(dom, _candidate)) {
+    if (_candidate && isMarker(adapter, _candidate)) {
       const first = _candidate;
-      let last = expect(dom.nextSibling(first), `BUG: serialization markers must be paired`);
+      let last = expect(adapter.nextSibling(first), `BUG: serialization markers must be paired`);
 
-      while (!isMarker(dom, last)) {
-        last = expect(dom.nextSibling(last), `BUG: serialization markers must be paired`);
+      while (!isMarker(adapter, last)) {
+        last = expect(adapter.nextSibling(last), `BUG: serialization markers must be paired`);
       }
 
       return new ConcreteBounds(this.element, first, last);
@@ -349,21 +354,21 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    const { candidate, dom } = this;
+    const { candidate, adapter } = this;
 
     if (candidate) {
-      if (dom.isText(candidate)) {
-        if (dom.nodeValue(candidate) !== string) {
-          dom.setNodeValue(candidate, string);
+      if (adapter.isText(candidate)) {
+        if (adapter.nodeValue(candidate) !== string) {
+          adapter.setNodeValue(candidate, string);
         }
-        this.candidate = dom.nextSibling(candidate);
+        this.candidate = adapter.nextSibling(candidate);
 
         return candidate;
-      } else if (isSeparator(dom, candidate)) {
+      } else if (isSeparator(adapter, candidate)) {
         this.candidate = this.remove(candidate);
 
         return this.__appendText(string);
-      } else if (isEmpty(dom, candidate) && string === '') {
+      } else if (isEmpty(adapter, candidate) && string === '') {
         this.candidate = this.remove(candidate);
 
         return this.__appendText(string);
@@ -379,13 +384,13 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
 
   override __appendComment(string: string): SimpleComment {
     const _candidate = this.candidate;
-    const { dom } = this;
-    if (_candidate && dom.isComment(_candidate)) {
-      if (dom.nodeValue(_candidate) !== string) {
-        dom.setNodeValue(_candidate, string);
+    const { adapter } = this;
+    if (_candidate && adapter.isComment(_candidate)) {
+      if (adapter.nodeValue(_candidate) !== string) {
+        adapter.setNodeValue(_candidate, string);
       }
 
-      this.candidate = dom.nextSibling(_candidate);
+      this.candidate = adapter.nextSibling(_candidate);
       return _candidate;
     } else if (_candidate) {
       this.clearMismatch(_candidate);
@@ -396,13 +401,13 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
 
   override __openElement(tag: string): SimpleElement {
     const _candidate = this.candidate;
-    const { dom } = this;
+    const { adapter } = this;
 
-    if (_candidate && dom.isElement(_candidate) && isSameNodeType(dom, _candidate, tag)) {
-      this.unmatchedAttributes = dom.attributeNames(_candidate);
+    if (_candidate && adapter.isElement(_candidate) && isSameNodeType(adapter, _candidate, tag)) {
+      this.unmatchedAttributes = adapter.attributeNames(_candidate);
       return _candidate;
     } else if (_candidate) {
-      if (dom.isElement(_candidate) && dom.tagName(_candidate) === 'TBODY') {
+      if (adapter.isElement(_candidate) && adapter.tagName(_candidate) === 'TBODY') {
         this.pushElement(_candidate, null);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         this.currentCursor!.injectedOmittedNode = true;
@@ -427,8 +432,8 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         const element = this.constructing!;
 
-        if (this.dom.getAttribute(element, name) !== value) {
-          this.dom.setAttribute(element, name, value);
+        if (this.adapter.getAttribute(element, name) !== value) {
+          this.adapter.setAttribute(element, name, value);
         }
         unmatched.splice(index, 1);
         return true;
@@ -459,7 +464,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     if (unmatched) {
       for (const name of unmatched) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        this.dom.removeAttribute(this.constructing!, name);
+        this.adapter.removeAttribute(this.constructing!, name);
       }
       this.unmatchedAttributes = null;
     } else {
@@ -482,7 +487,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   getMarker(element: SimpleElement, guid: string): Nullable<SimpleNode> {
-    return this.dom.querySelector(element, `script[glmr="${guid}"]`);
+    return this.adapter.querySelector(element, `script[glmr="${guid}"]`);
   }
 
   override __pushRemoteElement(
@@ -490,17 +495,17 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
-    const { dom } = this;
+    const { adapter } = this;
     const marker = this.getMarker(element, cursorId);
 
     assert(
-      !marker || dom.parentNode(marker) === element,
+      !marker || adapter.parentNode(marker) === element,
       `expected remote element marker's parent node to match remote element`
     );
 
     // when insertBefore is not present, we clear the element
     if (insertBefore === undefined) {
-      let first = dom.firstChild(element);
+      let first = adapter.firstChild(element);
 
       while (first !== null && first !== marker) {
         first = this.remove(first);
@@ -517,7 +522,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       this.candidate = this.remove(marker);
     }
 
-    const block = new RemoteBlock(dom, element);
+    const block = new RemoteBlock(adapter, element);
     return this.pushBlock(block, true);
   }
 
@@ -525,46 +530,50 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super.didAppendBounds(bounds);
     if (this.candidate) {
       const last = bounds.lastNode();
-      this.candidate = this.dom.nextSibling(last);
+      this.candidate = this.adapter.nextSibling(last);
     }
     return bounds;
   }
 }
 
-function isOpenBlock(dom: DOMRenderer, node: SimpleNode): node is SimpleComment {
-  return dom.isComment(node) && dom.nodeValue(node)?.lastIndexOf('%+b:', 0) === 0;
+function isOpenBlock(adapter: RenderAdapter, node: SimpleNode): node is SimpleComment {
+  return adapter.isComment(node) && adapter.nodeValue(node)?.lastIndexOf('%+b:', 0) === 0;
 }
 
-function isCloseBlock(dom: DOMRenderer, node: SimpleNode): node is SimpleComment {
-  return dom.isComment(node) && dom.nodeValue(node)?.lastIndexOf('%-b:', 0) === 0;
+function isCloseBlock(adapter: RenderAdapter, node: SimpleNode): node is SimpleComment {
+  return adapter.isComment(node) && adapter.nodeValue(node)?.lastIndexOf('%-b:', 0) === 0;
 }
 
-function getBlockDepth(dom: DOMRenderer, node: SimpleComment): number {
+function getBlockDepth(adapter: RenderAdapter, node: SimpleComment): number {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- a comment has a value
-  return parseInt(dom.nodeValue(node)!.slice(4), 10);
+  return parseInt(adapter.nodeValue(node)!.slice(4), 10);
 }
 
-function getBlockDepthWithOffset(dom: DOMRenderer, node: SimpleComment, offset: number): number {
-  return getBlockDepth(dom, node) - offset;
+function getBlockDepthWithOffset(
+  adapter: RenderAdapter,
+  node: SimpleComment,
+  offset: number
+): number {
+  return getBlockDepth(adapter, node) - offset;
 }
 
-function isMarker(dom: DOMRenderer, node: SimpleNode): boolean {
-  return dom.isComment(node) && dom.nodeValue(node) === '%glmr%';
+function isMarker(adapter: RenderAdapter, node: SimpleNode): boolean {
+  return adapter.isComment(node) && adapter.nodeValue(node) === '%glmr%';
 }
 
-function isSeparator(dom: DOMRenderer, node: SimpleNode): boolean {
-  return dom.isComment(node) && dom.nodeValue(node) === '%|%';
+function isSeparator(adapter: RenderAdapter, node: SimpleNode): boolean {
+  return adapter.isComment(node) && adapter.nodeValue(node) === '%|%';
 }
 
-function isEmpty(dom: DOMRenderer, node: SimpleNode): boolean {
-  return dom.isComment(node) && dom.nodeValue(node) === '% %';
+function isEmpty(adapter: RenderAdapter, node: SimpleNode): boolean {
+  return adapter.isComment(node) && adapter.nodeValue(node) === '% %';
 }
 
-function isSameNodeType(dom: DOMRenderer, candidate: SimpleElement, tag: string) {
-  if (dom.namespaceURI(candidate) === NS_SVG) {
-    return dom.tagName(candidate) === tag;
+function isSameNodeType(adapter: RenderAdapter, candidate: SimpleElement, tag: string) {
+  if (adapter.namespaceURI(candidate) === NS_SVG) {
+    return adapter.tagName(candidate) === tag;
   }
-  return dom.tagName(candidate) === tag.toUpperCase();
+  return adapter.tagName(candidate) === tag.toUpperCase();
 }
 
 export function rehydrationBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {

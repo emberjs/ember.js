@@ -23,7 +23,7 @@ APPEND_OPCODES.add(VM_ENTER_LIST_OP, (vm, { op1: relativeStart, op2: elseTarget 
   let iteratorRef = createIteratorRef(listRef, key);
   let iterator = valueForRef(iteratorRef);
 
-  vm.updateWith(new AssertFilter(iteratorRef, (iterator) => iterator.isEmpty(), vm.env.dom));
+  vm.updateWith(new AssertFilter(iteratorRef, (iterator) => iterator.isEmpty(), vm.env.adapter));
 
   if (iterator.isEmpty()) {
     // TODO: Fix this offset, should be accurate

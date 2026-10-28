@@ -1,6 +1,6 @@
 import type {
   Bounds,
-  DOMRenderer,
+  RenderAdapter,
   Nullable,
   SimpleComment,
   SimpleDocumentFragment,
@@ -38,7 +38,7 @@ class TreeNode {
 const node = (value: SimpleNode) => value as unknown as TreeNode;
 const simple = <T extends SimpleNode>(value: TreeNode | null) => value as unknown as T;
 
-class TreeRenderer implements DOMRenderer {
+class TreeRenderAdapter implements RenderAdapter {
   createElement(tag: string): SimpleElement {
     return simple(new TreeNode('element', tag));
   }
@@ -236,13 +236,13 @@ function find(target: TreeNode, tag: string): TreeNode | undefined {
 const rendered: { destroy(): void }[] = [];
 
 function setup(component: object) {
-  let dom = new TreeRenderer();
-  let root = node(dom.createElement('root'));
+  let adapter = new TreeRenderAdapter();
+  let root = node(adapter.createElement('root'));
   let result = run(() =>
     renderComponent(component, {
       owner: {},
       into: simple<SimpleElement>(root) as unknown as Element,
-      env: { dom },
+      env: { adapter },
     })
   );
 
@@ -258,7 +258,7 @@ function setup(component: object) {
   };
 }
 
-QUnit.module('[integration] DOMRenderer that is not a DOM', {
+QUnit.module('[integration] RenderAdapter that is not a DOM', {
   afterEach() {
     run(() => {
       for (let result of rendered) result.destroy();
@@ -319,7 +319,7 @@ QUnit.test('it renders and updates blocks', (assert) => {
   assert.strictEqual(html(), '<no></no><list><!----></list>');
 });
 
-QUnit.test('the `on` modifier uses the listeners of the renderer', (assert) => {
+QUnit.test('the `on` modifier uses the listeners of the adapter', (assert) => {
   class State {
     @tracked show = true;
   }

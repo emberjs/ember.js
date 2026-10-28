@@ -1,4 +1,4 @@
-import type { DOMRenderer } from '@glimmer/interfaces';
+import type { RenderAdapter } from '@glimmer/interfaces';
 import { ENV } from '@ember/-internals/environment';
 import { setRenderer } from '@ember/-internals/glimmer';
 import { BaseRenderer, type IBuilder } from '@ember/-internals/glimmer/lib/base-renderer';
@@ -35,7 +35,7 @@ export function boundsOf(handle: RenderHandle): DebugBounds {
  */
 export function createRenderer(
   owner: object,
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   resolver: ResolverImpl,
   builder: IBuilder,
   debugRenderTree: boolean,
@@ -47,7 +47,7 @@ export function createRenderer(
   let renderer: BaseRenderer;
 
   try {
-    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, dom, resolver, builder);
+    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, adapter, resolver, builder);
   } finally {
     ENV._DEBUG_RENDER_TREE = previous;
   }

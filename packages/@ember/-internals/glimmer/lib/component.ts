@@ -1099,7 +1099,7 @@ class Component<S = unknown>
     let element = _element;
     let isSVG = element.namespaceURI === 'http://www.w3.org/2000/svg';
     let { type, normalized } = normalizeProperty(
-      this.renderer._context.env.dom,
+      this.renderer._context.env.adapter,
       element as unknown as SimpleElement,
       name
     );

@@ -3,7 +3,7 @@ import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
   Environment,
-  DOMRenderer,
+  RenderAdapter,
   ModifierInstance,
   Nullable,
   RuntimeArtifacts,
@@ -104,7 +104,7 @@ export class EnvironmentImpl implements Environment {
   debugRenderTree: DebugRenderTree<object> | undefined;
 
   constructor(
-    readonly dom: DOMRenderer,
+    readonly adapter: RenderAdapter,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
@@ -177,13 +177,13 @@ export interface EnvironmentDelegate {
 }
 
 export function runtimeOptions(
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
   resolver: Nullable<ClassicResolver>
 ): RuntimeOptions {
   return {
-    env: new EnvironmentImpl(dom, delegate),
+    env: new EnvironmentImpl(adapter, delegate),
     program: new ProgramImpl(artifacts.constants, artifacts.heap),
     resolver,
   };

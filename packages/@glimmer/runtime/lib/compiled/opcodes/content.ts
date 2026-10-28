@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { DOMRenderer } from '@glimmer/interfaces';
+import type { RenderAdapter } from '@glimmer/interfaces';
 import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
 import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
@@ -32,7 +32,7 @@ import DynamicTextContent from '../../vm/content/text';
 import { CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
 
-function toContentType(value: unknown, dom: DOMRenderer) {
+function toContentType(value: unknown, adapter: RenderAdapter) {
   if (shouldCoerce(value)) {
     return ContentType.String;
   } else if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
@@ -41,9 +41,9 @@ function toContentType(value: unknown, dom: DOMRenderer) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
-  } else if (dom.isFragment(value)) {
+  } else if (adapter.isFragment(value)) {
     return ContentType.Fragment;
-  } else if (dom.isNode(value)) {
+  } else if (adapter.isNode(value)) {
     return ContentType.Node;
   } else {
     return ContentType.String;
@@ -72,12 +72,12 @@ function toDynamicContentType(value: unknown) {
 APPEND_OPCODES.add(VM_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  let { dom } = vm.env;
+  let { adapter } = vm.env;
 
-  vm.stack.push(toContentType(valueForRef(reference), dom));
+  vm.stack.push(toContentType(valueForRef(reference), adapter));
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new AssertFilter(reference, toContentType, dom));
+    vm.updateWith(new AssertFilter(reference, toContentType, adapter));
   }
 });
 
@@ -87,7 +87,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
   vm.stack.push(toDynamicContentType(valueForRef(reference)));
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new AssertFilter(reference, toDynamicContentType, vm.env.dom));
+    vm.updateWith(new AssertFilter(reference, toDynamicContentType, vm.env.adapter));
   }
 });
 

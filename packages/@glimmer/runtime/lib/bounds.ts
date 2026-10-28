@@ -1,7 +1,7 @@
 import type {
   Bounds,
   Cursor,
-  DOMRenderer,
+  RenderAdapter,
   Nullable,
   SimpleElement,
   SimpleNode,
@@ -41,7 +41,7 @@ export class ConcreteBounds implements Bounds {
 }
 
 export function move(
-  dom: DOMRenderer,
+  adapter: RenderAdapter,
   bounds: Bounds,
   reference: Nullable<SimpleNode>
 ): Nullable<SimpleNode> {
@@ -52,9 +52,9 @@ export function move(
   let current: SimpleNode = first;
 
   while (true) {
-    let next = dom.nextSibling(current);
+    let next = adapter.nextSibling(current);
 
-    dom.insertBefore(parent, current, reference);
+    adapter.insertBefore(parent, current, reference);
 
     if (current === last) {
       return next;
@@ -64,7 +64,7 @@ export function move(
   }
 }
 
-export function clear(dom: DOMRenderer, bounds: Bounds): Nullable<SimpleNode> {
+export function clear(adapter: RenderAdapter, bounds: Bounds): Nullable<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
@@ -72,9 +72,9 @@ export function clear(dom: DOMRenderer, bounds: Bounds): Nullable<SimpleNode> {
   let current: SimpleNode = first;
 
   while (true) {
-    let next = dom.nextSibling(current);
+    let next = adapter.nextSibling(current);
 
-    dom.removeChild(parent, current);
+    adapter.removeChild(parent, current);
 
     if (current === last) {
       return next;

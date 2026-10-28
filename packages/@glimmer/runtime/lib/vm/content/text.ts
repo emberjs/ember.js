@@ -29,7 +29,7 @@ export default class DynamicTextContent implements UpdatingOpcode {
     }
 
     if (normalized !== lastValue) {
-      vm.dom.setNodeValue(this.node, (this.lastValue = normalized));
+      vm.adapter.setNodeValue(this.node, (this.lastValue = normalized));
     }
   }
 }

@@ -14,7 +14,7 @@ export {
 } from './lib/component/template-only';
 export { CurriedValue, curry } from './lib/curried-value';
 export { isWhitespace } from './lib/dom/helper';
-export { DOMRendererImpl } from './lib/dom/renderer';
+export { DOMRenderAdapter } from './lib/dom/render-adapter';
 export { normalizeProperty } from './lib/dom/props';
 export {
   type EnvironmentDelegate,

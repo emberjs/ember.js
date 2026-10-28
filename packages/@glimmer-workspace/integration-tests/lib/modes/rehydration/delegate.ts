@@ -15,7 +15,7 @@ import type Component from '@ember/component';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
-import { DOMRendererImpl } from '@glimmer/runtime';
+import { DOMRenderAdapter } from '@glimmer/runtime';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import createHTMLDocument from '@simple-dom/document';
@@ -81,7 +81,7 @@ export class RehydrationDelegate implements RenderDelegate {
     this.clientDoc = castToSimple(document);
     this.clientRenderer = createRenderer(
       this.clientOwner,
-      new DOMRendererImpl(this.clientDoc),
+      new DOMRenderAdapter(this.clientDoc),
       new ResolverImpl(),
       (env, cursor) => {
         let tree = debugRehydrateTree(env, cursor) as DebugRehydrateTree;
@@ -94,7 +94,7 @@ export class RehydrationDelegate implements RenderDelegate {
     this.serverDoc = createHTMLDocument();
     this.serverRenderer = createRenderer(
       this.serverOwner,
-      new DOMRendererImpl(this.serverDoc),
+      new DOMRenderAdapter(this.serverDoc),
       new ResolverImpl(),
       serializeBuilder,
       debugRenderTree,
