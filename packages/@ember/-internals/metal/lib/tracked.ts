@@ -2,10 +2,11 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import type { UpdatableTag } from '@glimmer/interfaces';
+import { debug } from '@glimmer/validator/lib/debug';
 import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
 import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
-import { trackedData } from '@glimmer/validator/lib/tracked-data';
-import { trackedValue, type TrackedValue } from '@glimmer/validator/lib/tracked-value';
+import { trackedValue, TrackedValue } from '@glimmer/validator/lib/tracked-value';
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
@@ -324,6 +325,12 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
+// A tracked field notifies on every write, also when the value is the same:
+// `this.items = this.items` is how code reports a change inside the value.
+function neverEqual(): boolean {
+  return false;
+}
+
 function descriptorForField(
   [target, key, desc]: ElementDescriptor,
   options?: { equals?: (a: any, b: any) => boolean; description?: string }
@@ -333,11 +340,33 @@ function descriptorForField(
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  let initializer = desc ? desc.initializer : undefined;
+  let hasInitializer = typeof initializer === 'function';
   let equals = options?.equals;
 
+  // Each instance gets one TrackedValue for the field, at its first read or
+  // write. All of them share these options.
+  let cells = new WeakMap<object, TrackedValue<unknown>>();
+  let cellOptions = { equals: equals ?? neverEqual, description: options?.description };
+
+  function createCell(self: object, value: unknown): TrackedValue<unknown> {
+    // Other code can ask the registry for the tag of the field before the
+    // first read or write, so the value takes its tag from there.
+    let cell = new TrackedValue(value, cellOptions, tagFor(self, key) as UpdatableTag);
+
+    cells.set(self, cell);
+
+    return cell;
+  }
+
   function get(this: object): unknown {
-    let value = getter(this);
+    let cell = cells.get(this);
+
+    if (cell === undefined) {
+      cell = createCell(this, hasInitializer ? initializer!.call(this) : undefined);
+    }
+
+    let value = cell.value;
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
@@ -349,17 +378,29 @@ function descriptorForField(
   }
 
   function set(this: object, newValue: unknown): void {
-    if (
-      equals !== undefined &&
-      equals(
-        untrack(() => getter(this)),
-        newValue
-      )
-    ) {
+    let cell = cells.get(this);
+
+    if (cell === undefined) {
+      // A first write does not run the initializer, unless `equals` needs the
+      // initial value to compare with.
+      cell = createCell(
+        this,
+        equals !== undefined && hasInitializer ? untrack(() => initializer!.call(this)) : undefined
+      );
+    }
+
+    if (DEBUG) {
+      // TrackedValue has the same assertion, but it cannot name the object
+      // and the key.
+      debug.assertTagNotConsumed?.(tagFor(this, key), this, key);
+    }
+
+    if (equals === undefined) {
+      cell.value = newValue;
+    } else if (!cell.set(newValue)) {
       return;
     }
 
-    setter(this, newValue);
     dirtyTagFor(this, SELF_TAG);
   }
 
