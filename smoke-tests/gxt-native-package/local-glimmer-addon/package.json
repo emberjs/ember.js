@@ -1,0 +1,12 @@
+{
+  "name": "local-glimmer-addon",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "@glimmer/component": "2.0.0"
+  }
+}

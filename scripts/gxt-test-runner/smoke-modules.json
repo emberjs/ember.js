@@ -1,0 +1,16 @@
+[
+  "Helpers test: {{log}}",
+  "Helpers test: {{get}}",
+  "Components test: {{input}}",
+  "Components test: <Input />",
+  "Components test: {{textarea}}",
+  "Components test: <Textarea>",
+  "Syntax test: {{#if}}",
+  "View tree tests",
+  "Syntax test: toggling {{#each}}",
+  "Syntax test: toggling {{#each as}}",
+  "Components test: curly components",
+  "Syntax test: {{#each}} with native arrays",
+  "Syntax test: {{#each}} with emberA-wrapped arrays",
+  "Syntax test: {{#each}} with array proxies, replacing its content"
+]

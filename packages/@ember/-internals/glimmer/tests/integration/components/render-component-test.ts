@@ -10,7 +10,12 @@ import {
   type ClassicComponentShape,
 } from 'internal-test-helpers';
 
-import { Input, Textarea } from '@ember/component';
+import {
+  Input,
+  Textarea,
+  capabilities as componentCapabilities,
+  setComponentManager,
+} from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
@@ -28,6 +33,7 @@ import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
 import { ENV } from '@ember/-internals/environment';
+import { DEBUG } from '@glimmer/env';
 import { captureRenderTree } from '@ember/debug';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 
@@ -255,6 +261,388 @@ moduleFor(
 
       assertHTML('');
       await this.assertStableRerender();
+    }
+
+    async '@test a plain-object definition with a custom component manager renders its context'(
+      assert: QUnit['assert']
+    ) {
+      let calls: string[] = [];
+      let definition = {};
+
+      setComponentManager(
+        () => ({
+          capabilities: componentCapabilities('3.13', {
+            asyncLifecycleCallbacks: true,
+            destructor: true,
+          }),
+          createComponent(received: object, args: { named: Record<string, unknown> }) {
+            calls.push('createComponent');
+            assert.strictEqual(received, definition, 'createComponent receives the definition');
+            return { greeting: 'Hello', name: args.named['name'] };
+          },
+          getContext(instance: object) {
+            calls.push('getContext');
+            return instance;
+          },
+          didCreateComponent() {
+            calls.push('didCreateComponent');
+          },
+          destroyComponent() {
+            calls.push('destroyComponent');
+          },
+        }),
+        definition
+      );
+      setComponentTemplate(precompileTemplate('{{this.greeting}}, {{this.name}}!'), definition);
+
+      let owner = buildOwner({});
+
+      let result = renderComponent(definition, {
+        owner,
+        into: this.element,
+        args: { name: 'world' },
+      });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('Hello, world!');
+      await this.assertStableRerender();
+      assert.deepEqual(
+        calls.filter((call) => call === 'createComponent' || call === 'didCreateComponent'),
+        ['createComponent', 'didCreateComponent'],
+        'the manager creates the component once'
+      );
+      assert.notOk(calls.includes('destroyComponent'), 'the component is not destroyed yet');
+
+      result.destroy();
+      await renderSettled();
+
+      assertHTML('');
+      assert.ok(calls.includes('destroyComponent'), 'destroying the render destroys the component');
+
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test the context of a plain-object definition with a custom component manager is reactive'() {
+      class State {
+        @tracked count = 1;
+      }
+      let state = new State();
+      let definition = {};
+
+      setComponentManager(
+        () => ({
+          capabilities: componentCapabilities('3.13'),
+          createComponent: () => state,
+          getContext: (instance: State) => instance,
+        }),
+        definition
+      );
+      setComponentTemplate(precompileTemplate('<p>{{this.count}}</p>'), definition);
+
+      let owner = buildOwner({});
+
+      let result = renderComponent(definition, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('<p>1</p>');
+
+      state.count++;
+      await renderSettled();
+
+      assertHTML('<p>2</p>');
+      await this.assertStableRerender();
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test an error thrown by a render is not thrown again by the next render'(
+      assert: QUnit['assert']
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let NotAComponent = defineSimpleHelper(() => 'not a component');
+      let Broken = setComponentTemplate(
+        precompileTemplate('<this.NotAComponent/>', { strictMode: true }),
+        class extends GlimmerComponent {
+          NotAComponent = NotAComponent;
+        }
+      );
+      // Writes tracked state while it renders.
+      class Hello extends GlimmerComponent {
+        @tracked name = 'nobody';
+
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          this.name = 'world';
+        }
+      }
+      setComponentTemplate(precompileTemplate('Hello, {{this.name}}!'), Hello);
+
+      // Which error the first render throws is not what this test checks.
+      let failedOwner = buildOwner({});
+      assert.throws(() => {
+        renderComponent(Broken, { owner: failedOwner, into: document.createElement('div') });
+      }, 'the first render throws');
+      destroy(failedOwner);
+
+      let owner = buildOwner({});
+      let result = renderComponent(Hello, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('Hello, world!');
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test the initial render evaluates each binding once'(assert: QUnit['assert']) {
+      let reads: string[] = [];
+      class Item {
+        @tracked label: string;
+
+        constructor(label: string) {
+          this.label = label;
+        }
+
+        get name() {
+          reads.push(`name:${this.label}`);
+          return this.label;
+        }
+      }
+      class Root extends GlimmerComponent {
+        @tracked n = 1;
+        list = [new Item('a'), new Item('b')];
+
+        get text() {
+          reads.push('text');
+          return `text${this.n}`;
+        }
+        get plainText() {
+          reads.push('plainText');
+          return 'plain';
+        }
+        get top() {
+          reads.push('top');
+          return `top${this.n}`;
+        }
+        get plainTop() {
+          reads.push('plainTop');
+          return 'plainTop';
+        }
+      }
+      setComponentTemplate(
+        precompileTemplate(
+          '<p>{{this.text}}</p><p>{{this.plainText}}</p>{{this.top}} {{this.plainTop}}{{#each this.list as |item|}}[{{item.name}}]{{/each}}'
+        ),
+        Root
+      );
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+
+      assertHTML('<p>text1</p><p>plain</p>top1 plainTop[a][b]');
+      assert.deepEqual(
+        reads.sort(),
+        ['name:a', 'name:b', 'plainText', 'plainTop', 'text', 'top'],
+        'each binding is evaluated once'
+      );
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test a tracked write updates the bindings that read it, in place'(
+      assert: QUnit['assert']
+    ) {
+      let reads: string[] = [];
+      let instances: Root[] = [];
+      class Root extends GlimmerComponent {
+        @tracked a = 1;
+        @tracked b = 1;
+
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          instances.push(this);
+        }
+
+        get textA() {
+          reads.push('a');
+          return `a${this.a}`;
+        }
+        get textB() {
+          reads.push('b');
+          return `b${this.b}`;
+        }
+      }
+      setComponentTemplate(
+        precompileTemplate('<p class="a">{{this.textA}}</p><p class="b">{{this.textB}}</p>'),
+        Root
+      );
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+      assertHTML('<p class="a">a1</p><p class="b">b1</p>');
+      let a = this.element.querySelector('.a')!;
+      let b = this.element.querySelector('.b')!;
+      reads = [];
+
+      instances[0]!.a = 2;
+      assert.strictEqual(a.textContent, 'a1', 'the write renders when the run loop ends');
+      await renderSettled();
+
+      assertHTML('<p class="a">a2</p><p class="b">b1</p>');
+      assert.deepEqual(reads, ['a'], 'only the binding that read the state is evaluated');
+      assert.strictEqual(this.element.querySelector('.a'), a, 'the element is the same');
+      assert.strictEqual(this.element.querySelector('.b'), b, 'the sibling element is the same');
+      assert.strictEqual(instances.length, 1, 'the component is not created again');
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test a write to state the render did not read re-evaluates nothing'(
+      assert: QUnit['assert']
+    ) {
+      let reads = 0;
+      class Other {
+        @tracked value = 1;
+      }
+      let other = new Other();
+      class Root extends GlimmerComponent {
+        @tracked n = 1;
+
+        get text() {
+          reads++;
+          return `n${this.n}`;
+        }
+      }
+      setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>'), Root);
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+      let p = this.element.querySelector('p');
+      reads = 0;
+
+      other.value = 2;
+      await renderSettled();
+
+      assertHTML('<p>n1</p>');
+      assert.strictEqual(reads, 0, 'the binding is not evaluated');
+      assert.strictEqual(this.element.querySelector('p'), p, 'the element is the same');
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test a write to trackedObject args updates the bindings that read it, in place'(
+      assert: QUnit['assert']
+    ) {
+      let args = trackedObject({ foo: 1, bar: 1 });
+      let Root = setComponentTemplate(
+        precompileTemplate('<p class="foo">{{@foo}}</p><p class="bar">{{@bar}}</p>'),
+        templateOnly()
+      );
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element, args });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+      assertHTML('<p class="foo">1</p><p class="bar">1</p>');
+      let foo = this.element.querySelector('.foo');
+      let bar = this.element.querySelector('.bar');
+
+      args.foo = 2;
+      await renderSettled();
+
+      assertHTML('<p class="foo">2</p><p class="bar">1</p>');
+      assert.strictEqual(this.element.querySelector('.foo'), foo, 'the element is the same');
+      assert.strictEqual(
+        this.element.querySelector('.bar'),
+        bar,
+        'the sibling element is the same'
+      );
+
+      result.destroy();
+      destroy(owner);
+      await renderSettled();
+    }
+
+    async '@test destroying a render stops its bindings'(assert: QUnit['assert']) {
+      let reads = 0;
+      class State {
+        @tracked n = 1;
+      }
+      let state = new State();
+      class Root extends GlimmerComponent {
+        get text() {
+          reads++;
+          return `n${state.n}`;
+        }
+      }
+      setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>{{this.text}}'), Root);
+
+      let owner = buildOwner({});
+      let result = renderComponent(Root, { owner, into: this.element });
+      assertHTML('<p>n1</p>n1');
+
+      result.destroy();
+      await renderSettled();
+      assertHTML('');
+      reads = 0;
+
+      state.n = 2;
+      await renderSettled();
+      assert.strictEqual(reads, 0, 'the destroyed render does not evaluate its bindings');
+
+      destroy(owner);
+      await renderSettled();
     }
   }
 );

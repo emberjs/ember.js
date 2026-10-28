@@ -1,0 +1,185 @@
+name: GXT native
+
+# The gxt-native build (EMBER_RENDER_BACKEND=gxt-native: Ember on @lifeart/gxt,
+# no Glimmer VM). Its rollup dist is built, size-checked and asserted VM-free in
+# the `gxt-native` leg of gxt-dual-build.yml; this workflow boots apps on it,
+# packages it, and runs its test suite. Everything resolves the @lifeart/gxt
+# pinned in package.json devDependencies (one copy in the install).
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  modern-app:
+    name: gxt-native modern app from dist + package consumer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install-playwright: 'true'
+      # First, so that the dist snapshots below already hold the
+      # @glimmer/component .d.ts files it also emits (the package build
+      # compares its glimmer-component output with that snapshot).
+      - name: Build types (types/stable and @glimmer/component types ship in the package)
+        run: pnpm build:types
+      # Builds the gxt-native and classic rollup dists (classic last, so dist/
+      # ends up classic), snapshots them under smoke-tests/modern-app/dist/
+      # ember-dist/, builds the strict modern app against each, boot-checks it
+      # and asserts the native app closure is VM-free.
+      - name: Modern app from dist, strict (build dists, boot-check, assert-native)
+        run: |
+          node scripts/bundle-modern-app.mjs --from-dist --build-dists --boot --assert-native \
+            --json "$RUNNER_TEMP/modern-app-strict.json"
+      - name: Modern app from dist, loose (boot-check)
+        run: |
+          node scripts/bundle-modern-app.mjs --from-dist --flavor loose --boot \
+            --json "$RUNNER_TEMP/modern-app-loose.json"
+      - name: Boot-check gate and bytes (job summary)
+        run: |
+          node scripts/bundle-modern-app-gate.mjs \
+            "$RUNNER_TEMP/modern-app-strict.json" "$RUNNER_TEMP/modern-app-loose.json"
+      - name: Build the ember-source-gxt-native package
+        run: |
+          node scripts/build-gxt-native-package.mjs \
+            --compare smoke-tests/modern-app/dist/ember-dist/gxt-native \
+            --pack "$RUNNER_TEMP/tarballs"
+      - name: Pack the pinned @lifeart/gxt from npm
+        run: |
+          gxt_version="$(node -p "require('./package.json').devDependencies['@lifeart/gxt']")"
+          echo "@lifeart/gxt pinned in package.json devDependencies: $gxt_version"
+          npm pack "@lifeart/gxt@$gxt_version" --pack-destination "$RUNNER_TEMP/tarballs"
+      - name: Consumer app acceptance (npm install of both tarballs, prod + dev boot)
+        run: |
+          node smoke-tests/gxt-native-package/run.mjs \
+            --app "$RUNNER_TEMP/consumer-app" \
+            --package "$(ls "$RUNNER_TEMP"/tarballs/ember-source-gxt-native-*.tgz)" \
+            --gxt "$(ls "$RUNNER_TEMP"/tarballs/lifeart-gxt-*.tgz)" \
+            --dev --no-typescript
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-native-modern-app
+          path: |
+            ${{ runner.temp }}/modern-app-strict.json
+            ${{ runner.temp }}/modern-app-loose.json
+            smoke-tests/modern-app/dist/*.log
+            ${{ runner.temp }}/consumer-app/*.json
+            ${{ runner.temp }}/consumer-app/*.log
+            ${{ runner.temp }}/consumer-app/installed-packages.txt
+          if-no-files-found: ignore
+
+  # The suite runs in 4 shards in parallel (runner.mjs --shard i/4: every 4th
+  # module of the sorted list). `gxt-native test suite` merges them into the
+  # gxt-summary.json / gxt-last-run.json of one unsharded run and gates that.
+  suite-shard:
+    name: gxt-native test suite shard ${{ matrix.shard }}/4
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install-playwright: 'true'
+      # runner.mjs exits 1 on any failing test, known reds included, so the
+      # verdict comes from baseline-gate.mjs: no test of the shard's modules
+      # red that the baseline lists green, no timeout or harness error. That
+      # every baseline module ran is checked on the merged run.
+      - name: Run the native suite shard ${{ matrix.shard }}/4 against test-results/native-baseline.json
+        env:
+          EMBER_RENDER_BACKEND: gxt-native
+          NODE_OPTIONS: --max-old-space-size=8192
+          SHARD: ${{ matrix.shard }}/4
+        run: |
+          status=0
+          node scripts/gxt-test-runner/runner.mjs \
+            --full \
+            --shard "$SHARD" \
+            --auto-serve \
+            --url http://localhost:5181/native.html \
+            --min-modules 5 \
+            --baseline test-results/native-baseline.json || status=$?
+          echo "$status" > test-results/gxt-runner-exit.txt
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/native-baseline.json \
+            --subset \
+            --runner-exit "$status"
+      - name: Upload shard run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-native-suite-shard-${{ matrix.shard }}
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+            test-results/gxt-runner-exit.txt
+          if-no-files-found: ignore
+
+  suite:
+    name: gxt-native test suite
+    needs: suite-shard
+    # Also after a failed shard: the merged gate then names every regression.
+    # The job fails whenever a shard failed.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+          package-manager-cache: false
+      - name: Download shard run artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gxt-native-suite-shard-*
+          path: shard-runs
+      # Fails when a shard left no artifact (it never got to run the suite).
+      - name: Merge the shard runs
+        run: |
+          node scripts/gxt-test-runner/merge-runs.mjs \
+            --shards 4 \
+            --out-dir test-results \
+            shard-runs/gxt-native-suite-shard-*
+      # The unsharded verdict: no regressions, timeouts or harness errors, and
+      # every baseline module ran in some shard.
+      - name: Gate the merged native suite against test-results/native-baseline.json
+        run: |
+          node scripts/gxt-test-runner/baseline-gate.mjs \
+            --baseline test-results/native-baseline.json \
+            --runner-exit "$(cat test-results/gxt-runner-exit.txt || echo unknown)"
+      - name: Fail when a shard failed
+        if: ${{ needs.suite-shard.result != 'success' }}
+        env:
+          SHARD_RESULT: ${{ needs.suite-shard.result }}
+        run: |
+          echo "::error::A gxt-native test suite shard did not succeed (result: $SHARD_RESULT)."
+          exit 1
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-native-suite
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+          if-no-files-found: ignore

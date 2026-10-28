@@ -24,6 +24,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
@@ -59,7 +60,9 @@ const reopen = InternalMixin.prototype.reopen;
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
 
-const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+// Used by debug builds AND production GXT builds to enable the proxy trap
+// (see the DEBUG || __GXT_MODE__ rationale at the constructor's trap below).
+const initCalled = DEBUG || __GXT_MODE__ ? new WeakSet() : undefined;
 
 const destroyCalled = new Set();
 
@@ -143,7 +146,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
-        if (DEBUG) {
+        if (DEBUG && !__GXT_MODE__) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
           (obj as any)[keyName] = value;
@@ -152,8 +155,8 @@ function initialize(obj: CoreObject, properties?: unknown) {
     }
   }
 
-  // using DEBUG here to avoid the extraneous variable when not needed
-  if (DEBUG) {
+  // avoid the extraneous variable when not needed (debug + prod-GXT only)
+  if (DEBUG || __GXT_MODE__) {
     initCalled!.add(obj);
   }
   obj.init(properties);
@@ -247,7 +250,15 @@ class CoreObject {
     (this.constructor as typeof CoreObject).proto();
 
     let self;
-    if (DEBUG && hasUnknownProperty(this)) {
+    // GXT note: the native-Proxy wrapper below is load-bearing in GXT mode,
+    // not just a debug aid. GXT's compiled templates read proxy member chains
+    // as plain property access (`ctx.proxy.name`); the wrapper delegates those
+    // reads to `unknownProperty` during a render/sync/trigger pass (the
+    // `_isInternalPath` branch in the trap). Without it, ObjectProxy path reads
+    // would render empty in production GXT builds. Classic production builds
+    // still skip the wrapper. The assert below is a no-op in production, so
+    // the production GXT trap only ever delegates.
+    if ((DEBUG || __GXT_MODE__) && hasUnknownProperty(this)) {
       let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -288,6 +299,35 @@ class CoreObject {
 
           let value = target.unknownProperty.call(receiver, property);
 
+          // In GXT mode, templates and internal plumbing (notifyPropertyChange →
+          // the GXT re-render trigger, dotted-path notifications, sync passes) access
+          // proxy properties directly. Bypass the assertion when:
+          //   - we're inside a template render pass (`isRendering()`),
+          //   - we're inside the GXT sync flush (`isSyncing()`),
+          //   - we're inside `triggerReRender` itself (`isInTriggerReRender()`), or
+          //   - the property name is a dotted path (only Ember plumbing emits
+          //     these via `notifyPropertyChange(obj, 'foo.bar')`).
+          // User code (`proxy.foo`) hits none of these, so the assertion still
+          // fires for the original use case. Classic builds keep the assertion
+          // unconditionally.
+          if (__GXT_MODE__) {
+            const _pipeline = getGxtRenderer()?.compilePipeline;
+            const _isRen = _pipeline?.isRendering;
+            const _isSyn = _pipeline?.isSyncing;
+            const _isInTrig = _pipeline?.isInTriggerReRender;
+            const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
+            const _syncingNow = typeof _isSyn === 'function' ? _isSyn() : false;
+            const _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
+            const _isInternalPath =
+              _renderingNow ||
+              _syncingNow ||
+              _inTriggerNow ||
+              (typeof property === 'string' && property.indexOf('.') !== -1);
+            if (_isInternalPath) {
+              return value;
+            }
+          }
+
           if (typeof value !== 'function') {
             assert(messageFor(receiver, property), value === undefined || value === null);
           }
@@ -298,7 +338,11 @@ class CoreObject {
     }
 
     const destroyable = self;
-    registerDestructor(self, ensureDestroyCalled, true);
+    registerDestructor(
+      self,
+      __GXT_MODE__ ? () => ensureDestroyCalled(self) : ensureDestroyCalled,
+      true
+    );
     registerDestructor(self, () => destroyable.willDestroy());
 
     // disable chains
@@ -306,8 +350,8 @@ class CoreObject {
 
     m.setInitializing();
 
-    // only return when in debug builds and `self` is the proxy created above
-    if (DEBUG && self !== this) {
+    // only return when `self` is the proxy created above (debug + prod-GXT)
+    if ((DEBUG || __GXT_MODE__) && self !== this) {
       return self;
     }
   }

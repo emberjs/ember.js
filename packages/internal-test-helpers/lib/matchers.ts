@@ -153,17 +153,31 @@ export function equalsElement(
       message: 'Element must be an HTML Element, not an SVG Element',
     });
   } else {
+    // GXT: exclude its `data-node-id` node-tracking attribute (SSR/test mode)
+    // from the count; it is not user-visible.
+    const gxtInternalAttrCount = __GXT_MODE__ && element.hasAttribute('data-node-id') ? 1 : 0;
+    const actualAttrCount = element.attributes.length - gxtInternalAttrCount;
     assert.pushResult({
-      result: element.attributes.length === expectedCount || !attributes,
-      actual: element.attributes.length,
+      result: actualAttrCount === expectedCount || !attributes,
+      actual: actualAttrCount,
       expected: expectedCount,
       message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`,
     });
 
     if (content !== null) {
+      // GXT: strip its empty control-flow marker comments (`<!---->`) from
+      // innerHTML before comparison. A reactive `{{#if}}`/`{{#each}}` keeps its
+      // placeholder live so the branch can re-enter the DOM, so the empty marker
+      // remains interleaved with the rendered content (e.g. `true<!---->`).
+      // These are framework markers, never user content: no
+      // `assertComponentElement`/`assertElement` content assertion expects a
+      // literal comment node.
+      const actualContent = __GXT_MODE__
+        ? element.innerHTML.replace(/<!---->/g, '')
+        : element.innerHTML;
       assert.pushResult({
-        result: element.innerHTML === content,
-        actual: element.innerHTML,
+        result: actualContent === content,
+        actual: actualContent,
         expected: content,
         message: `The element had '${content}' as its content`,
       });

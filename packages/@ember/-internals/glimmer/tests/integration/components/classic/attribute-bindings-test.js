@@ -905,6 +905,61 @@ moduleFor(
       });
     }
 
+    ['@test sanitizes URL bindings of button[formaction] and object[data]']() {
+      this.owner.register(
+        'component:foo-button',
+        setComponentTemplate(
+          precompileTemplate('hello'),
+          class extends Component {
+            tagName = 'button';
+            attributeBindings = ['formaction'];
+          }
+        )
+      );
+      this.owner.register(
+        'component:foo-object',
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends Component {
+            tagName = 'object';
+            attributeBindings = ['url:data'];
+          }
+        )
+      );
+
+      this.render('{{foo-button formaction=this.formUrl}}{{foo-object url=this.objectUrl}}', {
+        formUrl: 'javascript:foo()',
+        objectUrl: 'data:text/html,<script>alert(1)</script>',
+      });
+
+      this.assertComponentElement(this.nthChild(0), {
+        tagName: 'button',
+        attrs: { formaction: 'unsafe:javascript:foo()' },
+        content: 'hello',
+      });
+      this.assertComponentElement(this.nthChild(1), {
+        tagName: 'object',
+        attrs: { data: 'unsafe:data:text/html,<script>alert(1)</script>' },
+        content: '',
+      });
+
+      runTask(() => set(this.context, 'formUrl', '/submit'));
+
+      this.assertComponentElement(this.nthChild(0), {
+        tagName: 'button',
+        attrs: { formaction: '/submit' },
+        content: 'hello',
+      });
+
+      runTask(() => set(this.context, 'formUrl', 'vbscript:foo()'));
+
+      this.assertComponentElement(this.nthChild(0), {
+        tagName: 'button',
+        attrs: { formaction: 'unsafe:vbscript:foo()' },
+        content: 'hello',
+      });
+    }
+
     ['@test it can bind the role attribute (issue #14007)']() {
       let FooBarComponent = class extends Component {
         attributeBindings = ['role'];

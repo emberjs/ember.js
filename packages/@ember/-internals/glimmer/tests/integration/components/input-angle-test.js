@@ -3,6 +3,7 @@ import { action, set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 
 class InputRenderingTest extends RenderingTestCase {
   $input() {
@@ -670,3 +671,27 @@ function InputAttributesTest(attrs) {
 ].forEach((attrs) => {
   moduleFor(`[GH#15675] Components test: <Input ${attrs} />`, InputAttributesTest(attrs));
 });
+
+// The input element receives `...attributes`; Glimmer sanitizes a bound URL
+// attribute there (`formaction` on an <input>) like any dynamic attribute.
+moduleFor(
+  'Components test: <Input /> URL sanitization',
+  class extends RenderingTestCase {
+    ['@test a bound formaction forwarded to the input is sanitized, also on update']() {
+      class State {
+        @tracked url = 'javascript:alert(1)';
+      }
+      let state = new State();
+
+      this.render('<Input @type="submit" formaction={{this.state.url}} />', { state });
+      let formaction = () => this.element.querySelector('input').getAttribute('formaction');
+      this.assert.strictEqual(formaction(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => (state.url = 'https://emberjs.com/'));
+      this.assert.strictEqual(formaction(), 'https://emberjs.com/');
+
+      runTask(() => (state.url = 'vbscript:alert(1)'));
+      this.assert.strictEqual(formaction(), 'unsafe:vbscript:alert(1)');
+    }
+  }
+);

@@ -431,6 +431,28 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    '@test has-block-params is false for a block nested in another component block with params'() {
+      this.owner.register(
+        'component:yield-value',
+        template('{{yield "outer"}}', { component: class extends Component {}, strictMode: false })
+      );
+      this.owner.register(
+        'component:check-block-params',
+        template('{{#if (has-block-params)}}Yes{{else}}No{{/if}}:{{yield}}', {
+          component: class extends Component {},
+          strictMode: false,
+        })
+      );
+
+      this.render(
+        '<YieldValue as |value|><CheckBlockParams><i title={{value}}></i></CheckBlockParams></YieldValue>'
+      );
+
+      this.assertText('No:');
+
+      this.assertStableRerender();
+    }
+
     '@test attributes without values passed at invocation are included in `...attributes` ("splattributes")'() {
       this.owner.register(
         'component:foo-bar',
@@ -1093,6 +1115,204 @@ moduleFor(
 
       this.render('<Foo class="top" />');
       this.assertHTML('<div class="top foo bar qux"></div>');
+    }
+  }
+);
+
+// Glimmer sanitizes every dynamic URL attribute (SafeDynamicAttribute), also
+// the ones a component's element receives from the invocation through
+// `...attributes`: a `javascript:` / `vbscript:` URL gets the `unsafe:` prefix.
+class UrlState {
+  @tracked url;
+
+  constructor(url) {
+    this.url = url;
+  }
+}
+
+moduleFor(
+  'AngleBracket Invocation (URL sanitization of forwarded attributes)',
+  class extends RenderingTestCase {
+    '@test a bound URL attribute forwarded by ...attributes is sanitized, also on update'() {
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(precompileTemplate('<a ...attributes>link</a>'), templateOnly())
+      );
+      let state = new UrlState('javascript:alert(1)');
+
+      this.render('<FooLink href={{this.state.url}} />', { state });
+      let href = () => this.element.querySelector('a').getAttribute('href');
+      this.assert.strictEqual(href(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => (state.url = 'https://emberjs.com/'));
+      this.assert.strictEqual(href(), 'https://emberjs.com/');
+
+      runTask(() => (state.url = 'vbscript:alert(1)'));
+      this.assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
+    }
+
+    '@test a bound URL attribute on a classic component element is sanitized, also on update'() {
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(
+          precompileTemplate('link'),
+          class extends ClassicComponent {
+            tagName = 'a';
+          }
+        )
+      );
+      let state = new UrlState('javascript:alert(1)');
+
+      this.render('<FooLink href={{this.state.url}} />', { state });
+      let href = () => this.element.querySelector('a').getAttribute('href');
+      this.assert.strictEqual(href(), 'unsafe:javascript:alert(1)');
+
+      runTask(() => (state.url = 'https://emberjs.com/'));
+      this.assert.strictEqual(href(), 'https://emberjs.com/');
+
+      runTask(() => (state.url = 'vbscript:alert(1)'));
+      this.assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
+    }
+
+    '@test a modifier forwarded by ...attributes sees the sanitized URL'(assert) {
+      let seen = [];
+      class CaptureHref {}
+      setModifierManager(
+        () => ({
+          capabilities: modifierCapabilities('3.22'),
+          createModifier() {
+            return {};
+          },
+          installModifier(_state, element) {
+            seen.push(element.getAttribute('href'));
+          },
+          updateModifier() {},
+          destroyModifier() {},
+        }),
+        CaptureHref
+      );
+      this.owner.register('modifier:capture-href', CaptureHref);
+      this.owner.register(
+        'component:foo-link',
+        setComponentTemplate(
+          precompileTemplate('<a href={{@url}} ...attributes>link</a>'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooLink @url={{this.url}} {{capture-href}} />', {
+        url: 'javascript:alert(1)',
+      });
+
+      assert.deepEqual(seen, ['unsafe:javascript:alert(1)']);
+      assert.strictEqual(
+        this.element.querySelector('a').getAttribute('href'),
+        'unsafe:javascript:alert(1)'
+      );
+    }
+  }
+);
+
+// An invocation's attributes go to the component's element (through
+// `...attributes`, or a classic component's own element) and never become
+// arguments: only `@`-prefixed names are arguments.
+moduleFor(
+  'AngleBracket Invocation (attributes are not arguments)',
+  class extends RenderingTestCase {
+    '@test a template-only component does not see an attribute as an argument'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>[{{@title}}][{{@class}}][{{@label}}]</p>'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooBar title={{this.title}} class="c" @label="label" />', { title: 'a' });
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'a', class: 'c' },
+        content: '[][][label]',
+      });
+
+      runTask(() => set(this.context, 'title', 'b'));
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'b', class: 'c' },
+        content: '[][][label]',
+      });
+    }
+
+    '@test a component invoked from a component template does not see an attribute as an argument'() {
+      this.owner.register(
+        'component:inner-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>[{{@title}}][{{@class}}]</p>'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<InnerBar title={{@title}} class="c" />'),
+          templateOnly()
+        )
+      );
+
+      this.render('<FooBar @title={{this.title}} />', { title: 'a' });
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'a', class: 'c' },
+        content: '[][]',
+      });
+
+      runTask(() => set(this.context, 'title', 'b'));
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 'b', class: 'c' },
+        content: '[][]',
+      });
+    }
+
+    '@test a component does not see attributes on this.args'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<p ...attributes>{{this.seen}}</p>'),
+          class extends Component {
+            get seen() {
+              return ['title', 'data-test', 'role', 'class', 'id', 'label']
+                .filter((name) => this.args[name] !== undefined)
+                .join(',');
+            }
+          }
+        )
+      );
+
+      this.render('<FooBar title="t" data-test="d" role="r" class="c" id="i" @label="l" />');
+      this.assertElement(this.firstChild, {
+        tagName: 'p',
+        attrs: { title: 't', 'data-test': 'd', role: 'r', class: 'c', id: 'i' },
+        content: 'label',
+      });
+    }
+
+    '@test a classic component does not see an attribute as a property'(assert) {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('[{{this.title}}][{{this.id}}][{{this.label}}]'),
+          class extends ClassicComponent {
+            tagName = 'p';
+          }
+        )
+      );
+
+      this.render('<FooBar title="t" id="i" @label="l" />');
+      let element = this.element.querySelector('p');
+      assert.strictEqual(element.getAttribute('title'), 't');
+      assert.strictEqual(element.id, 'i');
+      assert.strictEqual(element.textContent, '[][][l]');
     }
   }
 );
