@@ -7,6 +7,7 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
 import type { RouteManagement } from 'router_js';
@@ -1855,5 +1856,7 @@ EmberRouter.reopen({
   rootURL: '/',
   location: 'hash',
 });
+
+setFrameworkClass(EmberRouter);
 
 export default EmberRouter;

@@ -5,6 +5,7 @@ import {
   setOwner,
 } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import {
   addChildView,
   setElementView,
@@ -454,7 +455,7 @@ export default class CurlyComponentManager
       bucket.argsRevision = valueForTag(argsTag);
 
       component[IS_DISPATCHING_ATTRS] = true;
-      component.setProperties(props);
+      setProperties(component, props);
       component[IS_DISPATCHING_ATTRS] = false;
 
       sendCoreViewEvent(component, 'didUpdateAttrs');

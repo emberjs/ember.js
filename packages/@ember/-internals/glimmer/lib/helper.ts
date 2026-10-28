@@ -16,6 +16,7 @@ import type { DirtyableTag } from '@glimmer/interfaces';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import { IS_CLASSIC_HELPER } from './helper-brand';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 export { isClassicHelper } from './helper-brand';
 
@@ -408,3 +409,5 @@ export function helper(
   // `helper()` invocation in favor of using plain functions.
   return new Wrapper(helperFn) as unknown as FunctionBasedHelper<any>;
 }
+
+setFrameworkClass(Helper);
