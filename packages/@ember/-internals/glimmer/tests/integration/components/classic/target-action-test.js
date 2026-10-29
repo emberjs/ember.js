@@ -85,7 +85,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a handled action can be bubbled to the target for continued processing`]() {
       this.assert.expect(3);
 

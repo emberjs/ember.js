@@ -104,7 +104,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(controller) {
-            controller.set('hours', [
+            set(controller, 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -239,7 +239,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(/* controller */) {
-            this.controllerFor('home').set('hours', [
+            set(this.controllerFor('home'), 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -322,7 +322,7 @@ moduleFor(
           setupController(controller, model) {
             assert.equal(this.controllerFor('home'), controller);
 
-            this.controllerFor('home').set('hours', model);
+            set(this.controllerFor('home'), 'hours', model);
           }
         }
       );

@@ -9,7 +9,7 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
-import { computed } from '@ember/object';
+import { computed, get } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
@@ -30,7 +30,7 @@ moduleFor(
       await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
+      assert.ok(get(controller, 'myService') instanceof MyService);
     }
 
     async [`${testUnless(
@@ -63,7 +63,7 @@ moduleFor(
       let instance = await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
+      assert.ok(get(controller, 'myService') instanceof MyService);
       assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
     }
   }

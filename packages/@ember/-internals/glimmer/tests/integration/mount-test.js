@@ -85,8 +85,8 @@ moduleFor(
       this.engineRegistrations['controller:application'] = class extends Controller {
         username = 'dgeb';
 
-        init() {
-          super.init(...arguments);
+        constructor(owner) {
+          super(owner);
           controller = this;
         }
       };
@@ -180,8 +180,8 @@ moduleFor(
         class extends Controller {
           engineName = null;
 
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             controller = this;
           }
         }
@@ -253,8 +253,8 @@ moduleFor(
       this.add(
         'controller:engine-event-dispatcher-singleton',
         class extends Controller {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             controller = this;
           }
         }
@@ -351,8 +351,8 @@ moduleFor(
         'controller:engine-params-bound',
         class extends Controller {
           boundParamValue = null;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             controller = this;
           }
         }
