@@ -285,7 +285,9 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
-    metaFor(this.prototype).addMixin(Evented);
+    if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      metaFor(this.prototype).addMixin(Evented);
+    }
   }
 
   static isRouteFactory = true;
