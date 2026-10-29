@@ -38,7 +38,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    [`${testUnless(REMOVED)} @test should update length for null content when there is a computed property watching length`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should update length for null content when there is a computed property watching length`](
       assert
     ) {
       let proxy = class extends ArrayProxy {
