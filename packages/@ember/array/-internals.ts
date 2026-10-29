@@ -1,4 +1,4 @@
-import type { EmberArrayLike } from '@ember/array';
+import type { EmberArrayLike } from '@ember/array/lib/ember-array';
 
 const EMBER_ARRAYS = new WeakSet();
 
