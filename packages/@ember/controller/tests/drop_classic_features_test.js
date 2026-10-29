@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { getOwner } from '@ember/owner';
 import { isDestroyed } from '@ember/destroyable';
 import Route from '@ember/routing/route';

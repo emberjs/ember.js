@@ -1,5 +1,5 @@
 import Helper from '@ember/component/helper';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { getOwner } from '@ember/owner';
 import { isDestroyed, registerDestructor } from '@ember/destroyable';
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';

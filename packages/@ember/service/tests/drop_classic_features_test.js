@@ -1,5 +1,5 @@
 import Service, { service } from '@ember/service';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { getOwner } from '@ember/owner';
 import { isDestroyed, registerDestructor } from '@ember/destroyable';
 import {

@@ -1,6 +1,6 @@
 import Route from '@ember/routing/route';
 import Service, { service } from '@ember/service';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { getOwner } from '@ember/owner';
 import { isDestroyed } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
