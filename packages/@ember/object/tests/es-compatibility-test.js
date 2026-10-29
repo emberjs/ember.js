@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object/lib/ember-object';
-import { computed, observer } from '@ember/object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import {
   defineProperty,
   on,
@@ -9,7 +10,7 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import {
   moduleFor,
   AbstractTestCase,

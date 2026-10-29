@@ -9,7 +9,7 @@ import {
 } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberRoute from '@ember/routing/route';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { get } from '@ember/object';

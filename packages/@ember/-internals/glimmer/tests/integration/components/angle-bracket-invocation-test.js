@@ -6,7 +6,7 @@ import { set, setProperties } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';

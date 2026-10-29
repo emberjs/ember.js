@@ -12,9 +12,10 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object/lib/ember-object';
-import ObjectProxy from '@ember/object/proxy';
-import { A, removeAt } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
+import { removeAt } from '@ember/array';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 

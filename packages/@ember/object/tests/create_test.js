@@ -1,11 +1,12 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { addObserver } from '@ember/object/observers';
-import Mixin from '@ember/object/mixin';
+import { addObserver } from '@ember/-internals/metal/lib/observer';
+import Mixin from '@ember/object/lib/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '@ember/object/lib/ember-object';
-import { computed, observer } from '@ember/object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { alias } from '@ember/object/computed';
 import {
   buildOwner,

@@ -1,7 +1,7 @@
 import { addObserver } from '@ember/-internals/metal';
 import EmberObject from '@ember/object/lib/ember-object';
 import { get, set } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,

@@ -1,6 +1,6 @@
 import { isEmpty } from '..';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;

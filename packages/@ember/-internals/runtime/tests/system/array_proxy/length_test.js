@@ -1,8 +1,9 @@
-import ArrayProxy from '@ember/array/proxy';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import EmberObject from '@ember/object/lib/ember-object';
-import { computed, observer } from '@ember/object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { oneWay as reads } from '@ember/object/computed';
-import { A as a } from '@ember/array';
+import { A as a } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,

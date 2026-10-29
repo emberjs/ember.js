@@ -1,5 +1,5 @@
 import { peekMeta } from '@ember/-internals/meta';
-import ArrayProxy from '@ember/array/proxy';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

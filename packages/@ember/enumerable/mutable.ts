@@ -1,31 +1,15 @@
-import Enumerable from '@ember/enumerable';
-import { InternalMixin } from '@ember/object/mixin-internal';
-import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
-
 /**
 @module ember
 */
+import MutableEnumerable from '@ember/enumerable/lib/mutable-enumerable';
 
 /**
-  The methods in this mixin have been moved to MutableArray. This mixin has
-  been intentionally preserved to avoid breaking MutableEnumerable.detect
-  checks until the community migrates away from them.
-
-  @class MutableEnumerable
-  @namespace Ember
-  @private
-  @deprecated Use native arrays and array methods instead.
+  Framework code imports the mixin from `@ember/enumerable/lib/mutable-enumerable`, so that it
+  keeps working when the build flag removes this export.
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface MutableEnumerable extends Enumerable {}
-const MutableEnumerable = InternalMixin.create(Enumerable, {
-  init() {
-    this._super(...arguments);
-    deprecateUntil(
-      'The `MutableEnumerable` mixin is deprecated. Use native arrays and array methods instead.',
-      DEPRECATIONS.DEPRECATE_MUTABLE_ENUMERABLE_MIXIN
-    );
-  },
-});
+const ExportedMutableEnumerable = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : MutableEnumerable
+) as typeof MutableEnumerable;
+type ExportedMutableEnumerable = MutableEnumerable;
 
-export default MutableEnumerable;
+export default ExportedMutableEnumerable;

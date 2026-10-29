@@ -3,7 +3,8 @@
 // current impl doesn't care about the differences as much...
 
 import { guidFor } from '@ember/-internals/utils';
-import Mixin, { mixin } from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
+import { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../-internals/deprecations';
 

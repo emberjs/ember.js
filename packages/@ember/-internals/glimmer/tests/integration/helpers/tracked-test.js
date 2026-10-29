@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object/lib/ember-object';
-import { A } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import { A } from '@ember/array/lib/ember-array';
+import { MutableArray } from '@ember/array/lib/ember-array';
 import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import {

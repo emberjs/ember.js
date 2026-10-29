@@ -10,7 +10,7 @@ import {
   get,
   set,
 } from '..';
-import { observer } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';

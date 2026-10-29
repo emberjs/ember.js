@@ -9,7 +9,7 @@ import {
   tagForProperty,
 } from '..';
 import EmberObject from '@ember/object/lib/ember-object';
-import { A } from '@ember/array';
+import { A } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,

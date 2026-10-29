@@ -1,5 +1,5 @@
 import { module, test } from 'qunit';
-import Component from '@ember/component';
+import Component from '@ember/-internals/glimmer/lib/component';
 
 module('built-in component toString', function () {
   test('component has the correct toString value', function (assert) {

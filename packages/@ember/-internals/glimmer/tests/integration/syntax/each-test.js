@@ -12,8 +12,8 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';

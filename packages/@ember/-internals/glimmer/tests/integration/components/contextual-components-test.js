@@ -5,7 +5,7 @@ import { action } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 

@@ -1,7 +1,7 @@
 import CoreObject from '@ember/object/lib/core-object';
 import EmberObject from '@ember/object/lib/ember-object';
 import EventedMixin from '@ember/object/evented';
-import Component from '@ember/component';
+import Component from '@ember/-internals/glimmer/lib/component';
 import Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';

@@ -1,5 +1,7 @@
-import { set, get, observer } from '@ember/object';
-import Mixin, { mixin } from '@ember/object/mixin';
+import { set, get } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
+import Mixin from '@ember/object/lib/mixin';
+import { mixin } from '@ember/object/mixin';
 import {
   moduleFor,
   AbstractTestCase,

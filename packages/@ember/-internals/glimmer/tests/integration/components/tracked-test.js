@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object/lib/ember-object';
-import { A } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';

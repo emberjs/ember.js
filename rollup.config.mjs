@@ -265,6 +265,13 @@ function packages() {
       '@ember/object/lib/dependent-key-compat.ts',
       '@ember/object/lib/core-object.ts',
       '@ember/object/lib/ember-object.ts',
+      '@ember/object/lib/mixin.ts',
+      '@ember/array/lib/ember-array.ts',
+      '@ember/array/lib/array-proxy.ts',
+      '@ember/object/lib/object-proxy.ts',
+      '@ember/enumerable/lib/enumerable.ts',
+      '@ember/enumerable/lib/mutable-enumerable.ts',
+      '@ember/object/lib/observer.ts',
     ],
     cwd: 'packages',
   });

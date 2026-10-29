@@ -19,7 +19,7 @@ import { set, computed } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';

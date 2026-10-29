@@ -1,6 +1,7 @@
-import ArrayProxy from '@ember/array/proxy';
-import EmberArray, { A } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import EmberArray from '@ember/array/lib/ember-array';
+import { A } from '@ember/array/lib/ember-array';
+import { MutableArray } from '@ember/array/lib/ember-array';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
   addArrayObserver,

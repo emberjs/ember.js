@@ -1,4 +1,4 @@
-import { A } from '@ember/array';
+import { A } from '@ember/array/lib/ember-array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

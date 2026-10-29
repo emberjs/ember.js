@@ -10,7 +10,7 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 
 moduleFor(
   'Syntax test: {{#let as}}',

@@ -1,5 +1,5 @@
 import EmberObject from '@ember/object/lib/ember-object';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import { InternalMixin } from '@ember/object/mixin-internal';
 import {
   moduleFor,

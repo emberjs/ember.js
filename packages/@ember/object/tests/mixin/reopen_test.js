@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object/lib/ember-object';
 import { get } from '@ember/object';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../-internals/deprecations';

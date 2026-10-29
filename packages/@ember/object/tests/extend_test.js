@@ -1,6 +1,6 @@
 import { computed, get } from '@ember/object';
 import EmberObject from '@ember/object/lib/ember-object';
-import { observer } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 
 moduleFor(

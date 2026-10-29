@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object/lib/ember-object';
 import { defineProperty, nativeDescDecorator } from '..';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../deprecations';
 

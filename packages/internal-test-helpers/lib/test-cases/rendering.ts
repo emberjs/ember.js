@@ -1,7 +1,7 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
-import Component from '@ember/component';
+import Component from '@ember/-internals/glimmer/lib/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import type Resolver from '../test-resolver';
