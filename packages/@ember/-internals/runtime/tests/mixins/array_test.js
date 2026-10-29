@@ -6,7 +6,8 @@ import {
   arrayContentDidChange,
   arrayContentWillChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get, set, computed, observer as emberObserver } from '@ember/object';
 import EmberArray, { A as emberA } from '@ember/array';
 import {
   expectDeprecation,

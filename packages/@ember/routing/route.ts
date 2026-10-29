@@ -18,7 +18,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';

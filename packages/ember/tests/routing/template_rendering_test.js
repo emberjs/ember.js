@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import EmberObject, { set } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,

@@ -28,7 +28,7 @@ import type {
   Registry as LocationRegistry,
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import Evented from '@ember/object/evented';
 import { queryParamArray } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { assert, info } from '@ember/debug';

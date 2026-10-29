@@ -1,6 +1,6 @@
 import { isArray } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

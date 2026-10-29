@@ -14,7 +14,8 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { set, computed } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
