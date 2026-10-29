@@ -14,8 +14,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             this.router.on('routeWillChange', (transition) => {
               assert.ok(transition);
               assert.equal(transition.from, undefined);
@@ -51,8 +51,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             this.router.on('routeWillChange', (transition) => {
               if (toParent) {
                 assert.equal(this.router.currentURL, null, 'starts as null');
@@ -159,8 +159,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.from, undefined, 'initial');
@@ -220,8 +220,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.from, undefined, 'initial');
@@ -270,8 +270,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
@@ -330,8 +330,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
@@ -389,8 +389,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (didAbort) {
@@ -436,8 +436,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -507,8 +507,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
@@ -551,8 +551,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
@@ -599,8 +599,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'dynamic');
@@ -665,8 +665,8 @@ moduleFor(
         class extends Route {
           @service('router')
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'dynamicWithChild.child');

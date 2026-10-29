@@ -794,7 +794,7 @@ moduleFor(
         this.register(
           'route:application',
           class extends Route {
-            init() {
+            constructor() {
               throw new Error('Whoops! Something went wrong...');
             }
           }
