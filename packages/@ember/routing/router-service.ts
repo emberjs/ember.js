@@ -23,6 +23,16 @@ import {
 
 export const ROUTER = Symbol('ROUTER');
 
+/**
+  Keeps `computed` dependent keys on the router service working. Builds with
+  the flag have no `computed`, so the getters stay as they are.
+*/
+const classicDependentKey = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    ? (_target: unknown, _key: unknown, desc: unknown) => desc
+    : dependentKeyCompat
+) as typeof dependentKeyCompat;
+
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {
     return url;
@@ -726,7 +736,7 @@ class RouterService extends Service {
     @type {String | null}
     @public
   */
-  @dependentKeyCompat
+  @classicDependentKey
   get currentRouteName(): this['_router']['currentRouteName'] {
     return this._router.currentRouteName;
   }
@@ -757,7 +767,7 @@ class RouterService extends Service {
     @type String
     @public
   */
-  @dependentKeyCompat
+  @classicDependentKey
   get currentURL(): this['_router']['currentURL'] {
     return this._router.currentURL;
   }
@@ -798,7 +808,7 @@ class RouterService extends Service {
     @see {Location}
     @public
   */
-  @dependentKeyCompat
+  @classicDependentKey
   get location(): this['_router']['location'] {
     return this._router.location;
   }
@@ -830,7 +840,7 @@ class RouterService extends Service {
     @default '/'
     @public
   */
-  @dependentKeyCompat
+  @classicDependentKey
   get rootURL(): this['_router']['rootURL'] {
     return this._router.rootURL;
   }
@@ -864,7 +874,7 @@ class RouterService extends Service {
     @type RouteInfo
     @public
   */
-  @dependentKeyCompat
+  @classicDependentKey
   get currentRoute(): this['_router']['currentRoute'] {
     return this._router.currentRoute;
   }

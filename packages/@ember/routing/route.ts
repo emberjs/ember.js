@@ -14,7 +14,6 @@ import type Owner from '@ember/owner';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import type { default as BucketCache } from './lib/cache';
-import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import getProperties from '@ember/-internals/metal/lib/get_properties';
@@ -1633,9 +1632,14 @@ class Route<Model = unknown> extends RouteBase {
     return params;
   }
 
+  #store?: { find(name: string, value: unknown): unknown };
+
   /** @deprecated Manually define your own store, such as with `@service store` */
-  @computed
   protected get _store() {
+    return (this.#store ??= this._buildStore());
+  }
+
+  private _buildStore() {
     const owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let routeName = this.routeName;
@@ -1682,12 +1686,17 @@ class Route<Model = unknown> extends RouteBase {
     };
   }
 
+  #qp?: QueryParamMeta;
+
   /**
     @private
     @property _qp
     */
-  @computed
   protected get _qp(): QueryParamMeta {
+    return (this.#qp ??= this._buildQp());
+  }
+
+  private _buildQp(): QueryParamMeta {
     let combinedQueryParameterConfiguration: ReturnType<typeof mergeEachQueryParams> = {};
 
     let controllerName = this.controllerName || this.routeName;

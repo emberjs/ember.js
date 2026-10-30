@@ -3,6 +3,7 @@ import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-se
 import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { untrack } from '@glimmer/validator/lib/tracking';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -68,18 +69,28 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
 }
 
 export function _setProp(obj: object, keyName: string, value: any) {
-  let descriptor = lookupDescriptor(obj, keyName);
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    let descriptor = lookupDescriptor(obj, keyName);
 
-  if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
-    (obj as any)[keyName] = value;
-    return value;
+    if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
+      (obj as any)[keyName] = value;
+      return value;
+    }
   }
 
+  /**
+    With the flag, a `@tracked` setter gets here. A tracked read followed by
+    the write is an update in the same computation, so the read is untracked.
+  */
   let currentValue: any;
   if (DEBUG) {
-    currentValue = getPossibleMandatoryProxyValue(obj, keyName);
+    currentValue = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+      ? untrack(() => getPossibleMandatoryProxyValue(obj, keyName))
+      : getPossibleMandatoryProxyValue(obj, keyName);
   } else {
-    currentValue = (obj as any)[keyName];
+    currentValue = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+      ? untrack(() => (obj as any)[keyName])
+      : (obj as any)[keyName];
   }
 
   if (

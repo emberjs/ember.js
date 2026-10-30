@@ -375,9 +375,11 @@ function descriptorForField(
     set,
   };
 
-  COMPUTED_SETTERS.add(set);
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    COMPUTED_SETTERS.add(set);
 
-  metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+    metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+  }
 
   return newDesc;
 }

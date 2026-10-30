@@ -1,5 +1,5 @@
 import { computed, get, set, setProperties } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'computed - decorator - compatibility',
@@ -79,7 +79,9 @@ moduleFor(
       assert.equal(count, 1, 'should only call getter once');
     }
 
-    ['@test it works with computed desc'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it works with computed desc`](
+      assert
+    ) {
       assert.expect(4);
 
       let expectedName = 'rob jackson';
@@ -261,7 +263,9 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value with get()');
     }
 
-    ['@test when not returning from setter, getter is called'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test when not returning from setter, getter is called`](
+      assert
+    ) {
       let count = 0;
       class Obj {
         __foo = 'not set';
@@ -281,7 +285,9 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked getter');
     }
 
-    ['@test when returning from setter, getter is not called'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test when returning from setter, getter is not called`](
+      assert
+    ) {
       let count = 0;
       class Obj {
         __foo = 'not set';

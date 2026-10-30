@@ -383,7 +383,9 @@ moduleFor(
       assert.equal(count, 1, 'should only invoke once');
     }
 
-    ['@test modifying a cacheable property should update cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test modifying a cacheable property should update cache`](
+      assert
+    ) {
       assert.equal(get(obj, 'foo'), 'bar 1', 'first get');
       assert.equal(get(obj, 'foo'), 'bar 1', 'second get');
 
@@ -392,7 +394,9 @@ moduleFor(
       assert.equal(count, 2, 'should not invoke again');
     }
 
-    ['@test inherited property should not pick up cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test inherited property should not pick up cache`](
+      assert
+    ) {
       let objB = Object.create(obj);
 
       assert.equal(get(obj, 'foo'), 'bar 1', 'obj first get');
@@ -430,7 +434,7 @@ moduleFor(
       assert.equal(metaFor(obj).valueFor('falsy'), false, 'should retrieve cached value');
     }
 
-    ['@test setting a cached computed property passes the old value as the third argument'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a cached computed property passes the old value as the third argument`](
       assert
     ) {
       obj = {
@@ -488,7 +492,9 @@ moduleFor(
       );
     }
 
-    ['@test circular keys should not blow up'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test circular keys should not blow up`](
+      assert
+    ) {
       let func = function () {
         count++;
         return 'bar ' + count;
@@ -730,7 +736,9 @@ moduleFor(
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
 
-    ['@test the return value of the setter gets cached'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test the return value of the setter gets cached`](
+      assert
+    ) {
       let testObj = EmberObject.extend({
         a: '1',
         sampleCP: computed('a', {

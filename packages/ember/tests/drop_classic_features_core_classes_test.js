@@ -9,7 +9,8 @@ import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
-import Service from '@ember/service';
+import Service, { service } from '@ember/service';
+import { setOwner } from '@ember/owner';
 import Helper from '@ember/component/helper';
 import DataAdapter from '@ember/debug/data-adapter';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
@@ -17,6 +18,7 @@ import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher
 import CoreObject from '@ember/object/lib/core-object';
 import { isDestroyed } from '@ember/destroyable';
 import {
+  buildOwner,
   moduleFor,
   AbstractTestCase,
   ModuleBasedTestResolver,
@@ -101,6 +103,38 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         assert.true(isDestroyed(instance));
         assert.true(isDestroyed(engine));
+      }
+
+      ['@test `@service` looks up the service once, and can be replaced'](assert) {
+        class Session extends Service {}
+
+        class Holder {
+          @service session;
+          @service('session') renamed;
+
+          constructor(owner) {
+            setOwner(this, owner);
+          }
+        }
+
+        let owner = buildOwner();
+
+        owner.register('service:session', Session);
+
+        let holder = new Holder(owner);
+        let session = holder.session;
+
+        assert.true(session instanceof Session);
+        assert.strictEqual(holder.renamed, session);
+        assert.strictEqual(holder.session, session);
+
+        let replacement = {};
+
+        holder.session = replacement;
+
+        assert.strictEqual(holder.session, replacement);
+
+        runTask(() => owner.destroy());
       }
 
       ['@test willDestroy runs once'](assert) {

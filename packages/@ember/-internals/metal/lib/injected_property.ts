@@ -5,6 +5,7 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
+import { notifyPropertyChange } from './property_events';
 import {
   type Decorator,
   identifyModernDecoratorArgs,
@@ -52,6 +53,11 @@ function inject(
   ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
 ): InjectionDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
+
+  if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    return plainInject(type, args);
+  }
+
   let elementDescriptor;
   let modernArgs: Parameters<Decorator> | undefined;
   let name: string | undefined;
@@ -102,6 +108,71 @@ function inject(
   } else {
     return decorator;
   }
+}
+
+function plainInjection(type: string, name: string | undefined, key: string): PropertyDescriptor {
+  return {
+    configurable: true,
+    enumerable: true,
+
+    get(this: object) {
+      let owner = getOwner(this);
+
+      assert(
+        `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+        owner
+      );
+
+      let value = owner.lookup(`${type}:${name ?? key}`);
+
+      Object.defineProperty(this, key, { configurable: true, value, writable: true });
+
+      return value;
+    },
+
+    set(this: object, value: unknown) {
+      Object.defineProperty(this, key, {
+        configurable: true,
+        enumerable: true,
+        value,
+        writable: true,
+      });
+      notifyPropertyChange(this, key);
+    },
+  };
+}
+
+/**
+  The injection decorator of builds with the `EMBER_DROP_CLASSIC_FEATURES` flag.
+  The first read looks up the value and stores it on the instance.
+*/
+function plainInject(
+  type: string,
+  args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+) {
+  let name = typeof args[0] === 'string' ? args[0] : undefined;
+
+  function decorator(...decoratorArgs: unknown[]): any {
+    if (isModernDecoratorArgs(decoratorArgs)) {
+      let dec = identifyModernDecoratorArgs(decoratorArgs);
+
+      if (dec.kind !== 'field') {
+        return inject2023(type, name, decoratorArgs);
+      }
+
+      let key = dec.context.name as string;
+
+      dec.context.addInitializer(function (this: unknown) {
+        Object.defineProperty(this, key, plainInjection(type, name, key));
+      });
+
+      return undefined;
+    }
+
+    return plainInjection(type, name, decoratorArgs[1] as string);
+  }
+
+  return name === undefined && args.length > 0 ? decorator(...args) : decorator;
 }
 
 // Fields go through the same computed-based path as legacy decorators; this

@@ -301,7 +301,7 @@ moduleFor(
 moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
-    ['@test defining a controller on a non-controller should fail assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test defining a controller on a non-controller should fail assertion`]() {
       let owner = buildOwner();
 
       expectAssertion(function () {
