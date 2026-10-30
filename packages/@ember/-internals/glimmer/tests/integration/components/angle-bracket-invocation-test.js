@@ -2,7 +2,8 @@ import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-
 import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object/lib/ember-object';
 
-import { set, setProperties } from '@ember/object';
+import { set } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';

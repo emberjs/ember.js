@@ -12,18 +12,26 @@ import {
   onClassFinalized,
 } from '@ember/-internals/metal/lib/decorator-util';
 import internalComputed from '@ember/-internals/metal/lib/computed';
+import internalGetProperties from '@ember/-internals/metal/lib/get_properties';
+import internalSetProperties from '@ember/-internals/metal/lib/set_properties';
 import { defineProperty as internalDefineProperty } from '@ember/-internals/metal/lib/properties';
 import { observer as internalObserver } from '@ember/object/lib/observer';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { get } from '@ember/-internals/metal/lib/property_get';
 export { set, trySet } from '@ember/-internals/metal/lib/property_set';
-export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
-export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
 
 export const defineProperty = (
   import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalDefineProperty
 ) as typeof internalDefineProperty;
+
+export const getProperties = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalGetProperties
+) as typeof internalGetProperties;
+
+export const setProperties = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalSetProperties
+) as typeof internalSetProperties;
 
 export const computed = (
   import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalComputed

@@ -6,7 +6,7 @@ import ArrayProxy from '@ember/array/proxy';
 import ObjectProxy from '@ember/object/proxy';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
-import { computed, defineProperty, observer } from '@ember/object';
+import { computed, defineProperty, getProperties, observer, setProperties } from '@ember/object';
 import { addObserver, removeObserver } from '@ember/object/observers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -32,6 +32,8 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         assert.strictEqual(MutableEnumerable, undefined, 'MutableEnumerable');
         assert.strictEqual(computed, undefined, 'computed');
         assert.strictEqual(defineProperty, undefined, 'defineProperty');
+        assert.strictEqual(getProperties, undefined, 'getProperties');
+        assert.strictEqual(setProperties, undefined, 'setProperties');
         assert.strictEqual(observer, undefined, 'observer');
         assert.strictEqual(addObserver, undefined, 'addObserver');
         assert.strictEqual(removeObserver, undefined, 'removeObserver');

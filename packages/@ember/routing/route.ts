@@ -16,7 +16,6 @@ import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer
 import type { default as BucketCache } from './lib/cache';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object/lib/ember-object';
 import Evented from '@ember/object/evented';
@@ -420,7 +419,9 @@ class Route<Model = unknown> extends RouteBase {
         object[name] = get(model, name);
       }
     } else {
-      object = getProperties(model, params);
+      for (let name of params) {
+        object[name] = get(model, name);
+      }
     }
 
     return object;
@@ -1059,7 +1060,13 @@ class Route<Model = unknown> extends RouteBase {
       });
 
       let qpValues = getQueryParamsFor(this, transition[STATE_SYMBOL]!);
-      setProperties(controller, qpValues);
+      if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        for (let [prop, value] of Object.entries(qpValues)) {
+          set(controller, prop, value);
+        }
+      } else {
+        setProperties(controller, qpValues);
+      }
     }
 
     this.setupController(controller, context, transition);

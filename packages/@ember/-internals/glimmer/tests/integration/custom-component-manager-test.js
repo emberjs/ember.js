@@ -3,7 +3,8 @@ import { moduleFor, RenderingTestCase, runTask, strip, testUnless } from 'intern
 
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object/lib/ember-object';
-import { set, setProperties, computed } from '@ember/object';
+import { set, computed } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { setComponentManager } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';
 

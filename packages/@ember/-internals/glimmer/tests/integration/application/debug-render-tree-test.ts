@@ -1,4 +1,5 @@
-import { set, setProperties } from '@ember/object';
+import { set } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { ApplicationTestCase, ModuleBasedTestResolver, moduleFor } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';

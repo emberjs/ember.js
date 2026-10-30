@@ -8,7 +8,8 @@ import {
 } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
-import { set, setProperties } from '@ember/object';
+import { set } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { trackedArray } from '@ember/reactive/collections';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';

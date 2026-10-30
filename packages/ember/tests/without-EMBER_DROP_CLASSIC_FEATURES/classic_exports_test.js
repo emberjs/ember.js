@@ -6,7 +6,7 @@ import ArrayProxy from '@ember/array/proxy';
 import ObjectProxy from '@ember/object/proxy';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
-import { observer } from '@ember/object';
+import { defineProperty, getProperties, observer, setProperties } from '@ember/object';
 import { addObserver, removeObserver } from '@ember/object/observers';
 import PrivateComponent from '@ember/-internals/glimmer/lib/component';
 import PrivateMixin from '@ember/object/lib/mixin';
@@ -20,6 +20,9 @@ import PrivateObjectProxy from '@ember/object/lib/object-proxy';
 import PrivateEnumerable from '@ember/enumerable/lib/enumerable';
 import PrivateMutableEnumerable from '@ember/enumerable/lib/mutable-enumerable';
 import { observer as privateObserver } from '@ember/object/lib/observer';
+import { defineProperty as privateDefineProperty } from '@ember/-internals/metal/lib/properties';
+import privateGetProperties from '@ember/-internals/metal/lib/get_properties';
+import privateSetProperties from '@ember/-internals/metal/lib/set_properties';
 import {
   addObserver as privateAddObserver,
   removeObserver as privateRemoveObserver,
@@ -47,6 +50,9 @@ if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         assert.strictEqual(ObjectProxy, PrivateObjectProxy, 'ObjectProxy');
         assert.strictEqual(Enumerable, PrivateEnumerable, 'Enumerable');
         assert.strictEqual(MutableEnumerable, PrivateMutableEnumerable, 'MutableEnumerable');
+        assert.strictEqual(defineProperty, privateDefineProperty, 'defineProperty');
+        assert.strictEqual(getProperties, privateGetProperties, 'getProperties');
+        assert.strictEqual(setProperties, privateSetProperties, 'setProperties');
         assert.strictEqual(observer, privateObserver, 'observer');
         assert.strictEqual(addObserver, privateAddObserver, 'addObserver');
         assert.strictEqual(removeObserver, privateRemoveObserver, 'removeObserver');

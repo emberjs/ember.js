@@ -1,4 +1,5 @@
-import { get, getProperties, set } from '@ember/object';
+import { get, set } from '@ember/object';
+import getProperties from '@ember/-internals/metal/lib/get_properties';
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';

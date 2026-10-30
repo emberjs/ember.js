@@ -1,7 +1,8 @@
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
 import EmberObject from '@ember/object/lib/ember-object';
-import { get, set, setProperties, computed } from '@ember/object';
+import { get, set, computed } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { observer } from '@ember/object/lib/observer';
 import ObjectProxy from '@ember/object/lib/object-proxy';

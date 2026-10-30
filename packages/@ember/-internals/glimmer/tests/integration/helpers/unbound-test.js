@@ -7,7 +7,8 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 
-import { set, get, setProperties } from '@ember/object';
+import { set, get } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 

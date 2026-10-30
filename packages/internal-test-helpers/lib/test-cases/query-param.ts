@@ -1,6 +1,7 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
-import { set, setProperties, get } from '@ember/object';
+import { set, get } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import type Owner from '@ember/owner';
 import NoneLocation from '@ember/routing/none-location';
 
