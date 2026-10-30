@@ -1,4 +1,4 @@
-import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
+import { AbstractTestCase, moduleFor, testUnless } from 'internal-test-helpers';
 import { defineProperty, tracked, nativeDescDecorator } from '../..';
 
 import { track, valueForTag, validateTag } from '@glimmer/validator';
@@ -6,7 +6,7 @@ import { track, valueForTag, validateTag } from '@glimmer/validator';
 moduleFor(
   '@tracked decorator - classic classes',
   class extends AbstractTestCase {
-    [`@test validators for tracked getters with dependencies should invalidate when the dependencies invalidate`](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test validators for tracked getters with dependencies should invalidate when the dependencies invalidate`](
       assert
     ) {
       let obj = {};
@@ -55,7 +55,9 @@ moduleFor(
       assert.equal(validateTag(tag, snapshot), true);
     }
 
-    [`@test can pass a default value to the tracked decorator`](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can pass a default value to the tracked decorator`](
+      assert
+    ) {
       class Tracked {
         get full() {
           return `${this.first} ${this.last}`;
@@ -70,7 +72,7 @@ moduleFor(
       assert.equal(obj.full, 'Tom Dale', 'Default values are correctly assign');
     }
 
-    [`@test errors if used directly on a classic class`]() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test errors if used directly on a classic class`]() {
       expectAssertion(() => {
         class Tracked {
           get full() {
@@ -101,7 +103,9 @@ moduleFor(
       }, "The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [value,initializer]");
     }
 
-    [`@test can pass an 'equals' option alongside a default value`](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can pass an 'equals' option alongside a default value`](
+      assert
+    ) {
       class Tracked {}
 
       defineProperty(

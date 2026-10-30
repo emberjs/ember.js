@@ -1,4 +1,5 @@
-import { get, set, computed, defineProperty } from '@ember/object';
+import { get, set, computed } from '@ember/object';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import Mixin from '@ember/object/lib/mixin';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../-internals/deprecations';

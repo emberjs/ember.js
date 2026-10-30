@@ -12,14 +12,18 @@ import {
   onClassFinalized,
 } from '@ember/-internals/metal/lib/decorator-util';
 import internalComputed from '@ember/-internals/metal/lib/computed';
+import { defineProperty as internalDefineProperty } from '@ember/-internals/metal/lib/properties';
 import { observer as internalObserver } from '@ember/object/lib/observer';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
-export { defineProperty } from '@ember/-internals/metal/lib/properties';
 export { get } from '@ember/-internals/metal/lib/property_get';
 export { set, trySet } from '@ember/-internals/metal/lib/property_set';
 export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
 export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
+
+export const defineProperty = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalDefineProperty
+) as typeof internalDefineProperty;
 
 export const computed = (
   import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : internalComputed
@@ -191,7 +195,7 @@ export function action(
 
   let actionFn: object | Function;
 
-  if (!isElementDescriptor(args)) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && !isElementDescriptor(args)) {
     actionFn = (args as [PropertyDescriptor])[0];
 
     let decorator: ExtendedMethodDecorator = function (
@@ -219,7 +223,7 @@ export function action(
     return decorator;
   }
 
-  let [target, key, desc] = args;
+  let [target, key, desc] = args as ElementDescriptor;
 
   actionFn = desc?.value;
 
@@ -232,8 +236,10 @@ export function action(
   return setupAction(target, key, actionFn);
 }
 
-// SAFETY: TS types are weird with decorators. This should work.
-setClassicDecorator(action as ExtendedMethodDecorator);
+const _classicAction = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+  ? undefined
+  : // SAFETY: TS types are weird with decorators. This should work.
+    setClassicDecorator(action as ExtendedMethodDecorator);
 
 function action2023(args: Parameters<Decorator>) {
   const dec = identifyModernDecoratorArgs(args);

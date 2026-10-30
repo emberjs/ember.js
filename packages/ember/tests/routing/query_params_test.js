@@ -62,9 +62,7 @@ moduleFor(
               refreshModel: true,
             },
           };
-          [actionName] = action(function () {
-            return loadingReturn;
-          });
+          [actionName] = () => loadingReturn;
           model(params) {
             indexModelCount++;
             if (indexModelCount === 2) {
