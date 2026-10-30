@@ -120,7 +120,9 @@ let obj, observer;
 moduleFor(
   'mixins/array/arrayContent[Will|Did]Change',
   class extends AbstractTestCase {
-    async [`${testUnless(MIXIN.isRemoved)} @test should notify observers of []`](assert) {
+    async [`${testUnless(MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should notify observers of []`](
+      assert
+    ) {
       expectMixinDeprecation();
 
       obj = DummyArray.extend({
@@ -173,7 +175,7 @@ moduleFor(
       obj = undefined;
     }
 
-    async [`${testUnless(MIXIN.isRemoved)} @test should notify observers when call with no params`](
+    async [`${testUnless(MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should notify observers when call with no params`](
       assert
     ) {
       arrayContentWillChange(obj);
@@ -202,7 +204,7 @@ moduleFor(
       assert.equal(obj._after, 0);
     }
 
-    async [`${testUnless(MIXIN.isRemoved)} @test should notify when passed lengths are different`](
+    async [`${testUnless(MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should notify when passed lengths are different`](
       assert
     ) {
       arrayContentWillChange(obj, 0, 1, 2);
@@ -327,7 +329,7 @@ moduleFor(
       ary = null;
     }
 
-    async [`${testUnless(MIXIN.isRemoved)} @test adding an object should notify (@each.isDone)`](
+    async [`${testUnless(MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test adding an object should notify (@each.isDone)`](
       assert
     ) {
       let called = 0;
@@ -419,7 +421,7 @@ moduleFor(
     }
 
     async [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test observers that contain @each in the path should fire only once the first time they are accessed`](
       assert
     ) {

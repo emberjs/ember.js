@@ -289,7 +289,7 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test observes / removeObserver on / removeListener interop`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observes / removeObserver on / removeListener interop`](
       assert
     ) {
       let fooDidChangeBase = 0;

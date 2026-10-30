@@ -1,10 +1,10 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { removeAt } from '@ember/array';
 import { get } from '@ember/object';
 
 class RemoveAtTests extends AbstractTestCase {
-  async '@test removeAt([X], 0) => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} removeAt([X], 0) => [] + notify`]() {
     let before = newFixture(1);
     let after = [];
     let obj = this.newObject(before);
@@ -42,7 +42,7 @@ class RemoveAtTests extends AbstractTestCase {
     expectAssertion(() => removeAt(obj, 200), /`removeAt` index provided is out of range/);
   }
 
-  async '@test removeAt([A,B], 0) => [B] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} removeAt([A,B], 0) => [B] + notify`]() {
     let before = newFixture(2);
     let after = [before[1]];
     let obj = this.newObject(before);
@@ -76,7 +76,7 @@ class RemoveAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test removeAt([A,B], 1) => [A] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} removeAt([A,B], 1) => [A] + notify`]() {
     let before = newFixture(2);
     let after = [before[0]];
     let obj = this.newObject(before);
@@ -110,7 +110,7 @@ class RemoveAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test removeAt([A,B,C], 1) => [A,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} removeAt([A,B,C], 1) => [A,C] + notify`]() {
     let before = newFixture(3);
     let after = [before[0], before[2]];
     let obj = this.newObject(before);
@@ -144,7 +144,7 @@ class RemoveAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test removeAt([A,B,C,D], 1,2) => [A,D] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} removeAt([A,B,C,D], 1,2) => [A,D] + notify`]() {
     let before = newFixture(4);
     let after = [before[0], before[3]];
     let obj = this.newObject(before);
@@ -178,7 +178,7 @@ class RemoveAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,D].removeAt(1,2) => [A,D] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,D].removeAt(1,2) => [A,D] + notify`]() {
     let obj, before, after, observer;
 
     before = newFixture(4);

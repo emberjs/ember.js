@@ -230,15 +230,15 @@ class Application extends Engine {
     return registry;
   }
 
-  static initializer = buildInitializerMethod<'initializers', Application>(
+  static initializer = /*@__PURE__*/ buildInitializerMethod<'initializers', Application>(
     'initializers',
     'initializer'
   );
 
-  static instanceInitializer = buildInitializerMethod<'instanceInitializers', ApplicationInstance>(
+  static instanceInitializer = /*@__PURE__*/ buildInitializerMethod<
     'instanceInitializers',
-    'instance initializer'
-  );
+    ApplicationInstance
+  >('instanceInitializers', 'instance initializer');
 
   /**
     The root DOM element of the Application. This can be specified as an

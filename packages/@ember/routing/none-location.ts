@@ -11,6 +11,21 @@ import { escapeRegExp } from './lib/location-utils';
 */
 
 /**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicNoneLocationBase() {
+  return EmberObject.extend({
+    path: '',
+    rootURL: '/',
+  });
+}
+
+const NoneLocationBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? Object : classicNoneLocationBase()
+) as ReturnType<typeof classicNoneLocationBase>;
+
+/**
   NoneLocation does not interact with the browser. It is useful for
   testing, or when you need to manage state with your Router, but temporarily
   don't want it to muck with the URL (for example when you embed your
@@ -23,7 +38,7 @@ import { escapeRegExp } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-class NoneLocation extends EmberObject implements EmberLocation {
+class NoneLocation extends NoneLocationBase implements EmberLocation {
   updateCallback?: UpdateCallback;
 
   // Set in reopen so it can be overwritten with extend
@@ -129,11 +144,6 @@ class NoneLocation extends EmberObject implements EmberLocation {
     return rootURL + url;
   }
 }
-
-NoneLocation.reopen({
-  path: '',
-  rootURL: '/',
-});
 
 /**
   `NoneLocation` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set. It

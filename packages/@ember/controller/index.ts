@@ -238,15 +238,21 @@ interface ControllerMixin<T> extends InternalActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
-  init() {
-    this._super(...arguments);
-    deprecateUntil(
-      'The `ControllerMixin` mixin is deprecated. Extend `Controller` from `@ember/controller` instead.',
-      DEPRECATIONS.DEPRECATE_CONTROLLER_MIXIN
-    );
-  },
-});
+/**
+  A function, so that builds with the flag do not create the mixin when the
+  module loads.
+*/
+function classicControllerMixin() {
+  return DeprecatedMixin.create(InternalControllerMixin, {
+    init() {
+      this._super(...arguments);
+      deprecateUntil(
+        'The `ControllerMixin` mixin is deprecated. Extend `Controller` from `@ember/controller` instead.',
+        DEPRECATIONS.DEPRECATE_CONTROLLER_MIXIN
+      );
+    },
+  });
+}
 
 /**
   The base class of `Controller` when the `EMBER_DROP_CLASSIC_FEATURES` build
@@ -391,8 +397,8 @@ export function inject(
 }
 
 const ExportedControllerMixin = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : ControllerMixin
-) as typeof ControllerMixin;
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : classicControllerMixin()
+) as ReturnType<typeof classicControllerMixin>;
 type ExportedControllerMixin<T> = ControllerMixin<T>;
 
 export { Controller as default, ExportedControllerMixin as ControllerMixin };

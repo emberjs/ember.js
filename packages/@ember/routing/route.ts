@@ -1,5 +1,6 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { addObserver } from '@ember/-internals/metal/lib/observer';
+import { flushChanges, watchProperty } from '@ember/-internals/metal/lib/watchers';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
 import {
@@ -416,7 +417,7 @@ class Route<Model = unknown> extends RouteBase {
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
         object[name] = get(model, 'id');
-      } else if (isProxy(model)) {
+      } else if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isProxy(model)) {
         object[name] = get(model, name);
       }
     } else {
@@ -1015,7 +1016,11 @@ class Route<Model = unknown> extends RouteBase {
     let definedController = this.controllerFor(controllerName, true);
     let controller = definedController ?? this.generateController(controllerName);
     let queryParams = get(this, '_qp') as Route<Model>['_qp'];
-    addQueryParamsObservers(controller, queryParams.propertyNames);
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      watchQueryParams(controller, queryParams.propertyNames);
+    } else {
+      addQueryParamsObservers(controller, queryParams.propertyNames);
+    }
     this.controller = controller;
     return controller;
   }
@@ -1066,7 +1071,7 @@ class Route<Model = unknown> extends RouteBase {
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
-    flushAsyncObservers(false);
+    flushChanges(false);
   }
 
   /*
@@ -1982,6 +1987,12 @@ function mergeEachQueryParams(
   }
 
   return qps;
+}
+
+function watchQueryParams(controller: any, propNames: string[]) {
+  for (let prop of propNames) {
+    watchProperty(controller, prop, () => controller._qpChanged(controller, prop));
+  }
 }
 
 function addQueryParamsObservers(controller: any, propNames: string[]) {

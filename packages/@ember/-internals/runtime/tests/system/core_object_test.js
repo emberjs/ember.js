@@ -103,7 +103,9 @@ moduleFor(
       TestObj.create(options);
     }
 
-    async ['@test observed properties are enumerable when set GH#14594'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observed properties are enumerable when set GH#14594`](
+      assert
+    ) {
       let callCount = 0;
       let Test = CoreObject.extend({
         myProp: null,

@@ -61,7 +61,7 @@ function notifyPropertyChange(
 
   markObjectAsDirty(obj, keyName);
 
-  if (deferred <= 0) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && deferred <= 0) {
     flushSyncObservers();
   }
 
@@ -87,7 +87,10 @@ function notifyPropertyChange(
 */
 function beginPropertyChanges(): void {
   deferred++;
-  suspendedObserverDeactivation();
+
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    suspendedObserverDeactivation();
+  }
 }
 
 /**
@@ -96,7 +99,7 @@ function beginPropertyChanges(): void {
 */
 function endPropertyChanges(): void {
   deferred--;
-  if (deferred <= 0) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && deferred <= 0) {
     flushSyncObservers();
     resumeObserverDeactivation();
   }

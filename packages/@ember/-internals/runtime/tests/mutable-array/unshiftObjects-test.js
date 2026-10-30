@@ -1,4 +1,4 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { get } from '@ember/object';
 import { runArrayTests, newFixture } from '../helpers/array';
 
@@ -10,7 +10,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     this.assert.equal(obj.unshiftObjects(items), obj, 'should return receiver');
   }
 
-  async '@test [].unshiftObjects([A,B,C]) => [A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [].unshiftObjects([A,B,C]) => [A,B,C] + notify`]() {
     let before = [];
     let items = newFixture(3);
     let obj = this.newObject(before);
@@ -43,7 +43,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify`]() {
     let before = newFixture(3);
     let items = newFixture(2);
     let after = items.concat(before);
@@ -78,7 +78,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify`]() {
     let before = newFixture(3);
     let items = [before[0], before[1]]; // note same object as current head. should end up twice
     let after = items.concat(before);

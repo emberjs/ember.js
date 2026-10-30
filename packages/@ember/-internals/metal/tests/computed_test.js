@@ -10,7 +10,7 @@ import {
   addObserver,
 } from '..';
 import { run } from '@ember/runloop';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 let obj, objA, objB, count, func;
@@ -807,7 +807,9 @@ moduleFor(
 moduleFor(
   'computed - setter',
   class extends ComputedTestCase {
-    async ['@test setting a watched computed property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a watched computed property`](
+      assert
+    ) {
       obj = {
         firstName: 'Yehuda',
         lastName: 'Katz',
@@ -859,7 +861,9 @@ moduleFor(
       assert.equal(lastNameDidChange, 1);
     }
 
-    async ['@test setting a cached computed property that modifies the value you give it'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a cached computed property that modifies the value you give it`](
+      assert
+    ) {
       obj = {
         foo: 0,
       };
@@ -1122,7 +1126,9 @@ moduleFor(
 moduleFor(
   'computed - observer interop',
   class extends ComputedTestCase {
-    async '@test observers that do not consume computed properties still work'(assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} observers that do not consume computed properties still work`](
+      assert
+    ) {
       assert.expect(2);
 
       class Foo {

@@ -5,7 +5,7 @@ import EmberObject from '@ember/object/lib/ember-object';
 import { get, set } from '@ember/object';
 import { observer } from '@ember/object/lib/observer';
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
@@ -47,7 +47,9 @@ moduleFor(
       }
     }
 
-    async ['@test observers should not fire after an object has been destroyed'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observers should not fire after an object has been destroyed`](
+      assert
+    ) {
       let count = 0;
       let obj = EmberObject.extend({
         fooDidChange: observer('foo', function () {
@@ -69,7 +71,7 @@ moduleFor(
       assert.equal(count, 1, 'observer was not called after object was destroyed');
     }
 
-    async ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test destroyed objects should not see each others changes during teardown but a long lived object should`](
       assert
     ) {
       let shouldChange = 0;

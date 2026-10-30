@@ -1342,7 +1342,7 @@ moduleFor(
       });
     }
 
-    async [`${testUnless(QP_EMBER_ARRAY.isRemoved)} @test Array query params can be pushed/popped`](
+    async [`${testUnless(QP_EMBER_ARRAY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Array query params can be pushed/popped`](
       assert
     ) {
       if (QP_EMBER_ARRAY.isEnabled) {

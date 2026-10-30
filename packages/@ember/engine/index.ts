@@ -68,12 +68,13 @@ function classicEngineBase() {
 }
 
 const EngineBase = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? Namespace : classicEngineBase()
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? Object : classicEngineBase()
 ) as ReturnType<typeof classicEngineBase>;
 
 class Engine extends EngineBase {
-  static initializers: Record<string, Initializer<Engine>> = Object.create(null);
-  static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
+  static initializers: Record<string, Initializer<Engine>> = /*@__PURE__*/ Object.create(null);
+  static instanceInitializers: Record<string, Initializer<EngineInstance>> =
+    /*@__PURE__*/ Object.create(null);
 
   /**
     The goal of initializers should be to register dependencies and injections.
@@ -220,7 +221,7 @@ class Engine extends EngineBase {
     @public
   */
 
-  static initializer = buildInitializerMethod('initializers', 'initializer');
+  static initializer = /*@__PURE__*/ buildInitializerMethod('initializers', 'initializer');
 
   /**
     Instance initializers run after all initializers have run. Because
@@ -293,7 +294,7 @@ class Engine extends EngineBase {
     @param instanceInitializer
     @public
   */
-  static instanceInitializer = buildInitializerMethod(
+  static instanceInitializer = /*@__PURE__*/ buildInitializerMethod(
     'instanceInitializers',
     'instance initializer'
   );
@@ -578,7 +579,8 @@ function commonSetupRegistry(registry: Registry) {
 */
 class PlainEngine {
   static initializers: Record<string, Initializer<PlainEngine>> = Object.create(null);
-  static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
+  static instanceInitializers: Record<string, Initializer<EngineInstance>> =
+    /*@__PURE__*/ Object.create(null);
 
   static initializer = buildInitializerMethod('initializers', 'initializer');
   static instanceInitializer = buildInitializerMethod(

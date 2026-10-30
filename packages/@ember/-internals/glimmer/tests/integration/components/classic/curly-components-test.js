@@ -1969,7 +1969,9 @@ moduleFor(
       this.assertText('things');
     }
 
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test didReceiveAttrs fires after .init() but before observers become active`](
+      assert
+    ) {
       let barCopyDidChangeCount = 0;
 
       this.owner.register(

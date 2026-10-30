@@ -84,7 +84,7 @@ export function defineProperty(
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (!meta.isPrototypeMeta(obj)) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && !meta.isPrototypeMeta(obj)) {
     revalidateObservers(obj);
   }
 }

@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class PopObjectTests extends AbstractTestCase {
@@ -33,7 +33,7 @@ class PopObjectTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [X].popObject() => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [X].popObject() => [] + notify`]() {
     let before = newFixture(1);
     let after = [];
     let obj = this.newObject(before);
@@ -67,7 +67,7 @@ class PopObjectTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].popObject() => [A,B] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].popObject() => [A,B] + notify`]() {
     let before = newFixture(3);
     let after = [before[0], before[1]];
     let obj = this.newObject(before);

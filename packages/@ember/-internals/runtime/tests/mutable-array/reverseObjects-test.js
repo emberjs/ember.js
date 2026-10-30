@@ -1,9 +1,9 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from '@ember/object';
 
 class ReverseObjectsTests extends AbstractTestCase {
-  async '@test [A,B,C].reverseObjects() => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].reverseObjects() => [] + notify`]() {
     let before = newFixture(3);
     let after = [before[2], before[1], before[0]];
     let obj = this.newObject(before);

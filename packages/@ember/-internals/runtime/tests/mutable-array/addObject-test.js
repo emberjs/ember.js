@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class AddObjectTest extends AbstractTestCase {
@@ -9,7 +9,7 @@ class AddObjectTest extends AbstractTestCase {
     this.assert.equal(obj.addObject(before[1]), obj, 'should return receiver');
   }
 
-  async '@test [A,B].addObject(C) => [A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B].addObject(C) => [A,B,C] + notify`]() {
     let before = newFixture(2);
     let item = newFixture(1)[0];
     let after = [before[0], before[1], item];

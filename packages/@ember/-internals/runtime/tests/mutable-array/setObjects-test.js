@@ -1,9 +1,9 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from '@ember/object';
 
 class SetObjectsTests extends AbstractTestCase {
-  async '@test [A,B,C].setObjects([]) = > [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].setObjects([]) = > [] + notify`]() {
     let before = newFixture(3);
     let after = [];
     let obj = this.newObject(before);
@@ -36,7 +36,7 @@ class SetObjectsTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify`]() {
     let before = newFixture(3);
     let after = newFixture(4);
     let obj = this.newObject(before);

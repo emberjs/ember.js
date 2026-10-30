@@ -1,8 +1,8 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class ReplaceTests extends AbstractTestCase {
-  async "@test [].replace(0,0,'X') => ['X'] + notify"() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [].replace(0,0,'X') => ['X'] + notify`]() {
     let exp = newFixture(1);
     let obj = this.newObject([]);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -67,7 +67,7 @@ class ReplaceTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,D].replace(1,2,X) => [A,X,D] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,D].replace(1,2,X) => [A,X,D] + notify`]() {
     let before = newFixture(4);
     let replace = newFixture(1);
     let after = [before[0], replace[0], before[3]];
@@ -102,7 +102,7 @@ class ReplaceTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify`]() {
     let before = newFixture(4);
     let replace = newFixture(2);
     let after = [before[0], replace[0], replace[1], before[3]];
@@ -137,7 +137,7 @@ class ReplaceTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify`]() {
     let before = newFixture(2);
     let replace = newFixture(2);
     let after = [before[0], replace[0], replace[1], before[1]];
@@ -172,7 +172,7 @@ class ReplaceTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,D].replace(2,2) => [A,B] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,D].replace(2,2) => [A,B] + notify`]() {
     let before = newFixture(4);
     let after = [before[0], before[1]];
 
@@ -206,7 +206,7 @@ class ReplaceTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,D].replace(-1,1) => [A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,D].replace(-1,1) => [A,B,C] + notify`]() {
     let before = newFixture(4);
     let after = [before[0], before[1], before[2]];
 

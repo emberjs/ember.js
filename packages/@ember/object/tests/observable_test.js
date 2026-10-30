@@ -787,7 +787,7 @@ moduleFor(
     }
 
     async [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test should notify array observer when array changes`](assert) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
 
@@ -831,7 +831,9 @@ moduleFor(
       });
     }
 
-    async ['@test should register an observer for a property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should register an observer for a property`](
+      assert
+    ) {
       objectC.addObserver('normal', objectC, 'action');
       objectC.set('normal', 'newValue');
 
@@ -839,7 +841,7 @@ moduleFor(
       assert.equal(objectC.normal1, 'newZeroValue');
     }
 
-    async ['@test should register an observer for a property - Special case of chained property'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should register an observer for a property - Special case of chained property`](
       assert
     ) {
       objectC.addObserver('objectE.propertyVal', objectC, 'chainedObserver');
@@ -898,7 +900,9 @@ moduleFor(
       });
     }
 
-    async ['@test should unregister an observer for a property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should unregister an observer for a property`](
+      assert
+    ) {
       objectD.addObserver('normal', objectD, 'addAction');
       objectD.set('normal', 'newValue');
       await runLoopSettled();

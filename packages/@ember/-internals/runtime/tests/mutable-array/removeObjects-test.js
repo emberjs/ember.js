@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture, emberA } from '../helpers/array';
 import { destroy } from '@glimmer/destroyable';
 
@@ -11,7 +11,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     this.assert.equal(obj.removeObjects(before[1]), obj, 'should return receiver');
   }
 
-  async '@test [A,B,C].removeObjects([B]) => [A,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].removeObjects([B]) => [A,C] + notify`]() {
     let before = emberA(newFixture(3));
     let after = [before[0], before[2]];
     let obj = before;
@@ -46,7 +46,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     destroy(obj);
   }
 
-  async '@test [{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify`]() {
     let before = emberA(newObjectsFixture(3));
     let after = [before[0], before[2]];
     let obj = before;
@@ -81,7 +81,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     destroy(obj);
   }
 
-  async '@test [A,B,C].removeObjects([A,B]) => [C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].removeObjects([A,B]) => [C] + notify`]() {
     let before = emberA(newFixture(3));
     let after = [before[2]];
     let obj = before;
@@ -112,7 +112,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     destroy(obj);
   }
 
-  async '@test [{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify`]() {
     let before = emberA(newObjectsFixture(3));
     let after = [before[2]];
     let obj = before;
@@ -143,7 +143,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     destroy(obj);
   }
 
-  async '@test [A,B,C].removeObjects([A,B,C]) => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].removeObjects([A,B,C]) => [] + notify`]() {
     let before = emberA(newFixture(3));
     let after = [];
     let obj = before;
@@ -170,7 +170,7 @@ class RemoveObjectsTests extends AbstractTestCase {
     destroy(obj);
   }
 
-  async '@test [{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify`]() {
     let before = emberA(newObjectsFixture(3));
     let after = [];
     let obj = before;

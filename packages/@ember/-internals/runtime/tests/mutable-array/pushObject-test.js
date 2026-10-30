@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class PushObjectTests extends AbstractTestCase {
@@ -10,7 +10,7 @@ class PushObjectTests extends AbstractTestCase {
     this.assert.equal(obj.pushObject(exp), exp, 'should return pushed object');
   }
 
-  async '@test [].pushObject(X) => [X] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [].pushObject(X) => [X] + notify`]() {
     let before = [];
     let after = newFixture(1);
     let obj = this.newObject(before);
@@ -43,7 +43,7 @@ class PushObjectTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].pushObject(X) => [A,B,C,X] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].pushObject(X) => [A,B,C,X] + notify`]() {
     let before = newFixture(3);
     let item = newFixture(1)[0];
     let after = [before[0], before[1], before[2], item];
@@ -78,7 +78,7 @@ class PushObjectTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C,C].pushObject(A) => [A,B,C,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C,C].pushObject(A) => [A,B,C,C] + notify`]() {
     let before = newFixture(3);
     let item = before[2]; // note same object as current tail. should end up twice
     let after = [before[0], before[1], before[2], item];

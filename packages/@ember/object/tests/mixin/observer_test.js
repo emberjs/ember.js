@@ -25,7 +25,7 @@ moduleFor(
       }
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test global observer helper`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test global observer helper`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -47,7 +47,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test global observer helper takes multiple params`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test global observer helper takes multiple params`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -75,7 +75,7 @@ moduleFor(
       await runLoopSettled();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test replacing observer should remove old observer`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test replacing observer should remove old observer`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -108,7 +108,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property before`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with property before`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -132,7 +132,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property after`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with property after`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -156,7 +156,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin applied later`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with property in mixin applied later`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -184,7 +184,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with existing property`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with existing property`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -207,7 +207,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin before`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with property in mixin before`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -231,7 +231,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin after`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with property in mixin after`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
@@ -255,7 +255,7 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with overridden property`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing chain with overridden property`](
       assert
     ) {
       expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);

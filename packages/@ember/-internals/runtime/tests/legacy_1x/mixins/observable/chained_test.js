@@ -28,7 +28,7 @@ moduleFor(
   'Ember.Observable - Observing with @each',
   class extends AbstractTestCase {
     async [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test chained observers on enumerable properties are triggered when the observed property of any item changes`](
       assert
     ) {

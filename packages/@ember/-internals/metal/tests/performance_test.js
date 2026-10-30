@@ -8,7 +8,7 @@ import {
   endPropertyChanges,
   addObserver,
 } from '..';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 let obj;
@@ -31,7 +31,7 @@ moduleFor(
       return runLoopSettled();
     }
 
-    async ['@test computed properties that depend on multiple properties should run only once per run loop'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed properties that depend on multiple properties should run only once per run loop`](
       assert
     ) {
       obj = { a: 'a', b: 'b', c: 'c' };

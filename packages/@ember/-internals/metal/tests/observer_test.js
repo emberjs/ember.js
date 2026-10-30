@@ -12,7 +12,7 @@ import {
 } from '..';
 import { observer } from '@ember/object/lib/observer';
 import { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { meta as metaFor } from '@ember/-internals/meta';
 
@@ -69,7 +69,9 @@ moduleFor(
       }, 'observer called without sync');
     }
 
-    async ['@test observer should fire when property is modified'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observer should fire when property is modified`](
+      assert
+    ) {
       obj = {};
       let count = 0;
 
@@ -84,7 +86,9 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
-    async ['@test observer supports keys with colons'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observer supports keys with colons`](
+      assert
+    ) {
       obj = {};
       let count = 0;
 
@@ -99,7 +103,9 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
-    async ['@test observer should fire when dependent property is modified'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observer should fire when dependent property is modified`](
+      assert
+    ) {
       obj = { bar: 'bar' };
       defineProperty(
         obj,
@@ -124,7 +130,9 @@ moduleFor(
     }
 
     // https://github.com/emberjs/ember.js/issues/18246
-    async ['@test observer should fire when computed property is modified'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observer should fire when computed property is modified`](
+      assert
+    ) {
       obj = { bar: 'bar' };
       defineProperty(
         obj,
@@ -154,7 +162,7 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'baz', 'computed should have correct value');
     }
 
-    async ['@test observer should continue to fire after dependent properties are accessed'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observer should continue to fire after dependent properties are accessed`](
       assert
     ) {
       let observerCount = 0;
@@ -189,7 +197,7 @@ moduleFor(
       assert.equal(observerCount, 10, 'should continue to fire indefinitely');
     }
 
-    async ['@test observers watching multiple properties via brace expansion should fire when the properties change'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observers watching multiple properties via brace expansion should fire when the properties change`](
       assert
     ) {
       obj = {};
@@ -217,7 +225,7 @@ moduleFor(
       assert.equal(count, 2, 'observer not invoked on unspecified property');
     }
 
-    async ['@test observers watching multiple properties via brace expansion should fire when dependent properties change'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observers watching multiple properties via brace expansion should fire when dependent properties change`](
       assert
     ) {
       obj = { baz: 'Initial' };
@@ -262,7 +270,9 @@ moduleFor(
       assert.equal(count, 2, 'observer not fired on unspecified property');
     }
 
-    async ['@test removing an chain observer on change should not fail'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test removing an chain observer on change should not fail`](
+      assert
+    ) {
       let foo = { bar: 'bar' };
       let obj1 = { foo: foo };
       let obj2 = { foo: foo };
@@ -308,7 +318,9 @@ moduleFor(
       destroy(obj4);
     }
 
-    async ['@test deferring property change notifications'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test deferring property change notifications`](
+      assert
+    ) {
       obj = { foo: 'foo' };
       let fooCount = 0;
 
@@ -328,7 +340,9 @@ moduleFor(
       assert.equal(fooCount, 1, 'foo should have fired once');
     }
 
-    async ['@test addObserver should respect targets with methods'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test addObserver should respect targets with methods`](
+      assert
+    ) {
       let observed = (obj = { foo: 'foo' });
       let target1 = {
         count: 0,
@@ -366,7 +380,9 @@ moduleFor(
       assert.equal(target2.count, 1, 'target2 observer should have fired');
     }
 
-    async ['@test addObserver should allow multiple objects to observe a property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test addObserver should allow multiple objects to observe a property`](
+      assert
+    ) {
       let observed = (obj = { foo: 'foo' });
 
       let target1 = {
@@ -412,7 +428,9 @@ moduleFor(
       }
     }
 
-    async ['@test removing observer should stop firing'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test removing observer should stop firing`](
+      assert
+    ) {
       obj = {};
       let count = 0;
       function F() {
@@ -433,7 +451,9 @@ moduleFor(
       assert.equal(count, 1, "removed observer shouldn't fire");
     }
 
-    async ['@test local observers can be removed'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test local observers can be removed`](
+      assert
+    ) {
       let barObserved = 0;
 
       obj = mixin(
@@ -463,7 +483,9 @@ moduleFor(
       assert.equal(barObserved, 1, 'removed observers should not be called');
     }
 
-    async ['@test removeObserver should respect targets with methods'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test removeObserver should respect targets with methods`](
+      assert
+    ) {
       let observed = { foo: 'foo' };
 
       let target1 = {
@@ -546,7 +568,9 @@ moduleFor(
       count = 0;
     }
 
-    async ['@test depending on a chain with a computed property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test depending on a chain with a computed property`](
+      assert
+    ) {
       defineProperty(
         obj,
         'computed',
@@ -572,7 +596,9 @@ moduleFor(
       assert.equal(changed, 1, 'should fire observer');
     }
 
-    async ['@test depending on a simple chain'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test depending on a simple chain`](
+      assert
+    ) {
       let val;
       addObserver(obj, 'foo.bar.baz.biff', function (target, key) {
         val = get(target, key);
@@ -623,7 +649,9 @@ moduleFor(
       assert.equal(count, 6, 'should be not have invoked observer');
     }
 
-    async ['@test depending on a chain with a capitalized first key'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test depending on a chain with a capitalized first key`](
+      assert
+    ) {
       let val;
 
       addObserver(obj, 'Capital.foo.bar.baz.biff', function (target, key) {
@@ -694,7 +722,9 @@ moduleFor(
       return runLoopSettled();
     }
 
-    async ['@test setting simple prop should not trigger'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting simple prop should not trigger`](
+      assert
+    ) {
       obj = { foo: 'bar' };
       let count = 0;
 
@@ -721,7 +751,7 @@ moduleFor(
     // The issue here is when a computed property is directly set with a value, then has a
     // dependent key change (which triggers a cache expiration and recomputation), observers will
     // not be fired if the CP setter is called with the last set value.
-    async ['@test setting a cached computed property whose value has changed should trigger'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a cached computed property whose value has changed should trigger`](
       assert
     ) {
       obj = {};
@@ -927,7 +957,9 @@ moduleFor(
       }
     }
 
-    '@test observers added/removed during changeProperties should do the right thing.'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} observers added/removed during changeProperties should do the right thing.`](
+      assert
+    ) {
       obj = {
         foo: 0,
       };
@@ -1013,7 +1045,9 @@ moduleFor(
       );
     }
 
-    '@test calling changeProperties while executing deferred observers works correctly'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} calling changeProperties while executing deferred observers works correctly`](
+      assert
+    ) {
       obj = { foo: 0 };
       let fooDidChange = 0;
 

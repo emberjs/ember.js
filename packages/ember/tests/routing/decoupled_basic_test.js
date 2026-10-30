@@ -15,6 +15,7 @@ import {
   runDestroy,
   runTask,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
@@ -349,7 +350,9 @@ moduleFor(
       });
     }
 
-    ['@test navigating away triggers a url property change'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test navigating away triggers a url property change`](
+      assert
+    ) {
       assert.expect(3);
 
       this.router.map(function () {
