@@ -83,6 +83,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   }
 
   if (
+    !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES &&
     currentValue === undefined &&
     'object' === typeof obj &&
     !(keyName in obj) &&

@@ -112,6 +112,7 @@ export function _getProp(obj: unknown, keyName: string) {
     }
 
     if (
+      !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES &&
       value === undefined &&
       typeof obj === 'object' &&
       !(keyName in obj) &&
@@ -162,16 +163,19 @@ _getProp('foo' as any, 'a');
 _getProp('foo' as any, 1 as any);
 _getProp({}, 'a');
 _getProp({}, 1 as any);
-_getProp({ unknownProperty() {} }, 'a');
-_getProp({ unknownProperty() {} }, 1 as any);
-
 get({}, 'foo');
 get({}, 'foo.bar');
 
-let fakeProxy = {} as ProxyMixin<unknown>;
-setProxy(fakeProxy);
+if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  _getProp({ unknownProperty() {} }, 'a');
+  _getProp({ unknownProperty() {} }, 1 as any);
+
+  let fakeProxy = {} as ProxyMixin<unknown>;
+  setProxy(fakeProxy);
+
+  track(() => _getProp({ a: fakeProxy }, 'a'));
+}
 
 track(() => _getProp({}, 'a'));
 track(() => _getProp({}, 1 as any));
 track(() => _getProp({ a: [] }, 'a'));
-track(() => _getProp({ a: fakeProxy }, 'a'));

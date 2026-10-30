@@ -8,6 +8,7 @@ import {
   buildOwner,
   runDestroy,
   runLoopSettled,
+  testUnless,
 } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
@@ -30,7 +31,9 @@ moduleFor(
       );
     }
 
-    ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not trigger proxy assertion when retrieving a proxy with (GH#16263)`](
+      assert
+    ) {
       let someProxyishThing = class extends CoreObject {
         unknownProperty() {
           return true;
@@ -65,7 +68,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not trigger proxy assertion when probing for a "symbol"`](
+      assert
+    ) {
       let proxy = class extends CoreObject {
         unknownProperty() {
           return true;

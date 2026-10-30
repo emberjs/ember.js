@@ -47,7 +47,7 @@ moduleFor(
       assert.equal(proxy._cp, 'Bar', 'should use CP setter');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should proxy properties to content`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should proxy properties to content`](
       assert
     ) {
       let content = {
@@ -101,7 +101,7 @@ moduleFor(
       assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test getting proxied properties with Ember.get should work`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting proxied properties with Ember.get should work`](
       assert
     ) {
       let proxy = ObjectProxy.create({
@@ -281,7 +281,7 @@ moduleFor(
       proxy.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test set and get should work with paths`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test set and get should work with paths`](
       assert
     ) {
       let content = { foo: { bar: 'baz' } };
@@ -306,7 +306,7 @@ moduleFor(
       proxy.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should transition between watched and unwatched strategies`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should transition between watched and unwatched strategies`](
       assert
     ) {
       let content = { foo: 'foo' };
@@ -386,7 +386,7 @@ moduleFor(
       obj.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test custom proxies should be able to notify property changes manually`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test custom proxies should be able to notify property changes manually`](
       assert
     ) {
       let proxy = class extends ObjectProxy {

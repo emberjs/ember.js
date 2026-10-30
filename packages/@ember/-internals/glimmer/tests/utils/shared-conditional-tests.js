@@ -24,8 +24,11 @@ import Component from '@glimmer/component';
 // `ObjectProxy` and `ArrayProxy` are deprecated, but their interaction with
 // conditionals is still worth covering until they are removed. The deprecation
 // itself is asserted by the dedicated proxy tests, so it is silenced here.
-const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
-const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+// With the build flag, the renderer does not unwrap proxies.
+const OBJECT_PROXY_REMOVED =
+  DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES;
+const ARRAY_PROXY_REMOVED =
+  DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES;
 const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
 
 // The tests of `A` cover its deprecation.

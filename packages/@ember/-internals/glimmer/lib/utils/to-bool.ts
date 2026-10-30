@@ -6,7 +6,7 @@ import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 
 export default function toBool(predicate: unknown): boolean {
-  if (isProxy(predicate)) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isProxy(predicate)) {
     consumeTag(tagForProperty(predicate, 'content'));
 
     return Boolean(get(predicate, 'isTruthy'));

@@ -822,7 +822,9 @@ moduleFor(
       this.assertCurrentPath('/?foo=3');
     }
 
-    async ["@test Use Ember.get to retrieve query params 'refreshModel' configuration"](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Use Ember.get to retrieve query params 'refreshModel' configuration`](
+      assert
+    ) {
       assert.expect(7);
 
       this.setSingleQPController('application', 'appomg', 'applol');
@@ -1047,7 +1049,9 @@ moduleFor(
       assert.equal(parentModelCount, 2);
     }
 
-    async ["@test Use Ember.get to retrieve query params 'replace' configuration"](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Use Ember.get to retrieve query params 'replace' configuration`](
+      assert
+    ) {
       assert.expect(2);
 
       this.setSingleQPController('application', 'alex', 'matchneer');

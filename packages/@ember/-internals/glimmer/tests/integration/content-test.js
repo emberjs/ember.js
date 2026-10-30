@@ -358,7 +358,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a proxy object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -398,7 +398,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a nested path in a proxy object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -459,7 +459,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a path flipping between a proxy and a real object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -541,7 +541,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a path flipping between a real object and a proxy`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 

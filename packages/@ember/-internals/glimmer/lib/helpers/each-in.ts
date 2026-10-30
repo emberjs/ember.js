@@ -312,7 +312,10 @@ export default internalHelper(({ positional }: CapturedArguments) => {
 
     consumeTag(tagForObject(iterable));
 
-    if (!DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved) {
+    if (
+      !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES &&
+      !DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved
+    ) {
       if (isProxy(iterable)) {
         // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
         // and the proxy's tag is lazy updated on access
