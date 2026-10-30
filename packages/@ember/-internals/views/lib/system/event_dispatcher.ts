@@ -3,6 +3,7 @@ import { assert } from '@ember/debug';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import { getElementView } from './utils';
 import type { BootEnvironment } from '@ember/engine/instance';
 import type Component from '@ember/-internals/glimmer/lib/component';
@@ -25,7 +26,11 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @private
   @extends EmberObject
 */
-export default class EventDispatcher extends EmberObject {
+const EventDispatcherBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+export default class EventDispatcher extends EventDispatcherBase {
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
@@ -294,13 +299,13 @@ export default class EventDispatcher extends EmberObject {
 
   destroy() {
     if (this._didSetup === false) {
-      return;
+      return this;
     }
 
     let rootElement = this._sanitizedRootElement;
 
     if (!rootElement) {
-      return;
+      return this;
     }
 
     for (let event in this._eventHandlers) {
@@ -309,7 +314,7 @@ export default class EventDispatcher extends EmberObject {
 
     rootElement.classList.remove(ROOT_ELEMENT_CLASS);
 
-    return this._super(...arguments);
+    return super.destroy();
   }
 
   toString() {

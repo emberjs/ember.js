@@ -1,6 +1,6 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
-import { set, setProperties } from '@ember/object';
+import { set, setProperties, get } from '@ember/object';
 import type Owner from '@ember/owner';
 import NoneLocation from '@ember/routing/none-location';
 
@@ -31,7 +31,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedPushURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
 
         replaceURL(path: string) {
@@ -48,7 +48,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedReplaceURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
       }
     );
@@ -87,7 +87,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   }
 
   assertCurrentPath(path: string, message = `current path equals '${path}'`) {
-    this.assert.equal(this.appRouter.get('location.path'), path, message);
+    this.assert.equal(get(this.appRouter, 'location.path'), path, message);
   }
 
   /**

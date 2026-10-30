@@ -18,6 +18,7 @@ import { getName, setName } from '@ember/-internals/utils/lib/name';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -37,7 +38,11 @@ import EmberObject from '@ember/object/lib/ember-object';
   @extends EmberObject
   @public
 */
-class Namespace extends EmberObject {
+const NamespaceBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+class Namespace extends NamespaceBase {
   static NAMESPACES: MetalNamespace[] = NAMESPACES;
   static NAMESPACES_BY_ID: { [name: string]: MetalNamespace } = NAMESPACES_BY_ID;
   static processAll = processAllNamespaces;

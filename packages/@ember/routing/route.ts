@@ -313,10 +313,17 @@ class PlainRouteBase {
   willDestroy(): void {}
 }
 
-const ClassicRouteBase = EmberObject.extend(InternalActionHandler);
+/**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicRouteBase() {
+  return EmberObject.extend(InternalActionHandler);
+}
+
 const RouteBase = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainRouteBase : ClassicRouteBase
-) as typeof ClassicRouteBase;
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainRouteBase : classicRouteBase()
+) as ReturnType<typeof classicRouteBase>;
 
 class Route<Model = unknown> extends RouteBase {
   static {

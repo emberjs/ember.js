@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp } from './lib/location-utils';
@@ -20,7 +21,11 @@ import { escapeRegExp } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-export default class NoneLocation extends EmberObject implements EmberLocation {
+const NoneLocationBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+export default class NoneLocation extends NoneLocationBase implements EmberLocation {
   updateCallback?: UpdateCallback;
 
   // Set in reopen so it can be overwritten with extend
@@ -37,8 +42,6 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   declare rootURL: string;
 
   initState(): void {
-    this._super(...arguments);
-
     let { rootURL } = this;
 
     // This assert doesn't have anything to do with state initialization,
@@ -127,7 +130,5 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   }
 }
 
-NoneLocation.reopen({
-  path: '',
-  rootURL: '/',
-});
+NoneLocation.prototype.path = '';
+NoneLocation.prototype.rootURL = '/';

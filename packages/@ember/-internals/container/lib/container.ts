@@ -419,30 +419,21 @@ function instantiateFactory(
   throw new Error('Could not create factory');
 }
 
-const PLAIN_PROTOTYPES = new WeakSet<object>();
-
 /**
   Marks a framework base class that extends no other class, such as the
   `Service` of the `EMBER_DROP_CLASSIC_FEATURES` build. Its instances have
   no `destroy` method. The container calls their `willDestroy`, then the
   `destroy` function of `@ember/destroyable`.
+
+  A static field holds the mark, so that the module of the class has no
+  side effect when it loads.
 */
-export function setPlainFrameworkClass(klass: { prototype: object }): void {
-  PLAIN_PROTOTYPES.add(klass.prototype);
-}
+export const PLAIN_FRAMEWORK_CLASS = Symbol('PLAIN_FRAMEWORK_CLASS');
 
 function isPlainFrameworkInstance(value: object): boolean {
-  let proto = Object.getPrototypeOf(value);
+  let klass = (value as { constructor?: { [PLAIN_FRAMEWORK_CLASS]?: boolean } }).constructor;
 
-  while (proto !== null) {
-    if (PLAIN_PROTOTYPES.has(proto)) {
-      return true;
-    }
-
-    proto = Object.getPrototypeOf(proto);
-  }
-
-  return false;
+  return klass?.[PLAIN_FRAMEWORK_CLASS] === true;
 }
 
 function destroyInstance(value: object): void {

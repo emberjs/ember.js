@@ -29,6 +29,7 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import Evented from '@ember/object/evented';
 import { queryParamArray } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { assert, info } from '@ember/debug';
@@ -142,7 +143,11 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject {
+const EmberRouterBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+class EmberRouter extends EmberRouterBase {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
@@ -311,8 +316,6 @@ class EmberRouter extends EmberObject {
   static map(callback: DSLCallback) {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
-      // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1851,11 +1854,17 @@ function forEachQueryParam(
   }
 }
 
-EmberRouter.reopen({
+const ROUTER_DEFAULTS = {
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',
   location: 'hash',
-});
+};
+
+if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  Object.assign(EmberRouter.prototype, ROUTER_DEFAULTS);
+} else {
+  EmberRouter.reopen(ROUTER_DEFAULTS);
+}
 
 export default EmberRouter;

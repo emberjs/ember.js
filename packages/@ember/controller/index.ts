@@ -312,10 +312,17 @@ class PlainControllerBase {
 
 PlainControllerBase.prototype.isController = true;
 
-const ClassicControllerBase = FrameworkObject.extend(InternalControllerMixin);
+/**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicControllerBase() {
+  return FrameworkObject.extend(InternalControllerMixin);
+}
+
 const ControllerBase = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainControllerBase : ClassicControllerBase
-) as typeof ClassicControllerBase;
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainControllerBase : classicControllerBase()
+) as ReturnType<typeof classicControllerBase>;
 
 // NOTE: This doesn't actually extend EmberObject.
 /**

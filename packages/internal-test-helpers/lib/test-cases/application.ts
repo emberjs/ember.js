@@ -1,3 +1,4 @@
+import { get } from '@ember/object';
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
 import Router from '@ember/routing/router';
@@ -24,7 +25,16 @@ export default abstract class ApplicationTestCase extends TestResolverApplicatio
     emberAssert('expected a resolver', resolver instanceof Resolver);
     this.resolver = resolver;
 
-    resolver.add('router:main', Router.extend(this.routerOptions));
+    let routerOptions = this.routerOptions;
+
+    resolver.add(
+      'router:main',
+      class extends Router {
+        static {
+          Object.assign(this.prototype, routerOptions);
+        }
+      }
+    );
   }
 
   createApplication(myOptions = {}, MyApplication = Application) {
@@ -42,7 +52,7 @@ export default abstract class ApplicationTestCase extends TestResolverApplicatio
   }
 
   get currentURL() {
-    return this.appRouter.get('currentURL');
+    return get(this.appRouter, 'currentURL');
   }
 
   async transitionTo() {

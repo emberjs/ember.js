@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
@@ -35,7 +36,11 @@ import { getHash } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-export default class HashLocation extends EmberObject implements EmberLocation {
+const HashLocationBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+export default class HashLocation extends HashLocationBase implements EmberLocation {
   _hashchangeHandler?: EventListener;
 
   private _location?: Location;

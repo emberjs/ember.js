@@ -3,6 +3,8 @@
 */
 
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
+import { withContainerProxy, withRegistryProxy } from './lib/plain-proxies';
 import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
@@ -60,10 +62,13 @@ export interface EngineInstanceOptions {
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(
-  InternalRegistryProxyMixin,
-  InternalContainerProxyMixin
-) {
+const EngineInstanceBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    ? withContainerProxy(withRegistryProxy(PlainFrameworkObject))
+    : EmberObject.extend(InternalRegistryProxyMixin, InternalContainerProxyMixin)
+) as typeof EmberObject;
+
+class EngineInstance extends EngineInstanceBase {
   /**
    @private
    @method setupRegistry

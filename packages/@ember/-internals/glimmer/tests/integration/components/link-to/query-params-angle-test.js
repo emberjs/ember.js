@@ -523,13 +523,13 @@ moduleFor(
       runTask(() => this.click('#close-link'));
 
       assert.equal(router.currentRouteName, 'cars.index');
-      assert.equal(router.get('url'), '/cars');
+      assert.equal(get(router, 'url'), '/cars');
       assert.equal(get(carsController, 'page'), 1, 'The page query-param is 1');
 
       runTask(() => this.click('#page2-link'));
 
       assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
-      assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
+      assert.equal(get(router, 'url'), '/cars?page=2', 'The url has been updated');
       assert.equal(get(carsController, 'page'), 2, 'The query params have been updated');
     }
 
@@ -819,13 +819,13 @@ moduleFor(
       runTask(() => set(parentController, 'page', 3));
       await runLoopSettled();
 
-      assert.equal(router.get('location.path'), '/parent?page=3');
+      assert.equal(get(router, 'location.path'), '/parent?page=3');
       this.shouldBeActive(assert, '#app-link');
       this.shouldBeActive(assert, '#parent-link');
 
       await this.click('#app-link');
 
-      assert.equal(router.get('location.path'), '/parent');
+      assert.equal(get(router, 'location.path'), '/parent');
     }
 
     async ['@test it defaults query params while in active transition regression test'](assert) {
@@ -892,7 +892,7 @@ moduleFor(
       assert.equal(foosLink.attr('href'), '/foos');
       assert.equal(bazLink.attr('href'), '/foos?baz=true');
       assert.equal(barsLink.attr('href'), '/bars?quux=true');
-      assert.equal(router.get('location.path'), '/');
+      assert.equal(get(router, 'location.path'), '/');
       this.shouldNotBeActive(assert, '#foos-link');
       this.shouldNotBeActive(assert, '#baz-foos-link');
       this.shouldNotBeActive(assert, '#bars-link');
@@ -905,7 +905,7 @@ moduleFor(
 
       runTask(() => foos.resolve());
 
-      assert.equal(router.get('location.path'), '/foos');
+      assert.equal(get(router, 'location.path'), '/foos');
       this.shouldBeActive(assert, '#foos-link');
     }
 

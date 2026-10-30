@@ -9,7 +9,7 @@ import metalInject from '@ember/-internals/metal/lib/injected_property';
 import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
 import type Owner from '@ember/-internals/owner';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { setPlainFrameworkClass } from '@ember/-internals/container/lib/container';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
 
 /**
  @module @ember/service
@@ -129,6 +129,7 @@ class Service extends FrameworkObject {
 */
 class PlainService {
   static isServiceFactory = true;
+  static [PLAIN_FRAMEWORK_CLASS] = true;
 
   /** The container creates instances only through `create`. */
   static create<T extends PlainService>(this: new (owner: Owner) => T, props: object): T {
@@ -144,10 +145,6 @@ class PlainService {
 
   /** Empty, so that `super.willDestroy()` works in subclasses. */
   willDestroy(): void {}
-}
-
-if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
-  setPlainFrameworkClass(PlainService);
 }
 
 const ExportedService = (

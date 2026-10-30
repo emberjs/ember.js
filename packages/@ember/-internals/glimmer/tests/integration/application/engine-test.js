@@ -7,6 +7,7 @@ import {
 
 import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
@@ -23,7 +24,7 @@ moduleFor(
       return {
         location: 'none',
         setupRouter() {
-          this._super(...arguments);
+          EmberRouter.prototype.setupRouter.apply(this, arguments);
           let getRoute = this._routerMicrolib.getRoute;
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);

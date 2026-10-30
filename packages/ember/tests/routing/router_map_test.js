@@ -13,7 +13,7 @@ moduleFor(
         this.route('hello');
       });
 
-      assert.ok(Router.detect(ret));
+      assert.ok(ret === Router || ret.prototype instanceof Router);
     }
 
     ['@test Router.map can be called multiple times'](assert) {

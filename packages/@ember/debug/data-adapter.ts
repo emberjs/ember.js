@@ -6,6 +6,7 @@ import { dasherize } from '@ember/-internals/string';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import Namespace from '@ember/application/namespace';
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import type { Cache } from '@glimmer/validator/lib/tracking';
 import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -267,7 +268,11 @@ function makeReleaseMethods(): Array<() => void> {
   @extends EmberObject
   @public
 */
-export default class DataAdapter<T> extends EmberObject {
+const DataAdapterBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+export default class DataAdapter<T> extends DataAdapterBase {
   releaseMethods: Array<() => void> = makeReleaseMethods();
   recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
@@ -500,7 +505,7 @@ export default class DataAdapter<T> extends EmberObject {
     @method willDestroy
   */
   willDestroy() {
-    this._super(...arguments);
+    super.willDestroy();
 
     this.typeWatchers.forEach((watcher) => watcher.release());
     this.recordsWatchers.forEach((watcher) => watcher.release());

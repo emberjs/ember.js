@@ -17,6 +17,7 @@ import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registr
 import type RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 import { StrictResolver } from './lib/strict-resolver';
+import { withRegistryProxy } from './lib/plain-proxies';
 
 function props(obj: object) {
   let properties = [];
@@ -56,7 +57,13 @@ export interface Initializer<T> {
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(InternalRegistryProxyMixin) {
+const EngineBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    ? withRegistryProxy(Namespace)
+    : Namespace.extend(InternalRegistryProxyMixin)
+) as typeof Namespace;
+
+class Engine extends EngineBase {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -489,12 +496,9 @@ export function buildInitializerMethod<
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
     // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
-    let superclass = this.superclass as typeof Engine;
+    let superclass = Object.getPrototypeOf(this) as typeof Engine;
     if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
-      let attrs = {
-        [bucketName]: Object.create(this[bucketName]),
-      };
-      this.reopenClass(attrs);
+      this[bucketName] = Object.create(this[bucketName]);
     }
 
     assert(

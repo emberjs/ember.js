@@ -46,6 +46,10 @@ if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
           }
         }
 
+        // With stable decorators, the first instance finalizes the class.
+        let person = new Person();
+
+        assert.strictEqual(person.name, 'Tom');
         assert.ok(descriptorForProperty(Person.prototype, 'name') instanceof ComputedProperty);
       }
 

@@ -1,5 +1,6 @@
 import { classify, dasherize } from '@ember/-internals/string';
 import EmberObject from '@ember/object/lib/ember-object';
+import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
 import CoreObject from '@ember/object/lib/core-object';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
@@ -44,7 +45,11 @@ import Namespace from '@ember/application/namespace';
   @since 1.5.0
   @public
 */
-export default class ContainerDebugAdapter extends EmberObject {
+const ContainerDebugAdapterBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
+) as typeof EmberObject;
+
+export default class ContainerDebugAdapter extends ContainerDebugAdapterBase {
   constructor(owner: Owner) {
     super(owner);
 

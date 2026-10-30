@@ -1,6 +1,7 @@
 import { get } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -16,13 +17,13 @@ moduleFor(
         location: 'test',
 
         init() {
-          this._super(...arguments);
+          EmberRouter.prototype.init.apply(this, arguments);
           this._seenHandlers = Object.create(null);
           this._handlerPromises = Object.create(null);
         },
 
         setupRouter() {
-          let isNewSetup = this._super(...arguments);
+          let isNewSetup = EmberRouter.prototype.setupRouter.apply(this, arguments);
           if (isNewSetup) {
             let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
             let getRoute = this._routerMicrolib.getRoute;

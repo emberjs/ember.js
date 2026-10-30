@@ -272,6 +272,8 @@ function packages() {
       '@ember/enumerable/lib/enumerable.ts',
       '@ember/enumerable/lib/mutable-enumerable.ts',
       '@ember/object/lib/observer.ts',
+      '@ember/object/lib/plain-framework-object.ts',
+      '@ember/engine/lib/plain-proxies.ts',
     ],
     cwd: 'packages',
   });
