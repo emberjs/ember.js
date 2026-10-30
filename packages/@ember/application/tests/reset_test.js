@@ -78,11 +78,8 @@ moduleFor(
           eventDispatcherWasSetup++;
         }
 
-        destroy() {
-          if (this.isDestroying) {
-            return;
-          }
-          super.destroy();
+        willDestroy() {
+          super.willDestroy();
 
           eventDispatcherWasDestroyed++;
         }

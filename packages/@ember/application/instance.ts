@@ -6,7 +6,10 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 // eslint-disable-next-line ember-local/no-barrel-imports
 import * as environment from '@ember/-internals/browser-environment';
-import EngineInstance from '@ember/engine/instance';
+import EngineInstance, {
+  PlainEngineInstance,
+  type PlainEngineInstanceOptions,
+} from '@ember/engine/instance';
 import type { BootEnvironment, BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import {
@@ -503,4 +506,173 @@ class _BootOptions {
   }
 }
 
-export default ApplicationInstance;
+/**
+  `ApplicationInstance` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is
+  set. It extends no other class.
+*/
+class PlainApplicationInstance extends PlainEngineInstance {
+  rootElement: Element | SimpleElement | null = null;
+  customEvents: Record<string, string | null> | null = null;
+  _router?: Router;
+
+  constructor(options: PlainEngineInstanceOptions) {
+    super(options);
+
+    this.application._watchInstance(this as unknown as ApplicationInstance);
+    this.register('-application-instance:main', this, { instantiate: false });
+  }
+
+  _bootSync(options?: BootOptions) {
+    if (this._booted) {
+      return this;
+    }
+
+    let bootOptions = new _BootOptions(options);
+
+    this.setupRegistry(bootOptions);
+
+    let rootElement = bootOptions.rootElement ?? this.application.rootElement;
+
+    if (typeof rootElement === 'string') {
+      this.rootElement = bootOptions.document
+        ? bootOptions.document.querySelector(rootElement)
+        : null;
+    } else {
+      this.rootElement = rootElement;
+    }
+
+    if (bootOptions.location) {
+      set(this.router, 'location', bootOptions.location);
+    }
+
+    this.application.runInstanceInitializers(this as unknown as ApplicationInstance);
+
+    if (bootOptions.isInteractive) {
+      this.setupEventDispatcher();
+    }
+
+    this._booted = true;
+
+    return this;
+  }
+
+  setupRegistry(options: BootOptions) {
+    (this.constructor as typeof PlainApplicationInstance).setupRegistry(this.__registry__, options);
+  }
+
+  get router() {
+    if (!this._router) {
+      let router = this.lookup('router:main');
+      assert('expected an instance of Router', router instanceof Router);
+      this._router = router;
+    }
+
+    return this._router;
+  }
+
+  renderRootComponent(component: object) {
+    setRenderer(this, this.lookup('renderer:-dom') as BaseRenderer);
+    renderComponent(component, {
+      into: { element: this.rootElement as SimpleElement, nextSibling: null },
+      owner: this,
+    });
+  }
+
+  startRouting() {
+    this.router.startRouting();
+  }
+
+  setupRouter() {
+    this.router.setupRouter();
+  }
+
+  handleURL(url: string) {
+    this.setupRouter();
+
+    return this.router.handleURL(url);
+  }
+
+  setupEventDispatcher() {
+    let dispatcher = this.lookup('event_dispatcher:main');
+    assert('expected EventDispatcher', dispatcher instanceof EventDispatcher);
+
+    let customEvents = Object.assign({}, this.application.customEvents, this.customEvents);
+
+    assert(
+      '[BUG] Tried to set up dispatcher with an invalid root element',
+      this.rootElement === null ||
+        typeof this.rootElement === 'string' ||
+        this.rootElement instanceof Element
+    );
+
+    dispatcher.setup(customEvents, this.rootElement);
+
+    return dispatcher;
+  }
+
+  getURL() {
+    return this.router.url;
+  }
+
+  visit(url: string) {
+    this.setupRouter();
+
+    let bootOptions = this.__container__.lookup('-environment:main') as BootEnvironment;
+    let router = this.router;
+
+    let handleTransitionResolve = () => {
+      if (!bootOptions.options.shouldRender) {
+        return this;
+      } else {
+        return renderSettled().then(() => this);
+      }
+    };
+
+    let handleTransitionReject = (error: any): unknown => {
+      if (error.error && error.error instanceof Error) {
+        throw error.error;
+      } else if (error.name === 'TransitionAborted') {
+        throw new Error(error.message);
+      } else {
+        throw error;
+      }
+    };
+
+    let location = router.location;
+    assert('location has been initialized', typeof location !== 'string');
+
+    location.setURL(url);
+
+    return router
+      .handleURL(location.getURL())
+      .followRedirects()
+      .then(handleTransitionResolve, handleTransitionReject);
+  }
+
+  willDestroy() {
+    super.willDestroy();
+    this.application._unwatchInstance(this as unknown as ApplicationInstance);
+  }
+
+  static setupRegistry(registry: Registry, options: BootOptions | _BootOptions = {}) {
+    let coptions = options instanceof _BootOptions ? options : new _BootOptions(options);
+
+    registry.register('-environment:main', coptions.toEnvironment(), {
+      instantiate: false,
+    });
+    registry.register('service:-document', coptions.document!, {
+      instantiate: false,
+    });
+
+    super.setupRegistry(registry, coptions);
+  }
+}
+
+const ExportedApplicationInstance = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainApplicationInstance : ApplicationInstance
+) as typeof ApplicationInstance;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ExportedApplicationInstance extends ApplicationInstance {}
+
+export { PlainApplicationInstance };
+export default ExportedApplicationInstance;

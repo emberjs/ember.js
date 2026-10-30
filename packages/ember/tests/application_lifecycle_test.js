@@ -110,7 +110,7 @@ moduleFor(
       let router = this.applicationInstance.lookup('router:main');
       let route = this.applicationInstance.lookup('route:index');
 
-      runTask(() => router.destroy());
+      runTask(() => this.applicationInstance.unregister('router:main'));
       assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
       runTask(() => destroy(route));

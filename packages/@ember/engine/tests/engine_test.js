@@ -9,6 +9,7 @@ import {
   AbstractTestCase as TestCase,
   ModuleBasedTestResolver,
   verifyRegistration,
+  testUnless,
 } from 'internal-test-helpers';
 
 let engine;
@@ -21,9 +22,9 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create({
-          Resolver: ModuleBasedTestResolver,
-        });
+        engine = class extends Engine {
+          Resolver = ModuleBasedTestResolver;
+        }.create();
         context.lookup = { TestEngine: engine };
       });
     }
@@ -36,7 +37,9 @@ moduleFor(
       }
     }
 
-    ['@test acts like a namespace'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test acts like a namespace`](
+      assert
+    ) {
       engine.Foo = class extends EmberObject {};
       processAllNamespaces();
       assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');

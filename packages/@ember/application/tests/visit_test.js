@@ -519,16 +519,21 @@ moduleFor(
       let BlogEngine = class extends Engine {
         Resolver = ModuleBasedTestResolver;
 
-        init(...args) {
-          super.init(...args);
-          this.register('template:application', precompileTemplate('{{cache-money}}'));
-          this.register(
-            'component:cache-money',
-            setComponentTemplate(
-              precompileTemplate(`<p>Dis cache money</p>`),
-              class extends Component {}
-            )
-          );
+        static {
+          this.initializer({
+            name: 'register-test-factories',
+
+            initialize(engine) {
+              engine.register('template:application', precompileTemplate('{{cache-money}}'));
+              engine.register(
+                'component:cache-money',
+                setComponentTemplate(
+                  precompileTemplate(`<p>Dis cache money</p>`),
+                  class extends Component {}
+                )
+              );
+            },
+          });
         }
       };
       this.add('engine:blog', BlogEngine);
@@ -563,16 +568,21 @@ moduleFor(
       let BlogEngine = class extends Engine {
         Resolver = ModuleBasedTestResolver;
 
-        init(...args) {
-          super.init(...args);
-          this.register('template:application', precompileTemplate('{{cache-money}}'));
-          this.register(
-            'component:cache-money',
-            setComponentTemplate(
-              precompileTemplate(`<p>Dis cache money</p>`),
-              class extends Component {}
-            )
-          );
+        static {
+          this.initializer({
+            name: 'register-test-factories',
+
+            initialize(engine) {
+              engine.register('template:application', precompileTemplate('{{cache-money}}'));
+              engine.register(
+                'component:cache-money',
+                setComponentTemplate(
+                  precompileTemplate(`<p>Dis cache money</p>`),
+                  class extends Component {}
+                )
+              );
+            },
+          });
         }
       };
       this.add('engine:blog', BlogEngine);
@@ -603,15 +613,20 @@ moduleFor(
       let BlogEngine = class extends Engine {
         Resolver = ModuleBasedTestResolver;
 
-        init(...args) {
-          super.init(...args);
-          this.register('template:application', precompileTemplate('{{swag}}'));
-          this.register(
-            'helper:swag',
-            helper(function () {
-              return 'turnt up';
-            })
-          );
+        static {
+          this.initializer({
+            name: 'register-test-factories',
+
+            initialize(engine) {
+              engine.register('template:application', precompileTemplate('{{swag}}'));
+              engine.register(
+                'helper:swag',
+                helper(function () {
+                  return 'turnt up';
+                })
+              );
+            },
+          });
         }
       };
       this.add('engine:blog', BlogEngine);

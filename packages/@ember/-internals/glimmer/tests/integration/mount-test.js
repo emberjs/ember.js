@@ -60,11 +60,14 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-
-            Object.keys(engineRegistrations).forEach((fullName) => {
-              this.register(fullName, engineRegistrations[fullName]);
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                Object.keys(engineRegistrations).forEach((fullName) => {
+                  engine.register(fullName, engineRegistrations[fullName]);
+                });
+              },
             });
           }
         }
@@ -194,9 +197,13 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('template:application', precompileTemplate('<h2>Foo Engine</h2>'));
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('template:application', precompileTemplate('<h2>Foo Engine</h2>'));
+              },
+            });
           }
         }
       );
@@ -206,9 +213,13 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('template:application', precompileTemplate('<h2>Bar Engine</h2>'));
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('template:application', precompileTemplate('<h2>Bar Engine</h2>'));
+              },
+            });
           }
         }
       );
@@ -267,24 +278,28 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate('<h2>Foo Engine: {{tagless-component}}</h2>')
-            );
-            this.register(
-              'component:tagless-component',
-              setComponentTemplate(
-                precompileTemplate('Tagless Component'),
-                class extends Component {
-                  constructor(owner, args) {
-                    super(owner, args);
-                    component = this;
-                  }
-                }
-              )
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate('<h2>Foo Engine: {{tagless-component}}</h2>')
+                );
+                engine.register(
+                  'component:tagless-component',
+                  setComponentTemplate(
+                    precompileTemplate('Tagless Component'),
+                    class extends Component {
+                      constructor(owner, args) {
+                        super(owner, args);
+                        component = this;
+                      }
+                    }
+                  )
+                );
+              },
+            });
           }
         }
       );
@@ -317,12 +332,16 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate('<h2>Param Engine: {{@model.foo}}</h2>')
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate('<h2>Param Engine: {{@model.foo}}</h2>')
+                );
+              },
+            });
           }
         }
       );
@@ -416,9 +435,13 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('template:application', precompileTemplate('{{@model.foo}}'));
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('template:application', precompileTemplate('{{@model.foo}}'));
+              },
+            });
           }
         }
       );
@@ -468,36 +491,43 @@ moduleFor(
           router = null;
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(
-                '<EngineOuter />{{@model.foo}}{{stash-curried (component "engine-check")}}'
-              )
-            );
-            this.register(
-              'component:engine-outer',
-              setComponentTemplate(precompileTemplate('<EngineInner />'), capture('outer'))
-            );
-            this.register(
-              'component:engine-check',
-              setComponentTemplate(precompileTemplate('<EngineProbe />'), capture('engineCheck'))
-            );
-            this.register(
-              'component:engine-probe',
-              setComponentTemplate(precompileTemplate('probe'), capture('engineProbe'))
-            );
-            this.register(
-              'helper:stash-curried',
-              helper(([curried]) => {
-                stash.curried = curried;
-              })
-            );
-            this.register(
-              'component:engine-inner',
-              setComponentTemplate(precompileTemplate('engine-inner'), capture('inner'))
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(
+                    '<EngineOuter />{{@model.foo}}{{stash-curried (component "engine-check")}}'
+                  )
+                );
+                engine.register(
+                  'component:engine-outer',
+                  setComponentTemplate(precompileTemplate('<EngineInner />'), capture('outer'))
+                );
+                engine.register(
+                  'component:engine-check',
+                  setComponentTemplate(
+                    precompileTemplate('<EngineProbe />'),
+                    capture('engineCheck')
+                  )
+                );
+                engine.register(
+                  'component:engine-probe',
+                  setComponentTemplate(precompileTemplate('probe'), capture('engineProbe'))
+                );
+                engine.register(
+                  'helper:stash-curried',
+                  helper(([curried]) => {
+                    stash.curried = curried;
+                  })
+                );
+                engine.register(
+                  'component:engine-inner',
+                  setComponentTemplate(precompileTemplate('engine-inner'), capture('inner'))
+                );
+              },
+            });
           }
         }
       );

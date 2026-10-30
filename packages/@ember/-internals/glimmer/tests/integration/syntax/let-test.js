@@ -130,7 +130,7 @@ moduleFor(
       this.assertText('-Yehuda-');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test can access alias of a proxy`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can access alias of a proxy`]() {
       expectDeprecation(
         /`ObjectProxy` is deprecated/,
         DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled

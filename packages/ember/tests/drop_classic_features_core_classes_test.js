@@ -15,7 +15,13 @@ import DataAdapter from '@ember/debug/data-adapter';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import CoreObject from '@ember/object/lib/core-object';
-import { moduleFor, AbstractTestCase, runDestroy } from 'internal-test-helpers';
+import { isDestroyed } from '@ember/destroyable';
+import {
+  moduleFor,
+  AbstractTestCase,
+  ModuleBasedTestResolver,
+  runTask,
+} from 'internal-test-helpers';
 
 /*
   The flag is a build-time value. Build with
@@ -29,7 +35,6 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         let classes = {
           Application,
           ApplicationInstance,
-          Namespace,
           Engine,
           EngineInstance,
           EmberRouter,
@@ -51,36 +56,67 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         }
       }
 
-      ['@test create assigns the properties, then calls init'](assert) {
-        class MyNamespace extends Namespace {
-          init(properties) {
-            super.init(properties);
-            assert.step(`init ${this.VERSION}`);
+      ['@test Namespace is not exported'](assert) {
+        assert.strictEqual(Namespace, undefined);
+      }
+
+      ['@test Application.create assigns the options, then starts the application'](assert) {
+        class MyApplication extends Application {
+          Resolver = ModuleBasedTestResolver;
+
+          ready() {
+            assert.step(`ready ${this.autoboot}`);
           }
         }
 
-        let namespace = MyNamespace.create({ VERSION: '1.0.0' });
+        let application = runTask(() =>
+          MyApplication.create({ autoboot: false, rootElement: '#qunit-fixture' })
+        );
 
-        assert.verifySteps(['init 1.0.0']);
-        assert.strictEqual(namespace.VERSION, '1.0.0');
+        assert.strictEqual(application.rootElement, '#qunit-fixture');
+        assert.strictEqual(application.__deprecatedInstance__, undefined, 'autoboot is off');
+        assert.verifySteps([]);
 
-        runDestroy(namespace);
+        runTask(() => application.destroy());
 
-        assert.true(namespace.isDestroyed);
+        assert.true(isDestroyed(application));
       }
 
-      ['@test destroy runs willDestroy once'](assert) {
-        class MyNamespace extends Namespace {
+      ['@test an engine builds its registry with the Resolver of its subclass'](assert) {
+        class MyEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+        }
+
+        let engine = MyEngine.create();
+
+        assert.strictEqual(engine.resolveRegistration('application:main'), engine);
+
+        let instance = engine.buildInstance();
+
+        assert.strictEqual(instance.base, engine);
+        assert.strictEqual(instance.lookup('-application-instance:main'), undefined);
+
+        runTask(() => instance.destroy());
+        runTask(() => engine.destroy());
+
+        assert.true(isDestroyed(instance));
+        assert.true(isDestroyed(engine));
+      }
+
+      ['@test willDestroy runs once'](assert) {
+        class MyEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
           willDestroy() {
             super.willDestroy();
             assert.step('willDestroy');
           }
         }
 
-        let namespace = MyNamespace.create();
+        let engine = MyEngine.create();
 
-        runDestroy(namespace);
-        runDestroy(namespace);
+        runTask(() => engine.destroy());
+        runTask(() => engine.destroy());
 
         assert.verifySteps(['willDestroy']);
       }

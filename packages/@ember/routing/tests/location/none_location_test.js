@@ -12,105 +12,115 @@ function createLocation(options) {
   location = NoneTestLocation.create(options);
 }
 
-moduleFor(
-  'NoneLocation',
-  class extends AbstractTestCase {
-    constructor() {
-      super();
-      NoneTestLocation = class extends NoneLocation {};
+/*
+  With the `EMBER_DROP_CLASSIC_FEATURES` build flag, the plain location
+  classes replace these. `drop_classic_features_test.js` tests them.
+*/
+if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  moduleFor(
+    'NoneLocation',
+    class extends AbstractTestCase {
+      constructor() {
+        super();
+        NoneTestLocation = class extends NoneLocation {};
+      }
+
+      teardown() {
+        run(() => {
+          if (location) {
+            location.destroy();
+          }
+        });
+      }
+
+      ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/en/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
+      }
+
+      ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/foo/');
+            set(this, 'path', '/foo/bar');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/bar');
+      }
+
+      ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
+        assert
+      ) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/bar/');
+            set(this, 'path', '/foo/bar/baz');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar/baz');
+      }
+
+      ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](
+        assert
+      ) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/bar/');
+            set(this, 'path', '/bars/baz');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/bars/baz');
+      }
+
+      ['@test NoneLocation.getURL() treats regex metacharacters in rootURL literally'](assert) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/a.c/');
+            set(this, 'path', '/axc/secret');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/axc/secret');
+      }
+
+      ['@test NoneLocation.getURL() strips the rootURL when it has an extra trailing slash'](
+        assert
+      ) {
+        NoneTestLocation = class extends NoneTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'rootURL', '/foo//');
+            set(this, 'path', '/foo//bar');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/bar');
+      }
     }
-
-    teardown() {
-      run(() => {
-        if (location) {
-          location.destroy();
-        }
-      });
-    }
-
-    ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/en/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
-    }
-
-    ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/foo/');
-          set(this, 'path', '/foo/bar');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/bar');
-    }
-
-    ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
-      assert
-    ) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/bar/');
-          set(this, 'path', '/foo/bar/baz');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar/baz');
-    }
-
-    ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/bar/');
-          set(this, 'path', '/bars/baz');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/bars/baz');
-    }
-
-    ['@test NoneLocation.getURL() treats regex metacharacters in rootURL literally'](assert) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/a.c/');
-          set(this, 'path', '/axc/secret');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/axc/secret');
-    }
-
-    ['@test NoneLocation.getURL() strips the rootURL when it has an extra trailing slash'](assert) {
-      NoneTestLocation = class extends NoneTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'rootURL', '/foo//');
-          set(this, 'path', '/foo//bar');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/bar');
-    }
-  }
-);
+  );
+}

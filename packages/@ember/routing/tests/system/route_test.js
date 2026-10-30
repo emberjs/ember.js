@@ -340,16 +340,16 @@ moduleFor(
           routable: true,
 
           mountPoint: 'foo.bar',
-
-          lookup(name) {
-            if (name === 'route:posts') {
-              return postsRoute;
-            } else if (name === 'route:application') {
-              return applicationRoute;
-            }
-          },
         },
       });
+
+      engineInstance.lookup = function (name) {
+        if (name === 'route:posts') {
+          return postsRoute;
+        } else if (name === 'route:application') {
+          return applicationRoute;
+        }
+      };
 
       let applicationRoute = createRoute({
         _router: router,

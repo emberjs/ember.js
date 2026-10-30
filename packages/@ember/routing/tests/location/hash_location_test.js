@@ -49,157 +49,165 @@ function triggerHashchange() {
   window.dispatchEvent(new Event('hashchange', { bubbles: true, cancelable: false }));
 }
 
-moduleFor(
-  'HashLocation',
-  class extends AbstractTestCase {
-    teardown() {
-      run(function () {
-        if (location) {
-          location.destroy();
-        }
-      });
-    }
+/*
+  With the `EMBER_DROP_CLASSIC_FEATURES` build flag, the plain location
+  classes replace these. `drop_classic_features_test.js` tests them.
+*/
+if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  moduleFor(
+    'HashLocation',
+    class extends AbstractTestCase {
+      teardown() {
+        run(function () {
+          if (location) {
+            location.destroy();
+          }
+        });
+      }
 
-    ['@test HashLocation.getURL() returns the current url'](assert) {
-      createLocation(
-        {
-          _location: mockBrowserLocation('/#/foo/bar'),
-        },
+      ['@test HashLocation.getURL() returns the current url'](assert) {
+        createLocation(
+          {
+            _location: mockBrowserLocation('/#/foo/bar'),
+          },
+          assert
+        );
+
+        assert.equal(location.getURL(), '/foo/bar');
+      }
+
+      ['@test HashLocation.getURL() includes extra hashes'](assert) {
+        createLocation(
+          {
+            _location: mockBrowserLocation('/#/foo#bar#car'),
+          },
+          assert
+        );
+
+        assert.equal(location.getURL(), '/foo#bar#car');
+      }
+
+      ['@test HashLocation.getURL() assumes location.hash without #/ prefix is not a route path'](
         assert
-      );
+      ) {
+        createLocation(
+          {
+            _location: mockBrowserLocation('/#foo#bar'),
+          },
+          assert
+        );
 
-      assert.equal(location.getURL(), '/foo/bar');
-    }
+        assert.equal(location.getURL(), '/#foo#bar');
+      }
 
-    ['@test HashLocation.getURL() includes extra hashes'](assert) {
-      createLocation(
-        {
-          _location: mockBrowserLocation('/#/foo#bar#car'),
-        },
+      ['@test HashLocation.getURL() returns a normal forward slash when there is no location.hash'](
         assert
-      );
+      ) {
+        createLocation(
+          {
+            _location: mockBrowserLocation('/'),
+          },
+          assert
+        );
 
-      assert.equal(location.getURL(), '/foo#bar#car');
-    }
+        assert.equal(location.getURL(), '/');
+      }
 
-    ['@test HashLocation.getURL() assumes location.hash without #/ prefix is not a route path'](
-      assert
-    ) {
-      createLocation(
-        {
-          _location: mockBrowserLocation('/#foo#bar'),
-        },
+      ['@test HashLocation.setURL() correctly sets the url'](assert) {
+        createLocation({}, assert);
+
+        location.setURL('/bar');
+
+        assert.equal(get(location, 'location.hash'), '/bar');
+        assert.equal(get(location, 'lastSetURL'), '/bar');
+      }
+
+      ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](
         assert
-      );
+      ) {
+        assert.expect(2);
 
-      assert.equal(location.getURL(), '/#foo#bar');
-    }
-
-    ['@test HashLocation.getURL() returns a normal forward slash when there is no location.hash'](
-      assert
-    ) {
-      createLocation(
-        {
-          _location: mockBrowserLocation('/'),
-        },
-        assert
-      );
-
-      assert.equal(location.getURL(), '/');
-    }
-
-    ['@test HashLocation.setURL() correctly sets the url'](assert) {
-      createLocation({}, assert);
-
-      location.setURL('/bar');
-
-      assert.equal(get(location, 'location.hash'), '/bar');
-      assert.equal(get(location, 'lastSetURL'), '/bar');
-    }
-
-    ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](assert) {
-      assert.expect(2);
-
-      createLocation(
-        {
-          _location: {
-            replace(path) {
-              assert.equal(path, '#/foo');
+        createLocation(
+          {
+            _location: {
+              replace(path) {
+                assert.equal(path, '#/foo');
+              },
             },
           },
-        },
-        assert
-      );
+          assert
+        );
 
-      location.replaceURL('/foo');
+        location.replaceURL('/foo');
 
-      assert.equal(get(location, 'lastSetURL'), '/foo');
-    }
+        assert.equal(get(location, 'lastSetURL'), '/foo');
+      }
 
-    ['@test HashLocation.onUpdateURL callback executes as expected'](assert) {
-      assert.expect(1);
+      ['@test HashLocation.onUpdateURL callback executes as expected'](assert) {
+        assert.expect(1);
 
-      createLocation(
-        {
-          _location: mockBrowserLocation('/#/foo/bar'),
-        },
-        assert
-      );
-
-      let callback = function (param) {
-        assert.equal(param, '/foo/bar', 'path is passed as param');
-      };
-
-      location.onUpdateURL(callback);
-
-      triggerHashchange();
-    }
-
-    ["@test HashLocation.onUpdateURL doesn't execute callback if lastSetURL === path"](assert) {
-      assert.expect(0);
-
-      createLocation(
-        {
-          _location: {
-            hash: '#/foo/bar',
+        createLocation(
+          {
+            _location: mockBrowserLocation('/#/foo/bar'),
           },
-          lastSetURL: '/foo/bar',
-        },
-        assert
-      );
+          assert
+        );
 
-      let callback = function () {
-        assert.ok(false, 'callback should not be called');
-      };
+        let callback = function (param) {
+          assert.equal(param, '/foo/bar', 'path is passed as param');
+        };
 
-      location.onUpdateURL(callback);
+        location.onUpdateURL(callback);
 
-      triggerHashchange();
+        triggerHashchange();
+      }
+
+      ["@test HashLocation.onUpdateURL doesn't execute callback if lastSetURL === path"](assert) {
+        assert.expect(0);
+
+        createLocation(
+          {
+            _location: {
+              hash: '#/foo/bar',
+            },
+            lastSetURL: '/foo/bar',
+          },
+          assert
+        );
+
+        let callback = function () {
+          assert.ok(false, 'callback should not be called');
+        };
+
+        location.onUpdateURL(callback);
+
+        triggerHashchange();
+      }
+
+      ['@test HashLocation.formatURL() prepends a # to the provided string'](assert) {
+        createLocation({}, assert);
+
+        assert.equal(location.formatURL('/foo#bar'), '#/foo#bar');
+      }
+
+      ['@test HashLocation.willDestroy() cleans up hashchange event listener'](assert) {
+        assert.expect(1);
+
+        createLocation({}, assert);
+
+        let callback = function () {
+          assert.ok(true, 'should invoke callback once');
+        };
+
+        location.onUpdateURL(callback);
+
+        triggerHashchange();
+
+        run(location, 'destroy');
+        location = null;
+
+        triggerHashchange();
+      }
     }
-
-    ['@test HashLocation.formatURL() prepends a # to the provided string'](assert) {
-      createLocation({}, assert);
-
-      assert.equal(location.formatURL('/foo#bar'), '#/foo#bar');
-    }
-
-    ['@test HashLocation.willDestroy() cleans up hashchange event listener'](assert) {
-      assert.expect(1);
-
-      createLocation({}, assert);
-
-      let callback = function () {
-        assert.ok(true, 'should invoke callback once');
-      };
-
-      location.onUpdateURL(callback);
-
-      triggerHashchange();
-
-      run(location, 'destroy');
-      location = null;
-
-      triggerHashchange();
-    }
-  }
-);
+  );
+}

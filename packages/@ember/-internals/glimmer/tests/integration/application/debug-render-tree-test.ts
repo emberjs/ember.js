@@ -214,23 +214,28 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
-                  moduleName: 'foo/templates/application.hbs',
-                })
-              );
-              this.register(
-                'component:inspect-model',
-                setComponentTemplate(
-                  precompileTemplate('{{@model}}', {
-                    moduleName: 'foo/components/inspect-model.hbs',
-                  }),
-                  templateOnly()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
+                      moduleName: 'foo/templates/application.hbs',
+                    })
+                  );
+                  engine.register(
+                    'component:inspect-model',
+                    setComponentTemplate(
+                      precompileTemplate('{{@model}}', {
+                        moduleName: 'foo/components/inspect-model.hbs',
+                      }),
+                      templateOnly()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {
@@ -248,23 +253,28 @@ if (ENV._DEBUG_RENDER_TREE) {
           class extends Engine {
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
-                  moduleName: 'bar/templates/application.hbs',
-                })
-              );
-              this.register(
-                'component:inspect-model',
-                setComponentTemplate(
-                  precompileTemplate('{{@model}}', {
-                    moduleName: 'bar/components/inspect-model.hbs',
-                  }),
-                  templateOnly()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
+                      moduleName: 'bar/templates/application.hbs',
+                    })
+                  );
+                  engine.register(
+                    'component:inspect-model',
+                    setComponentTemplate(
+                      precompileTemplate('{{@model}}', {
+                        moduleName: 'bar/components/inspect-model.hbs',
+                      }),
+                      templateOnly()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {
@@ -580,28 +590,33 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate(
-                  '{{outlet}}{{#if this.message}}<Hello @message={{this.message}} />{{/if}}',
-                  { moduleName: 'foo/templates/application.hbs' }
-                )
-              );
-              this.register(
-                'template:index',
-                precompileTemplate('Foo', { moduleName: 'foo/templates/index.hbs' })
-              );
-              this.register(
-                'component:hello',
-                setComponentTemplate(
-                  precompileTemplate('<span>Hello {{@message}}</span>', {
-                    moduleName: 'foo/components/hello.hbs',
-                  }),
-                  templateOnlyComponent()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate(
+                      '{{outlet}}{{#if this.message}}<Hello @message={{this.message}} />{{/if}}',
+                      { moduleName: 'foo/templates/application.hbs' }
+                    )
+                  );
+                  engine.register(
+                    'template:index',
+                    precompileTemplate('Foo', { moduleName: 'foo/templates/index.hbs' })
+                  );
+                  engine.register(
+                    'component:hello',
+                    setComponentTemplate(
+                      precompileTemplate('<span>Hello {{@message}}</span>', {
+                        moduleName: 'foo/components/hello.hbs',
+                      }),
+                      templateOnlyComponent()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {

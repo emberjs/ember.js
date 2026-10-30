@@ -16,15 +16,12 @@ moduleFor(
       return {
         location: 'test',
 
-        init() {
-          EmberRouter.prototype.init.apply(this, arguments);
-          this._seenHandlers = Object.create(null);
-          this._handlerPromises = Object.create(null);
-        },
-
         setupRouter() {
           let isNewSetup = EmberRouter.prototype.setupRouter.apply(this, arguments);
           if (isNewSetup) {
+            this._seenHandlers ??= Object.create(null);
+            this._handlerPromises ??= Object.create(null);
+
             let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
             let getRoute = this._routerMicrolib.getRoute;
 

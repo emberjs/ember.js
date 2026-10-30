@@ -162,7 +162,9 @@ moduleFor(
           class extends Router {
             @service('router') routerService;
 
-            init() {
+            constructor(owner) {
+              super(owner);
+
               this.routerService.one('routeDidChange', () => {
                 assert.ok(true, 'routeDidChange event listener called');
               });

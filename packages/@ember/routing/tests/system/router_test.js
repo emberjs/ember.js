@@ -4,6 +4,7 @@ import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
 import Router, { triggerEvent } from '@ember/routing/router';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { isDestroyed } from '@ember/destroyable';
 
 let owner;
 
@@ -102,7 +103,7 @@ moduleFor(
 
       runDestroy(owner);
 
-      assert.ok(location.isDestroyed, 'location should be destroyed');
+      assert.ok(isDestroyed(location), 'location should be destroyed');
     }
 
     ['@test should instantiate its location with its `rootURL`'](assert) {

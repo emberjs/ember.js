@@ -1,5 +1,7 @@
 import EmberObject from '@ember/object/lib/ember-object';
-import PlainFrameworkObject from '@ember/object/lib/plain-framework-object';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
+import type Owner from '@ember/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp } from './lib/location-utils';
@@ -21,11 +23,7 @@ import { escapeRegExp } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-const NoneLocationBase = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainFrameworkObject : EmberObject
-) as typeof EmberObject;
-
-export default class NoneLocation extends NoneLocationBase implements EmberLocation {
+class NoneLocation extends EmberObject implements EmberLocation {
   updateCallback?: UpdateCallback;
 
   // Set in reopen so it can be overwritten with extend
@@ -42,6 +40,8 @@ export default class NoneLocation extends NoneLocationBase implements EmberLocat
   declare rootURL: string;
 
   initState(): void {
+    this._super(...arguments);
+
     let { rootURL } = this;
 
     // This assert doesn't have anything to do with state initialization,
@@ -130,5 +130,80 @@ export default class NoneLocation extends NoneLocationBase implements EmberLocat
   }
 }
 
-NoneLocation.prototype.path = '';
-NoneLocation.prototype.rootURL = '/';
+NoneLocation.reopen({
+  path: '',
+  rootURL: '/',
+});
+
+/**
+  `NoneLocation` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set. It
+  extends no other class.
+*/
+class PlainNoneLocation {
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainNoneLocation>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  updateCallback?: UpdateCallback;
+  path = '';
+  rootURL = '/';
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+  }
+
+  initState(): void {
+    let { rootURL } = this;
+
+    assert(
+      'rootURL must end with a trailing forward slash e.g. "/app/"',
+      rootURL.charAt(rootURL.length - 1) === '/'
+    );
+  }
+
+  getURL(): string {
+    let { path, rootURL } = this;
+
+    rootURL = rootURL.replace(/\/$/, '');
+
+    return path.replace(new RegExp(`^${escapeRegExp(rootURL)}(?=/|$)`), '');
+  }
+
+  setURL(path: string): void {
+    this.path = path;
+  }
+
+  onUpdateURL(callback: (url: string) => void): void {
+    this.updateCallback = callback;
+  }
+
+  handleURL(url: string): void {
+    this.path = url;
+
+    if (this.updateCallback) {
+      this.updateCallback(url);
+    }
+  }
+
+  formatURL(url: string): string {
+    let { rootURL } = this;
+
+    if (url !== '') {
+      rootURL = rootURL.replace(/\/$/, '');
+    }
+
+    return rootURL + url;
+  }
+}
+
+const ExportedNoneLocation = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainNoneLocation : NoneLocation
+) as typeof NoneLocation;
+type ExportedNoneLocation = NoneLocation;
+
+export default ExportedNoneLocation;

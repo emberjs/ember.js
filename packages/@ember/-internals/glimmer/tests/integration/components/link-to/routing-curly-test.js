@@ -501,12 +501,16 @@ moduleFor(
         class NotRoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(`{{#link-to route='about'}}About{{/link-to}}`)
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(`{{#link-to route='about'}}About{{/link-to}}`)
+                );
+              },
+            });
           }
         }
       );
@@ -527,38 +531,42 @@ moduleFor(
         class RoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(
-                `
-                <h2 id='engine-layout'>Routable Engine</h2>
-                {{outlet}}
-                <div id="engine-application-link">{{#link-to route='application'}}Engine Application{{/link-to}}</div>
-                `
-              )
-            );
-            this.register(
-              'template:index',
-              precompileTemplate(
-                `
-                <h3 class='engine-home'>Engine Home</h3>
-                <div id="engine-about-link">{{#link-to route='about'}}Engine About{{/link-to}}</div>
-                <div id="engine-self-link">{{#link-to route='index'}}Engine Self{{/link-to}}</div>
-                `
-              )
-            );
-            this.register(
-              'template:about',
-              precompileTemplate(
-                `
-                <h3 class='engine-about'>Engine About</h3>
-                <div id="engine-home-link">{{#link-to route='index'}}Engine Home{{/link-to}}</div>
-                <div id="engine-self-link">{{#link-to route='about'}}Engine Self{{/link-to}}</div>
-                `
-              )
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(
+                    `
+                    <h2 id='engine-layout'>Routable Engine</h2>
+                    {{outlet}}
+                    <div id="engine-application-link">{{#link-to route='application'}}Engine Application{{/link-to}}</div>
+                    `
+                  )
+                );
+                engine.register(
+                  'template:index',
+                  precompileTemplate(
+                    `
+                    <h3 class='engine-home'>Engine Home</h3>
+                    <div id="engine-about-link">{{#link-to route='about'}}Engine About{{/link-to}}</div>
+                    <div id="engine-self-link">{{#link-to route='index'}}Engine Self{{/link-to}}</div>
+                    `
+                  )
+                );
+                engine.register(
+                  'template:about',
+                  precompileTemplate(
+                    `
+                    <h3 class='engine-about'>Engine About</h3>
+                    <div id="engine-home-link">{{#link-to route='index'}}Engine Home{{/link-to}}</div>
+                    <div id="engine-self-link">{{#link-to route='about'}}Engine Self{{/link-to}}</div>
+                    `
+                  )
+                );
+              },
+            });
           }
         }
       );

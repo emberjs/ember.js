@@ -511,12 +511,16 @@ moduleFor(
         class NotRoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(`<LinkTo @route='about'>About</LinkTo>`)
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(`<LinkTo @route='about'>About</LinkTo>`)
+                );
+              },
+            });
           }
         }
       );
@@ -537,32 +541,36 @@ moduleFor(
         class RoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(`
-                <h2 id='engine-layout'>Routable Engine</h2>
-                {{outlet}}
-                <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
-                `)
-            );
-            this.register(
-              'template:index',
-              precompileTemplate(`
-                <h3 class='engine-home'>Engine Home</h3>
-                <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
-                <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
-                `)
-            );
-            this.register(
-              'template:about',
-              precompileTemplate(`
-                <h3 class='engine-about'>Engine About</h3>
-                <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
-                <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
-                `)
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(`
+                    <h2 id='engine-layout'>Routable Engine</h2>
+                    {{outlet}}
+                    <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
+                    `)
+                );
+                engine.register(
+                  'template:index',
+                  precompileTemplate(`
+                    <h3 class='engine-home'>Engine Home</h3>
+                    <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
+                    <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
+                    `)
+                );
+                engine.register(
+                  'template:about',
+                  precompileTemplate(`
+                    <h3 class='engine-about'>Engine About</h3>
+                    <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
+                    <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
+                    `)
+                );
+              },
+            });
           }
         }
       );

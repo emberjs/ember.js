@@ -166,7 +166,7 @@ _getProp({}, 1 as any);
 get({}, 'foo');
 get({}, 'foo.bar');
 
-if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+function warmUpProxies() {
   _getProp({ unknownProperty() {} }, 'a');
   _getProp({ unknownProperty() {} }, 1 as any);
 
@@ -175,6 +175,12 @@ if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
   track(() => _getProp({ a: fakeProxy }, 'a'));
 }
+
+/**
+  A variable, not an `if`, so that bundlers drop the warm-up with the module
+  when nothing imports it.
+*/
+const _warmedUpProxies = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : warmUpProxies();
 
 track(() => _getProp({}, 'a'));
 track(() => _getProp({}, 1 as any));

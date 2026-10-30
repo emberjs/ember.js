@@ -2,7 +2,7 @@ export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
 import Controller from '@ember/controller';
-import Namespace from '@ember/application/namespace';
+import Namespace from '@ember/application/lib/namespace';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 import DAG from 'dag-map';
@@ -17,7 +17,9 @@ import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registr
 import type RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 import { StrictResolver } from './lib/strict-resolver';
-import { withRegistryProxy } from './lib/plain-proxies';
+import type Owner from '@ember/owner';
+import { getOwner, setOwner, type FullName, type RegisterOptions } from '@ember/-internals/owner';
+import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 
 function props(obj: object) {
   let properties = [];
@@ -57,11 +59,17 @@ export interface Initializer<T> {
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
+/**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicEngineBase() {
+  return Namespace.extend(InternalRegistryProxyMixin);
+}
+
 const EngineBase = (
-  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
-    ? withRegistryProxy(Namespace)
-    : Namespace.extend(InternalRegistryProxyMixin)
-) as typeof Namespace;
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? Namespace : classicEngineBase()
+) as ReturnType<typeof classicEngineBase>;
 
 class Engine extends EngineBase {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
@@ -316,18 +324,7 @@ class Engine extends EngineBase {
     @private
   */
   static buildRegistry(namespace: Engine) {
-    let registry = new Registry({
-      resolver: resolverFor(namespace),
-    });
-
-    registry.set = set;
-
-    registry.register('application:main', namespace, { instantiate: false });
-
-    commonSetupRegistry(registry);
-    setupEngineRegistry(registry);
-
-    return registry;
+    return buildEngineRegistry(namespace);
   }
 
   /**
@@ -485,20 +482,41 @@ function resolverFor(namespace: Engine) {
   return ResolverClass.create(props);
 }
 
+/**
+  The static side of an engine class, as far as the initializer methods use it.
+
+  @internal
+*/
+export interface InitializerHost {
+  initializers: Record<string, Initializer<any>>;
+  instanceInitializers: Record<string, Initializer<any>>;
+}
+
 /** @internal */
 export function buildInitializerMethod<
   B extends 'initializers' | 'instanceInitializers',
   T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
-  return function (this: typeof Engine, initializer: Initializer<T>) {
+  return function (this: InitializerHost, initializer: Initializer<T>) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
     // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
-    let superclass = Object.getPrototypeOf(this) as typeof Engine;
+    let superclass = (
+      import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+        ? Object.getPrototypeOf(this)
+        : (this as unknown as typeof Engine).superclass
+    ) as InitializerHost;
     if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
-      this[bucketName] = Object.create(this[bucketName]);
+      if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        this[bucketName] = Object.create(this[bucketName]);
+      } else {
+        let attrs = {
+          [bucketName]: Object.create(this[bucketName]),
+        };
+        (this as unknown as typeof Engine).reopenClass(attrs);
+      }
     }
 
     assert(
@@ -514,9 +532,24 @@ export function buildInitializerMethod<
       initializer.name !== undefined
     );
 
-    let initializers = (this as typeof Engine)[bucketName] as Record<string, Initializer<T>>;
+    let initializers = this[bucketName] as Record<string, Initializer<T>>;
     initializers[initializer.name] = initializer;
   };
+}
+
+function buildEngineRegistry(namespace: Engine) {
+  let registry = new Registry({
+    resolver: resolverFor(namespace),
+  });
+
+  registry.set = set;
+
+  registry.register('application:main', namespace, { instantiate: false });
+
+  commonSetupRegistry(registry);
+  setupEngineRegistry(registry);
+
+  return registry;
 }
 
 function commonSetupRegistry(registry: Registry) {
@@ -536,4 +569,181 @@ function commonSetupRegistry(registry: Registry) {
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 }
 
-export default Engine;
+/**
+  `Engine` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set. It
+  extends no other class.
+
+  The registry is built on first use, so that it sees the `Resolver` field of
+  subclasses.
+*/
+class PlainEngine {
+  static initializers: Record<string, Initializer<PlainEngine>> = Object.create(null);
+  static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
+
+  static initializer = buildInitializerMethod('initializers', 'initializer');
+  static instanceInitializer = buildInitializerMethod(
+    'instanceInitializers',
+    'instance initializer'
+  );
+
+  static buildRegistry(namespace: PlainEngine) {
+    return buildEngineRegistry(namespace as unknown as Engine);
+  }
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainEngine>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  Resolver: ResolverClass = StrictResolver;
+
+  declare modules?: Record<string, unknown>;
+
+  _initializersRan = false;
+
+  #registry: Registry | undefined;
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+
+    registerDestructor(this, () => this.willDestroy());
+  }
+
+  get __registry__(): Registry {
+    return (this.#registry ??= this.buildRegistry());
+  }
+
+  set __registry__(registry: Registry) {
+    this.#registry = registry;
+  }
+
+  get isDestroying(): boolean {
+    return isDestroying(this);
+  }
+
+  get isDestroyed(): boolean {
+    return isDestroyed(this);
+  }
+
+  destroy(): this {
+    destroy(this);
+
+    return this;
+  }
+
+  /** Empty, so that `super.willDestroy()` works in subclasses. */
+  willDestroy(): void {}
+
+  ensureInitializers() {
+    if (!this._initializersRan) {
+      this.runInitializers();
+      this._initializersRan = true;
+    }
+  }
+
+  buildInstance(options: EngineInstanceOptions = {}): EngineInstance {
+    this.ensureInitializers();
+
+    return EngineInstance.create({ ...options, base: this as unknown as Engine });
+  }
+
+  buildRegistry(): Registry {
+    return (this.#registry = (this.constructor as typeof PlainEngine).buildRegistry(this));
+  }
+
+  initializer(initializer: Initializer<Engine>) {
+    (this.constructor as unknown as typeof Engine).initializer(initializer);
+  }
+
+  instanceInitializer(initializer: Initializer<EngineInstance>) {
+    (this.constructor as unknown as typeof Engine).instanceInitializer(initializer);
+  }
+
+  runInitializers() {
+    this._runInitializer(
+      'initializers',
+      (name: string, initializer: Initializer<this> | undefined) => {
+        assert(`No application initializer named '${name}'`, initializer);
+        initializer.initialize(this);
+      }
+    );
+  }
+
+  runInstanceInitializers<T extends EngineInstance>(instance: T) {
+    this._runInitializer(
+      'instanceInitializers',
+      (name: string, initializer: Initializer<T> | undefined) => {
+        assert(`No instance initializer named '${name}'`, initializer);
+        initializer.initialize(instance);
+      }
+    );
+  }
+
+  _runInitializer<T>(
+    bucketName: 'initializers' | 'instanceInitializers',
+    cb: (name: string, initializer: Initializer<T> | undefined) => void
+  ) {
+    let initializersByName = (this.constructor as unknown as Record<string, unknown>)[
+      bucketName
+    ] as Record<string, Initializer<T>>;
+    let graph = new DAG<Initializer<T>>();
+
+    for (let name of props(initializersByName)) {
+      let initializer = initializersByName[name];
+      assert(`missing ${bucketName}: ${name}`, initializer);
+      graph.add(initializer.name, initializer, initializer.before, initializer.after);
+    }
+
+    graph.topsort(cb);
+  }
+
+  resolveRegistration(fullName: FullName) {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+
+    return this.__registry__.resolve(fullName);
+  }
+
+  register(fullName: FullName, factory: object, options?: RegisterOptions) {
+    // SAFETY: the registry checks the factory at runtime.
+    return this.__registry__.register(fullName, factory as never, options);
+  }
+
+  unregister(fullName: FullName) {
+    return this.__registry__.unregister(fullName);
+  }
+
+  hasRegistration(...args: Parameters<Registry['has']>) {
+    return this.__registry__.has(...args);
+  }
+
+  registeredOption(...args: Parameters<Registry['getOption']>) {
+    return this.__registry__.getOption(...args);
+  }
+
+  registerOptions(...args: Parameters<Registry['options']>) {
+    return this.__registry__.options(...args);
+  }
+
+  registeredOptions(...args: Parameters<Registry['getOptions']>) {
+    return this.__registry__.getOptions(...args);
+  }
+
+  registerOptionsForType(...args: Parameters<Registry['optionsForType']>) {
+    return this.__registry__.optionsForType(...args);
+  }
+
+  registeredOptionsForType(...args: Parameters<Registry['getOptionsForType']>) {
+    return this.__registry__.getOptionsForType(...args);
+  }
+}
+
+const ExportedEngine = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainEngine : Engine
+) as typeof Engine;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ExportedEngine extends Engine {}
+
+export { PlainEngine };
+export default ExportedEngine;

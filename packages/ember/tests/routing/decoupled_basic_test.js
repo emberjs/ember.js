@@ -396,17 +396,17 @@ moduleFor(
         'router:main',
         (Router) =>
           class extends Router {
-            location = NoneLocation.create({
+            location = class extends NoneLocation {
               setURL(path) {
                 setCount++;
                 set(this, 'path', path);
-              },
+              }
 
               replaceURL(path) {
                 replaceCount++;
                 set(this, 'path', path);
-              },
-            });
+              }
+            }.create();
           }
       );
 
@@ -435,12 +435,12 @@ moduleFor(
         'router:main',
         (Router) =>
           class extends Router {
-            location = NoneLocation.create({
+            location = class extends NoneLocation {
               setURL(path) {
                 setCount++;
                 set(this, 'path', path);
-              },
-            });
+              }
+            }.create();
           }
       );
 
@@ -690,7 +690,7 @@ moduleFor(
         set(obj, 'history', { state: { path: path } });
       };
 
-      let location = HistoryLocation.create({
+      let location = class extends HistoryLocation {
         initState() {
           let path = rootURL + '/posts';
 
@@ -699,16 +699,16 @@ moduleFor(
             pathname: path,
             href: 'http://localhost/' + path,
           });
-        },
+        }
 
         replaceState(path) {
           setHistory(this, path);
-        },
+        }
 
         pushState(path) {
           setHistory(this, path);
-        },
-      });
+        }
+      }.create();
 
       this.subclass(
         'router:main',
@@ -1647,7 +1647,7 @@ moduleFor(
           let route = engineInstance.lookup('route:index');
           let router = this.applicationInstance.lookup('router:main');
 
-          run(router, 'destroy');
+          run(() => this.applicationInstance.unregister('router:main'));
           assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
           run(() => destroy(route));

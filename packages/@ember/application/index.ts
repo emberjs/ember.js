@@ -4,6 +4,7 @@
 
 import { setOwner as actualSetOwner } from '@ember/-internals/owner';
 import { getOwner as actualGetOwner } from '@ember/owner';
+import type Owner from '@ember/owner';
 import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { ENV } from '@ember/-internals/environment/lib/env';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
@@ -19,8 +20,8 @@ import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
 import { BucketCache } from '@ember/routing/-internals';
-import ApplicationInstance from '@ember/application/instance';
-import Engine, { buildInitializerMethod } from '@ember/engine';
+import ApplicationInstance, { PlainApplicationInstance } from '@ember/application/instance';
+import Engine, { buildInitializerMethod, PlainEngine } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';
 import type Container from '@ember/-internals/container/lib/container';
 import type Registry from '@ember/-internals/container/lib/registry';
@@ -386,7 +387,7 @@ class Application extends Engine {
       // Create subclass of Router for this Application instance.
       // This is to ensure that someone reopening `App.Router` does not
       // tamper with the default `Router`.
-      this.Router = class extends (this.Router || Router) {};
+      this.Router = (this.Router || Router).extend() as typeof Router;
 
       this._buildDeprecatedInstance();
       this.waitForDOMReady();
@@ -1133,4 +1134,308 @@ function commonSetupRegistry(registry: Registry) {
   registry.register('service:router', RouterService);
 }
 
-export { Application as default };
+/**
+  `Application` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set. It
+  extends no other class.
+
+  `create(options)` assigns the options, then starts the application. The
+  constructor cannot start it, because the fields of subclasses do not exist
+  yet when it runs.
+*/
+class PlainApplication extends PlainEngine {
+  static buildRegistry(namespace: PlainApplication) {
+    let registry = super.buildRegistry(namespace);
+
+    commonSetupRegistry(registry);
+    setupApplicationRegistry(registry);
+
+    return registry;
+  }
+
+  static initializer = buildInitializerMethod<'initializers', Application>(
+    'initializers',
+    'initializer'
+  );
+
+  static instanceInitializer = buildInitializerMethod<'instanceInitializers', ApplicationInstance>(
+    'instanceInitializers',
+    'instance initializer'
+  );
+
+  static create<T extends PlainEngine>(this: new (owner?: Owner) => T, options?: object): T {
+    let application = new this() as T & PlainApplication;
+
+    if (options !== undefined) {
+      Object.assign(application, options);
+    }
+
+    application._start();
+
+    return application;
+  }
+
+  rootElement: SimpleElement | Element | string = 'body';
+  _document: SimpleDocument | Document | null = hasDOM ? window.document : null;
+  eventDispatcher: EventDispatcher | null = null;
+  customEvents: Record<string, string | null> | null = null;
+  autoboot = true;
+  _applicationInstances = new Set<ApplicationInstance>();
+  _readinessDeferrals = 1;
+  _booted = false;
+  _bootPromise: Promise<this> | null = null;
+  _bootResolver: ReturnType<(typeof RSVP)['defer']> | null = null;
+  Router?: typeof Router;
+  __deprecatedInstance__?: ApplicationInstance;
+  __container__?: Container;
+
+  _start(): void {
+    if (DEBUG) {
+      if (ENV.LOG_VERSION) {
+        ENV.LOG_VERSION = false;
+        libraries.logVersions?.();
+      }
+    }
+
+    this.autoboot = Boolean(this.autoboot);
+
+    if (this.autoboot) {
+      this.Router = class extends (this.Router || Router) {};
+
+      this._buildDeprecatedInstance();
+      this.waitForDOMReady();
+    }
+  }
+
+  buildInstance(options: EngineInstanceOptions = {}): ApplicationInstance {
+    assert(
+      'You cannot build new instances of this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+    assert(
+      'You cannot build new instances of this application since it is being destroyed',
+      !this.isDestroying
+    );
+
+    return PlainApplicationInstance.create({
+      ...options,
+      base: this as unknown as Application,
+      application: this as unknown as Application,
+    }) as unknown as ApplicationInstance;
+  }
+
+  _watchInstance(instance: ApplicationInstance): void {
+    this._applicationInstances.add(instance);
+  }
+
+  _unwatchInstance(instance: ApplicationInstance) {
+    return this._applicationInstances.delete(instance);
+  }
+
+  _buildDeprecatedInstance(): void {
+    let instance = this.buildInstance();
+
+    this.__deprecatedInstance__ = instance;
+    this.__container__ = instance.__container__;
+  }
+
+  waitForDOMReady(): void {
+    const document = this._document;
+
+    if (document === null || (document as Document).readyState !== 'loading') {
+      schedule('actions', this, this.domReady);
+    } else {
+      assert(
+        '[BUG] Called waitForDOMReady with an invalid document',
+        (function (d: SimpleDocument | Document): d is Document {
+          return typeof (d as Document).removeEventListener === 'function';
+        })(document)
+      );
+
+      let callback = () => {
+        document.removeEventListener('DOMContentLoaded', callback);
+        run(this, this.domReady);
+      };
+
+      document.addEventListener('DOMContentLoaded', callback);
+    }
+  }
+
+  domReady(): void {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    this._bootSync();
+  }
+
+  deferReadiness(): void {
+    assert('You cannot defer readiness since application has already destroyed', !this.isDestroyed);
+    assert(
+      'You cannot defer readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+    assert(
+      'You cannot defer readiness since the `ready()` hook has already been called',
+      this._readinessDeferrals > 0
+    );
+
+    this._readinessDeferrals++;
+  }
+
+  advanceReadiness() {
+    assert(
+      'You cannot advance readiness since application has already destroyed',
+      !this.isDestroyed
+    );
+    assert(
+      'You cannot advance readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+    assert(
+      'You cannot advance readiness since the `ready()` hook has already been called',
+      this._readinessDeferrals > 0
+    );
+
+    this._readinessDeferrals--;
+
+    if (this._readinessDeferrals === 0) {
+      once(this, this.didBecomeReady);
+    }
+  }
+
+  boot(): Promise<this> {
+    assert(
+      'You cannot boot this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+    assert('You cannot boot this application since it is being destroyed', !this.isDestroying);
+
+    if (this._bootPromise) {
+      return this._bootPromise;
+    }
+
+    try {
+      this._bootSync();
+    } catch (_) {
+      // The error is in the boot promise.
+    }
+
+    assert('has boot promise', this._bootPromise);
+
+    return this._bootPromise;
+  }
+
+  _bootSync() {
+    if (this._booted || this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    let defer = (this._bootResolver = RSVP.defer());
+    this._bootPromise = defer.promise as Promise<this>;
+
+    try {
+      this.runInitializers();
+      this.advanceReadiness();
+    } catch (error) {
+      defer.reject(error);
+      throw error;
+    }
+  }
+
+  reset() {
+    assert(
+      'You cannot reset this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+    assert('You cannot reset this application since it is being destroyed', !this.isDestroying);
+    assert(
+      `Calling reset() on instances of \`Application\` is not
+            supported when autoboot is disabled; call \`visit()\` to
+            create new \`ApplicationInstance\`s and dispose them
+            via their \`destroy()\` method instead.`,
+      this.autoboot
+    );
+
+    let instance = this.__deprecatedInstance__;
+
+    this._readinessDeferrals = 1;
+    this._bootPromise = null;
+    this._bootResolver = null;
+    this._booted = false;
+
+    function handleReset(this: PlainApplication) {
+      assert('expected instance', instance);
+      run(instance, 'destroy');
+      this._buildDeprecatedInstance();
+      schedule('actions', this, '_bootSync');
+    }
+
+    join(this, handleReset);
+  }
+
+  didBecomeReady() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    assert('expected _bootResolver', this._bootResolver);
+
+    try {
+      if (this.autoboot) {
+        let instance = this.__deprecatedInstance__;
+        assert('expected instance', instance);
+
+        instance._bootSync();
+        this.ready();
+        instance.startRouting();
+      }
+
+      this._bootResolver.resolve(this);
+      this._booted = true;
+    } catch (error) {
+      this._bootResolver.reject(error);
+      throw error;
+    }
+  }
+
+  ready() {
+    return this;
+  }
+
+  willDestroy() {
+    super.willDestroy();
+
+    if (this._applicationInstances.size) {
+      this._applicationInstances.forEach((i) => i.destroy());
+      this._applicationInstances.clear();
+    }
+  }
+
+  visit(url: string, options: BootOptions) {
+    assert(
+      'You cannot visit this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+    assert('You cannot visit this application since it is being destroyed', !this.isDestroying);
+
+    return this.boot().then(() => {
+      let instance = this.buildInstance();
+
+      return instance
+        .boot(options)
+        .then(() => instance.visit(url))
+        .catch((error) => {
+          run(instance, 'destroy');
+          throw error;
+        });
+    });
+  }
+}
+
+const ExportedApplication = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainApplication : Application
+) as typeof Application;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ExportedApplication extends Application {}
+
+export { ExportedApplication as default };
