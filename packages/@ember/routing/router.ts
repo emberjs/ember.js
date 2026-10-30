@@ -156,6 +156,21 @@ class EmberRouter extends EmberRouterBase {
     }
   }
 
+  static {
+    let defaults = {
+      didTransition: defaultDidTransition,
+      willTransition: defaultWillTransition,
+      rootURL: '/',
+      location: 'hash',
+    };
+
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      Object.assign(this.prototype, defaults);
+    } else {
+      this.reopen(defaults);
+    }
+  }
+
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -1852,19 +1867,6 @@ function forEachQueryParam(
 
     callback(key, value, qp);
   }
-}
-
-const ROUTER_DEFAULTS = {
-  didTransition: defaultDidTransition,
-  willTransition: defaultWillTransition,
-  rootURL: '/',
-  location: 'hash',
-};
-
-if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
-  Object.assign(EmberRouter.prototype, ROUTER_DEFAULTS);
-} else {
-  EmberRouter.reopen(ROUTER_DEFAULTS);
 }
 
 export default EmberRouter;
