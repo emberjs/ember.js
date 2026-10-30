@@ -341,7 +341,10 @@ function descriptorForField(
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
-    if (Array.isArray(value) || isEmberArray(value)) {
+    if (
+      Array.isArray(value) ||
+      (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+    ) {
       consumeTag(tagFor(value, '[]'));
     }
 
@@ -421,7 +424,10 @@ function tracked2023(
         get(this: object) {
           consumeTag(tagFor(this, dec.context.name));
           let value = dec.value.get.call(this);
-          if (Array.isArray(value) || isEmberArray(value)) {
+          if (
+            Array.isArray(value) ||
+            (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+          ) {
             consumeTag(tagFor(value, '[]'));
           }
           return value;

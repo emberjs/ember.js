@@ -22,7 +22,10 @@ function toEachInIterator(iterable: unknown) {
     return null;
   }
 
-  if (Array.isArray(iterable) || isEmberArray(iterable)) {
+  if (
+    Array.isArray(iterable) ||
+    (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(iterable))
+  ) {
     return ObjectIterator.fromIndexable(iterable);
   } else if (isNativeIterable(iterable)) {
     return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
@@ -40,7 +43,7 @@ function toEachIterator(iterable: unknown) {
 
   if (Array.isArray(iterable)) {
     return ArrayIterator.from(iterable);
-  } else if (isEmberArray(iterable)) {
+  } else if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(iterable)) {
     return EmberArrayIterator.from(iterable);
   } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);

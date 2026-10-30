@@ -184,7 +184,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved
+      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test custom ember array properties rerender when updated`]() {
       expectDeprecation(
         /The `MutableArray` mixin is deprecated/,

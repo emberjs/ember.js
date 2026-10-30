@@ -6,6 +6,8 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import { fn } from '@ember/helper';
 
+const testWithMut = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? test.skip : test;
+
 class State {
   @tracked myFunc;
   @tracked arg1;
@@ -326,7 +328,7 @@ module('Helpers test: {{fn}}', function (hooks) {
     assert.dom().hasText('arg1: foo, arg2: bar, arg3: qux');
   });
 
-  test('can be used on the result of `mut`', async function (assert) {
+  testWithMut('can be used on the result of `mut`', async function (assert) {
     let state = new State({ arg1: 'foo', arg2: 'bar' });
 
     await render(
@@ -341,7 +343,7 @@ module('Helpers test: {{fn}}', function (hooks) {
     assert.dom().hasText('bar');
   });
 
-  test('can be used on the result of `mut` with a falsy value', async function (assert) {
+  testWithMut('can be used on the result of `mut` with a falsy value', async function (assert) {
     let state = new State({ arg1: 'foo', arg2: false });
 
     await render(

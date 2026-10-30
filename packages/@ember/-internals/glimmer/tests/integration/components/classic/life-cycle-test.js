@@ -1,4 +1,11 @@
-import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import {
+  classes,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  strip,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
@@ -302,7 +309,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.hooks = [];
   }
 
-  ['@test lifecycle hooks are invoked in a predictable order']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lifecycle hooks are invoked in a predictable order`]() {
     let { attr, invoke } = this.boundHelpers;
 
     this.registerComponent('the-top', {
@@ -535,7 +542,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     });
   }
 
-  ['@test lifecycle hooks are invoked in a correct sibling order']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lifecycle hooks are invoked in a correct sibling order`]() {
     let { attr, invoke } = this.boundHelpers;
 
     this.registerComponent('the-parent', {
@@ -856,7 +863,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     });
   }
 
-  ['@test passing values through attrs causes lifecycle hooks to fire if the attribute values have changed']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test passing values through attrs causes lifecycle hooks to fire if the attribute values have changed`]() {
     let { attr, invoke } = this.boundHelpers;
 
     this.registerComponent('the-top', {
@@ -1041,7 +1048,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     });
   }
 
-  ['@test components rendered from `{{each}}` have correct life-cycle hooks to be called']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test components rendered from \`{{each}}\` have correct life-cycle hooks to be called`]() {
     let { invoke } = this.boundHelpers;
 
     this.registerComponent('nested-item', { template: `{{yield}}` });

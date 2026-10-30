@@ -1565,7 +1565,7 @@ moduleFor(
       this.assertText('blarkporybaz- Click Me');
     }
 
-    ['@test a two way binding flows upstream when consumed in the template']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream when consumed in the template`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1779,7 +1779,7 @@ moduleFor(
       );
     }
 
-    ['@test injecting an unknown service raises an exception']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test injecting an unknown service raises an exception`]() {
       this.owner.register(
         'component:foo-bar',
         class extends Component {

@@ -16,7 +16,7 @@ import Component from '@glimmer/component';
 moduleFor(
   'Helpers test: {{unbound}}',
   class extends RenderingTestCase {
-    ['@test should be able to output a property without binding']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to output a property without binding`]() {
       this.render(`<div id="first">{{unbound this.content.anUnboundString}}</div>`, {
         content: {
           anUnboundString: 'No spans here, son.',
@@ -42,7 +42,7 @@ moduleFor(
       this.assertText('No spans here, son.');
     }
 
-    ['@test should be able to use unbound helper in #each helper']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to use unbound helper in #each helper`]() {
       this.render(`<ul>{{#each this.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
         items: ['a', 'b', 'c', 1, 2, 3],
       });
@@ -54,7 +54,7 @@ moduleFor(
       this.assertText('abc123');
     }
 
-    ['@test should be able to use unbound helper in #each helper (with objects)']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to use unbound helper in #each helper (with objects)`]() {
       this.render(
         `<ul>{{#each this.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
         {
@@ -77,7 +77,7 @@ moduleFor(
       this.assertText('bam1');
     }
 
-    ['@test it should assert unbound cannot be called with multiple arguments']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it should assert unbound cannot be called with multiple arguments`]() {
       let willThrow = () => {
         this.render(`{{unbound this.foo this.bar}}`, {
           foo: 'BORK',
@@ -91,7 +91,7 @@ moduleFor(
       );
     }
 
-    ['@test should render on attributes']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should render on attributes`]() {
       this.render(`<a href="{{unbound this.model.foo}}"></a>`, {
         model: { foo: 'BORK' },
       });
@@ -111,7 +111,7 @@ moduleFor(
       this.assertHTML('<a href="BORK"></a>');
     }
 
-    ['@test should property escape unsafe hrefs']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should property escape unsafe hrefs`]() {
       let unsafeUrls = [
         {
           name: 'Bob',
@@ -196,7 +196,7 @@ moduleFor(
     }
 
     // semantics here is not guaranteed
-    ['@test sexpr form does not update no matter what']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sexpr form does not update no matter what`]() {
       this.registerHelper('capitalize', (args) => args[0].toUpperCase());
 
       this.render(`{{capitalize (unbound this.foo)}}`, {
@@ -228,7 +228,7 @@ moduleFor(
       this.assertText('BORK');
     }
 
-    ['@test sexpr in helper form does not update on parent re-render']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sexpr in helper form does not update on parent re-render`]() {
       this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
       this.registerHelper('doublize', (params) => `${params[0]} ${params[0]}`);
@@ -262,7 +262,7 @@ moduleFor(
       this.assertText('BORK BORK');
     }
 
-    ['@test should be able to render an unbound helper invocation']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render an unbound helper invocation`]() {
       this.registerHelper('repeat', ([value], { count }) => {
         let a = [];
         while (a.length < count) {
@@ -294,7 +294,7 @@ moduleFor(
       this.assertText('XXXXX XXXXX XX XXXX');
     }
 
-    ['@test should be able to render an bound helper invocation mixed with static values']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render an bound helper invocation mixed with static values`]() {
       this.registerHelper('surround', ([prefix, value, suffix]) => `${prefix}-${value}-${suffix}`);
 
       this.render(
@@ -338,7 +338,7 @@ moduleFor(
       this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
     }
 
-    ['@test should be able to render unbound forms of multi-arg helpers']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render unbound forms of multi-arg helpers`]() {
       this.registerHelper('fauxconcat', (params) => params.join(''));
 
       this.render(
@@ -443,7 +443,7 @@ moduleFor(
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
     }
 
-    ['@test should be able to render an unbound helper invocation in #each helper']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render an unbound helper invocation in #each helper`]() {
       this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
       this.render(
@@ -558,7 +558,7 @@ moduleFor(
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
     }
 
-    ['@test should be able to render bound form of a helper inside unbound form of same helper']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render bound form of a helper inside unbound form of same helper`]() {
       this.render(
         strip`
       {{#if (unbound this.model.foo)}}
@@ -599,7 +599,7 @@ moduleFor(
       this.assertText('truetrue');
     }
 
-    ['@test yielding unbound does not update']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test yielding unbound does not update`]() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
         constructor(owner, args) {
@@ -634,7 +634,7 @@ moduleFor(
       this.assertText('bork');
     }
 
-    ['@test yielding unbound hash does not update']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test yielding unbound hash does not update`]() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
         constructor(owner, args) {

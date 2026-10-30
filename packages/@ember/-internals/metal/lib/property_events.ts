@@ -53,10 +53,12 @@ function notifyPropertyChange(
   _meta?: Meta | null,
   value?: unknown
 ): void {
-  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-    return;
+    if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
+      return;
+    }
   }
 
   markObjectAsDirty(obj, keyName);
@@ -65,7 +67,7 @@ function notifyPropertyChange(
     flushSyncObservers();
   }
 
-  if (PROPERTY_DID_CHANGE in obj) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && PROPERTY_DID_CHANGE in obj) {
     // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
     assert('property did change hook is invalid', hasPropertyDidChange(obj));
 

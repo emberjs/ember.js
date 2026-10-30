@@ -591,7 +591,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('YESNO');
   }
 
-  ['@test it does not update when the unbound helper is used']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it does not update when the unbound helper is used`]() {
     let template = this.wrapperFor([
       this.templateFor({
         cond: '(unbound this.cond1)',
@@ -718,7 +718,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.render(wrappedTemplate, Object.assign({ t: 'T', f: 'F' }, context));
   }
 
-  ['@test it does not update when the unbound helper is used']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it does not update when the unbound helper is used`]() {
     let template = `${this.templateFor({
       cond: '(unbound this.cond1)',
       truthy: 'T1',

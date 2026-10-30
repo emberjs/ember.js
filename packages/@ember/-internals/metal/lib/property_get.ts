@@ -124,7 +124,10 @@ export function _getProp(obj: unknown, keyName: string) {
     if (isTracking()) {
       consumeTag(tagFor(obj, keyName));
 
-      if (Array.isArray(value) || isEmberArray(value)) {
+      if (
+        Array.isArray(value) ||
+        (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+      ) {
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
         consumeTag(tagFor(value, '[]'));

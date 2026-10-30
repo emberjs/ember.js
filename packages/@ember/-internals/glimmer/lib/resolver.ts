@@ -85,13 +85,14 @@ function lookupComponentPair(owner: InternalOwner, name: string): Nullable<Looku
   }
 }
 
+const CLASSIC_KEYWORD_HELPERS: Record<string, object> = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+  ? {}
+  : { mut, readonly, unbound, '-normalize-class': normalizeClassHelper };
+
 const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
-  mut,
-  readonly,
-  unbound,
+  ...CLASSIC_KEYWORD_HELPERS,
   '-hash': hash,
   '-each-in': eachIn,
-  '-normalize-class': normalizeClassHelper,
   '-resolve': resolve,
   '-track-array': trackArray,
   '-in-el-null': inElementNullCheckHelper,
@@ -265,7 +266,10 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       let manager = getInternalComponentManager(ComponentClass);
 
       definition = {
-        state: isCurlyManager(manager) ? factory : ComponentClass,
+        state:
+          !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isCurlyManager(manager)
+            ? factory
+            : ComponentClass,
         manager,
         template,
       };

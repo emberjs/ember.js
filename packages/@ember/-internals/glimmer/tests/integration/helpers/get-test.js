@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 import { template } from '@ember/template-compiler/runtime';
 
 import { set, get } from '@ember/object';
@@ -484,7 +484,9 @@ moduleFor(
       this.assertText('[] []');
     }
 
-    ['@test get helper value should be updatable using <Input> and (mut) - static key'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test get helper value should be updatable using <Input> and (mut) - static key`](
+      assert
+    ) {
       this.render(
         `<Input @type='text' @value={{mut (get this.source 'banana')}} id='get-input'/>`,
         {
@@ -514,7 +516,9 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using <Input> and (mut) - dynamic key'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test get helper value should be updatable using <Input> and (mut) - dynamic key`](
+      assert
+    ) {
       this.render(
         `<Input @type='text' @value={{mut (get this.source this.key)}} id='get-input'/>`,
         {
@@ -558,7 +562,7 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using <Input> and (mut) - dynamic nested key'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test get helper value should be updatable using <Input> and (mut) - dynamic nested key`](
       assert
     ) {
       this.render(

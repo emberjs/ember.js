@@ -7,7 +7,7 @@ import { Component as EmberComponent, htmlSafe } from '../../../utils/helpers';
 moduleFor(
   'Helpers test: {{mut}} (classic component)',
   class extends RenderingTestCase {
-    ['@test a simple mutable binding using `mut` propagates properly']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a simple mutable binding using \`mut\` propagates properly`]() {
       let bottom;
 
       this.owner.register(
@@ -57,7 +57,7 @@ moduleFor(
       this.assertText('12');
     }
 
-    ['@test a simple mutable binding using `mut` inserts into the DOM']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a simple mutable binding using \`mut\` inserts into the DOM`]() {
       let bottom, middle;
 
       this.owner.register(
@@ -149,7 +149,7 @@ moduleFor(
       // No U-R for this test
     }
 
-    ['@test {{readonly}} of a {{mut}} is converted into an immutable binding']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{readonly}} of a {{mut}} is converted into an immutable binding`]() {
       let middle, bottom;
 
       this.owner.register(
@@ -206,7 +206,7 @@ moduleFor(
       this.assertText('12');
     }
 
-    ['@test a simple mutable binding using {{mut}} is available in hooks']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a simple mutable binding using {{mut}} is available in hooks`]() {
       let bottom;
       let willRender = [];
       let didInsert = [];
