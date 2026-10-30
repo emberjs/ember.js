@@ -1,10 +1,12 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { addObserver } from '@ember/object/observers';
-import Mixin from '@ember/object/mixin';
+import { addObserver } from '@ember/-internals/metal/lib/observer';
+import Mixin from '@ember/object/lib/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { alias } from '@ember/object/computed';
 import {
   buildOwner,
@@ -47,7 +49,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test calls computed property setters'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test calls computed property setters`](
+      assert
+    ) {
       let MyClass = EmberObject.extend({
         foo: computed({
           get() {
@@ -86,7 +90,9 @@ moduleFor(
       }
     }
 
-    ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sets up mandatory setters for simple properties watched with computeds`](
+      assert
+    ) {
       if (DEBUG) {
         let MyClass = class extends EmberObject {
           foo = null;
@@ -112,7 +118,7 @@ moduleFor(
       }
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test sets up mandatory setters for simple properties watched with aliases`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test sets up mandatory setters for simple properties watched with aliases`](
       assert
     ) {
       if (DEBUG) {
@@ -193,7 +199,7 @@ moduleFor(
       assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
     }
 
-    ['@test throws if you try to define a computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test throws if you try to define a computed property`]() {
       expectAssertion(function () {
         EmberObject.create({
           foo: computed(function () {}),

@@ -14,11 +14,12 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { set, computed } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 
 import { htmlSafe } from '../../utils/helpers';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1418,8 +1419,8 @@ moduleFor(
       this.registerService(
         'name',
         class extends Service {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             serviceInstance = this;
           }
           last = 'Jackson';
@@ -1446,13 +1447,13 @@ moduleFor(
       this.assertText('Jackson');
 
       runTask(() => {
-        serviceInstance.set('last', 'McGuffey');
+        set(serviceInstance, 'last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
       runTask(() => {
-        serviceInstance.set('last', 'Jackson');
+        set(serviceInstance, 'last', 'Jackson');
       });
 
       this.assertText('Jackson');
@@ -1592,7 +1593,7 @@ moduleFor(
       this.assertText('3');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test ensure aliases are watched properly [GH#17243]`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test ensure aliases are watched properly [GH#17243]`]() {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled

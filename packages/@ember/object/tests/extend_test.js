@@ -1,6 +1,7 @@
 import { computed, get } from '@ember/object';
-import EmberObject, { observer } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import EmberObject from '@ember/object/lib/ember-object';
+import { observer } from '@ember/object/lib/observer';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
@@ -122,7 +123,9 @@ moduleFor(
       );
     }
 
-    async ['@test Overriding a computed property with an observer'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Overriding a computed property with an observer`](
+      assert
+    ) {
       let Parent = EmberObject.extend({
         foo: computed(function () {
           return 'FOO';

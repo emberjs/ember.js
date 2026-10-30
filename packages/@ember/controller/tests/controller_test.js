@@ -1,6 +1,7 @@
 import Controller, { inject as injectController } from '@ember/controller';
 import Service, { service } from '@ember/service';
-import EmberObject, { get } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get } from '@ember/object';
 import { setOwner } from '@ember/-internals/owner';
 import {
   runDestroy,
@@ -52,7 +53,9 @@ moduleFor(
       this.assertText('2');
     }
 
-    async '@test model can be observed with sync observers'(assert) {
+    async [`${testUnless(
+      import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    )} @test model can be observed with sync observers`](assert) {
       let observerRunCount = 0;
 
       this.add(
@@ -88,7 +91,8 @@ moduleFor(
   'Controller event handling',
   class extends AbstractTestCase {
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Action can be handled by a function on actions object`](assert) {
       assert.expect(2);
 
@@ -109,7 +113,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test A handled action can be bubbled to the target for continued processing`](assert) {
       assert.expect(3);
 
@@ -149,7 +154,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Action can be handled by a superclass' actions object`](assert) {
       assert.expect(5);
 
@@ -194,7 +200,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test .send asserts if called on a destroyed controller`]() {
       expectDeprecation(
         /Calling `\.send\(\)` on/,
@@ -229,14 +236,22 @@ moduleFor(
       assert.expect(2);
       let controller;
 
-      ignoreDeprecation(function () {
-        controller = class extends Controller {
+      let owner = buildOwner();
+      owner.register(
+        'controller:application',
+        class extends Controller {
           content = 'foo-bar';
-        }.create();
+        }
+      );
+
+      ignoreDeprecation(function () {
+        controller = owner.lookup('controller:application');
       });
 
-      assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
-      assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
+      assert.notEqual(get(controller, 'model'), 'foo-bar', 'model is set properly');
+      assert.equal(get(controller, 'content'), 'foo-bar', 'content is not set properly');
+
+      runDestroy(owner);
     }
 
     ['@test specifying `content` (without `model` specified) does not result in deprecation'](
@@ -245,24 +260,40 @@ moduleFor(
       assert.expect(2);
       expectNoDeprecation();
 
-      let controller = class extends Controller {
-        content = 'foo-bar';
-      }.create();
+      let owner = buildOwner();
+      owner.register(
+        'controller:application',
+        class extends Controller {
+          content = 'foo-bar';
+        }
+      );
+
+      let controller = owner.lookup('controller:application');
 
       assert.equal(get(controller, 'content'), 'foo-bar');
+
+      runDestroy(owner);
     }
 
     ['@test specifying `content` (with `model` specified) does not result in deprecation'](assert) {
       assert.expect(3);
       expectNoDeprecation();
 
-      let controller = class extends Controller {
-        content = 'foo-bar';
-        model = 'blammo';
-      }.create();
+      let owner = buildOwner();
+      owner.register(
+        'controller:application',
+        class extends Controller {
+          content = 'foo-bar';
+          model = 'blammo';
+        }
+      );
+
+      let controller = owner.lookup('controller:application');
 
       assert.equal(get(controller, 'content'), 'foo-bar');
       assert.equal(get(controller, 'model'), 'blammo');
+
+      runDestroy(owner);
     }
   }
 );
@@ -270,7 +301,7 @@ moduleFor(
 moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
-    ['@test defining a controller on a non-controller should fail assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test defining a controller on a non-controller should fail assertion`]() {
       let owner = buildOwner();
 
       expectAssertion(function () {
@@ -306,7 +337,7 @@ moduleFor(
 
       assert.equal(
         postsController,
-        postController.get('postsController'),
+        get(postController, 'postsController'),
         'controller.posts is injected'
       );
 
@@ -329,7 +360,7 @@ moduleFor(
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appController.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appController, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }

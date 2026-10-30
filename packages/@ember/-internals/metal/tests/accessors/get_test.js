@@ -1,8 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { observer } from '@ember/object/lib/observer';
 import { get } from '../..';
 import { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 
@@ -70,7 +71,7 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    ['@test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/set()'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/set()`](
       assert
     ) {
       let obj = {

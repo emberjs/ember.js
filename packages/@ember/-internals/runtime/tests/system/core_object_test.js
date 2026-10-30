@@ -1,12 +1,14 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set, observer } from '@ember/object';
-import CoreObject from '@ember/object/core';
+import { get, set } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
+import CoreObject from '@ember/object/lib/core-object';
 import {
   moduleFor,
   AbstractTestCase,
   buildOwner,
   runDestroy,
   runLoopSettled,
+  testUnless,
 } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
@@ -29,7 +31,9 @@ moduleFor(
       );
     }
 
-    ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not trigger proxy assertion when retrieving a proxy with (GH#16263)`](
+      assert
+    ) {
       let someProxyishThing = class extends CoreObject {
         unknownProperty() {
           return true;
@@ -64,7 +68,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should not trigger proxy assertion when probing for a "symbol"`](
+      assert
+    ) {
       let proxy = class extends CoreObject {
         unknownProperty() {
           return true;
@@ -97,7 +103,9 @@ moduleFor(
       TestObj.create(options);
     }
 
-    async ['@test observed properties are enumerable when set GH#14594'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observed properties are enumerable when set GH#14594`](
+      assert
+    ) {
       let callCount = 0;
       let Test = CoreObject.extend({
         myProp: null,

@@ -1,4 +1,6 @@
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import {
   defineProperty,
   on,
@@ -8,7 +10,7 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import {
   moduleFor,
   AbstractTestCase,
@@ -266,7 +268,9 @@ moduleFor(
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
-    ['@test calling metaForProperty on a native class works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test calling metaForProperty on a native class works`](
+      assert
+    ) {
       assert.expect(0);
 
       class SubEmberObject extends EmberObject {}
@@ -285,7 +289,7 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test observes / removeObserver on / removeListener interop`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observes / removeObserver on / removeListener interop`](
       assert
     ) {
       let fooDidChangeBase = 0;
@@ -383,7 +387,9 @@ moduleFor(
       });
     }
 
-    '@test super and _super interop between old and new methods'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test super and _super interop between old and new methods`](
+      assert
+    ) {
       let calls = [];
       let changes = [];
       let events = [];

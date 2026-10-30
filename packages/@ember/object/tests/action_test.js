@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
-import EmberObject, { action } from '@ember/object';
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import EmberObject from '@ember/object/lib/ember-object';
+import { action } from '@ember/object';
+import { moduleFor, RenderingTestCase, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -200,7 +201,7 @@ moduleFor(
       }, /The @action decorator must be applied to methods/);
     }
 
-    '@test action decorator throws an error if passed a function in native classes'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} action decorator throws an error if passed a function in native classes`]() {
       expectAssertion(() => {
         class TestObject extends EmberObject {
           @action(function () {}) foo = 'bar';

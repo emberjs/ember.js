@@ -1,5 +1,5 @@
 import { dasherize } from '@ember/-internals/string';
-import Component from '@ember/component';
+import Component from '@ember/-internals/glimmer/lib/component';
 import GlimmerComponent from '@glimmer/component';
 import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';

@@ -8,8 +8,8 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import EmberObject from '@ember/object';
-import { A } from '@ember/array';
+import EmberObject from '@ember/object/lib/ember-object';
+import { A } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,
@@ -56,7 +56,9 @@ moduleFor(
       assert.equal(get(obj, 'foo.faz'), 'BAR');
     }
 
-    async ['@test old dependent keys should not trigger property changes'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test old dependent keys should not trigger property changes`](
+      assert
+    ) {
       let obj1 = Object.create(null);
       defineProperty(obj1, 'foo', null, null);
       defineProperty(obj1, 'bar', alias('foo'));
@@ -105,7 +107,7 @@ moduleFor(
       assert.equal(model.allAdditives.length, 1);
     }
 
-    async [`@test inheriting an observer of the alias from the prototype then
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test inheriting an observer of the alias from the prototype then
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
       let obj1 = class extends EmberObject {
@@ -134,7 +136,9 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    async ['@test an observer of the alias works if added after defining the alias'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test an observer of the alias works if added after defining the alias`](
+      assert
+    ) {
       defineProperty(obj, 'bar', alias('foo.faz'));
 
       addObserver(obj, 'bar', incrementCount);
@@ -144,7 +148,9 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    async ['@test an observer of the alias works if added before defining the alias'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test an observer of the alias works if added before defining the alias`](
+      assert
+    ) {
       addObserver(obj, 'bar', incrementCount);
       defineProperty(obj, 'bar', alias('foo.faz'));
 

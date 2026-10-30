@@ -1,6 +1,6 @@
 import { isEmpty } from '@ember/utils';
-import ArrayProxy from '@ember/array/proxy';
-import ObjectProxy from '@ember/object/proxy';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -21,7 +21,7 @@ moduleFor(
       assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || UTILS.isRemoved)} @test Ember.isEmpty ObjectProxy ArrayProxy`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || UTILS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Ember.isEmpty ObjectProxy ArrayProxy`](
       assert
     ) {
       expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);

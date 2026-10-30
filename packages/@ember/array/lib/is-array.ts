@@ -53,7 +53,7 @@ export default function isArray(obj: unknown): obj is ArrayLike<unknown> | Ember
   // unbranded EmberArray objects are native arrays upgraded by `A()`, which
   // `Array.isArray` catches. So this matches `EmberArray.detect` without
   // pulling in the mixin's module.
-  if (Array.isArray(obj) || isEmberArray(obj)) {
+  if (Array.isArray(obj) || (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(obj))) {
     return true;
   }
 

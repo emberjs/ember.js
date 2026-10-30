@@ -1,6 +1,6 @@
 import { isEmpty } from '..';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
@@ -30,7 +30,7 @@ moduleFor(
       assert.equal(true, isEmpty(object), "for an Object that has zero 'length'");
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || UTILS.isRemoved)} @test isEmpty with an ObjectProxy`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || UTILS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test isEmpty with an ObjectProxy`](
       assert
     ) {
       expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);

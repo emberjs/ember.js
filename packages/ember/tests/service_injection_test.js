@@ -9,7 +9,7 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
-import { computed } from '@ember/object';
+import { computed, get } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
@@ -30,11 +30,11 @@ moduleFor(
       await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
+      assert.ok(get(controller, 'myService') instanceof MyService);
     }
 
     async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved
+      DEPRECATIONS.DEPRECATE_PROXY_MIXIN.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Service can be an object proxy and access owner in init GH#16484`](assert) {
       expectDeprecation(
         /The `ProxyMixin` mixin is deprecated/,
@@ -63,7 +63,7 @@ moduleFor(
       let instance = await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
+      assert.ok(get(controller, 'myService') instanceof MyService);
       assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
     }
   }
@@ -72,7 +72,9 @@ moduleFor(
 moduleFor(
   'Service Injection with ES5 Getters',
   class extends ApplicationTestCase {
-    async ['@test Service can be injected and is resolved without calling `get`'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Service can be injected and is resolved without calling \`get\``](
+      assert
+    ) {
       this.add(
         'controller:application',
         class extends Controller {

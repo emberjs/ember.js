@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import { addObserver, removeObserver } from '@ember/-internals/metal';
-import { computed, get, set, observer } from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
+import { computed, get, set } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import {
   moduleFor,
   AbstractTestCase,
@@ -46,7 +47,7 @@ moduleFor(
       assert.equal(proxy._cp, 'Bar', 'should use CP setter');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should proxy properties to content`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should proxy properties to content`](
       assert
     ) {
       let content = {
@@ -100,7 +101,7 @@ moduleFor(
       assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test getting proxied properties with Ember.get should work`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting proxied properties with Ember.get should work`](
       assert
     ) {
       let proxy = ObjectProxy.create({
@@ -199,7 +200,7 @@ moduleFor(
       }
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should work with watched properties`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should work with watched properties`](
       assert
     ) {
       let content1 = { firstName: 'Tom', lastName: 'Dale' };
@@ -280,7 +281,7 @@ moduleFor(
       proxy.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test set and get should work with paths`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test set and get should work with paths`](
       assert
     ) {
       let content = { foo: { bar: 'baz' } };
@@ -305,7 +306,7 @@ moduleFor(
       proxy.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should transition between watched and unwatched strategies`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should transition between watched and unwatched strategies`](
       assert
     ) {
       let content = { foo: 'foo' };
@@ -385,7 +386,7 @@ moduleFor(
       obj.destroy();
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test custom proxies should be able to notify property changes manually`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test custom proxies should be able to notify property changes manually`](
       assert
     ) {
       let proxy = class extends ObjectProxy {

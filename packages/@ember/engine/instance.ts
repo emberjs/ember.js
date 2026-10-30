@@ -2,7 +2,10 @@
 @module @ember/engine
 */
 
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import type Container from '@ember/-internals/container/lib/container';
+import { join, schedule } from '@ember/runloop';
+import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
@@ -14,7 +17,7 @@ import InternalContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/co
 import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
-import { type FullName, isFactory } from '@ember/-internals/owner';
+import { type FullName, type RegisterOptions, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -60,10 +63,19 @@ export interface EngineInstanceOptions {
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(
-  InternalRegistryProxyMixin,
-  InternalContainerProxyMixin
-) {
+/**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicEngineInstanceBase() {
+  return EmberObject.extend(InternalRegistryProxyMixin, InternalContainerProxyMixin);
+}
+
+const EngineInstanceBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? EmberObject : classicEngineInstanceBase()
+) as ReturnType<typeof classicEngineInstanceBase>;
+
+class EngineInstance extends EngineInstanceBase {
   /**
    @private
    @method setupRegistry
@@ -269,4 +281,230 @@ class EngineInstance extends EmberObject.extend(
   }
 }
 
-export default EngineInstance;
+/**
+  The options of `create` for `EngineInstance` when the
+  `EMBER_DROP_CLASSIC_FEATURES` build flag is set.
+*/
+export interface PlainEngineInstanceOptions extends EngineInstanceOptions {
+  base?: Engine;
+  application?: Application;
+}
+
+/**
+  `EngineInstance` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set.
+  It extends no other class.
+*/
+class PlainEngineInstance {
+  static setupRegistry(_registry: Registry, _options?: BootOptions) {}
+
+  static create<T extends PlainEngineInstance>(
+    this: new (options: PlainEngineInstanceOptions) => T,
+    options: PlainEngineInstanceOptions
+  ): T {
+    return new this(options);
+  }
+
+  base: Engine;
+  application: Application;
+  mountPoint?: string;
+  routable?: boolean;
+  [ENGINE_PARENT]?: EngineInstance;
+  __registry__: Registry;
+  __container__: Container;
+  _booted = false;
+  _bootPromise: RSVP.Promise<this> | null = null;
+
+  constructor(options: PlainEngineInstanceOptions) {
+    assert(
+      'An engine instance needs a base engine or an application',
+      options.base ?? options.application
+    );
+
+    this.application = options.application as Application;
+    this.base = (options.base ?? options.application) as Engine;
+    this.mountPoint = options.mountPoint;
+    this.routable = options.routable;
+
+    guidFor(this);
+
+    let registry = (this.__registry__ = new Registry({
+      fallback: this.base.__registry__,
+    }));
+
+    this.__container__ = registry.container({ owner: this as unknown as EngineInstance });
+
+    registerDestructor(this, () => destroyContainer(this.__container__), true);
+    registerDestructor(this, () => this.willDestroy());
+  }
+
+  get isDestroying(): boolean {
+    return isDestroying(this);
+  }
+
+  get isDestroyed(): boolean {
+    return isDestroyed(this);
+  }
+
+  destroy(): this {
+    destroy(this);
+
+    return this;
+  }
+
+  /** Empty, so that `super.willDestroy()` works in subclasses. */
+  willDestroy(): void {}
+
+  boot(options?: BootOptions): Promise<this> {
+    if (this._bootPromise) {
+      return this._bootPromise;
+    }
+
+    this._bootPromise = new RSVP.Promise((resolve) => {
+      resolve(this._bootSync(options));
+    });
+
+    return this._bootPromise;
+  }
+
+  _bootSync(options?: BootOptions): this {
+    if (this._booted) {
+      return this;
+    }
+
+    assert(
+      "An engine instance's parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.",
+      getEngineParent(this as unknown as EngineInstance)
+    );
+
+    this.cloneParentDependencies();
+    this.setupRegistry(options);
+    this.base.runInstanceInitializers(this as unknown as EngineInstance);
+
+    this._booted = true;
+
+    return this;
+  }
+
+  setupRegistry(
+    options: BootOptions = this.__container__.lookup('-environment:main') as BootEnvironment
+  ) {
+    (this.constructor as typeof PlainEngineInstance).setupRegistry(this.__registry__, options);
+  }
+
+  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}): EngineInstance {
+    let ChildEngine = this.lookup(`engine:${name}`) as Engine;
+
+    if (!ChildEngine) {
+      throw new Error(
+        `You attempted to mount the engine '${name}', but it is not registered with its parent.`
+      );
+    }
+
+    let engineInstance = ChildEngine.buildInstance(options);
+
+    setEngineParent(engineInstance, this as unknown as EngineInstance);
+
+    return engineInstance;
+  }
+
+  cloneParentDependencies() {
+    const parent = getEngineParent(this as unknown as EngineInstance);
+    assert('expected parent', parent);
+
+    let registrations = ['route:basic', 'service:-routing'] as const;
+
+    for (let key of registrations) {
+      let registration = parent.resolveRegistration(key);
+      assert('expected registration to be a factory', isFactory(registration));
+      this.register(key, registration);
+    }
+
+    let env = parent.lookup('-environment:main') as Record<string, unknown>;
+    this.register('-environment:main', env, { instantiate: false });
+
+    let singletons: FullName[] = [
+      'router:main',
+      P`-bucket-cache:main`,
+      '-view-registry:main',
+      `renderer:-dom`,
+      'service:-document',
+    ];
+
+    if (env['isInteractive']) {
+      singletons.push('event_dispatcher:main');
+    }
+
+    for (let key of singletons) {
+      let singleton = parent.lookup(key) as object;
+      this.register(key, singleton, { instantiate: false });
+    }
+  }
+
+  resolveRegistration(fullName: FullName) {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+
+    return this.__registry__.resolve(fullName);
+  }
+
+  register(fullName: FullName, factory: object, options?: RegisterOptions) {
+    // SAFETY: the registry checks the factory at runtime.
+    return this.__registry__.register(fullName, factory as never, options);
+  }
+
+  unregister(fullName: FullName) {
+    this.__container__.reset(fullName);
+    this.__registry__.unregister(fullName);
+  }
+
+  hasRegistration(...args: Parameters<Registry['has']>) {
+    return this.__registry__.has(...args);
+  }
+
+  registeredOption(...args: Parameters<Registry['getOption']>) {
+    return this.__registry__.getOption(...args);
+  }
+
+  registerOptions(...args: Parameters<Registry['options']>) {
+    return this.__registry__.options(...args);
+  }
+
+  registeredOptions(...args: Parameters<Registry['getOptions']>) {
+    return this.__registry__.getOptions(...args);
+  }
+
+  registerOptionsForType(...args: Parameters<Registry['optionsForType']>) {
+    return this.__registry__.optionsForType(...args);
+  }
+
+  registeredOptionsForType(...args: Parameters<Registry['getOptionsForType']>) {
+    return this.__registry__.getOptionsForType(...args);
+  }
+
+  ownerInjection() {
+    return this.__container__.ownerInjection();
+  }
+
+  lookup(...args: Parameters<Container['lookup']>) {
+    return this.__container__.lookup(...args);
+  }
+
+  factoryFor(...args: Parameters<Container['factoryFor']>) {
+    return this.__container__.factoryFor(...args);
+  }
+}
+
+function destroyContainer(container: Container) {
+  join(() => {
+    container.destroy();
+    schedule('destroy', container, 'finalizeDestroy');
+  });
+}
+
+const ExportedEngineInstance = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainEngineInstance : EngineInstance
+) as typeof EngineInstance;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ExportedEngineInstance extends EngineInstance {}
+
+export { PlainEngineInstance };
+export default ExportedEngineInstance;

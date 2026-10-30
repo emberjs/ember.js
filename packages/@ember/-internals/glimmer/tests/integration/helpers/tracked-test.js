@@ -1,6 +1,6 @@
-import EmberObject from '@ember/object';
-import { A } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import EmberObject from '@ember/object/lib/ember-object';
+import { A } from '@ember/array/lib/ember-array';
+import { MutableArray } from '@ember/array/lib/ember-array';
 import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import {
@@ -184,7 +184,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved
+      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test custom ember array properties rerender when updated`]() {
       expectDeprecation(
         /The `MutableArray` mixin is deprecated/,
@@ -301,8 +302,8 @@ moduleFor(
           @tracked
           name = 'bob';
 
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             currentUserService = this;
           }
         }

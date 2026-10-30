@@ -1,8 +1,8 @@
 import { run } from '@ember/runloop';
 import { changeProperties } from '@ember/-internals/metal';
 import { set } from '@ember/object';
-import ArrayProxy from '@ember/array/proxy';
-import { A as emberA } from '@ember/array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

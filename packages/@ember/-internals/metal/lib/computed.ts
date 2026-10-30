@@ -464,6 +464,7 @@ export class ComputedProperty extends ComputedDescriptor {
     //
     // See GH#18147 / GH#19028 for details.
     if (
+      !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES &&
       // ensure that we only run this once, while the component is being instantiated
       meta.isInitializing() &&
       this._dependentKeys !== undefined &&
@@ -526,12 +527,16 @@ export class ComputedProperty extends ComputedDescriptor {
     let ret;
     let { _setter } = this;
 
-    setObserverSuspended(obj, keyName, true);
+    if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      setObserverSuspended(obj, keyName, true);
+    }
 
     try {
       ret = _setter!.call(obj, keyName, value, cachedValue);
     } finally {
-      setObserverSuspended(obj, keyName, false);
+      if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        setObserverSuspended(obj, keyName, false);
+      }
     }
 
     // allows setter to return the same value that is cached already

@@ -8,7 +8,7 @@ import {
 
 import { action, set } from '@ember/object';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../../utils/helpers';
@@ -85,7 +85,8 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a handled action can be bubbled to the target for continued processing`]() {
       this.assert.expect(3);
 

@@ -308,21 +308,25 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): TrackedDe
       isClassicDecorator || !hasInitialValue
     );
 
-    let fieldDesc = isClassicDecorator ? { initializer: initializer || (() => value) } : desc;
+    let fieldDesc =
+      !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isClassicDecorator
+        ? { initializer: initializer || (() => value) }
+        : desc;
 
     return descriptorForField([target, key, fieldDesc], options);
   };
 
-  setClassicDecorator(decorator);
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    setClassicDecorator(decorator);
+  }
 
   return decorator as TrackedDecorator;
 }
 
-if (DEBUG) {
-  // Normally this isn't a classic decorator, but we want to throw a helpful
-  // error in development so we need it to treat it like one
-  setClassicDecorator(tracked);
-}
+// Normally this isn't a classic decorator, but we want to throw a helpful
+// error in development so we need it to treat it like one
+const _classicTracked =
+  DEBUG && !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? setClassicDecorator(tracked) : undefined;
 
 function descriptorForField(
   [target, key, desc]: ElementDescriptor,
@@ -341,7 +345,10 @@ function descriptorForField(
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
-    if (Array.isArray(value) || isEmberArray(value)) {
+    if (
+      Array.isArray(value) ||
+      (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+    ) {
       consumeTag(tagFor(value, '[]'));
     }
 
@@ -372,9 +379,11 @@ function descriptorForField(
     set,
   };
 
-  COMPUTED_SETTERS.add(set);
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    COMPUTED_SETTERS.add(set);
 
-  metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+    metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+  }
 
   return newDesc;
 }
@@ -421,7 +430,10 @@ function tracked2023(
         get(this: object) {
           consumeTag(tagFor(this, dec.context.name));
           let value = dec.value.get.call(this);
-          if (Array.isArray(value) || isEmberArray(value)) {
+          if (
+            Array.isArray(value) ||
+            (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+          ) {
             consumeTag(tagFor(value, '[]'));
           }
           return value;

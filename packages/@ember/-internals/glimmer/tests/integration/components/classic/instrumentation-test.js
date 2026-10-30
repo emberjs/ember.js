@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, testUnless } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import {
@@ -55,7 +55,7 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test it should receive an instrumentation event for both initial render and updates']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it should receive an instrumentation event for both initial render and updates`]() {
       let testCase = this;
 
       let BaseClass = class extends Component {

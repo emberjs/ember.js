@@ -7,6 +7,7 @@ import {
 
 import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
@@ -23,7 +24,7 @@ moduleFor(
       return {
         location: 'none',
         setupRouter() {
-          this._super(...arguments);
+          EmberRouter.prototype.setupRouter.apply(this, arguments);
           let getRoute = this._routerMicrolib.getRoute;
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);
@@ -88,49 +89,54 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'controller:application',
-              class extends Controller {
-                queryParams = ['lang'];
-                lang = '';
-              }
-            );
-            this.register(
-              'controller:category',
-              class extends Controller {
-                queryParams = ['type'];
-              }
-            );
-            this.register(
-              'controller:authorKtrl',
-              class extends Controller {
-                queryParams = ['official'];
-              }
-            );
-            this.register(
-              'template:application',
-              precompileTemplate('Engine{{this.lang}}{{outlet}}')
-            );
-            this.register(
-              'route:application',
-              class extends Route {
-                model() {
-                  hooks.push('engine - application');
-                }
-              }
-            );
-            this.register(
-              'route:author',
-              class extends Route {
-                controllerName = 'authorKtrl';
-              }
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
 
-            if (self._additionalEngineRegistrations) {
-              self._additionalEngineRegistrations.call(this);
-            }
+              initialize(engine) {
+                engine.register(
+                  'controller:application',
+                  class extends Controller {
+                    queryParams = ['lang'];
+                    lang = '';
+                  }
+                );
+                engine.register(
+                  'controller:category',
+                  class extends Controller {
+                    queryParams = ['type'];
+                  }
+                );
+                engine.register(
+                  'controller:authorKtrl',
+                  class extends Controller {
+                    queryParams = ['official'];
+                  }
+                );
+                engine.register(
+                  'template:application',
+                  precompileTemplate('Engine{{this.lang}}{{outlet}}')
+                );
+                engine.register(
+                  'route:application',
+                  class extends Route {
+                    model() {
+                      hooks.push('engine - application');
+                    }
+                  }
+                );
+                engine.register(
+                  'route:author',
+                  class extends Route {
+                    controllerName = 'authorKtrl';
+                  }
+                );
+
+                if (self._additionalEngineRegistrations) {
+                  self._additionalEngineRegistrations.call(engine);
+                }
+              },
+            });
           }
         }
       );
@@ -144,18 +150,22 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('template:application', precompileTemplate('Engine'));
-            this.register(
-              'controller:application',
-              class extends Controller {
-                init() {
-                  super.init(...arguments);
-                  hooks.push('engine - application');
-                }
-              }
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('template:application', precompileTemplate('Engine'));
+                engine.register(
+                  'controller:application',
+                  class extends Controller {
+                    constructor(owner) {
+                      super(owner);
+                      hooks.push('engine - application');
+                    }
+                  }
+                );
+              },
+            });
           }
         }
       );
@@ -207,20 +217,26 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-
-            this.register(
-              'controller:application',
-              class extends Controller {
-                contextType = 'Engine';
-              }
-            );
-            this.register('template:application', sharedTemplate);
-            this.register(
-              'component:ambiguous-curlies',
-              setComponentTemplate(precompileTemplate(`<p>Component!</p>`), templateOnlyComponent())
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'controller:application',
+                  class extends Controller {
+                    contextType = 'Engine';
+                  }
+                );
+                engine.register('template:application', sharedTemplate);
+                engine.register(
+                  'component:ambiguous-curlies',
+                  setComponentTemplate(
+                    precompileTemplate(`<p>Component!</p>`),
+                    templateOnlyComponent()
+                  )
+                );
+              },
+            });
           }
         }
       );
@@ -256,17 +272,24 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate('<h1>Engine</h1>{{my-component}}{{outlet}}')
-            );
-            this.register('component:my-component', sharedComponent);
-            this.register(
-              'component:ambiguous-curlies',
-              setComponentTemplate(precompileTemplate(`<p>Component!</p>`), templateOnlyComponent())
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate('<h1>Engine</h1>{{my-component}}{{outlet}}')
+                );
+                engine.register('component:my-component', sharedComponent);
+                engine.register(
+                  'component:ambiguous-curlies',
+                  setComponentTemplate(
+                    precompileTemplate(`<p>Component!</p>`),
+                    templateOnlyComponent()
+                  )
+                );
+              },
+            });
           }
         }
       );
@@ -350,18 +373,22 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('template:application', precompileTemplate('Engine{{outlet}}'));
-            this.register(
-              'route:application',
-              class extends Route {
-                deactivate() {
-                  assert.notOk(this.isDestroyed, 'Route is not destroyed');
-                  assert.notOk(this.isDestroying, 'Route is not being destroyed');
-                }
-              }
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('template:application', precompileTemplate('Engine{{outlet}}'));
+                engine.register(
+                  'route:application',
+                  class extends Route {
+                    deactivate() {
+                      assert.notOk(this.isDestroyed, 'Route is not destroyed');
+                      assert.notOk(this.isDestroying, 'Route is not being destroyed');
+                    }
+                  }
+                );
+              },
+            });
           }
         }
       );
@@ -794,7 +821,7 @@ moduleFor(
         this.register(
           'route:application',
           class extends Route {
-            init() {
+            constructor() {
               throw new Error('Whoops! Something went wrong...');
             }
           }
@@ -826,39 +853,43 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'controller:application',
-              class extends Controller {
-                queryParams = ['lazyQueryParam'];
-              }
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'controller:application',
+                  class extends Controller {
+                    queryParams = ['lazyQueryParam'];
+                  }
+                );
 
-            this.register(
-              'template:application',
-              precompileTemplate(
-                'Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}'
-              )
-            );
+                engine.register(
+                  'template:application',
+                  precompileTemplate(
+                    'Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}'
+                  )
+                );
 
-            this.register(
-              'route:application',
-              class extends Route {
-                queryParams = {
-                  lazyQueryParam: {
-                    defaultValue: null,
-                  },
-                };
-                deserializeQueryParam() {
-                  hooks.push('engine - deserialize query param');
-                  return 'foo';
-                }
-                model() {
-                  hooks.push('engine - application');
-                }
-              }
-            );
+                engine.register(
+                  'route:application',
+                  class extends Route {
+                    queryParams = {
+                      lazyQueryParam: {
+                        defaultValue: null,
+                      },
+                    };
+                    deserializeQueryParam() {
+                      hooks.push('engine - deserialize query param');
+                      return 'foo';
+                    }
+                    model() {
+                      hooks.push('engine - application');
+                    }
+                  }
+                );
+              },
+            });
           }
         }
       );

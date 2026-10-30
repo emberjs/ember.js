@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
-import { action, set } from '@ember/object';
+import { set } from '@ember/object';
 import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -155,10 +155,10 @@ moduleFor(
       assert.expect(2);
 
       this.render(`{{input enter=this.foo}}`, {
-        foo: action(function (value, event) {
+        foo(value, event) {
           assert.ok(true, 'action was triggered');
           assert.ok(event instanceof Event, 'Native event was passed');
-        }),
+        },
       });
 
       this.triggerEvent('keyup', {

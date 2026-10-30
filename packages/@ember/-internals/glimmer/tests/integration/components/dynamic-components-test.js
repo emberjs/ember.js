@@ -7,7 +7,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(

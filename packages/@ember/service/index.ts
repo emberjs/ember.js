@@ -1,11 +1,15 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+import { assert } from '@ember/debug';
 import type {
   DecoratorPropertyDescriptor,
   ElementDescriptor,
 } from '@ember/-internals/metal/lib/decorator';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
 import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
+import type Owner from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
 
 /**
  @module @ember/service
@@ -111,9 +115,44 @@ export function service(
   @since 1.10.0
   @public
 */
-export default class Service extends FrameworkObject {
+class Service extends FrameworkObject {
   static isServiceFactory = true;
 }
+
+/**
+  The `Service` base class when the `EMBER_DROP_CLASSIC_FEATURES` build flag
+  is set. It extends no other class.
+
+  The owner passes itself to the constructor, as it does for Glimmer
+  components. When the owner is destroyed, the container calls
+  `willDestroy`, then destroys the service with `@ember/destroyable`.
+*/
+class PlainService {
+  static isServiceFactory = true;
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainService>(this: new (owner: Owner) => T, props: object): T {
+    let owner = getOwner(props);
+    assert('A service must be created by its owner', owner);
+
+    return new this(owner);
+  }
+
+  constructor(owner: Owner) {
+    setOwner(this, owner);
+  }
+
+  /** Empty, so that `super.willDestroy()` works in subclasses. */
+  willDestroy(): void {}
+}
+
+const ExportedService = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainService : Service
+) as typeof Service;
+type ExportedService = Service;
+
+export default ExportedService;
 
 /**
   A type registry for Ember `Service`s. Meant to be declaration-merged so string

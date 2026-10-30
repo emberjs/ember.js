@@ -1,13 +1,13 @@
 import { inject } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
-import EmberObject from '@ember/object';
-import { buildOwner } from 'internal-test-helpers';
+import EmberObject from '@ember/object/lib/ember-object';
+import { buildOwner, testUnless } from 'internal-test-helpers';
 import { runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'inject',
   class extends AbstractTestCase {
-    ['@test attempting to inject a nonexistent container key should error']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test attempting to inject a nonexistent container key should error`]() {
       let owner = buildOwner();
       let AnObject = class extends EmberObject {
         @inject('bar', 'baz')
@@ -23,7 +23,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test factories should return a list of lazy injection full names'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test factories should return a list of lazy injection full names`](
+      assert
+    ) {
       if (DEBUG) {
         let AnObject = class extends EmberObject {
           @inject('foo', 'bar')

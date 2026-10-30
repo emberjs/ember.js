@@ -1,5 +1,5 @@
 import { peekMeta } from '@ember/-internals/meta';
-import ArrayProxy from '@ember/array/proxy';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -20,7 +20,7 @@ moduleFor(
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting 'content' adds listeners correctly`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting 'content' adds listeners correctly`](
       assert
     ) {
       let content = [];
@@ -39,7 +39,7 @@ moduleFor(
       ]);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test changing 'content' adds and removes listeners correctly`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test changing 'content' adds and removes listeners correctly`](
       assert
     ) {
       let content1 = [];

@@ -1,8 +1,8 @@
 import { run } from '@ember/runloop';
 import { objectAt } from '@ember/-internals/metal';
 import { computed } from '@ember/object';
-import ArrayProxy from '@ember/array/proxy';
-import { A as emberA } from '@ember/array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -48,7 +48,7 @@ moduleFor(
       run(() => array.destroy());
     }
 
-    [`${testUnless(REMOVED)} @test compact - returns arrangedContent without nulls and undefined`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test compact - returns arrangedContent without nulls and undefined`](
       assert
     ) {
       run(() => array.set('content', emberA([1, 3, null, 2, undefined])));
@@ -56,64 +56,78 @@ moduleFor(
       assert.deepEqual(array.compact(), [3, 2, 1]);
     }
 
-    [`${testUnless(REMOVED)} @test indexOf - returns index of object in arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test indexOf - returns index of object in arrangedContent`](
+      assert
+    ) {
       assert.equal(array.indexOf(4), 1, 'returns arranged index');
     }
 
-    [`${testUnless(REMOVED)} @test lastIndexOf - returns last index of object in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lastIndexOf - returns last index of object in arrangedContent`](
       assert
     ) {
       array.get('content').pushObject(4);
       assert.equal(array.lastIndexOf(4), 2, 'returns last arranged index');
     }
 
-    [`${testUnless(REMOVED)} @test objectAt - returns object at index in arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectAt - returns object at index in arrangedContent`](
+      assert
+    ) {
       assert.equal(objectAt(array, 1), 4, 'returns object at index');
     }
 
     // Not sure if we need a specific test for it, since it's internal
-    [`${testUnless(REMOVED)} @test objectAtContent - returns object at index in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectAtContent - returns object at index in arrangedContent`](
       assert
     ) {
       assert.equal(array.objectAtContent(1), 4, 'returns object at index');
     }
 
-    [`${testUnless(REMOVED)} @test objectsAt - returns objects at indices in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectsAt - returns objects at indices in arrangedContent`](
       assert
     ) {
       assert.deepEqual(array.objectsAt([0, 2, 4]), [5, 2, undefined], 'returns objects at indices');
     }
 
-    [`${testUnless(REMOVED)} @test replace - mutating an arranged ArrayProxy is not allowed`]() {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test replace - mutating an arranged ArrayProxy is not allowed`]() {
       expectAssertion(() => {
         array.replace(0, 0, [3]);
       }, /Mutating an arranged ArrayProxy is not allowed/);
     }
 
-    [`${testUnless(REMOVED)} @test replaceContent - does a standard array replace on content`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test replaceContent - does a standard array replace on content`](
       assert
     ) {
       run(() => array.replaceContent(1, 2, [3]));
       assert.deepEqual(array.get('content'), [1, 3, 5]);
     }
 
-    [`${testUnless(REMOVED)} @test slice - returns a slice of the arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test slice - returns a slice of the arrangedContent`](
+      assert
+    ) {
       assert.deepEqual(array.slice(1, 3), [4, 2], 'returns sliced arrangedContent');
     }
 
-    [`${testUnless(REMOVED)} @test toArray - returns copy of arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test toArray - returns copy of arrangedContent`](
+      assert
+    ) {
       assert.deepEqual(array.toArray(), [5, 4, 2, 1]);
     }
 
-    [`${testUnless(REMOVED)} @test without - returns arrangedContent without object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test without - returns arrangedContent without object`](
+      assert
+    ) {
       assert.deepEqual(array.without(2), [5, 4, 1], 'returns arranged without object');
     }
 
-    [`${testUnless(REMOVED)} @test lastObject - returns last arranged object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lastObject - returns last arranged object`](
+      assert
+    ) {
       assert.equal(array.get('lastObject'), 1, 'returns last arranged object');
     }
 
-    [`${testUnless(REMOVED)} @test firstObject - returns first arranged object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test firstObject - returns first arranged object`](
+      assert
+    ) {
       assert.equal(array.get('firstObject'), 5, 'returns first arranged object');
     }
   }
@@ -202,29 +216,33 @@ moduleFor(
       });
     }
 
-    [`${testUnless(REMOVED)} @test indexOf - returns index of object in arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test indexOf - returns index of object in arrangedContent`](
+      assert
+    ) {
       assert.equal(array.indexOf('4'), 1, 'returns arranged index');
     }
 
-    [`${testUnless(REMOVED)} @test lastIndexOf - returns last index of object in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lastIndexOf - returns last index of object in arrangedContent`](
       assert
     ) {
       array.get('content').pushObject(4);
       assert.equal(array.lastIndexOf('4'), 2, 'returns last arranged index');
     }
 
-    [`${testUnless(REMOVED)} @test objectAt - returns object at index in arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectAt - returns object at index in arrangedContent`](
+      assert
+    ) {
       assert.equal(objectAt(array, 1), '4', 'returns object at index');
     }
 
     // Not sure if we need a specific test for it, since it's internal
-    [`${testUnless(REMOVED)} @test objectAtContent - returns object at index in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectAtContent - returns object at index in arrangedContent`](
       assert
     ) {
       assert.equal(array.objectAtContent(1), '4', 'returns object at index');
     }
 
-    [`${testUnless(REMOVED)} @test objectsAt - returns objects at indices in arrangedContent`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test objectsAt - returns objects at indices in arrangedContent`](
       assert
     ) {
       assert.deepEqual(
@@ -234,23 +252,33 @@ moduleFor(
       );
     }
 
-    [`${testUnless(REMOVED)} @test slice - returns a slice of the arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test slice - returns a slice of the arrangedContent`](
+      assert
+    ) {
       assert.deepEqual(array.slice(1, 3), ['4', '2'], 'returns sliced arrangedContent');
     }
 
-    [`${testUnless(REMOVED)} @test toArray - returns copy of arrangedContent`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test toArray - returns copy of arrangedContent`](
+      assert
+    ) {
       assert.deepEqual(array.toArray(), ['5', '4', '2', '1']);
     }
 
-    [`${testUnless(REMOVED)} @test without - returns arrangedContent without object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test without - returns arrangedContent without object`](
+      assert
+    ) {
       assert.deepEqual(array.without('2'), ['5', '4', '1'], 'returns arranged without object');
     }
 
-    [`${testUnless(REMOVED)} @test lastObject - returns last arranged object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lastObject - returns last arranged object`](
+      assert
+    ) {
       assert.equal(array.get('lastObject'), '1', 'returns last arranged object');
     }
 
-    [`${testUnless(REMOVED)} @test firstObject - returns first arranged object`](assert) {
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test firstObject - returns first arranged object`](
+      assert
+    ) {
       assert.equal(array.get('firstObject'), '5', 'returns first arranged object');
     }
   }

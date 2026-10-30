@@ -2,9 +2,9 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
-import EmberObject from '@ember/object';
-import Namespace from '@ember/application/namespace';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import EmberObject from '@ember/object/lib/ember-object';
+import Namespace from '@ember/application/lib/namespace';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 
 const originalLookup = context.lookup;
 let lookup;
@@ -30,7 +30,9 @@ moduleFor(
       context.lookup = originalLookup;
     }
 
-    ['@test Namespace should be a subclass of EmberObject'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Namespace should be a subclass of EmberObject`](
+      assert
+    ) {
       assert.ok(EmberObject.detect(Namespace));
     }
 

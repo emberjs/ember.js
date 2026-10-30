@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 import { action } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 import Component from '@glimmer/component';
@@ -137,7 +144,9 @@ moduleFor(
       assert.equal(this.$('#nested-prop').text(), '1');
     }
 
-    ['@test parameters in a contextual component are mutable when value is a param'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test parameters in a contextual component are mutable when value is a param`](
+      assert
+    ) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
       this.owner.register(
@@ -390,7 +399,9 @@ class MutableParamTestGenerator {
 
   generate({ title, setup }) {
     return {
-      [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} parameters in a contextual component are mutable when value is a ${title}`](
+        assert
+      ) {
         this.owner.register(
           'component:change-button',
           setComponentTemplate(

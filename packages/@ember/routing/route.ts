@@ -1,5 +1,6 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { addObserver } from '@ember/-internals/metal/lib/observer';
+import { flushChanges, watchProperty } from '@ember/-internals/metal/lib/watchers';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
 import {
@@ -10,14 +11,13 @@ import {
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
+import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import type { default as BucketCache } from './lib/cache';
-import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
@@ -30,7 +30,7 @@ import type { ControllerQueryParamType } from '@ember/controller';
 import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import { dependentKeyCompat } from '@ember/object/compat';
+import { dependentKeyCompat } from '@ember/object/lib/dependent-key-compat';
 import { once } from '@ember/runloop';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
@@ -281,11 +281,56 @@ interface Route<Model = unknown> extends InternalActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
+/**
+  The base class of `Route` when the `EMBER_DROP_CLASSIC_FEATURES` build flag
+  is set. It extends no other class.
+
+  The owner passes itself to the constructor. A route without an owner is
+  allowed, as on the classic class. `destroy()` destroys the route, and
+  `willDestroy()` is the teardown hook, as on the classic class.
+*/
+class PlainRouteBase {
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainRouteBase>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+
+    if (this.willDestroy !== PlainRouteBase.prototype.willDestroy) {
+      registerDestructor(this, () => this.willDestroy());
+    }
+  }
+
+  destroy(): void {
+    destroy(this);
+  }
+
+  willDestroy(): void {}
+}
+
+/**
+  A function, so that builds with the flag do not create the classic base
+  when the module loads.
+*/
+function classicRouteBase() {
+  return EmberObject.extend(InternalActionHandler);
+}
+
+const RouteBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainRouteBase : classicRouteBase()
+) as ReturnType<typeof classicRouteBase>;
+
+class Route<Model = unknown> extends RouteBase {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
-    metaFor(this.prototype).addMixin(Evented);
+    if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      metaFor(this.prototype).addMixin(Evented);
+    }
   }
 
   static isRouteFactory = true;
@@ -370,11 +415,13 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
         object[name] = get(model, 'id');
-      } else if (isProxy(model)) {
+      } else if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isProxy(model)) {
         object[name] = get(model, name);
       }
     } else {
-      object = getProperties(model, params);
+      for (let name of params) {
+        object[name] = get(model, name);
+      }
     }
 
     return object;
@@ -969,7 +1016,11 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     let definedController = this.controllerFor(controllerName, true);
     let controller = definedController ?? this.generateController(controllerName);
     let queryParams = get(this, '_qp') as Route<Model>['_qp'];
-    addQueryParamsObservers(controller, queryParams.propertyNames);
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      watchQueryParams(controller, queryParams.propertyNames);
+    } else {
+      addQueryParamsObservers(controller, queryParams.propertyNames);
+    }
     this.controller = controller;
     return controller;
   }
@@ -1009,7 +1060,13 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
       });
 
       let qpValues = getQueryParamsFor(this, transition[STATE_SYMBOL]!);
-      setProperties(controller, qpValues);
+      if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        for (let [prop, value] of Object.entries(qpValues)) {
+          set(controller, prop, value);
+        }
+      } else {
+        setProperties(controller, qpValues);
+      }
     }
 
     this.setupController(controller, context, transition);
@@ -1020,7 +1077,7 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
-    flushAsyncObservers(false);
+    flushChanges(false);
   }
 
   /*
@@ -1582,9 +1639,14 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     return params;
   }
 
+  #store?: { find(name: string, value: unknown): unknown };
+
   /** @deprecated Manually define your own store, such as with `@service store` */
-  @computed
   protected get _store() {
+    return (this.#store ??= this._buildStore());
+  }
+
+  private _buildStore() {
     const owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let routeName = this.routeName;
@@ -1631,12 +1693,17 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     };
   }
 
+  #qp?: QueryParamMeta;
+
   /**
     @private
     @property _qp
     */
-  @computed
   protected get _qp(): QueryParamMeta {
+    return (this.#qp ??= this._buildQp());
+  }
+
+  private _buildQp(): QueryParamMeta {
     let combinedQueryParameterConfiguration: ReturnType<typeof mergeEachQueryParams> = {};
 
     let controllerName = this.controllerName || this.routeName;
@@ -1938,6 +2005,12 @@ function mergeEachQueryParams(
   return qps;
 }
 
+function watchQueryParams(controller: any, propNames: string[]) {
+  for (let prop of propNames) {
+    watchProperty(controller, prop, () => controller._qpChanged(controller, prop));
+  }
+}
+
 function addQueryParamsObservers(controller: any, propNames: string[]) {
   propNames.forEach((prop) => {
     if (descriptorForProperty(controller, prop) === undefined) {
@@ -1981,22 +2054,23 @@ export function hasDefaultSerialize(route: Route): boolean {
   return route.serialize === defaultSerialize;
 }
 
-// Set these here so they can be overridden with extend
-Route.reopen({
-  mergedProperties: ['queryParams'],
+/**
+  These defaults sit on the prototype, so subclasses can override them. The
+  classic class also merges the `queryParams` of `Route.extend()` calls.
+*/
+const ROUTE_DEFAULTS = {
   queryParams: {},
   templateName: null,
   controllerName: null,
 
-  send(...args: any[]) {
+  send(this: Route, name: string, ...args: any[]) {
     assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
-      !this.isDestroying && !this.isDestroyed
+      `Attempted to call .send() with the action '${name}' on the destroyed route '${this.routeName}'.`,
+      !isDestroying(this) && !isDestroyed(this)
     );
     if ((this._router && this._router._routerMicrolib) || !isTesting()) {
-      this._router.send(...args);
+      this._router.send(name, ...args);
     } else {
-      let name = args.shift();
       let action = this.actions[name];
       if (action) {
         return action.apply(this, args);
@@ -2079,7 +2153,13 @@ Route.reopen({
       );
     },
   },
-});
+};
+
+if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  Object.assign(Route.prototype, ROUTE_DEFAULTS);
+} else {
+  Route.reopen({ mergedProperties: ['queryParams'] }, ROUTE_DEFAULTS);
+}
 
 setRouteManager((owner) => new ClassicRouteManager(owner), Route);
 

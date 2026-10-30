@@ -1,31 +1,17 @@
-import { InternalMixin } from '@ember/object/mixin-internal';
-import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
-
 /**
 @module @ember/enumerable
 @private
 @deprecated
 */
+import Enumerable from '@ember/enumerable/lib/enumerable';
 
 /**
-  The methods in this mixin have been moved to [MutableArray](/ember/release/classes/MutableArray). This mixin has
-  been intentionally preserved to avoid breaking Enumerable.detect checks
-  until the community migrates away from them.
-
-  @class Enumerable
-  @private
-  @deprecated Use native arrays and array methods instead.
+  Framework code imports the mixin from `@ember/enumerable/lib/enumerable`, so that it
+  keeps working when the build flag removes this export.
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface Enumerable {}
-const Enumerable = InternalMixin.create({
-  init() {
-    this._super(...arguments);
-    deprecateUntil(
-      'The `Enumerable` mixin is deprecated. Use native arrays and array methods instead.',
-      DEPRECATIONS.DEPRECATE_ENUMERABLE_MIXIN
-    );
-  },
-});
+const ExportedEnumerable = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : Enumerable
+) as typeof Enumerable;
+type ExportedEnumerable = Enumerable;
 
-export default Enumerable;
+export default ExportedEnumerable;

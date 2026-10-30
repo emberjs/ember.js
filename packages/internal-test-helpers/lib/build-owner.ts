@@ -44,13 +44,16 @@ export default function buildOwner(
       Resolver: new ResolverWrapper(resolver),
     });
   } else {
-    namespace = Engine.create({
-      buildRegistry(this: Engine) {
+    class TestEngine extends Engine {
+      Resolver = new ResolverWrapper(resolver) as unknown as Engine['Resolver'];
+
+      buildRegistry() {
         // SAFETY: This cast isn't that safe, but it should be ok for tests.
         return (this.__registry__ = Application.buildRegistry(this as unknown as Application));
-      },
-      Resolver: new ResolverWrapper(resolver),
-    });
+      }
+    }
+
+    namespace = TestEngine.create();
   }
 
   let owner = namespace.buildInstance(ownerOptions);

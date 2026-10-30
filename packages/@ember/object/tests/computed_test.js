@@ -1,7 +1,11 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
-import { isArray, A as emberA } from '@ember/array';
-import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
+import { isArray } from '@ember/array';
+import { A as emberA } from '@ember/array/lib/ember-array';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get, set, computed } from '@ember/object';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import { observer } from '@ember/object/lib/observer';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -20,7 +24,9 @@ function testGet(assert, expect, x, y) {
 moduleFor(
   'EmberObject computed property',
   class extends AbstractTestCase {
-    ['@test computed property on instance'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed property on instance`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -31,7 +37,9 @@ moduleFor(
       testGet(assert, 'FOO', MyClass.create(), 'foo');
     }
 
-    ['@test computed property on subclass'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed property on subclass`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -49,7 +57,9 @@ moduleFor(
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
-    ['@test replacing computed property with regular val'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test replacing computed property with regular val`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         @computed
         get foo() {
@@ -64,7 +74,9 @@ moduleFor(
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
-    ['@test complex dependent keys'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test complex dependent keys`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -101,7 +113,9 @@ moduleFor(
       testGet(assert, 'BOOM 22', obj2, 'foo');
     }
 
-    ['@test complex dependent keys changing complex dependent keys'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test complex dependent keys changing complex dependent keys`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -143,7 +157,9 @@ moduleFor(
       testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
-    ['@test can retrieve metadata for a computed property'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can retrieve metadata for a computed property`](
+      assert
+    ) {
       let MyClass = EmberObject.extend({
         computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
       });
@@ -178,7 +194,7 @@ moduleFor(
       }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
     }
 
-    ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test overriding a computed property with null removes it from eachComputedProperty iteration`](
       assert
     ) {
       let MyClass = EmberObject.extend({
@@ -204,7 +220,7 @@ moduleFor(
       );
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test can iterate over a list of computed properties for a class`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can iterate over a list of computed properties for a class`](
       assert
     ) {
       expectDeprecation(
@@ -261,7 +277,7 @@ moduleFor(
       );
     }
 
-    ['@test list of properties updates when an additional property is added (such cache busting)'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test list of properties updates when an additional property is added (such cache busting)`](
       assert
     ) {
       let MyClass = EmberObject.extend({
@@ -313,7 +329,9 @@ moduleFor(
       );
     }
 
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Calling _super in call outside the immediate function of a CP getter works`](
+      assert
+    ) {
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -338,7 +356,9 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Calling _super in apply outside the immediate function of a CP getter works`](
+      assert
+    ) {
       let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
@@ -363,7 +383,7 @@ moduleFor(
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test observing prop installed with computed macro reads and overriding it in create() works`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test observing prop installed with computed macro reads and overriding it in create() works`](
       assert
     ) {
       expectDeprecation(
@@ -386,7 +406,9 @@ moduleFor(
       obj2.destroy();
     }
 
-    ['@test native getters and setters work'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test native getters and setters work`](
+      assert
+    ) {
       let MyClass = class extends EmberObject {
         bar = 123;
 
@@ -407,7 +429,9 @@ moduleFor(
       assert.equal(instance.bar, 456, 'setters work');
     }
 
-    [`${testUnless(EMBER_A.isRemoved)} @test @each on maybe array`](assert) {
+    [`${testUnless(EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each on maybe array`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
 
       let Normalizer = EmberObject.extend({
@@ -461,7 +485,9 @@ moduleFor(
       assert.deepEqual(n.normalized, []);
     }
 
-    ['@test @each works on array with falsy values'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each works on array with falsy values`](
+      assert
+    ) {
       let obj = class extends EmberObject {
         falsy = [null, undefined, false, '', 0, {}];
         truthy = [true, 'foo', 123];
@@ -487,7 +513,9 @@ moduleFor(
       }, /When using @each to observe the array `true,foo,123`, the items in the array must be objects/);
     }
 
-    ['@test @each works with array-likes'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test @each works with array-likes`](
+      assert
+    ) {
       class ArrayLike {
         constructor(arr = []) {
           this.inner = arr;
@@ -528,7 +556,7 @@ moduleFor(
       assert.deepEqual(n.normalized, ['bar']);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lazy computation cannot cause infinite cycles`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lazy computation cannot cause infinite cycles`](
       assert
     ) {
       expectDeprecation(
@@ -562,7 +590,9 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test computeds can have cycles'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computeds can have cycles`](
+      assert
+    ) {
       class CycleObject {
         // eslint-disable-next-line getter-return
         @computed('bar')

@@ -1,3 +1,5 @@
+import { set } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { ApplicationTestCase, ModuleBasedTestResolver, moduleFor } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
@@ -213,23 +215,28 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
-                  moduleName: 'foo/templates/application.hbs',
-                })
-              );
-              this.register(
-                'component:inspect-model',
-                setComponentTemplate(
-                  precompileTemplate('{{@model}}', {
-                    moduleName: 'foo/components/inspect-model.hbs',
-                  }),
-                  templateOnly()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
+                      moduleName: 'foo/templates/application.hbs',
+                    })
+                  );
+                  engine.register(
+                    'component:inspect-model',
+                    setComponentTemplate(
+                      precompileTemplate('{{@model}}', {
+                        moduleName: 'foo/components/inspect-model.hbs',
+                      }),
+                      templateOnly()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {
@@ -247,23 +254,28 @@ if (ENV._DEBUG_RENDER_TREE) {
           class extends Engine {
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
-                  moduleName: 'bar/templates/application.hbs',
-                })
-              );
-              this.register(
-                'component:inspect-model',
-                setComponentTemplate(
-                  precompileTemplate('{{@model}}', {
-                    moduleName: 'bar/components/inspect-model.hbs',
-                  }),
-                  templateOnly()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate('{{#if @model}}<InspectModel @model={{@model}} />{{/if}}', {
+                      moduleName: 'bar/templates/application.hbs',
+                    })
+                  );
+                  engine.register(
+                    'component:inspect-model',
+                    setComponentTemplate(
+                      precompileTemplate('{{@model}}', {
+                        moduleName: 'bar/components/inspect-model.hbs',
+                      }),
+                      templateOnly()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {
@@ -301,7 +313,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', 'bar');
+          set(this.controllerFor('application')!, 'engineName', 'bar');
         });
 
         this.assertRenderTree([
@@ -346,7 +358,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', undefined);
+          set(this.controllerFor('application')!, 'engineName', undefined);
         });
 
         this.assertRenderTree([
@@ -378,7 +390,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         };
 
         runTask(() => {
-          this.controllerFor('application')!.setProperties({
+          setProperties(this.controllerFor('application')!, {
             showMore: true,
             engineModel: model,
           });
@@ -435,7 +447,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', 'bar');
+          set(this.controllerFor('application')!, 'engineName', 'bar');
         });
 
         this.assertRenderTree([
@@ -536,7 +548,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.setProperties({
+          setProperties(this.controllerFor('application')!, {
             showMore: false,
             engineName: undefined,
           });
@@ -579,28 +591,33 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
-              super.init(properties);
-              this.register(
-                'template:application',
-                precompileTemplate(
-                  '{{outlet}}{{#if this.message}}<Hello @message={{this.message}} />{{/if}}',
-                  { moduleName: 'foo/templates/application.hbs' }
-                )
-              );
-              this.register(
-                'template:index',
-                precompileTemplate('Foo', { moduleName: 'foo/templates/index.hbs' })
-              );
-              this.register(
-                'component:hello',
-                setComponentTemplate(
-                  precompileTemplate('<span>Hello {{@message}}</span>', {
-                    moduleName: 'foo/components/hello.hbs',
-                  }),
-                  templateOnlyComponent()
-                )
-              );
+            static {
+              this.initializer({
+                name: 'register-test-factories',
+
+                initialize(engine: Engine) {
+                  engine.register(
+                    'template:application',
+                    precompileTemplate(
+                      '{{outlet}}{{#if this.message}}<Hello @message={{this.message}} />{{/if}}',
+                      { moduleName: 'foo/templates/application.hbs' }
+                    )
+                  );
+                  engine.register(
+                    'template:index',
+                    precompileTemplate('Foo', { moduleName: 'foo/templates/index.hbs' })
+                  );
+                  engine.register(
+                    'component:hello',
+                    setComponentTemplate(
+                      precompileTemplate('<span>Hello {{@message}}</span>', {
+                        moduleName: 'foo/components/hello.hbs',
+                      }),
+                      templateOnlyComponent()
+                    )
+                  );
+                },
+              });
             }
 
             buildInstance(options?: EngineInstanceOptions): EngineInstance {
@@ -674,7 +691,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         runTask(() => {
           let controller = instance!.lookup('controller:application');
           assert('Expected an instance of controller', controller instanceof Controller);
-          controller.set('message', 'World');
+          set(controller, 'message', 'World');
         });
 
         this.assertRenderTree([
@@ -726,7 +743,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         runTask(() => {
           let controller = instance!.lookup('controller:application');
           assert('Expected an instance of controller', controller instanceof Controller);
-          controller.set('message', undefined);
+          set(controller, 'message', undefined);
         });
 
         this.assertRenderTree([
@@ -812,7 +829,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -835,7 +852,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -878,7 +895,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -901,7 +918,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -947,7 +964,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -970,7 +987,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1013,7 +1030,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -1036,7 +1053,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1094,7 +1111,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -1117,7 +1134,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1296,7 +1313,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           },
         ]);
 
-        runTask(() => target.set('showSecond', true));
+        runTask(() => set(target, 'showSecond', true));
 
         const secondModifiers: ExpectedRenderNode['children'] = [
           {
@@ -1360,7 +1377,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           },
         ]);
 
-        runTask(() => target.set('showSecond', false));
+        runTask(() => set(target, 'showSecond', false));
 
         this.assertRenderTree([
           {
@@ -1446,7 +1463,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         const secondModifiers: ExpectedRenderNode['children'] = [
@@ -1498,7 +1515,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
@@ -1544,7 +1561,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          set(this.controllerFor('application')!, 'showSecond', true);
         });
 
         const secondModifiers: ExpectedRenderNode['children'] = [
@@ -1580,7 +1597,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          set(this.controllerFor('application')!, 'showSecond', false);
         });
 
         this.assertRenderTree([

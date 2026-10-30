@@ -1,15 +1,19 @@
 import { setOwner } from '@ember/-internals/owner';
 import { defineProperty, get, isClassicDecorator, set, inject } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'inject',
   class extends AbstractTestCase {
-    ['@test injected properties should be descriptors'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test injected properties should be descriptors`](
+      assert
+    ) {
       assert.ok(isClassicDecorator(inject('type')));
     }
 
-    ['@test injected properties should be overridable'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test injected properties should be overridable`](
+      assert
+    ) {
       let obj = {};
       defineProperty(obj, 'foo', inject('type'));
 
@@ -18,7 +22,7 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'bar', 'should return the overridden value');
     }
 
-    ['@test getting on an object without an owner or container should fail assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting on an object without an owner or container should fail assertion`]() {
       let obj = {};
       defineProperty(obj, 'foo', inject('type', 'name'));
 
@@ -27,7 +31,9 @@ moduleFor(
       }, /Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container./);
     }
 
-    ['@test getting on an object without an owner but with a container should not fail'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting on an object without an owner but with a container should not fail`](
+      assert
+    ) {
       let obj = {
         container: {
           lookup(key) {
@@ -42,7 +48,9 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
     }
 
-    ['@test getting should return a lookup on the container'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting should return a lookup on the container`](
+      assert
+    ) {
       assert.expect(2);
 
       let obj = {};
@@ -59,7 +67,9 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
     }
 
-    ['@test omitting the lookup name should default to the property name'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test omitting the lookup name should default to the property name`](
+      assert
+    ) {
       let obj = {};
 
       setOwner(obj, {

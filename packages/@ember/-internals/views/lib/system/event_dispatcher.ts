@@ -1,8 +1,11 @@
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
+import { isDestroyed, isDestroying } from '@glimmer/destroyable';
+import type Owner from '@ember/owner';
 import { getElementView } from './utils';
 import type { BootEnvironment } from '@ember/engine/instance';
 import type Component from '@ember/-internals/glimmer/lib/component';
@@ -15,6 +18,47 @@ const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
+  The base class of `EventDispatcher` when the `EMBER_DROP_CLASSIC_FEATURES` build
+  flag is set. It extends no other class.
+
+  When the owner is destroyed, the container calls `willDestroy`, then
+  destroys the instance with `@ember/destroyable`.
+*/
+class PlainEventDispatcherBase {
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainEventDispatcherBase>(
+    this: new (owner: Owner) => T,
+    props: object
+  ): T {
+    let owner = getOwner(props);
+    assert('EventDispatcher must be created by its owner', owner);
+
+    return new this(owner);
+  }
+
+  constructor(owner: Owner) {
+    setOwner(this, owner);
+  }
+
+  get isDestroying(): boolean {
+    return isDestroying(this);
+  }
+
+  get isDestroyed(): boolean {
+    return isDestroyed(this);
+  }
+
+  /** Empty, so that `super.willDestroy()` works in subclasses. */
+  willDestroy(): void {}
+}
+
+const EventDispatcherBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainEventDispatcherBase : EmberObject
+) as typeof EmberObject;
+
+/**
   `EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
   `EventDispatcher` ensures that that view's `mouseDown` method gets
@@ -25,7 +69,7 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @private
   @extends EmberObject
 */
-export default class EventDispatcher extends EmberObject {
+export default class EventDispatcher extends EventDispatcherBase {
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
@@ -292,7 +336,9 @@ export default class EventDispatcher extends EmberObject {
     this.lazyEvents.delete(event);
   }
 
-  destroy() {
+  willDestroy() {
+    super.willDestroy();
+
     if (this._didSetup === false) {
       return;
     }
@@ -308,8 +354,6 @@ export default class EventDispatcher extends EmberObject {
     }
 
     rootElement.classList.remove(ROOT_ELEMENT_CLASS);
-
-    return this._super(...arguments);
   }
 
   toString() {

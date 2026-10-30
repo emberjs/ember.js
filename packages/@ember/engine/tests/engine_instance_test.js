@@ -17,10 +17,10 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create({
-          router: null,
-          Resolver: ModuleBasedTestResolver,
-        });
+        engine = class extends Engine {
+          router = null;
+          Resolver = ModuleBasedTestResolver;
+        }.create();
       });
     }
 

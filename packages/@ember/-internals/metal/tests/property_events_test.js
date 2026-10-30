@@ -1,11 +1,13 @@
 import { meta } from '@ember/-internals/meta';
 import { notifyPropertyChange, PROPERTY_DID_CHANGE } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'notifyPropertyChange',
   class extends AbstractTestCase {
-    ['@test notifies property changes on instances'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notifies property changes on instances`](
+      assert
+    ) {
       class Foo {
         [PROPERTY_DID_CHANGE](prop) {
           assert.equal(prop, 'bar', 'property change notified');
@@ -17,7 +19,9 @@ moduleFor(
       notifyPropertyChange(foo, 'bar');
     }
 
-    ['@test notifies property changes on instances with meta'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notifies property changes on instances with meta`](
+      assert
+    ) {
       class Foo {
         [PROPERTY_DID_CHANGE](prop) {
           assert.equal(prop, 'bar', 'property change notified');

@@ -1,5 +1,7 @@
+import { get } from '@ember/object';
 import { run } from '@ember/runloop';
 import Controller from '@ember/controller';
+import { isDestroying } from '@ember/destroyable';
 import Router from '@ember/routing/router';
 import { EventDispatcher } from '@ember/-internals/views';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
@@ -56,7 +58,7 @@ moduleFor(
       );
 
       assert.ok(
-        firstController.isDestroying,
+        isDestroying(firstController),
         'controllers are destroyed when their application is reset'
       );
 
@@ -76,11 +78,8 @@ moduleFor(
           eventDispatcherWasSetup++;
         }
 
-        destroy() {
-          if (this.isDestroying) {
-            return;
-          }
-          super.destroy();
+        willDestroy() {
+          super.willDestroy();
 
           eventDispatcherWasDestroyed++;
         }
@@ -125,7 +124,7 @@ moduleFor(
         .then(() => {
           initialApplicationController = this.applicationInstance.lookup('controller:application');
           initialRouter = this.applicationInstance.lookup('router:main');
-          let location = initialRouter.get('location');
+          let location = get(initialRouter, 'location');
 
           assert.equal(location.getURL(), '/one');
           assert.equal(initialRouter.currentPath, 'one');
@@ -147,7 +146,7 @@ moduleFor(
         .then(() => {
           let applicationController = this.applicationInstance.lookup('controller:application');
           let router = this.applicationInstance.lookup('router:main');
-          let location = router.get('location');
+          let location = get(router, 'location');
 
           assert.notEqual(initialRouter, router, 'a different router instance was created');
           assert.notEqual(

@@ -33,328 +33,334 @@ function mockBrowserLocation(path) {
   };
 }
 
-moduleFor(
-  'HistoryLocation',
-  class extends AbstractTestCase {
-    constructor() {
-      super();
+/*
+  With the `EMBER_DROP_CLASSIC_FEATURES` build flag, the plain location
+  classes replace these. `drop_classic_features_test.js` tests them.
+*/
+if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  moduleFor(
+    'HistoryLocation',
+    class extends AbstractTestCase {
+      constructor() {
+        super();
 
-      FakeHistory = {
-        state: null,
-        _states: [],
-        replaceState(state) {
-          this.state = state;
-          this._states[0] = state;
-        },
-        pushState(state) {
-          this.state = state;
-          this._states.unshift(state);
-        },
-      };
+        FakeHistory = {
+          state: null,
+          _states: [],
+          replaceState(state) {
+            this.state = state;
+            this._states[0] = state;
+          },
+          pushState(state) {
+            this.state = state;
+            this._states.unshift(state);
+          },
+        };
 
-      HistoryTestLocation = class extends HistoryLocation {
-        history = FakeHistory;
-      };
-    }
+        HistoryTestLocation = class extends HistoryLocation {
+          history = FakeHistory;
+        };
+      }
 
-    teardown() {
-      run(() => {
-        if (location) {
-          location.destroy();
+      teardown() {
+        run(() => {
+          if (location) {
+            location.destroy();
+          }
+        });
+      }
+
+      ['@test HistoryLocation initState does not get fired on init'](assert) {
+        assert.expect(1);
+
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            assert.ok(true, 'init was called');
+            super.init(...arguments);
+          }
+
+          initState() {
+            assert.ok(false, 'initState() should not be called automatically');
+          }
+        };
+
+        createLocation();
+      }
+
+      ['@test <base> with href sets `baseURL`'](assert) {
+        assert.expect(1);
+
+        let base = document.createElement('base');
+        base.setAttribute('href', '/foo/');
+
+        document.head.appendChild(base);
+
+        try {
+          createLocation();
+          location.initState();
+
+          assert.strictEqual(location.baseURL, '/foo/');
+        } finally {
+          document.head.removeChild(base);
         }
-      });
-    }
+      }
 
-    ['@test HistoryLocation initState does not get fired on init'](assert) {
-      assert.expect(1);
+      ['@test <base> without href is ignored'](assert) {
+        assert.expect(1);
 
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          assert.ok(true, 'init was called');
-          super.init(...arguments);
+        let base = document.createElement('base');
+        base.setAttribute('target', '_parent');
+
+        document.head.appendChild(base);
+
+        try {
+          createLocation();
+          location.initState();
+
+          assert.strictEqual(location.baseURL, '');
+        } finally {
+          document.head.removeChild(base);
         }
+      }
 
-        initState() {
-          assert.ok(false, 'initState() should not be called automatically');
-        }
-      };
+      ['@test base URL is removed when retrieving the current pathname'](assert) {
+        assert.expect(1);
 
-      createLocation();
-    }
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
 
-    ['@test <base> with href sets `baseURL`'](assert) {
-      assert.expect(1);
+            set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+            set(this, 'baseURL', '/base/');
+          }
 
-      let base = document.createElement('base');
-      base.setAttribute('href', '/foo/');
+          initState() {
+            super.initState(...arguments);
 
-      document.head.appendChild(base);
+            assert.equal(this.getURL(), '/foo/bar');
+          }
+        };
 
-      try {
+        createLocation();
+        location.initState();
+      }
+
+      ['@test base URL is preserved when moving around'](assert) {
+        assert.expect(2);
+
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+
+            set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+            set(this, 'baseURL', '/base/');
+          }
+        };
+
+        createLocation();
+        location.initState();
+        location.setURL('/one/two');
+
+        assert.equal(location.history.state.path, '/base/one/two');
+        assert.ok(location.history.state.uuid);
+      }
+
+      ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
         createLocation();
         location.initState();
 
-        assert.strictEqual(location.baseURL, '/foo/');
-      } finally {
-        document.head.removeChild(base);
+        FakeHistory.pushState(null);
+        location.setURL('/three/four');
+
+        assert.equal(location.history.state.path, '/three/four');
+        assert.ok(location.history.state.uuid);
       }
-    }
 
-    ['@test <base> without href is ignored'](assert) {
-      assert.expect(1);
-
-      let base = document.createElement('base');
-      base.setAttribute('target', '_parent');
-
-      document.head.appendChild(base);
-
-      try {
+      ['@test replaceURL continues to set even with a null state (iframes may set this)'](assert) {
         createLocation();
         location.initState();
 
-        assert.strictEqual(location.baseURL, '');
-      } finally {
-        document.head.removeChild(base);
+        FakeHistory.pushState(null);
+        location.replaceURL('/three/four');
+
+        assert.equal(location.history.state.path, '/three/four');
+        assert.ok(location.history.state.uuid);
+      }
+
+      ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+
+            set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+            set(this, 'rootURL', '/app/');
+            set(this, 'baseURL', '/base/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar');
+      }
+
+      ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+
+            set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
+            set(this, 'rootURL', '/bar/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar/baz');
+      }
+
+      ['@test HistoryLocation.getURL() will not remove the rootURL when only a partial match'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/bars/baz'));
+            set(this, 'rootURL', '/bar/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/bars/baz');
+      }
+
+      ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+
+            set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
+            set(this, 'baseURL', '/bar/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar/baz');
+      }
+
+      ['@test HistoryLocation.getURL() will not remove the baseURL when only a partial match'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/bars/baz'));
+            set(this, 'baseURL', '/bar/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/bars/baz');
+      }
+
+      ['@test HistoryLocation.getURL() includes location.search'](assert) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar?time=morphin');
+      }
+
+      ['@test HistoryLocation.getURL() includes location.hash'](assert) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar#pink-power-ranger');
+      }
+
+      ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+      }
+
+      ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            let location = mockBrowserLocation('//admin//profile//');
+            location.pathname = '//admin//profile//'; // mockBrowserLocation does not allow for `//`, so force it
+            set(this, 'location', location);
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/admin/profile/');
+      }
+
+      ['@test HistoryLocation.getURL() treats regex metacharacters in rootURL and baseURL literally'](
+        assert
+      ) {
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/axc/secret'));
+            set(this, 'rootURL', '/a.c/');
+            set(this, 'baseURL', '/a.c/');
+          }
+        };
+
+        createLocation();
+
+        assert.equal(location.getURL(), '/axc/secret');
+      }
+
+      ['@test Existing state is preserved on init'](assert) {
+        let existingState = {
+          path: '/route/path',
+          uuid: 'abcd',
+        };
+
+        FakeHistory.state = existingState;
+
+        HistoryTestLocation = class extends HistoryTestLocation {
+          init() {
+            super.init(...arguments);
+            set(this, 'location', mockBrowserLocation('/route/path'));
+          }
+        };
+
+        createLocation();
+        location.initState();
+        assert.deepEqual(location.history.state, existingState);
       }
     }
-
-    ['@test base URL is removed when retrieving the current pathname'](assert) {
-      assert.expect(1);
-
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-          set(this, 'baseURL', '/base/');
-        }
-
-        initState() {
-          super.initState(...arguments);
-
-          assert.equal(this.getURL(), '/foo/bar');
-        }
-      };
-
-      createLocation();
-      location.initState();
-    }
-
-    ['@test base URL is preserved when moving around'](assert) {
-      assert.expect(2);
-
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-          set(this, 'baseURL', '/base/');
-        }
-      };
-
-      createLocation();
-      location.initState();
-      location.setURL('/one/two');
-
-      assert.equal(location.history.state.path, '/base/one/two');
-      assert.ok(location.history.state.uuid);
-    }
-
-    ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
-      createLocation();
-      location.initState();
-
-      FakeHistory.pushState(null);
-      location.setURL('/three/four');
-
-      assert.equal(location.history.state.path, '/three/four');
-      assert.ok(location.history.state.uuid);
-    }
-
-    ['@test replaceURL continues to set even with a null state (iframes may set this)'](assert) {
-      createLocation();
-      location.initState();
-
-      FakeHistory.pushState(null);
-      location.replaceURL('/three/four');
-
-      assert.equal(location.history.state.path, '/three/four');
-      assert.ok(location.history.state.uuid);
-    }
-
-    ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-          set(this, 'rootURL', '/app/');
-          set(this, 'baseURL', '/base/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar');
-    }
-
-    ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
-          set(this, 'rootURL', '/bar/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar/baz');
-    }
-
-    ['@test HistoryLocation.getURL() will not remove the rootURL when only a partial match'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/bars/baz'));
-          set(this, 'rootURL', '/bar/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/bars/baz');
-    }
-
-    ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
-          set(this, 'baseURL', '/bar/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar/baz');
-    }
-
-    ['@test HistoryLocation.getURL() will not remove the baseURL when only a partial match'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/bars/baz'));
-          set(this, 'baseURL', '/bar/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/bars/baz');
-    }
-
-    ['@test HistoryLocation.getURL() includes location.search'](assert) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar?time=morphin');
-    }
-
-    ['@test HistoryLocation.getURL() includes location.hash'](assert) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar#pink-power-ranger');
-    }
-
-    ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
-    }
-
-    ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          let location = mockBrowserLocation('//admin//profile//');
-          location.pathname = '//admin//profile//'; // mockBrowserLocation does not allow for `//`, so force it
-          set(this, 'location', location);
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/admin/profile/');
-    }
-
-    ['@test HistoryLocation.getURL() treats regex metacharacters in rootURL and baseURL literally'](
-      assert
-    ) {
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/axc/secret'));
-          set(this, 'rootURL', '/a.c/');
-          set(this, 'baseURL', '/a.c/');
-        }
-      };
-
-      createLocation();
-
-      assert.equal(location.getURL(), '/axc/secret');
-    }
-
-    ['@test Existing state is preserved on init'](assert) {
-      let existingState = {
-        path: '/route/path',
-        uuid: 'abcd',
-      };
-
-      FakeHistory.state = existingState;
-
-      HistoryTestLocation = class extends HistoryTestLocation {
-        init() {
-          super.init(...arguments);
-          set(this, 'location', mockBrowserLocation('/route/path'));
-        }
-      };
-
-      createLocation();
-      location.initState();
-      assert.deepEqual(location.history.state, existingState);
-    }
-  }
-);
+  );
+}

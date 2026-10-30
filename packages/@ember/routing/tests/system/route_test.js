@@ -9,11 +9,18 @@ import {
 } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberRoute from '@ember/routing/route';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { get } from '@ember/object';
 
 let route, routeOne, routeTwo, lookupHash;
+
+function createRoute(properties) {
+  let route = EmberRoute.create();
+  Object.assign(route, properties);
+  return route;
+}
 
 moduleFor(
   'Route',
@@ -94,7 +101,7 @@ moduleFor(
     }
 
     ["@test modelFor doesn't require the routerMicrolib"](assert) {
-      let route = EmberRoute.create({
+      let route = createRoute({
         _router: { _routerMicrolib: null },
       });
 
@@ -211,7 +218,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+      DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test returns model.id if model is a Proxy`](assert) {
       expectDeprecation(
         /`ObjectProxy` is deprecated/,
@@ -245,8 +252,8 @@ moduleFor(
         },
       };
 
-      routeOne = EmberRoute.create({ routeName: 'one' });
-      routeTwo = EmberRoute.create({ routeName: 'two' });
+      routeOne = createRoute({ routeName: 'one' });
+      routeTwo = createRoute({ routeName: 'two' });
 
       setOwner(routeOne, owner);
       setOwner(routeTwo, owner);
@@ -267,7 +274,7 @@ moduleFor(
       lookupHash['controller:test'] = {};
 
       routeOne.controllerName = 'test';
-      let qp = routeOne.get('_qp');
+      let qp = get(routeOne, '_qp');
 
       assert.deepEqual(qp.map, {}, 'map should be empty');
       assert.deepEqual(qp.propertyNames, [], 'property names should be empty');
@@ -304,7 +311,7 @@ moduleFor(
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appRoute, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }
@@ -333,28 +340,28 @@ moduleFor(
           routable: true,
 
           mountPoint: 'foo.bar',
-
-          lookup(name) {
-            if (name === 'route:posts') {
-              return postsRoute;
-            } else if (name === 'route:application') {
-              return applicationRoute;
-            }
-          },
         },
       });
 
-      let applicationRoute = EmberRoute.create({
+      engineInstance.lookup = function (name) {
+        if (name === 'route:posts') {
+          return postsRoute;
+        } else if (name === 'route:application') {
+          return applicationRoute;
+        }
+      };
+
+      let applicationRoute = createRoute({
         _router: router,
         routeName: 'application',
         fullRouteName: 'foo.bar',
       });
-      let postsRoute = EmberRoute.create({
+      let postsRoute = createRoute({
         _router: router,
         routeName: 'posts',
         fullRouteName: 'foo.bar.posts',
       });
-      let route = EmberRoute.create({ _router: router });
+      let route = createRoute({ _router: router });
 
       setOwner(applicationRoute, engineInstance);
       setOwner(postsRoute, engineInstance);
@@ -405,15 +412,15 @@ moduleFor(
         },
       });
 
-      let applicationRoute = EmberRoute.create({
+      let applicationRoute = createRoute({
         _router: router,
         routeName: 'application',
       });
-      let postsRoute = EmberRoute.create({
+      let postsRoute = createRoute({
         _router: router,
         routeName: 'posts',
       });
-      let route = EmberRoute.create({ _router: router });
+      let route = createRoute({ _router: router });
 
       setOwner(applicationRoute, engineInstance);
       setOwner(postsRoute, engineInstance);
@@ -440,7 +447,7 @@ moduleFor(
         },
       });
 
-      let route = EmberRoute.create({ _router: router });
+      let route = createRoute({ _router: router });
       setOwner(route, engineInstance);
 
       route.intermediateTransitionTo('application');

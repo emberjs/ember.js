@@ -1,11 +1,18 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { action } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -1415,7 +1422,9 @@ class MutableParamTestGenerator {
 
   generate({ title, setup }) {
     return {
-      [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} parameters in a contextual component are mutable when value is a ${title}`](
+        assert
+      ) {
         this.owner.register(
           'component:change-button',
           setComponentTemplate(

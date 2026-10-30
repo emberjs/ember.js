@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -9,7 +9,7 @@ import Component from '@glimmer/component';
 moduleFor(
   'Helpers test: {{readonly}}',
   class extends RenderingTestCase {
-    '@test updating a {{readonly}} property from above works'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} updating a {{readonly}} property from above works`]() {
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(precompileTemplate('{{@value}}'), class extends Component {})
@@ -32,7 +32,9 @@ moduleFor(
       this.assertText('initial');
     }
 
-    '@test updating a nested path of a {{readonly}}'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} updating a nested path of a {{readonly}}`](
+      assert
+    ) {
       let component;
 
       this.owner.register(
@@ -68,7 +70,7 @@ moduleFor(
       this.assertText('initial');
     }
 
-    ['@test {{readonly}} of a string renders correctly']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{readonly}} of a string renders correctly`]() {
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(precompileTemplate('{{@value}}'), class extends Component {})
@@ -81,7 +83,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test {{mut}} of a {{readonly}} argument is not allowed']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{mut}} of a {{readonly}} argument is not allowed`]() {
       this.owner.register(
         'component:x-bottom',
         setComponentTemplate(precompileTemplate('{{@bar}}'), class extends Component {})

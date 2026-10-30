@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
-import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import EmberObject from '@ember/object/lib/ember-object';
+import { moduleFor, ApplicationTestCase, getTextOf, testUnless } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
 import { service } from '@ember/service';
@@ -104,7 +104,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(controller) {
-            controller.set('hours', [
+            set(controller, 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -239,7 +239,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(/* controller */) {
-            this.controllerFor('home').set('hours', [
+            set(this.controllerFor('home'), 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -264,7 +264,9 @@ moduleFor(
       });
     }
 
-    [`@test The Homepage with a computed model that does not get overridden`](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test The Homepage with a computed model that does not get overridden`](
+      assert
+    ) {
       this.router.map(function () {
         this.route('home', { path: '/' });
       });
@@ -320,7 +322,7 @@ moduleFor(
           setupController(controller, model) {
             assert.equal(this.controllerFor('home'), controller);
 
-            this.controllerFor('home').set('hours', model);
+            set(this.controllerFor('home'), 'hours', model);
           }
         }
       );

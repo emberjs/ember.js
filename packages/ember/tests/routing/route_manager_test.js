@@ -891,19 +891,23 @@ moduleFor(
         class extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register('route:application', class extends Route {});
-            this.register(
-              'route:post',
-              class extends StampRoute {
-                model() {
-                  return { msg: 'P' };
-                }
-              }
-            );
-            this.register('template:application', precompileTemplate('engine:{{outlet}}'));
-            this.register('template:post', precompileTemplate('post:{{@model.msg}}'));
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register('route:application', class extends Route {});
+                engine.register(
+                  'route:post',
+                  class extends StampRoute {
+                    model() {
+                      return { msg: 'P' };
+                    }
+                  }
+                );
+                engine.register('template:application', precompileTemplate('engine:{{outlet}}'));
+                engine.register('template:post', precompileTemplate('post:{{@model.msg}}'));
+              },
+            });
           }
         }
       );

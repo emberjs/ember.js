@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { run } from '@ember/runloop';
-import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { QueryParamTestCase, moduleFor, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
@@ -59,7 +59,9 @@ moduleFor(
       return this.visit('/');
     }
 
-    ['@test can modify shared state before transition'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can modify shared state before transition`](
+      assert
+    ) {
       assert.expect(1);
 
       return this.boot().then(() => {
@@ -74,7 +76,9 @@ moduleFor(
       });
     }
 
-    ['@test can modify shared state back to the default value before transition'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can modify shared state back to the default value before transition`](
+      assert
+    ) {
       assert.expect(1);
 
       return this.boot().then(() => {

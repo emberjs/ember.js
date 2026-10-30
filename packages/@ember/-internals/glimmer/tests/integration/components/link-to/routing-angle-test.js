@@ -1,3 +1,4 @@
+import { set } from '@ember/object';
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
@@ -190,7 +191,7 @@ moduleFor(
         'The dynamic link is disabled when its disabled is true'
       );
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       assert.equal(
         this.$('#about-link-static.disabled').length,
@@ -264,7 +265,7 @@ moduleFor(
         'The default disabled class is not added on the dynamic link'
       );
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       assert.equal(
         this.$('#about-link-static.do-not-want').length,
@@ -323,7 +324,7 @@ moduleFor(
         'The default disabled class is not added'
       );
 
-      runTask(() => controller.set('disabledClass', 'can-not-use'));
+      runTask(() => set(controller, 'disabledClass', 'can-not-use'));
 
       assert.equal(
         this.$('#about-link.can-not-use').length,
@@ -381,7 +382,7 @@ moduleFor(
 
       assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       await this.click('#about-link');
 
@@ -475,7 +476,7 @@ moduleFor(
         'The other link was rendered without the default active class'
       );
 
-      runTask(() => controller.set('activeClass', 'wow-active'));
+      runTask(() => set(controller, 'activeClass', 'wow-active'));
 
       assert.equal(
         this.$('#self-link.wow-active').length,
@@ -510,12 +511,16 @@ moduleFor(
         class NotRoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(`<LinkTo @route='about'>About</LinkTo>`)
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(`<LinkTo @route='about'>About</LinkTo>`)
+                );
+              },
+            });
           }
         }
       );
@@ -536,32 +541,36 @@ moduleFor(
         class RoutableEngine extends Engine {
           Resolver = ModuleBasedTestResolver;
 
-          init() {
-            super.init(...arguments);
-            this.register(
-              'template:application',
-              precompileTemplate(`
-                <h2 id='engine-layout'>Routable Engine</h2>
-                {{outlet}}
-                <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
-                `)
-            );
-            this.register(
-              'template:index',
-              precompileTemplate(`
-                <h3 class='engine-home'>Engine Home</h3>
-                <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
-                <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
-                `)
-            );
-            this.register(
-              'template:about',
-              precompileTemplate(`
-                <h3 class='engine-about'>Engine About</h3>
-                <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
-                <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
-                `)
-            );
+          static {
+            this.initializer({
+              name: 'register-test-factories',
+              initialize(engine) {
+                engine.register(
+                  'template:application',
+                  precompileTemplate(`
+                    <h2 id='engine-layout'>Routable Engine</h2>
+                    {{outlet}}
+                    <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
+                    `)
+                );
+                engine.register(
+                  'template:index',
+                  precompileTemplate(`
+                    <h3 class='engine-home'>Engine Home</h3>
+                    <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
+                    <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
+                    `)
+                );
+                engine.register(
+                  'template:about',
+                  precompileTemplate(`
+                    <h3 class='engine-about'>Engine About</h3>
+                    <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
+                    <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
+                    `)
+                );
+              },
+            });
           }
         }
       );
@@ -1081,7 +1090,7 @@ moduleFor(
         'The link is not active since current-when is false'
       );
 
-      runTask(() => controller.set('isCurrent', true));
+      runTask(() => set(controller, 'isCurrent', true));
 
       assert.ok(
         this.$('#index-link').hasClass('active'),
@@ -1312,7 +1321,7 @@ moduleFor(
       let link = this.$('#self-link');
       assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
 
-      runTask(() => controller.set('boundLinkTarget', '_self'));
+      runTask(() => set(controller, 'boundLinkTarget', '_self'));
 
       assert.equal(link.attr('target'), '_self', 'The self-link contains `target` attribute');
     }
@@ -1504,7 +1513,7 @@ moduleFor(
 
       assertEquality('/');
 
-      runTask(() => controller.set('foo', 'about'));
+      runTask(() => set(controller, 'foo', 'about'));
 
       assertEquality('/about');
     }
@@ -1536,7 +1545,7 @@ moduleFor(
 
       await this.visit('/');
 
-      runTask(() => controller.set('post', post));
+      runTask(() => set(controller, 'post', post));
 
       assert.equal(
         this.$('#post').attr('href'),
@@ -1544,7 +1553,7 @@ moduleFor(
         'precond - Link has rendered href attr properly'
       );
 
-      runTask(() => controller.set('post', secondPost));
+      runTask(() => set(controller, 'post', secondPost));
 
       assert.equal(
         this.$('#post').attr('href'),
@@ -1552,7 +1561,7 @@ moduleFor(
         'href attr was updated after one of the params had been changed'
       );
 
-      runTask(() => controller.set('post', null));
+      runTask(() => set(controller, 'post', null));
 
       assert.equal(
         this.$('#post').attr('href'),
@@ -1645,7 +1654,7 @@ moduleFor(
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
-      runTask(() => controller.set('route1', 'rar'));
+      runTask(() => set(controller, 'route1', 'rar'));
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
@@ -1971,28 +1980,28 @@ moduleFor(
       await expectWarning(() => this.click(contextLink[0]), warningMessage);
 
       // Set the destinationRoute (context is still null).
-      runTask(() => controller.set('destinationRoute', 'thing'));
+      runTask(() => set(controller, 'destinationRoute', 'thing'));
       assertLinkStatus(contextLink);
 
       // Set the routeContext to an id
-      runTask(() => controller.set('routeContext', '456'));
+      runTask(() => set(controller, 'routeContext', '456'));
       assertLinkStatus(contextLink, '/thing/456');
 
       // Test that 0 isn't interpreted as falsy.
-      runTask(() => controller.set('routeContext', 0));
+      runTask(() => set(controller, 'routeContext', 0));
       assertLinkStatus(contextLink, '/thing/0');
 
       // Set the routeContext to an object
-      runTask(() => controller.set('routeContext', { id: 123 }));
+      runTask(() => set(controller, 'routeContext', { id: 123 }));
       assertLinkStatus(contextLink, '/thing/123');
 
       // Set the destinationRoute back to null.
-      runTask(() => controller.set('destinationRoute', null));
+      runTask(() => set(controller, 'destinationRoute', null));
       assertLinkStatus(contextLink);
 
       await expectWarning(() => this.click(staticLink[0]), warningMessage);
 
-      runTask(() => controller.set('secondRoute', 'about'));
+      runTask(() => set(controller, 'secondRoute', 'about'));
       assertLinkStatus(staticLink, '/about');
 
       // Click the now-active link

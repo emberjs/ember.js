@@ -3,13 +3,24 @@
   @public
  */
 
-export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager/lib/public/template';
+import Component from '@ember/-internals/glimmer/lib/component';
 
-export { default } from '@ember/-internals/glimmer/lib/component';
+export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager/lib/public/template';
 export { default as Input } from '@ember/-internals/glimmer/lib/components/input';
 export { default as Textarea } from '@ember/-internals/glimmer/lib/components/textarea';
 export { componentCapabilities as capabilities } from '@glimmer/manager/lib/public/component';
 export { setComponentManager } from '@ember/-internals/glimmer/lib/utils/managers';
+
+/**
+  Framework code imports the class from `@ember/-internals/glimmer/lib/component`,
+  so that it keeps working when the build flag removes this export.
+*/
+const ExportedComponent = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : Component
+) as typeof Component;
+type ExportedComponent<S = unknown> = Component<S>;
+
+export default ExportedComponent;
 
 /**
  * Assigns a TemplateFactory to a component class.

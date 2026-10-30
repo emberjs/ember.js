@@ -1,9 +1,9 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class InsertAtTests extends AbstractTestCase {
-  async '@test [].insertAt(0, X) => [X] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [].insertAt(0, X) => [X] + notify`]() {
     let after = newFixture(1);
     let obj = this.newObject([]);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -49,7 +49,7 @@ class InsertAtTests extends AbstractTestCase {
     expectAssertion(() => obj.insertAt(200, item), /`insertAt` index provided is out of range/);
   }
 
-  async '@test [A].insertAt(0, X) => [X,A] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A].insertAt(0, X) => [X,A] + notify`]() {
     let item = newFixture(1)[0];
     let before = newFixture(1);
     let after = [item, before[0]];
@@ -84,7 +84,7 @@ class InsertAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A].insertAt(1, X) => [A,X] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A].insertAt(1, X) => [A,X] + notify`]() {
     let item = newFixture(1)[0];
     let before = newFixture(1);
     let after = [before[0], item];
@@ -126,7 +126,7 @@ class InsertAtTests extends AbstractTestCase {
     this.assert.throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
   }
 
-  async '@test [A,B,C].insertAt(0,X) => [X,A,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].insertAt(0,X) => [X,A,B,C] + notify`]() {
     let item = newFixture(1)[0];
     let before = newFixture(3);
     let after = [item, before[0], before[1], before[2]];
@@ -160,7 +160,7 @@ class InsertAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].insertAt(1,X) => [A,X,B,C] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].insertAt(1,X) => [A,X,B,C] + notify`]() {
     let item = newFixture(1)[0];
     let before = newFixture(3);
     let after = [before[0], item, before[1], before[2]];
@@ -206,7 +206,7 @@ class InsertAtTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [A,B,C].insertAt(3,X) => [A,B,C,X] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [A,B,C].insertAt(3,X) => [A,B,C,X] + notify`]() {
     let item = newFixture(1)[0];
     let before = newFixture(3);
     let after = [before[0], before[1], before[2], item];

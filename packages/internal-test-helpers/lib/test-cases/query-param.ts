@@ -1,6 +1,8 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
-import type EmberObject from '@ember/object';
+import { set, get } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
+import type Owner from '@ember/owner';
 import NoneLocation from '@ember/routing/none-location';
 
 import ApplicationTestCase from './application';
@@ -30,7 +32,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedPushURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
 
         replaceURL(path: string) {
@@ -47,7 +49,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedReplaceURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
       }
     );
@@ -73,20 +75,20 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     };
   }
 
-  async setAndFlush(obj: EmberObject, prop: Record<string, unknown>): Promise<void>;
-  async setAndFlush(obj: EmberObject, prop: string, value: unknown): Promise<void>;
-  async setAndFlush(obj: EmberObject, prop: Record<string, unknown> | string, value?: unknown) {
+  async setAndFlush(obj: object, prop: Record<string, unknown>): Promise<void>;
+  async setAndFlush(obj: object, prop: string, value: unknown): Promise<void>;
+  async setAndFlush(obj: object, prop: Record<string, unknown> | string, value?: unknown) {
     if (typeof prop === 'object') {
-      obj.setProperties(prop);
+      setProperties(obj, prop);
     } else {
-      obj.set(prop, value);
+      set(obj, prop, value);
     }
 
     await runLoopSettled();
   }
 
   assertCurrentPath(path: string, message = `current path equals '${path}'`) {
-    this.assert.equal(this.appRouter.get('location.path'), path, message);
+    this.assert.equal(get(this.appRouter, 'location.path'), path, message);
   }
 
   /**
@@ -99,13 +101,12 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: [param],
-          [param]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        constructor(owner: Owner) {
+          super(owner);
+          Object.assign(this, { queryParams: [param], [param]: defaultValue }, options);
+        }
+      }
     );
   }
 
@@ -124,15 +125,12 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   ) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: {
-            [prop]: urlKey,
-          },
-          [prop]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        constructor(owner: Owner) {
+          super(owner);
+          Object.assign(this, { queryParams: [{ [prop]: urlKey }], [prop]: defaultValue }, options);
+        }
+      }
     );
   }
 }

@@ -15,7 +15,8 @@ import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
-import { set, get, computed, observer } from '@ember/object';
+import { set, get, computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { trackedArray } from '@ember/reactive/collections';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
@@ -160,7 +161,7 @@ moduleFor(
       this.assertText('FIZZ BAR hey');
     }
 
-    ['@test layout supports computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test layout supports computed property`]() {
       let FooBarComponent = class extends Component {
         elementId = 'blahzorz';
         @computed
@@ -317,7 +318,7 @@ moduleFor(
       });
     }
 
-    ['@test tagName can not be a computed property']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test tagName can not be a computed property`]() {
       let FooBarComponent = class extends Component {
         @computed
         get tagName() {
@@ -903,7 +904,7 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
     }
 
-    ['@test setting a value for a computed property then later getting the value for that property works'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a value for a computed property then later getting the value for that property works`](
       assert
     ) {
       let componentInstance = null;
@@ -1564,7 +1565,7 @@ moduleFor(
       this.assertText('blarkporybaz- Click Me');
     }
 
-    ['@test a two way binding flows upstream when consumed in the template']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream when consumed in the template`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1607,7 +1608,7 @@ moduleFor(
       this.assertText('initial value - initial value');
     }
 
-    ['@test a two way binding flows upstream through a CP when consumed in the template']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP when consumed in the template`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1652,7 +1653,7 @@ moduleFor(
       this.assertText('initial value - initial value');
     }
 
-    ['@test a two way binding flows upstream through a CP without template consumption']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a two way binding flows upstream through a CP without template consumption`]() {
       let component;
       let FooBarComponent = class extends Component {
         init() {
@@ -1698,7 +1699,7 @@ moduleFor(
       this.assertText('initial value');
     }
 
-    ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test GH#18417 - a two way binding flows upstream to a parent component through a CP`]() {
       let parent, child;
       let ParentComponent = class extends Component {
         init() {
@@ -1778,7 +1779,7 @@ moduleFor(
       );
     }
 
-    ['@test injecting an unknown service raises an exception']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test injecting an unknown service raises an exception`]() {
       this.owner.register(
         'component:foo-bar',
         class extends Component {
@@ -1872,7 +1873,7 @@ moduleFor(
       assertElement('foo');
     }
 
-    ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test child triggers revalidate during parent destruction (GH#13846)`]() {
       this.owner.register(
         'component:x-select',
         setComponentTemplate(
@@ -1968,7 +1969,9 @@ moduleFor(
       this.assertText('things');
     }
 
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test didReceiveAttrs fires after .init() but before observers become active`](
+      assert
+    ) {
       let barCopyDidChangeCount = 0;
 
       this.owner.register(

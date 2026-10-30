@@ -1,6 +1,6 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { get, set, trySet, computed } from '../..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'set',
@@ -43,7 +43,9 @@ moduleFor(
       assert.deepEqual(arr, ['first', 'lol']);
     }
 
-    ['@test should call setUnknownProperty if defined and value is undefined'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call setUnknownProperty if defined and value is undefined`](
+      assert
+    ) {
       let obj = {
         count: 0,
 

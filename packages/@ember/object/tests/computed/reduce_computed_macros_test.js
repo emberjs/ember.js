@@ -1,15 +1,13 @@
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
-import EmberObject, {
-  defineProperty,
-  get,
-  set,
-  setProperties,
-  computed,
-  observer,
-} from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
-import { A as emberA, isArray, removeAt } from '@ember/array';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get, set, computed } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import { observer } from '@ember/object/lib/observer';
+import ObjectProxy from '@ember/object/lib/object-proxy';
+import { isArray, removeAt } from '@ember/array';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import {
   sum,
   min,
@@ -50,7 +48,7 @@ class ArrayMacroTestCase extends AbstractTestCase {
   }
 }
 
-if (!isRemoved && !EMBER_A_REMOVED) {
+if (!isRemoved && !EMBER_A_REMOVED && !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
   let obj;
   moduleFor(
     'map',

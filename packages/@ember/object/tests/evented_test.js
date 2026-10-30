@@ -1,7 +1,7 @@
-import CoreObject from '@ember/object/core';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/lib/core-object';
+import EmberObject from '@ember/object/lib/ember-object';
 import EventedMixin from '@ember/object/evented';
-import Component from '@ember/component';
+import Component from '@ember/-internals/glimmer/lib/component';
 import Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
@@ -11,7 +11,7 @@ moduleFor(
   'Ember.Evented',
   class extends AbstractTestCase {
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Evented.detect returns true for framework classes that provide the Evented methods`](
       assert
     ) {
@@ -28,7 +28,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test works properly on proxy-ish objects`](assert) {
       let eventedProxyObj;
       expectDeprecation(

@@ -1,5 +1,5 @@
 import { on, addListener, removeListener, sendEvent, hasListeners } from '..';
-import Mixin from '@ember/object/mixin';
+import Mixin from '@ember/object/lib/mixin';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../deprecations';
 

@@ -1,4 +1,7 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
+import type Owner from '@ember/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
@@ -35,7 +38,7 @@ import { getHash } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-export default class HashLocation extends EmberObject implements EmberLocation {
+class HashLocation extends EmberObject implements EmberLocation {
   _hashchangeHandler?: EventListener;
 
   private _location?: Location;
@@ -170,3 +173,94 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     }
   }
 }
+
+/**
+  `HashLocation` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set. It
+  extends no other class.
+*/
+class PlainHashLocation {
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainHashLocation>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  _hashchangeHandler?: EventListener;
+  location: Location = window.location;
+  lastSetURL: string | null = null;
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+  }
+
+  getHash(): string {
+    return getHash(this.location);
+  }
+
+  getURL(): string {
+    let originalPath = this.getHash().substring(1);
+    let outPath = originalPath;
+
+    if (outPath[0] !== '/') {
+      outPath = '/';
+
+      if (originalPath) {
+        outPath += `#${originalPath}`;
+      }
+    }
+
+    return outPath;
+  }
+
+  setURL(path: string): void {
+    this.location.hash = path;
+    this.lastSetURL = path;
+  }
+
+  replaceURL(path: string): void {
+    this.location.replace(`#${path}`);
+    this.lastSetURL = path;
+  }
+
+  onUpdateURL(callback: UpdateCallback): void {
+    this._removeEventListener();
+
+    this._hashchangeHandler = bind(this, function (this: PlainHashLocation, _event: Event) {
+      let path = this.getURL();
+
+      if (this.lastSetURL === path) {
+        return;
+      }
+
+      this.lastSetURL = null;
+
+      callback(path);
+    });
+
+    window.addEventListener('hashchange', this._hashchangeHandler);
+  }
+
+  formatURL(url: string): string {
+    return `#${url}`;
+  }
+
+  willDestroy(): void {
+    this._removeEventListener();
+  }
+
+  _removeEventListener(): void {
+    if (this._hashchangeHandler) {
+      window.removeEventListener('hashchange', this._hashchangeHandler);
+    }
+  }
+}
+
+const ExportedHashLocation = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainHashLocation : HashLocation
+) as typeof HashLocation;
+type ExportedHashLocation = HashLocation;
+
+export default ExportedHashLocation;

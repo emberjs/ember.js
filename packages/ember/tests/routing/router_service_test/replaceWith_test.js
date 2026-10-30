@@ -1,3 +1,4 @@
+import { set } from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
@@ -17,12 +18,12 @@ moduleFor(
         class extends NoneLocation {
           setURL(path) {
             testCase.state.push(path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
 
           replaceURL(path) {
             testCase.state.splice(testCase.state.length - 1, 1, path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
         }
       );

@@ -1,13 +1,16 @@
 import Route from '@ember/routing/route';
-import EmberObject, { computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed } from '@ember/object';
 
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'The example renders correctly',
   class extends ApplicationTestCase {
-    async ['@test Render index template into application outlet'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Render index template into application outlet`](
+      assert
+    ) {
       this.add('template:application', precompileTemplate('{{outlet}}'));
       this.add(
         'template:index',

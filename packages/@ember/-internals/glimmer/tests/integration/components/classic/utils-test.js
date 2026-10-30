@@ -51,7 +51,7 @@ moduleFor(
         @tracked isExpanded = true;
 
         toggle = () => {
-          this.toggleProperty('isExpanded');
+          this.isExpanded = !this.isExpanded;
         };
       }
 

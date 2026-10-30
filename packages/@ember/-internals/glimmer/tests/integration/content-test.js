@@ -14,9 +14,9 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { readOnly } from '@ember/object/computed';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -303,7 +303,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a computed property']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a computed property`]() {
     let Formatter = class extends EmberObject {
       @computed('message')
       get formattedMessage() {
@@ -330,7 +330,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a computed property with nested dependency']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a computed property with nested dependency`]() {
     let Formatter = class extends EmberObject {
       @computed('messenger.message')
       get formattedMessage() {
@@ -358,7 +358,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a proxy object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -398,7 +398,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a nested path in a proxy object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -459,7 +459,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a path flipping between a proxy and a real object`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -541,7 +541,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   [`${testUnless(
-    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
   )} @test it can read from a path flipping between a real object and a proxy`]() {
     expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
 
@@ -640,7 +640,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test it can render a readOnly property of a path`]() {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can render a readOnly property of a path`]() {
     expectDeprecation(
       /from `@ember\/object\/computed` is deprecated/,
       DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled

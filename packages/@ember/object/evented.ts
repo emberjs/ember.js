@@ -157,7 +157,7 @@ interface Evented {
    */
   has(name: string): boolean;
 }
-const Evented = InternalMixin.create({
+const Evented = /*@__PURE__*/ InternalMixin.create({
   init() {
     this._super(...arguments);
     deprecateUntil(
@@ -190,4 +190,9 @@ const Evented = InternalMixin.create({
   },
 });
 
-export default Evented;
+const ExportedEvented = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : Evented
+) as typeof Evented;
+type ExportedEvented = Evented;
+
+export default ExportedEvented;

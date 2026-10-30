@@ -1,4 +1,7 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
+import type Owner from '@ember/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp, getHash } from './lib/location-utils';
@@ -56,7 +59,7 @@ function _uuid() {
   @extends EmberObject
   @protected
 */
-export default class HistoryLocation extends EmberObject implements EmberLocation {
+class HistoryLocation extends EmberObject implements EmberLocation {
   // SAFETY: both of these properties initialized via `init`.
   declare location: Location;
   declare baseURL: string;
@@ -265,3 +268,148 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     }
   }
 }
+
+function baseURLFromDocument(): string {
+  let base = document.querySelector('base');
+
+  if (base !== null && base.hasAttribute('href')) {
+    return base.getAttribute('href') ?? '';
+  }
+
+  return '';
+}
+
+/**
+  `HistoryLocation` when the `EMBER_DROP_CLASSIC_FEATURES` build flag is set.
+  It extends no other class.
+*/
+class PlainHistoryLocation {
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainHistoryLocation>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  location: Location = window.location;
+  baseURL: string = baseURLFromDocument();
+  history?: Window['history'];
+  _popstateHandler?: EventListener;
+  rootURL = '/';
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+  }
+
+  getHash(): string {
+    return getHash(this.location);
+  }
+
+  initState(): void {
+    let history = this.history ?? window.history;
+    this.history = history;
+
+    let { state } = history;
+    let path = this.formatURL(this.getURL());
+
+    if (!state || state.path !== path) {
+      this.replaceState(path);
+    }
+  }
+
+  getURL(): string {
+    let { location, rootURL, baseURL } = this;
+    let path = location.pathname;
+
+    rootURL = rootURL.replace(/\/$/, '');
+    baseURL = baseURL.replace(/\/$/, '');
+
+    let url = path
+      .replace(new RegExp(`^${escapeRegExp(baseURL)}(?=/|$)`), '')
+      .replace(new RegExp(`^${escapeRegExp(rootURL)}(?=/|$)`), '')
+      .replace(/\/\//g, '/');
+
+    let search = location.search || '';
+    url += search + this.getHash();
+
+    return url;
+  }
+
+  setURL(path: string): void {
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+
+    let { state } = this.history;
+    path = this.formatURL(path);
+
+    if (!state || state.path !== path) {
+      this.pushState(path);
+    }
+  }
+
+  replaceURL(path: string): void {
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+
+    let { state } = this.history;
+    path = this.formatURL(path);
+
+    if (!state || state.path !== path) {
+      this.replaceState(path);
+    }
+  }
+
+  pushState(path: string): void {
+    let state = { path, uuid: _uuid() };
+
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+    this.history.pushState(state, '', path);
+  }
+
+  replaceState(path: string): void {
+    let state = { path, uuid: _uuid() };
+
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+    this.history.replaceState(state, '', path);
+  }
+
+  onUpdateURL(callback: UpdateCallback): void {
+    this._removeEventListener();
+
+    this._popstateHandler = () => {
+      callback(this.getURL());
+    };
+
+    window.addEventListener('popstate', this._popstateHandler);
+  }
+
+  formatURL(url: string): string {
+    let { rootURL, baseURL } = this;
+
+    if (url !== '') {
+      rootURL = rootURL.replace(/\/$/, '');
+      baseURL = baseURL.replace(/\/$/, '');
+    } else if (baseURL[0] === '/' && rootURL[0] === '/') {
+      baseURL = baseURL.replace(/\/$/, '');
+    }
+
+    return baseURL + rootURL + url;
+  }
+
+  willDestroy(): void {
+    this._removeEventListener();
+  }
+
+  _removeEventListener(): void {
+    if (this._popstateHandler) {
+      window.removeEventListener('popstate', this._popstateHandler);
+    }
+  }
+}
+
+const ExportedHistoryLocation = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainHistoryLocation : HistoryLocation
+) as typeof HistoryLocation;
+type ExportedHistoryLocation = HistoryLocation;
+
+export default ExportedHistoryLocation;

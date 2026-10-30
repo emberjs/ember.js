@@ -9,8 +9,8 @@ import {
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
-import EmberObject from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
+import EmberObject from '@ember/object/lib/ember-object';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 
 import {
   FalsyGenerator,
@@ -46,7 +46,8 @@ class EachInProxyTest extends TogglingEachInTest {}
 
 // `ObjectProxy` is deprecated; the deprecation itself is asserted by the
 // dedicated `ObjectProxy` tests, so it is silenced in these rendering fixtures.
-const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
+const OBJECT_PROXY_REMOVED =
+  DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES;
 
 function objectProxy(props) {
   return ignoreDeprecation(() => ObjectProxy.create(props));

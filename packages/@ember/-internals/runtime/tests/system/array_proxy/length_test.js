@@ -1,7 +1,9 @@
-import ArrayProxy from '@ember/array/proxy';
-import EmberObject, { computed, observer } from '@ember/object';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import EmberObject from '@ember/object/lib/ember-object';
+import { computed } from '@ember/object';
+import { observer } from '@ember/object/lib/observer';
 import { oneWay as reads } from '@ember/object/computed';
-import { A as a } from '@ember/array';
+import { A as a } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,
@@ -38,7 +40,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    [`${testUnless(REMOVED)} @test should update length for null content when there is a computed property watching length`](
+    [`${testUnless(REMOVED || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should update length for null content when there is a computed property watching length`](
       assert
     ) {
       let proxy = class extends ArrayProxy {
@@ -174,7 +176,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    async [`${testUnless(REMOVED || DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
+    async [`${testUnless(REMOVED || DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test array proxy + aliasedProperty complex test`](
       assert
     ) {
       expectDeprecation(

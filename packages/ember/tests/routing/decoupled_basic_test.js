@@ -15,9 +15,11 @@ import {
   runDestroy,
   runTask,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
+import { destroy } from '@ember/destroyable';
 import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
@@ -348,7 +350,9 @@ moduleFor(
       });
     }
 
-    ['@test navigating away triggers a url property change'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test navigating away triggers a url property change`](
+      assert
+    ) {
       assert.expect(3);
 
       this.router.map(function () {
@@ -395,17 +399,17 @@ moduleFor(
         'router:main',
         (Router) =>
           class extends Router {
-            location = NoneLocation.create({
+            location = class extends NoneLocation {
               setURL(path) {
                 setCount++;
                 set(this, 'path', path);
-              },
+              }
 
               replaceURL(path) {
                 replaceCount++;
                 set(this, 'path', path);
-              },
-            });
+              }
+            }.create();
           }
       );
 
@@ -434,12 +438,12 @@ moduleFor(
         'router:main',
         (Router) =>
           class extends Router {
-            location = NoneLocation.create({
+            location = class extends NoneLocation {
               setURL(path) {
                 setCount++;
                 set(this, 'path', path);
-              },
-            });
+              }
+            }.create();
           }
       );
 
@@ -689,7 +693,7 @@ moduleFor(
         set(obj, 'history', { state: { path: path } });
       };
 
-      let location = HistoryLocation.create({
+      let location = class extends HistoryLocation {
         initState() {
           let path = rootURL + '/posts';
 
@@ -698,16 +702,16 @@ moduleFor(
             pathname: path,
             href: 'http://localhost/' + path,
           });
-        },
+        }
 
         replaceState(path) {
           setHistory(this, path);
-        },
+        }
 
         pushState(path) {
           setHistory(this, path);
-        },
-      });
+        }
+      }.create();
 
       this.subclass(
         'router:main',
@@ -729,7 +733,7 @@ moduleFor(
           model() {}
           setupController() {
             postsTemplateRendered = true;
-            this._super(...arguments);
+            super.setupController(...arguments);
           }
         }
       );
@@ -968,8 +972,8 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
               expectDeprecation(
@@ -1012,8 +1016,8 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
               expectDeprecation(
@@ -1478,7 +1482,7 @@ moduleFor(
       this.add(
         'route:boom',
         class extends Route {
-          init() {
+          constructor() {
             throw new Error('boom!');
           }
         }
@@ -1494,7 +1498,7 @@ moduleFor(
       this.add(
         'route:boom',
         class extends Route {
-          init() {
+          constructor() {
             throw new Error('boom!');
           }
         }
@@ -1618,8 +1622,8 @@ moduleFor(
       }
       this.add('engine:blog', BlogEngine);
       class EngineIndexRoute extends Route {
-        init() {
-          this._super(...arguments);
+        constructor(owner) {
+          super(owner);
           engineInstance = getOwner(this);
         }
       }
@@ -1646,10 +1650,10 @@ moduleFor(
           let route = engineInstance.lookup('route:index');
           let router = this.applicationInstance.lookup('router:main');
 
-          run(router, 'destroy');
+          run(() => this.applicationInstance.unregister('router:main'));
           assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
-          run(route, 'destroy');
+          run(() => destroy(route));
           assert.equal(
             router._updatableRootOutletState,
             null,

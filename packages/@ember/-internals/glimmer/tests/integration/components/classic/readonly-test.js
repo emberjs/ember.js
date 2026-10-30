@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -9,7 +9,7 @@ import { Component } from '../../../utils/helpers';
 moduleFor(
   'Helpers test: {{readonly}} (classic component)',
   class extends RenderingTestCase {
-    ['@test {{readonly}} of a path should work']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{readonly}} of a path should work`]() {
       let component;
 
       this.owner.register(
@@ -41,7 +41,9 @@ moduleFor(
       // No U-R
     }
 
-    '@test updating a {{readonly}} property from above works'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} updating a {{readonly}} property from above works`](
+      assert
+    ) {
       let component;
 
       this.owner.register(
@@ -80,7 +82,9 @@ moduleFor(
       this.assertText('initial');
     }
 
-    '@test updating a nested path of a {{readonly}}'(assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} updating a nested path of a {{readonly}}`](
+      assert
+    ) {
       let component;
 
       this.owner.register(
@@ -120,7 +124,7 @@ moduleFor(
       this.assertText('initial');
     }
 
-    ['@test {{readonly}} of a string renders correctly']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{readonly}} of a string renders correctly`]() {
       let component;
 
       this.owner.register(
@@ -154,7 +158,7 @@ moduleFor(
       this.assertText('12');
     }
 
-    ['@test {{mut}} of a {{readonly}} mutates only the middle and bottom tiers']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test {{mut}} of a {{readonly}} mutates only the middle and bottom tiers`]() {
       let middle, bottom;
 
       this.owner.register(

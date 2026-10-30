@@ -112,6 +112,7 @@ export function _getProp(obj: unknown, keyName: string) {
     }
 
     if (
+      !import.meta.env?.EMBER_DROP_CLASSIC_FEATURES &&
       value === undefined &&
       typeof obj === 'object' &&
       !(keyName in obj) &&
@@ -123,7 +124,10 @@ export function _getProp(obj: unknown, keyName: string) {
     if (isTracking()) {
       consumeTag(tagFor(obj, keyName));
 
-      if (Array.isArray(value) || isEmberArray(value)) {
+      if (
+        Array.isArray(value) ||
+        (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES && isEmberArray(value))
+      ) {
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
         consumeTag(tagFor(value, '[]'));
@@ -162,16 +166,25 @@ _getProp('foo' as any, 'a');
 _getProp('foo' as any, 1 as any);
 _getProp({}, 'a');
 _getProp({}, 1 as any);
-_getProp({ unknownProperty() {} }, 'a');
-_getProp({ unknownProperty() {} }, 1 as any);
-
 get({}, 'foo');
 get({}, 'foo.bar');
 
-let fakeProxy = {} as ProxyMixin<unknown>;
-setProxy(fakeProxy);
+function warmUpProxies() {
+  _getProp({ unknownProperty() {} }, 'a');
+  _getProp({ unknownProperty() {} }, 1 as any);
+
+  let fakeProxy = {} as ProxyMixin<unknown>;
+  setProxy(fakeProxy);
+
+  track(() => _getProp({ a: fakeProxy }, 'a'));
+}
+
+/**
+  A variable, not an `if`, so that bundlers drop the warm-up with the module
+  when nothing imports it.
+*/
+const _warmedUpProxies = import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : warmUpProxies();
 
 track(() => _getProp({}, 'a'));
 track(() => _getProp({}, 1 as any));
 track(() => _getProp({ a: [] }, 'a'));
-track(() => _getProp({ a: fakeProxy }, 'a'));

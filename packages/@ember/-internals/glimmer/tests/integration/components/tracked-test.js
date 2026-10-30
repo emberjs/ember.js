@@ -1,6 +1,6 @@
-import EmberObject from '@ember/object';
-import { A } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import EmberObject from '@ember/object/lib/ember-object';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
@@ -64,7 +64,9 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved ||
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
       expectDeprecation(
@@ -413,7 +415,7 @@ moduleFor(
       this.assertText('1');
     }
 
-    '@test getters update when dependent computeds are invalidated'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getters update when dependent computeds are invalidated`]() {
       class CountComponent extends Component {
         @tracked _count = 0;
 
@@ -774,7 +776,7 @@ moduleFor(
       assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
     }
 
-    '@test computed properties can depend on args'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed properties can depend on args`]() {
       class TestComponent extends Component {
         @computed('args.text')
         get text() {
@@ -800,7 +802,7 @@ moduleFor(
       this.assertText('hello!');
     }
 
-    '@test computed properties can depend on nested args'() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test computed properties can depend on nested args`]() {
       let foo = EmberObject.create({
         text: 'hello!',
       });

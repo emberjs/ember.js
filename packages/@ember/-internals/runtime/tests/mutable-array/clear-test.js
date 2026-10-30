@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class ClearTests extends AbstractTestCase {
@@ -36,7 +36,7 @@ class ClearTests extends AbstractTestCase {
     obj.destroy();
   }
 
-  async '@test [X].clear() => [] + notify'() {
+  async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} [X].clear() => [] + notify`]() {
     let obj, before, after, observer;
 
     before = newFixture(1);

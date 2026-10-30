@@ -1,6 +1,7 @@
-import ArrayProxy from '@ember/array/proxy';
-import EmberArray, { A } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import ArrayProxy from '@ember/array/lib/array-proxy';
+import EmberArray from '@ember/array/lib/ember-array';
+import { A } from '@ember/array/lib/ember-array';
+import { MutableArray } from '@ember/array/lib/ember-array';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
   addArrayObserver,
@@ -8,7 +9,9 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get } from '@ember/object';
+import computed from '@ember/-internals/metal/lib/computed';
 import { moduleFor, ignoreDeprecation } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

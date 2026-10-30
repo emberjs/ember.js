@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { meta as metaFor } from '@ember/-internals/meta';
 import {
   computed,
@@ -10,7 +10,7 @@ import {
   addObserver,
 } from '..';
 import { run } from '@ember/runloop';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 let obj, objA, objB, count, func;
@@ -383,7 +383,9 @@ moduleFor(
       assert.equal(count, 1, 'should only invoke once');
     }
 
-    ['@test modifying a cacheable property should update cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test modifying a cacheable property should update cache`](
+      assert
+    ) {
       assert.equal(get(obj, 'foo'), 'bar 1', 'first get');
       assert.equal(get(obj, 'foo'), 'bar 1', 'second get');
 
@@ -392,7 +394,9 @@ moduleFor(
       assert.equal(count, 2, 'should not invoke again');
     }
 
-    ['@test inherited property should not pick up cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test inherited property should not pick up cache`](
+      assert
+    ) {
       let objB = Object.create(obj);
 
       assert.equal(get(obj, 'foo'), 'bar 1', 'obj first get');
@@ -430,7 +434,7 @@ moduleFor(
       assert.equal(metaFor(obj).valueFor('falsy'), false, 'should retrieve cached value');
     }
 
-    ['@test setting a cached computed property passes the old value as the third argument'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a cached computed property passes the old value as the third argument`](
       assert
     ) {
       obj = {
@@ -488,7 +492,9 @@ moduleFor(
       );
     }
 
-    ['@test circular keys should not blow up'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test circular keys should not blow up`](
+      assert
+    ) {
       let func = function () {
         count++;
         return 'bar ' + count;
@@ -730,7 +736,9 @@ moduleFor(
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
 
-    ['@test the return value of the setter gets cached'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test the return value of the setter gets cached`](
+      assert
+    ) {
       let testObj = EmberObject.extend({
         a: '1',
         sampleCP: computed('a', {
@@ -807,7 +815,9 @@ moduleFor(
 moduleFor(
   'computed - setter',
   class extends ComputedTestCase {
-    async ['@test setting a watched computed property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a watched computed property`](
+      assert
+    ) {
       obj = {
         firstName: 'Yehuda',
         lastName: 'Katz',
@@ -859,7 +869,9 @@ moduleFor(
       assert.equal(lastNameDidChange, 1);
     }
 
-    async ['@test setting a cached computed property that modifies the value you give it'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting a cached computed property that modifies the value you give it`](
+      assert
+    ) {
       obj = {
         foo: 0,
       };
@@ -1122,7 +1134,9 @@ moduleFor(
 moduleFor(
   'computed - observer interop',
   class extends ComputedTestCase {
-    async '@test observers that do not consume computed properties still work'(assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} observers that do not consume computed properties still work`](
+      assert
+    ) {
       assert.expect(2);
 
       class Foo {

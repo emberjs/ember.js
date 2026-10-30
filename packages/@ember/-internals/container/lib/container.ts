@@ -10,6 +10,7 @@ import { setOwner } from '@ember/-internals/owner';
 import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { destroy } from '@glimmer/destroyable';
 import type { DebugRegistry } from './registry';
 import type Registry from './registry';
 
@@ -396,9 +397,7 @@ function instantiateFactory(
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed
     if (container.isDestroying) {
-      if (typeof (instance as any).destroy === 'function') {
-        (instance as any).destroy();
-      }
+      destroyInstance(instance);
     }
 
     return instance;
@@ -420,6 +419,37 @@ function instantiateFactory(
   throw new Error('Could not create factory');
 }
 
+/**
+  Marks a framework base class that extends no other class, such as the
+  `Service` of the `EMBER_DROP_CLASSIC_FEATURES` build. Its instances have
+  no `destroy` method. The container calls their `willDestroy`, then the
+  `destroy` function of `@ember/destroyable`.
+
+  A static field holds the mark, so that the module of the class has no
+  side effect when it loads.
+*/
+export const PLAIN_FRAMEWORK_CLASS = Symbol('PLAIN_FRAMEWORK_CLASS');
+
+function isPlainFrameworkInstance(value: object): boolean {
+  let klass = (value as { constructor?: { [PLAIN_FRAMEWORK_CLASS]?: boolean } }).constructor;
+
+  return klass?.[PLAIN_FRAMEWORK_CLASS] === true;
+}
+
+function destroyInstance(value: object): void {
+  if (isPlainFrameworkInstance(value)) {
+    let { willDestroy } = value as { willDestroy?: unknown };
+
+    if (typeof willDestroy === 'function') {
+      willDestroy.call(value);
+    }
+
+    destroy(value);
+  } else if (typeof (value as { destroy?: unknown }).destroy === 'function') {
+    (value as { destroy(): void }).destroy();
+  }
+}
+
 function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
@@ -428,9 +458,7 @@ function destroyDestroyables(container: Container): void {
     let value = cache[key];
     assert('has cached value', value);
 
-    if ((value as any).destroy) {
-      (value as any).destroy();
-    }
+    destroyInstance(value);
   }
 }
 
@@ -447,9 +475,7 @@ function resetMember(container: Container, fullName: string) {
   if (member) {
     delete container.cache[fullName];
 
-    if ((member as any).destroy) {
-      (member as any).destroy();
-    }
+    destroyInstance(member);
   }
 }
 

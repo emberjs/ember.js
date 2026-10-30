@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 
 import { set, get } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -10,7 +10,7 @@ import { tracked } from '@glimmer/tracking';
 moduleFor(
   'Helpers test: {{mut}}',
   class extends RenderingTestCase {
-    ['@test a simple mutable binding using `mut` propagates properly']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a simple mutable binding using \`mut\` propagates properly`]() {
       this.owner.register(
         'component:bottom-mut',
         setComponentTemplate(
@@ -45,7 +45,7 @@ moduleFor(
       this.assertText('12');
     }
 
-    ['@test a simple mutable binding using `mut` inserts into the DOM']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a simple mutable binding using \`mut\` inserts into the DOM`]() {
       this.owner.register(
         'component:bottom-mut',
         setComponentTemplate(
@@ -80,7 +80,7 @@ moduleFor(
       this.assertText('[12]12');
     }
 
-    ['@test passing a literal results in a assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test passing a literal results in a assertion`]() {
       this.owner.register(
         'component:bottom-mut',
         setComponentTemplate(precompileTemplate('{{@setMe}}'), class extends Component {})
@@ -91,7 +91,7 @@ moduleFor(
       }, 'You can only pass a path to mut');
     }
 
-    ['@test passing the result of a helper invocation results in an assertion']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test passing the result of a helper invocation results in an assertion`]() {
       this.owner.register(
         'component:bottom-mut',
         setComponentTemplate(precompileTemplate('{{@setMe}}'), class extends Component {})
@@ -102,7 +102,7 @@ moduleFor(
       }, 'You can only pass a path to mut');
     }
 
-    ['@test mutable bindings work inside of yielded content']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test mutable bindings work inside of yielded content`]() {
       this.owner.register(
         'component:bottom-mut',
         setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
@@ -133,7 +133,7 @@ moduleFor(
       this.assertText('Matthew Beale');
     }
 
-    ['@test a mutable binding with a backing getter is updated when the upstream property invalidates #11023']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test a mutable binding with a backing getter is updated when the upstream property invalidates #11023`]() {
       let middle;
 
       this.owner.register(

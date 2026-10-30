@@ -7,6 +7,7 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
 import type { RouteManagement } from 'router_js';
@@ -28,12 +29,13 @@ import type {
   Registry as LocationRegistry,
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import Evented from '@ember/object/evented';
 import { queryParamArray } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { assert, info } from '@ember/debug';
 import { cancel, later, once, run } from '@ember/runloop';
-import { associateDestroyableChild } from '@glimmer/destroyable';
+import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
+import { PLAIN_FRAMEWORK_CLASS } from '@ember/-internals/container/lib/container';
 import { DEBUG } from '@glimmer/env';
 import {
   type default as Route,
@@ -142,11 +144,66 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject {
+
+/**
+  The base class of `EmberRouter` when the `EMBER_DROP_CLASSIC_FEATURES` build
+  flag is set. It extends no other class.
+
+  When the owner is destroyed, the container calls `willDestroy`, then
+  destroys the router with `@ember/destroyable`.
+*/
+class PlainRouterBase {
+  static [PLAIN_FRAMEWORK_CLASS] = true;
+
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainRouterBase>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+  }
+
+  get isDestroying(): boolean {
+    return isDestroying(this);
+  }
+
+  get isDestroyed(): boolean {
+    return isDestroyed(this);
+  }
+
+  /** Empty, so that `super.willDestroy()` works in subclasses. */
+  willDestroy(): void {}
+}
+
+const EmberRouterBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainRouterBase : EmberObject
+) as typeof EmberObject;
+
+class EmberRouter extends EmberRouterBase {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
-    metaFor(this.prototype).addMixin(Evented);
+    if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      metaFor(this.prototype).addMixin(Evented);
+    }
+  }
+
+  static {
+    let defaults = {
+      didTransition: defaultDidTransition,
+      willTransition: defaultWillTransition,
+      rootURL: '/',
+      location: 'hash',
+    };
+
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      Object.assign(this.prototype, defaults);
+    } else {
+      this.reopen(defaults);
+    }
   }
 
   /**
@@ -309,8 +366,11 @@ class EmberRouter extends EmberObject {
   static map(callback: DSLCallback) {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
-      // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
+
+      if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        // FIXME: Can we remove this?
+        this.reopenClass({ dslCallbacks: this.dslCallbacks });
+      }
     }
 
     this.dslCallbacks.push(callback);
@@ -1848,12 +1908,5 @@ function forEachQueryParam(
     callback(key, value, qp);
   }
 }
-
-EmberRouter.reopen({
-  didTransition: defaultDidTransition,
-  willTransition: defaultWillTransition,
-  rootURL: '/',
-  location: 'hash',
-});
 
 export default EmberRouter;

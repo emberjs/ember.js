@@ -11,10 +11,11 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
-import EmberObject from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
-import { A, removeAt } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import EmberObject from '@ember/object/lib/ember-object';
+import ObjectProxy from '@ember/object/lib/object-proxy';
+import { removeAt } from '@ember/array';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -23,8 +24,11 @@ import Component from '@glimmer/component';
 // `ObjectProxy` and `ArrayProxy` are deprecated, but their interaction with
 // conditionals is still worth covering until they are removed. The deprecation
 // itself is asserted by the dedicated proxy tests, so it is silenced here.
-const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
-const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+// With the build flag, the renderer does not unwrap proxies.
+const OBJECT_PROXY_REMOVED =
+  DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES;
+const ARRAY_PROXY_REMOVED =
+  DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES;
 const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
 
 // The tests of `A` cover its deprecation.
@@ -587,7 +591,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('YESNO');
   }
 
-  ['@test it does not update when the unbound helper is used']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it does not update when the unbound helper is used`]() {
     let template = this.wrapperFor([
       this.templateFor({
         cond: '(unbound this.cond1)',
@@ -714,7 +718,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.render(wrappedTemplate, Object.assign({ t: 'T', f: 'F' }, context));
   }
 
-  ['@test it does not update when the unbound helper is used']() {
+  [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it does not update when the unbound helper is used`]() {
     let template = `${this.templateFor({
       cond: '(unbound this.cond1)',
       truthy: 'T1',

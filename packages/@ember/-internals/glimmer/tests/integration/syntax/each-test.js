@@ -12,8 +12,8 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array/lib/ember-array';
+import ArrayProxy from '@ember/array/lib/array-proxy';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1119,27 +1119,29 @@ if (!ARRAY_PROXY_REMOVED && !EMBER_A_REMOVED) {
     }
   );
 
-  moduleFor(
-    'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-    class extends EachTest {
-      createList(items) {
-        let wrapped = emberA(items);
-        let proxy = ignoreDeprecation(() =>
-          class extends ArrayProxy {
-            @computed('wrappedItems.[]')
-            get arrangedContent() {
-              // Slice the items to ensure that updates must be propogated
-              return this.wrappedItems.slice();
-            }
-          }.create({
-            wrappedItems: wrapped,
-          })
-        );
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    moduleFor(
+      'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
+      class extends EachTest {
+        createList(items) {
+          let wrapped = emberA(items);
+          let proxy = ignoreDeprecation(() =>
+            class extends ArrayProxy {
+              @computed('wrappedItems.[]')
+              get arrangedContent() {
+                // Slice the items to ensure that updates must be propogated
+                return this.wrappedItems.slice();
+              }
+            }.create({
+              wrappedItems: wrapped,
+            })
+          );
 
-        return { list: proxy, delegate: wrapped };
+          return { list: proxy, delegate: wrapped };
+        }
       }
-    }
-  );
+    );
+  }
 
   moduleFor(
     'Syntax test: {{#each}} with array proxies, content is updated after init',

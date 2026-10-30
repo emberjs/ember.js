@@ -1,12 +1,13 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 
-import { set, setProperties } from '@ember/object';
+import { set } from '@ember/object';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
+import ClassicComponent from '@ember/-internals/glimmer/lib/component';
 import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';

@@ -1,6 +1,7 @@
 import { addObserver } from '@ember/-internals/metal';
-import EmberObject, { get, set } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get, set } from '@ember/object';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,
@@ -27,7 +28,7 @@ moduleFor(
   'Ember.Observable - Observing with @each',
   class extends AbstractTestCase {
     async [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test chained observers on enumerable properties are triggered when the observed property of any item changes`](
       assert
     ) {

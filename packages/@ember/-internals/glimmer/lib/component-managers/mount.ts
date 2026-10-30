@@ -3,6 +3,7 @@ import { generateControllerFactory } from '@ember/routing/lib/generate_controlle
 import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import type {
   CapturedArguments,
   ComponentDefinition,
@@ -105,6 +106,11 @@ class MountManager
     } else {
       let model = valueForRef(modelRef);
       controller = controllerFactory.create({ model });
+
+      /** The plain `Controller` ignores the properties that `create` receives. */
+      if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+        set(controller, 'model', model);
+      }
       self = createConstRef(controller, 'this');
       bucket = { engine, controller, self, modelRef };
     }
@@ -161,7 +167,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef));
+      set(controller, 'model', valueForRef(modelRef));
     }
   }
 }

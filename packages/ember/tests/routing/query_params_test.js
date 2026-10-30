@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
-import EmberObject, { action, get, computed } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { action, get, computed, set } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
@@ -61,9 +62,7 @@ moduleFor(
               refreshModel: true,
             },
           };
-          [actionName] = action(function () {
-            return loadingReturn;
-          });
+          [actionName] = () => loadingReturn;
           model(params) {
             indexModelCount++;
             if (indexModelCount === 2) {
@@ -143,7 +142,7 @@ moduleFor(
           'redirected to the sibling route, instead of child route'
         );
         assert.equal(
-          this.getController('parent').get('foo'),
+          get(this.getController('parent'), 'foo'),
           'lol',
           'controller has value from the active transition'
         );
@@ -189,12 +188,12 @@ moduleFor(
           'redirected to the sibling route, instead of child route'
         );
         assert.equal(
-          this.getController('parent').get('string'),
+          get(this.getController('parent'), 'string'),
           'hello',
           'controller has value from the active transition'
         );
         assert.deepEqual(
-          this.getController('parent').get('array'),
+          get(this.getController('parent'), 'array'),
           ['one', 2],
           'controller has value from the active transition'
         );
@@ -246,7 +245,7 @@ moduleFor(
       this.assertCurrentPath('/?other_foo=WOO', "QP updated correctly without 'as'");
 
       await this.transitionTo('/?other_foo=NAW');
-      assert.equal(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
+      assert.equal(get(controller, 'foo'), 'NAW', 'QP managed correctly on URL transition');
 
       await this.setAndFlush(controller, 'bar', 'NERK');
       this.assertCurrentPath('/?other_bar=NERK&other_foo=NAW', "QP mapped correctly with 'as'");
@@ -296,17 +295,23 @@ moduleFor(
       this.assertCurrentPath('/?foo=v5');
     }
 
-    async ['@test Can override inherited QP behavior by specifying queryParams as a computed property'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Can override inherited QP behavior by specifying queryParams as a computed property`](
       assert
     ) {
       assert.expect(3);
 
-      this.setSingleQPController('index', 'a', 0, {
-        queryParams: computed(function () {
-          return ['c'];
-        }),
-        c: true,
-      });
+      this.add(
+        'controller:index',
+        Controller.extend(
+          { queryParams: ['a'], a: 0 },
+          {
+            queryParams: computed(function () {
+              return ['c'];
+            }),
+            c: true,
+          }
+        )
+      );
 
       await this.visitAndAssert('/');
       let indexController = this.getController('index');
@@ -318,15 +323,15 @@ moduleFor(
       this.assertCurrentPath('/?c=false', 'QP updated with overridden param');
     }
 
-    async ['@test Can concatenate inherited QP behavior by specifying queryParams as an array'](
-      assert
-    ) {
+    async [`${testUnless(
+      import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    )} @test Can concatenate inherited QP behavior by specifying queryParams as an array`](assert) {
       assert.expect(3);
 
-      this.setSingleQPController('index', 'a', 0, {
-        queryParams: ['c'],
-        c: true,
-      });
+      this.add(
+        'controller:index',
+        Controller.extend({ queryParams: ['a'], a: 0 }, { queryParams: ['c'], c: true })
+      );
 
       await this.visitAndAssert('/');
       let indexController = this.getController('index');
@@ -420,7 +425,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.equal(
-              controller.get('foo'),
+              get(controller, 'foo'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
@@ -441,7 +446,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.equal(
-              controller.get('faz'),
+              get(controller, 'faz'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
@@ -782,13 +787,20 @@ moduleFor(
         )
       );
 
-      this.setSingleQPController('application', 'foo', 1, {
-        router: service(),
-        increment: action(function () {
-          this.incrementProperty('foo');
-          this.router.refresh();
-        }),
-      });
+      this.add(
+        'controller:application',
+        class extends Controller {
+          @service router;
+
+          queryParams = ['foo'];
+          foo = 1;
+
+          increment = () => {
+            set(this, 'foo', this.foo + 1);
+            this.router.refresh();
+          };
+        }
+      );
 
       this.add('route:application', Route);
 
@@ -808,7 +820,9 @@ moduleFor(
       this.assertCurrentPath('/?foo=3');
     }
 
-    async ["@test Use Ember.get to retrieve query params 'refreshModel' configuration"](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Use Ember.get to retrieve query params 'refreshModel' configuration`](
+      assert
+    ) {
       assert.expect(7);
 
       this.setSingleQPController('application', 'appomg', 'applol');
@@ -891,7 +905,7 @@ moduleFor(
       await this.transitionTo('/');
 
       let indexController = this.getController('index');
-      assert.equal(indexController.get('omg'), 'lol');
+      assert.equal(get(indexController, 'omg'), 'lol');
     }
 
     async ['@test can opt into a replace query by specifying replace:true in the Route config hash'](
@@ -1033,7 +1047,9 @@ moduleFor(
       assert.equal(parentModelCount, 2);
     }
 
-    async ["@test Use Ember.get to retrieve query params 'replace' configuration"](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Use Ember.get to retrieve query params 'replace' configuration`](
+      assert
+    ) {
       assert.expect(2);
 
       this.setSingleQPController('application', 'alex', 'matchneer');
@@ -1072,7 +1088,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
-            controller.set('omg', 'OVERRIDE');
+            set(controller, 'omg', 'OVERRIDE');
           }
           @action
           queryParamsDidChange() {
@@ -1101,7 +1117,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
-            controller.set('omg', ['OVERRIDE']);
+            set(controller, 'omg', ['OVERRIDE']);
           }
           @action
           queryParamsDidChange() {
@@ -1123,10 +1139,10 @@ moduleFor(
 
       return this.visit('/?omg=borf').then(() => {
         let indexController = this.getController('index');
-        assert.equal(indexController.get('omg'), 'borf');
+        assert.equal(get(indexController, 'omg'), 'borf');
 
         this.transitionTo('/');
-        assert.equal(indexController.get('omg'), 'lol');
+        assert.equal(get(indexController, 'omg'), 'lol');
       });
     }
 
@@ -1254,10 +1270,10 @@ moduleFor(
 
       return this.visit('/?foo=true').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), true);
+        assert.equal(get(controller, 'foo'), true);
 
         this.transitionTo('/?foo=false');
-        assert.equal(controller.get('foo'), false);
+        assert.equal(get(controller, 'foo'), false);
       });
     }
 
@@ -1274,7 +1290,7 @@ moduleFor(
 
       return this.visit('/?foo=').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), '');
+        assert.equal(get(controller, 'foo'), '');
       });
     }
 
@@ -1320,11 +1336,11 @@ moduleFor(
 
       return this.visit('/?foo[]=1&foo[]=2&foo[]=3').then(() => {
         let controller = this.getController('index');
-        assert.deepEqual(controller.get('foo'), ['1', '2', '3']);
+        assert.deepEqual(get(controller, 'foo'), ['1', '2', '3']);
       });
     }
 
-    async [`${testUnless(QP_EMBER_ARRAY.isRemoved)} @test Array query params can be pushed/popped`](
+    async [`${testUnless(QP_EMBER_ARRAY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test Array query params can be pushed/popped`](
       assert
     ) {
       if (QP_EMBER_ARRAY.isEnabled) {
@@ -1456,7 +1472,7 @@ moduleFor(
       await this.visitAndAssert('/home');
       let controller = this.getController('home');
 
-      assert.deepEqual(controller.get('foo'), [1, 2]);
+      assert.deepEqual(get(controller, 'foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
       await this.setAndFlush(controller, 'foo', [1, 3]);
@@ -1464,7 +1480,7 @@ moduleFor(
 
       await this.transitionTo('/home');
 
-      assert.deepEqual(controller.get('foo'), [1, 2]);
+      assert.deepEqual(get(controller, 'foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
       await this.setAndFlush(controller, 'foo', null);
@@ -1644,7 +1660,9 @@ moduleFor(
       return this.refreshModelWhileLoadingTest(true);
     }
 
-    async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
+    async [`${testUnless(
+      import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
+    )} @test warn user that Route's queryParams configuration must be an Object, not an Array`](
       assert
     ) {
       assert.expect(1);

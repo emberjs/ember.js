@@ -1,8 +1,9 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
-import EmberObject, { observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import EmberObject from '@ember/object/lib/ember-object';
+import { observer } from '@ember/object/lib/observer';
+import { A as emberA } from '@ember/array/lib/ember-array';
 import {
   moduleFor,
   AbstractTestCase,
@@ -85,24 +86,34 @@ moduleFor(
       });
     }
 
-    ['@test should get normal properties'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should get normal properties`](
+      assert
+    ) {
       assert.equal(object.get('normal'), 'value');
     }
 
-    ['@test should call computed properties and return their result'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call computed properties and return their result`](
+      assert
+    ) {
       assert.equal(object.get('computed'), 'value');
     }
 
-    ['@test should return the function for a non-computed property'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return the function for a non-computed property`](
+      assert
+    ) {
       let value = object.get('method');
       assert.equal(typeof value, 'function');
     }
 
-    ['@test should return null when property value is null'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return null when property value is null`](
+      assert
+    ) {
       assert.equal(object.get('nullProperty'), null);
     }
 
-    ['@test should call unknownProperty when value is undefined'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call unknownProperty when value is undefined`](
+      assert
+    ) {
       assert.equal(object.get('unknown'), 'unknown');
       assert.equal(object.lastUnknownProperty, 'unknown');
     }
@@ -139,37 +150,51 @@ moduleFor(
       };
     }
 
-    ['@test should get normal properties on Ember.Observable'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should get normal properties on Ember.Observable`](
+      assert
+    ) {
       assert.equal(get(objectA, 'normal'), 'value');
     }
 
-    ['@test should call computed properties on Ember.Observable and return their result'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call computed properties on Ember.Observable and return their result`](
+      assert
+    ) {
       assert.equal(get(objectA, 'computed'), 'value');
     }
 
-    ['@test should return the function for a non-computed property on Ember.Observable'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return the function for a non-computed property on Ember.Observable`](
+      assert
+    ) {
       let value = get(objectA, 'method');
       assert.equal(typeof value, 'function');
     }
 
-    ['@test should return null when property value is null on Ember.Observable'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return null when property value is null on Ember.Observable`](
+      assert
+    ) {
       assert.equal(get(objectA, 'nullProperty'), null);
     }
 
-    ['@test should call unknownProperty when value is undefined on Ember.Observable'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call unknownProperty when value is undefined on Ember.Observable`](
+      assert
+    ) {
       assert.equal(get(objectA, 'unknown'), 'unknown');
       assert.equal(objectA.lastUnknownProperty, 'unknown');
     }
 
-    ['@test should get normal properties on standard objects'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should get normal properties on standard objects`](
+      assert
+    ) {
       assert.equal(get(objectB, 'normal'), 'value');
     }
 
-    ['@test should return null when property is null on standard objects'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return null when property is null on standard objects`](
+      assert
+    ) {
       assert.equal(get(objectB, 'nullProperty'), null);
     }
 
-    ['@test raise if the provided object is undefined']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test raise if the provided object is undefined`]() {
       expectAssertion(function () {
         get(undefined, 'key');
       }, /Cannot call get with 'key' on an undefined object/i);
@@ -180,7 +205,9 @@ moduleFor(
 moduleFor(
   'Ember.get() with paths',
   class extends ObservableTestCase {
-    ['@test should return a property at a given path relative to the passed object'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should return a property at a given path relative to the passed object`](
+      assert
+    ) {
       let foo = ObservableObject.create({
         bar: ObservableObject.extend({
           baz: computed(function () {
@@ -256,38 +283,50 @@ moduleFor(
       }).create();
     }
 
-    ['@test should change normal properties and return the value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should change normal properties and return the value`](
+      assert
+    ) {
       let ret = object.set('normal', 'changed');
       assert.equal(object.get('normal'), 'changed');
       assert.equal(ret, 'changed');
     }
 
-    ['@test should call computed properties passing value and return the value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call computed properties passing value and return the value`](
+      assert
+    ) {
       let ret = object.set('computed', 'changed');
       assert.equal(object.get('_computed'), 'changed');
       assert.equal(ret, 'changed');
     }
 
-    ['@test should change normal properties when passing undefined'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should change normal properties when passing undefined`](
+      assert
+    ) {
       let ret = object.set('normal', undefined);
       assert.equal(object.get('normal'), undefined);
       assert.equal(ret, undefined);
     }
 
-    ['@test should replace the function for a non-computed property and return the value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should replace the function for a non-computed property and return the value`](
+      assert
+    ) {
       let ret = object.set('method', 'changed');
       assert.equal(object.get('_method'), 'method'); // make sure this was NOT run
       assert.ok(typeof object.get('method') !== 'function');
       assert.equal(ret, 'changed');
     }
 
-    ['@test should replace prover when property value is null'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should replace prover when property value is null`](
+      assert
+    ) {
       let ret = object.set('nullProperty', 'changed');
       assert.equal(object.get('nullProperty'), 'changed');
       assert.equal(ret, 'changed');
     }
 
-    ['@test should call unknownProperty with value when property is undefined'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should call unknownProperty with value when property is undefined`](
+      assert
+    ) {
       let ret = object.set('unknown', 'changed');
       assert.equal(object.get('_unknown'), 'changed');
       assert.equal(ret, 'changed');
@@ -364,7 +403,9 @@ moduleFor(
       });
     }
 
-    ['@test getting values should call function return value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test getting values should call function return value`](
+      assert
+    ) {
       // get each property twice. Verify return.
       let keys = ['computed', 'dependent'];
 
@@ -379,7 +420,9 @@ moduleFor(
       });
     }
 
-    ['@test setting values should call function return value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting values should call function return value`](
+      assert
+    ) {
       // get each property twice. Verify return.
       let keys = ['computed', 'dependent'];
       let values = ['value1', 'value2'];
@@ -427,7 +470,9 @@ moduleFor(
       });
     }
 
-    ['@test notify change should clear cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notify change should clear cache`](
+      assert
+    ) {
       // call get several times to collect call count
       object.get('computed'); // should run func
       object.get('computed'); // should not run func
@@ -438,7 +483,9 @@ moduleFor(
       assert.equal(object.computedCalls.length, 2, 'should have invoked method 2x');
     }
 
-    ['@test change dependent should clear cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test change dependent should clear cache`](
+      assert
+    ) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -448,7 +495,9 @@ moduleFor(
       assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
     }
 
-    ['@test just notifying change of dependent should clear cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test just notifying change of dependent should clear cache`](
+      assert
+    ) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -458,7 +507,9 @@ moduleFor(
       assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
     }
 
-    ['@test changing dependent should clear nested cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test changing dependent should clear nested cache`](
+      assert
+    ) {
       // call get several times to collect call count
       let ret1 = object.get('nestedInc'); // should run func
       assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
@@ -472,7 +523,9 @@ moduleFor(
       ); // should run again
     }
 
-    ['@test just notifying change of dependent should clear nested cache'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test just notifying change of dependent should clear nested cache`](
+      assert
+    ) {
       // call get several times to collect call count
       let ret1 = object.get('nestedInc'); // should run func
       assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
@@ -488,7 +541,9 @@ moduleFor(
 
     // This verifies a specific bug encountered where observers for computed
     // properties would fire before their prop caches were cleared.
-    ['@test change dependent should clear cache when observers of dependent are called'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test change dependent should clear cache when observers of dependent are called`](
+      assert
+    ) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -502,7 +557,7 @@ moduleFor(
       object.set('changer', 'bar');
     }
 
-    ['@test setting one of two computed properties that depend on a third property should clear the kvo cache'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test setting one of two computed properties that depend on a third property should clear the kvo cache`](
       assert
     ) {
       // we have to call set twice to fill up the cache
@@ -515,7 +570,9 @@ moduleFor(
       assert.equal(object.get('isOn'), false, 'object.isOn should be false');
     }
 
-    ['@test dependent keys should be able to be specified as property paths'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test dependent keys should be able to be specified as property paths`](
+      assert
+    ) {
       let depObj = ObservableObject.extend({
         menuPrice: computed('menu.price', function () {
           return this.get('menu.price');
@@ -537,7 +594,9 @@ moduleFor(
       );
     }
 
-    ['@test cacheable nested dependent keys should clear after their dependencies update'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test cacheable nested dependent keys should clear after their dependencies update`](
+      assert
+    ) {
       assert.ok(true);
 
       let DepObj;
@@ -728,7 +787,7 @@ moduleFor(
     }
 
     async [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test should notify array observer when array changes`](assert) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
 
@@ -772,7 +831,9 @@ moduleFor(
       });
     }
 
-    async ['@test should register an observer for a property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should register an observer for a property`](
+      assert
+    ) {
       objectC.addObserver('normal', objectC, 'action');
       objectC.set('normal', 'newValue');
 
@@ -780,7 +841,7 @@ moduleFor(
       assert.equal(objectC.normal1, 'newZeroValue');
     }
 
-    async ['@test should register an observer for a property - Special case of chained property'](
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should register an observer for a property - Special case of chained property`](
       assert
     ) {
       objectC.addObserver('objectE.propertyVal', objectC, 'chainedObserver');
@@ -839,7 +900,9 @@ moduleFor(
       });
     }
 
-    async ['@test should unregister an observer for a property'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should unregister an observer for a property`](
+      assert
+    ) {
       objectD.addObserver('normal', objectD, 'addAction');
       objectD.set('normal', 'newValue');
       await runLoopSettled();

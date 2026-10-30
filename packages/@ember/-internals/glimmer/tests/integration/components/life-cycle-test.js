@@ -1,4 +1,10 @@
-import { moduleFor, RenderingTestCase, runTask, defineSimpleModifier } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  defineSimpleModifier,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set } from '@ember/object';
@@ -65,7 +71,9 @@ moduleFor(
       this.assertText('wat');
     }
 
-    ['@test lifecycle hooks are invoked in a predictable order'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lifecycle hooks are invoked in a predictable order`](
+      assert
+    ) {
       let hooks = [];
 
       let componentClass = (name) =>

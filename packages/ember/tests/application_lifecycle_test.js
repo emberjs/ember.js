@@ -1,8 +1,10 @@
+import { get, set } from '@ember/object';
 import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import { destroy } from '@ember/destroyable';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
@@ -31,10 +33,10 @@ moduleFor(
 
         let SettingRoute = class extends Route {
           setupController() {
-            this.controller.set('selectedMenuItem', menuItem);
+            set(this.controller, 'selectedMenuItem', menuItem);
           }
           deactivate() {
-            this.controller.set('selectedMenuItem', null);
+            set(this.controller, 'selectedMenuItem', null);
           }
         };
         this.add('route:index', SettingRoute);
@@ -58,28 +60,28 @@ moduleFor(
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.equal(get(indexController, 'selectedMenuItem'), this.menuItem);
+      assert.equal(get(applicationController, 'selectedMenuItem'), this.menuItem);
 
       this.application.reset();
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.equal(get(indexController, 'selectedMenuItem'), null);
+      assert.equal(get(applicationController, 'selectedMenuItem'), null);
     }
 
     [`@test Destroying the application resets the router before the appInstance is destroyed`](
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.equal(get(indexController, 'selectedMenuItem'), this.menuItem);
+      assert.equal(get(applicationController, 'selectedMenuItem'), this.menuItem);
 
       runTask(() => {
         this.application.destroy();
       });
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.equal(get(indexController, 'selectedMenuItem'), null);
+      assert.equal(get(applicationController, 'selectedMenuItem'), null);
     }
   }
 );
@@ -108,10 +110,10 @@ moduleFor(
       let router = this.applicationInstance.lookup('router:main');
       let route = this.applicationInstance.lookup('route:index');
 
-      runTask(() => router.destroy());
+      runTask(() => this.applicationInstance.unregister('router:main'));
       assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
-      runTask(() => route.destroy());
+      runTask(() => destroy(route));
       assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
 
       runTask(() => this.application.destroy());

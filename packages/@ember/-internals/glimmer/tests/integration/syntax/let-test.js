@@ -10,7 +10,7 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
-import ObjectProxy from '@ember/object/proxy';
+import ObjectProxy from '@ember/object/lib/object-proxy';
 
 moduleFor(
   'Syntax test: {{#let as}}',
@@ -130,7 +130,7 @@ moduleFor(
       this.assertText('-Yehuda-');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test can access alias of a proxy`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test can access alias of a proxy`]() {
       expectDeprecation(
         /`ObjectProxy` is deprecated/,
         DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled
