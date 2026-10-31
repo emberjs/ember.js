@@ -1,44 +1,54 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../../utils/helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-moduleFor(
-  'Component willDestroyElement hook (classic component)',
-  class extends RenderingTestCase {
-    ['@test it calls willDestroyElement when removed by if'](assert) {
-      let didInsertElementCount = 0;
-      let willDestroyElementCount = 0;
-      let FooBarComponent = class extends Component {
-        didInsertElement() {
-          didInsertElementCount++;
-          assert.notEqual(this.element.parentNode, null, 'precond component is in DOM');
-        }
-        willDestroyElement() {
-          willDestroyElementCount++;
-          assert.notEqual(this.element.parentNode, null, 'has not been removed from DOM yet');
-        }
-      };
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Component willDestroyElement hook (classic component)',
+    class extends RenderingTestCase {
+      ['@test it calls willDestroyElement when removed by if'](assert) {
+        expectClassicComponentDeprecation();
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        let didInsertElementCount = 0;
+        let willDestroyElementCount = 0;
+        let FooBarComponent = class extends Component {
+          didInsertElement() {
+            didInsertElementCount++;
+            assert.notEqual(this.element.parentNode, null, 'precond component is in DOM');
+          }
+          willDestroyElement() {
+            willDestroyElementCount++;
+            assert.notEqual(this.element.parentNode, null, 'has not been removed from DOM yet');
+          }
+        };
 
-      this.render('{{#if this.switch}}{{foo-bar}}{{/if}}', { switch: true });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
+        this.render('{{#if this.switch}}{{foo-bar}}{{/if}}', { switch: true });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+        assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
 
-      runTask(() => set(this.context, 'switch', false));
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      assert.equal(willDestroyElementCount, 1, 'willDestroyElement was called once');
+        runTask(() => set(this.context, 'switch', false));
 
-      this.assertText('');
+        assert.equal(willDestroyElementCount, 1, 'willDestroyElement was called once');
+
+        this.assertText('');
+      }
     }
-  }
-);
+  );
+}

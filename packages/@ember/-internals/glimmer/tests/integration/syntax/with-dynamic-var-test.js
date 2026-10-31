@@ -1,4 +1,10 @@
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { ClassicRenderingTestCase } from '../../utils/classic-rendering-test-case';
 
 moduleFor(
@@ -19,23 +25,29 @@ moduleFor(
   }
 );
 
-moduleFor(
-  '{{-with-dynamic-var}} (classic root)',
-  class extends ClassicRenderingTestCase {
-    ['@test does not allow setting values other than outletState']() {
-      expectAssertion(() => {
-        this.render(strip`
-        {{#-with-dynamic-vars foo="bar"}}
-          {{-get-dynamic-var 'foo'}}
-        {{/-with-dynamic-vars}}
-      `);
-      }, /Using `-with-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
-    }
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    '{{-with-dynamic-var}} (classic root)',
+    class extends ClassicRenderingTestCase {
+      ['@test does not allow setting values other than outletState']() {
+        expectClassicComponentDeprecation();
 
-    ['@test does not allow getting values other than outletState']() {
-      expectAssertion(() => {
-        this.render(`{{-get-dynamic-var 'foo'}}`);
-      }, /Using `-get-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
+        expectAssertion(() => {
+          this.render(strip`
+          {{#-with-dynamic-vars foo="bar"}}
+            {{-get-dynamic-var 'foo'}}
+          {{/-with-dynamic-vars}}
+        `);
+        }, /Using `-with-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
+      }
+
+      ['@test does not allow getting values other than outletState']() {
+        expectClassicComponentDeprecation();
+
+        expectAssertion(() => {
+          this.render(`{{-get-dynamic-var 'foo'}}`);
+        }, /Using `-get-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
+      }
     }
-  }
-);
+  );
+}
