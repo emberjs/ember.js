@@ -3,6 +3,7 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
+import { tagMetaFor } from '../meta';
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
@@ -128,6 +129,13 @@ export function trackedMap<Key = any, Value = any>(
       return value;
     },
   });
+
+  /**
+   * Classic consumers (`@computed`, observers) find tags with
+   * `tagFor(proxy, key)`. `size` is the dependent key for a change
+   * to the collection.
+   */
+  tagMetaFor(proxy).set('size', collection);
 
   return proxy;
 }
