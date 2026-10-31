@@ -13,6 +13,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   Cursor,
   DebugRenderTree,
+  RenderAdapter,
   Environment,
   RenderResult as GlimmerRenderResult,
   EvaluationContext,
@@ -30,6 +31,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
+import { adapterForDocument, getRenderAdapter } from './render-adapter';
 import { renderers } from './renderers';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
@@ -429,13 +431,13 @@ export class BaseRenderer {
    */
   static strict(
     owner: object,
-    document: SimpleDocument | Document,
+    adapter: RenderAdapter,
     options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...options },
-      document as SimpleDocument,
+      adapter,
       new ResolverImpl(),
       clientBuilder
     );
@@ -446,7 +448,7 @@ export class BaseRenderer {
   constructor(
     owner: object,
     envOptions: { isInteractive: boolean; hasDOM: boolean },
-    document: SimpleDocument,
+    adapter: RenderAdapter,
     resolver: ClassicResolver,
     builder: IBuilder
   ) {
@@ -460,7 +462,7 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
+    let options = runtimeOptions(adapter, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
       (heap) => new RuntimeOpImpl(heap),
@@ -687,15 +689,16 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 
   if (!renderer) {
     /**
-     * SAFETY: we should figure out what we need out of a `document` and narrow the API.
-     *         this exercise should also end up beginning to define what we need for CLI rendering (or to other outputs)
+     * `adapter` renders into an output that is not the DOM, for example a terminal.
      */
-    let document =
-      env && 'document' in env
-        ? (env['document'] as SimpleDocument | Document)
-        : globalThis.document;
+    let adapter =
+      env && 'adapter' in env
+        ? (env['adapter'] as RenderAdapter)
+        : env && 'document' in env
+          ? adapterForDocument(env['document'] as SimpleDocument)
+          : getRenderAdapter(owner);
 
-    renderer = BaseRenderer.strict(owner, document, {
+    renderer = BaseRenderer.strict(owner, adapter, {
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env['hasDOM']) : true,
@@ -707,8 +710,6 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
 }
 
 const isCursor = (into: IntoTarget): into is Cursor => 'element' in into;
-
-const isDOMElement = (into: IntoTarget): into is Element => 'innerHTML' in into;
 
 function toCursor(into: IntoTarget): Cursor {
   return isCursor(into) ? into : { element: into as SimpleElement, nextSibling: null };
@@ -734,7 +735,11 @@ function toCursor(into: IntoTarget): Cursor {
  * That render clears the element.
  * A `Cursor` target is never cleared.
  */
-function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): IntoTarget {
+function replaceLastRender(
+  adapter: RenderAdapter,
+  into: IntoTarget,
+  element: Element | SimpleElement
+): IntoTarget {
   let last = LAST_RENDER_INTO.get(element);
 
   if (last?.glimmerResult) {
@@ -743,8 +748,8 @@ function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): 
     return { element: element as SimpleElement, nextSibling: last.glimmerResult.firstNode() };
   }
 
-  if (!last && isDOMElement(into)) {
-    into.innerHTML = '';
+  if (!last && !isCursor(into) && adapter.hasProperty(into as SimpleElement, 'innerHTML')) {
+    adapter.clearChildren(into as SimpleElement);
   }
 
   return into;
@@ -805,7 +810,10 @@ export function renderComponent(
   let renderer = rendererFor(owner, env);
   let element = isCursor(into) ? into.element : into;
 
-  let root = renderer.render(component, { into: replaceLastRender(into, element), args });
+  let root = renderer.render(component, {
+    into: replaceLastRender(renderer.state.env.adapter, into, element),
+    args,
+  });
   let glimmerResult = root.result;
 
   /**

@@ -1,19 +1,16 @@
 import { castToSimple } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
-import { EnvironmentImpl } from '@glimmer/runtime';
+import { DOMRenderAdapter, EnvironmentImpl } from '@glimmer/runtime';
 
 QUnit.module('[integration] env');
 
 if (DEBUG) {
   QUnit.test('assert against nested transactions', (assert) => {
-    let env = new EnvironmentImpl(
-      { document: castToSimple(document) },
-      {
-        onTransactionCommit() {},
-        isInteractive: true,
-        enableDebugTooling: false,
-      }
-    );
+    let env = new EnvironmentImpl(new DOMRenderAdapter(castToSimple(document)), {
+      onTransactionCommit() {},
+      isInteractive: true,
+      enableDebugTooling: false,
+    });
     env.begin();
     assert.throws(
       () => env.begin(),
@@ -23,14 +20,11 @@ if (DEBUG) {
 }
 
 QUnit.test('ensure commit cleans up when it can', (assert) => {
-  let env = new EnvironmentImpl(
-    { document: castToSimple(document) },
-    {
-      onTransactionCommit() {},
-      isInteractive: true,
-      enableDebugTooling: false,
-    }
-  );
+  let env = new EnvironmentImpl(new DOMRenderAdapter(castToSimple(document)), {
+    onTransactionCommit() {},
+    isInteractive: true,
+    enableDebugTooling: false,
+  });
   env.begin();
 
   // ghetto stub

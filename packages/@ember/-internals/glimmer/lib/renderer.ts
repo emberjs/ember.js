@@ -11,6 +11,7 @@ import {
   isDestroying,
 } from '@glimmer/destroyable';
 import type {
+  RenderAdapter,
   Bounds,
   Environment,
   RenderResult as GlimmerRenderResult,
@@ -30,7 +31,7 @@ import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -39,6 +40,7 @@ import RouterResolver from './router-resolver';
 import type { OutletState } from '../../routing/route-managers/outlet-state';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
+import { getRenderAdapter } from './render-adapter';
 
 export {
   type IBuilder,
@@ -187,26 +189,25 @@ export class Renderer extends BaseRenderer {
     let { _viewRegistry } = props;
     let owner = getOwner(props);
     assert('Renderer is unexpectedly missing an owner', owner);
-    let document = owner.lookup('service:-document') as SimpleDocument;
     let env = owner.lookup('-environment:main') as {
       isInteractive: boolean;
       hasDOM: boolean;
     };
     let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
     let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(owner, document, env, rootTemplate, _viewRegistry, builder);
+    return new this(owner, getRenderAdapter(owner), env, rootTemplate, _viewRegistry, builder);
   }
 
   constructor(
     owner: InternalOwner,
-    document: SimpleDocument,
+    adapter: RenderAdapter,
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     builder = clientBuilder,
     resolver = new RouterResolver()
   ) {
-    super(owner, env, document, resolver, builder);
+    super(owner, env, adapter, resolver, builder);
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
   }
