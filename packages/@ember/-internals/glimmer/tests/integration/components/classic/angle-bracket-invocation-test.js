@@ -1,12 +1,13 @@
-import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import { moduleFor, strip, classes, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { set } from '@ember/object';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component as EmberComponent } from '../../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'AngleBracket Invocation (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     '@test it can have a custom id and it is not bound'() {
       this.owner.register(
         'component:foo-bar',
@@ -302,15 +303,19 @@ moduleFor(
       this.render('<FooBar />');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 

@@ -1,0 +1,104 @@
+import { ENV } from '@ember/-internals/environment';
+import { moduleFor } from 'internal-test-helpers';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
+
+import { template, templateCacheCounters } from '@ember/-internals/glimmer';
+import { precompile } from 'ember-template-compiler';
+
+import Component from '@glimmer/component';
+import { setComponentTemplate } from '@glimmer/manager';
+
+moduleFor(
+  'Template factory test (classic component)',
+  class extends ClassicRenderingTestCase {
+    ['@test the template factory returned from precompile is the same as compile'](assert) {
+      // snapshot counters
+      this.getCacheCounters();
+
+      let { owner } = this;
+
+      let options = { moduleName: 'my-app/templates/some-module.hbs' };
+
+      let spec = precompile('Hello {{@name}}', options);
+      let body = `exports.default = template(${spec});`;
+      let module = new Function('exports', 'template', body);
+      let exports = {};
+      module(exports, template);
+      let Precompiled = exports['default'];
+      let Compiled = this.compile('Hello {{@name}}', options);
+
+      assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
+      assert.equal(typeof Compiled, 'function', 'compiled is a factory');
+
+      this.expectCacheChanges({}, 'no changes');
+
+      let precompiled = Precompiled(owner);
+
+      this.expectCacheChanges(
+        {
+          templateCacheMisses: 1,
+        },
+        'misses 1'
+      );
+
+      let compiled = Compiled(owner);
+
+      this.expectCacheChanges(
+        {
+          templateCacheMisses: 1,
+        },
+        'misses 1'
+      );
+
+      assert.ok(typeof precompiled.spec !== 'string', 'Spec has been parsed');
+      assert.ok(typeof compiled.spec !== 'string', 'Spec has been parsed');
+
+      this.owner.register(
+        'component:x-precompiled',
+        setComponentTemplate(Precompiled, class extends Component {})
+      );
+
+      this.owner.register(
+        'component:x-compiled',
+        setComponentTemplate(Compiled, class extends Component {})
+      );
+
+      this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
+
+      this.expectCacheChanges(
+        {
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 3 : 2,
+          // from this.render
+          templateCacheMisses: 1,
+        },
+        'hits 2'
+      );
+      this.assertText('Hello precompiled Hello compiled');
+    }
+
+    getCacheCounters() {
+      return (this._counters = {
+        templateCacheHits: templateCacheCounters.cacheHit,
+        templateCacheMisses: templateCacheCounters.cacheMiss,
+      });
+    }
+
+    expectCacheChanges(expected, message) {
+      let lastState = this._counters;
+      let state = this.getCacheCounters();
+      let actual = diff(state, lastState);
+      this.assert.deepEqual(actual, expected, message);
+    }
+  }
+);
+
+function diff(state, lastState) {
+  let res = {};
+  Object.keys(state).forEach((key) => {
+    let delta = state[key] - lastState[key];
+    if (delta !== 0) {
+      res[key] = state[key] - lastState[key];
+    }
+  });
+  return res;
+}

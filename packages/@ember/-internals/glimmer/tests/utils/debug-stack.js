@@ -2,8 +2,9 @@ function debugStackMessage(message, renderTree, includeTopLevel) {
   let topLevel = '';
 
   // Component roots are labeled `{ROOT}` in the render stack.
+  // A classic root passes its own label.
   if (includeTopLevel) {
-    topLevel = '{ROOT}\n {4}';
+    topLevel = `${includeTopLevel === true ? '{ROOT}' : includeTopLevel}\n {4}`;
   }
 
   return `${message}[\\S\\s]*- While rendering:\n {2}${topLevel}${renderTree.join('\\n\\s*')}`;

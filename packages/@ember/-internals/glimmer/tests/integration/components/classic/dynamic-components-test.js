@@ -1,12 +1,13 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, runTask } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { set } from '@ember/object';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component as EmberComponent } from '../../../utils/helpers';
 
 moduleFor(
   'Components test: dynamic components (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test it has an element']() {
       let instance;
 
@@ -66,15 +67,19 @@ moduleFor(
       this.render('{{component "foo-bar"}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 

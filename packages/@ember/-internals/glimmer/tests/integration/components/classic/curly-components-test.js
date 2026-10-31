@@ -1,6 +1,5 @@
 import {
   moduleFor,
-  RenderingTestCase,
   strip,
   classes,
   runTask,
@@ -17,6 +16,7 @@ import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
 import { set, get, computed, observer } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -24,7 +24,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Components test: curly components (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test it can have a custom id and it is not bound']() {
       this.owner.register(
         'component:foo-bar',
@@ -681,15 +681,19 @@ moduleFor(
       this.render('{{foo-bar}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.notOk(fooBarInstance.parentView);
+      assert.equal(fooBarInstance.parentView, this.component);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 
@@ -1389,7 +1393,11 @@ moduleFor(
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
+      assert.equal(
+        outer.parentView,
+        this.context,
+        'x-outer receives the ambient scope as its parentView'
+      );
 
       runTask(() => this.rerender());
 
@@ -1403,7 +1411,11 @@ moduleFor(
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
+      assert.equal(
+        outer.parentView,
+        this.context,
+        'x-outer receives the ambient scope as its parentView'
+      );
     }
 
     ['@test newly-added sub-components get correct parentView'](assert) {
@@ -1441,18 +1453,27 @@ moduleFor(
         }
       );
 
-      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
+      assert.equal(
+        outer.parentView,
+        this.context,
+        'x-outer receives the ambient scope as its parentView'
+      );
 
       runTask(() => this.rerender());
 
-      assert.notOk(
+      assert.equal(
         outer.parentView,
-        'x-outer has no parentView below a Glimmer root (after rerender)'
+        this.context,
+        'x-outer receives the ambient scope as its parentView (after rerender)'
       );
 
       runTask(() => this.context.set('showInner', true));
 
-      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
+      assert.equal(
+        outer.parentView,
+        this.context,
+        'x-outer receives the ambient scope as its parentView'
+      );
       assert.equal(
         inner.parentView,
         outer,
@@ -1461,7 +1482,11 @@ moduleFor(
 
       runTask(() => this.context.set('showInner', false));
 
-      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
+      assert.equal(
+        outer.parentView,
+        this.context,
+        'x-outer receives the ambient scope as its parentView'
+      );
     }
 
     ['@test specifying classNames results in correct class'](assert) {

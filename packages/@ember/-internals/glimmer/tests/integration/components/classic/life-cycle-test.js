@@ -1,4 +1,4 @@
-import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import { classes, moduleFor, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
@@ -7,10 +7,11 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
 import { addListener } from '@ember/-internals/metal';
 
-class LifeCycleHooksTest extends RenderingTestCase {
+class LifeCycleHooksTest extends ClassicRenderingTestCase {
   constructor() {
     super(...arguments);
     this.hooks = [];
@@ -18,33 +19,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.componentRegistry = [];
     this.teardownAssertions = [];
     this.viewRegistry = this.owner.lookup('-view-registry:main');
-  }
-
-  /**
-    The hooks of a classic component read `parentView`, so these tests render
-    below a classic parent.
-
-    @private
-  */
-  render(template, context) {
-    let test = this;
-
-    this.owner.register(
-      'component:classic-root',
-      setComponentTemplate(
-        precompileTemplate('{{yield}}'),
-        class extends Component {
-          tagName = '';
-
-          init() {
-            super.init(...arguments);
-            test.classicRoot = this;
-          }
-        }
-      )
-    );
-
-    super.render(`<ClassicRoot>${template}</ClassicRoot>`, context);
   }
 
   afterEach() {
@@ -89,7 +63,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
   assertRegisteredViews(label) {
     let viewRegistry = this.viewRegistry;
-    let topLevelId = getViewId(this.classicRoot);
+    let topLevelId = getViewId(this.component);
     let actual = Object.keys(viewRegistry)
       .sort()
       .filter((id) => id !== topLevelId);
@@ -1172,14 +1146,14 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.classicRoot.childViews.length, 5, 'childViews precond');
+      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
     }
 
     runTask(() => set(this.context, 'items', []));
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.classicRoot.childViews.length, 1, 'childViews updated');
+      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
     }
 
     this.assertText('Nothing to see here');
@@ -1377,7 +1351,7 @@ moduleFor(
 
 moduleFor(
   'Run loop and lifecycle hooks (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test afterRender set']() {
       let ComponentClass = class extends Component {
         width = '5';

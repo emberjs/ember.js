@@ -35,6 +35,7 @@ moduleFor(
           // from this.render
           componentDefinitionCount: 1,
           templateCacheMisses: 1,
+          templateCacheHits: 0,
         },
         'calculate foo-bar helper only'
       );
@@ -88,6 +89,7 @@ moduleFor(
           // 1 from this.render, 1 from component-one
           componentDefinitionCount: 2,
           templateCacheMisses: 2,
+          templateCacheHits: 0,
         },
         'test case component and component-one no change'
       );
