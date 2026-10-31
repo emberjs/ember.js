@@ -4,6 +4,7 @@ import type {
   SimpleDocument,
   SimpleElement,
   SimpleNode,
+  SimpleParentNode,
 } from '@glimmer/interfaces';
 
 import { BLACKLIST_TABLE, DOMOperations } from './operations';
@@ -78,7 +79,7 @@ export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges 
     element.removeAttribute(name);
   }
 
-  insertAfter(element: SimpleElement, node: SimpleNode, reference: SimpleNode) {
+  insertAfter(element: SimpleParentNode, node: SimpleNode, reference: SimpleNode) {
     this.insertBefore(element, node, reference.nextSibling);
   }
 }
