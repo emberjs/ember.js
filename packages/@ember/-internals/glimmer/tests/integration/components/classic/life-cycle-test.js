@@ -20,6 +20,33 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.viewRegistry = this.owner.lookup('-view-registry:main');
   }
 
+  /**
+    The hooks of a classic component read `parentView`, so these tests render
+    below a classic parent.
+
+    @private
+  */
+  render(template, context) {
+    let test = this;
+
+    this.owner.register(
+      'component:classic-root',
+      setComponentTemplate(
+        precompileTemplate('{{yield}}'),
+        class extends Component {
+          tagName = '';
+
+          init() {
+            super.init(...arguments);
+            test.classicRoot = this;
+          }
+        }
+      )
+    );
+
+    super.render(`<ClassicRoot>${template}</ClassicRoot>`, context);
+  }
+
   afterEach() {
     super.afterEach();
 
@@ -62,7 +89,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
   assertRegisteredViews(label) {
     let viewRegistry = this.viewRegistry;
-    let topLevelId = getViewId(this.component);
+    let topLevelId = getViewId(this.classicRoot);
     let actual = Object.keys(viewRegistry)
       .sort()
       .filter((id) => id !== topLevelId);
@@ -1145,14 +1172,14 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
+      this.assert.equal(this.classicRoot.childViews.length, 5, 'childViews precond');
     }
 
     runTask(() => set(this.context, 'items', []));
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
+      this.assert.equal(this.classicRoot.childViews.length, 1, 'childViews updated');
     }
 
     this.assertText('Nothing to see here');

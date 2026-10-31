@@ -1,4 +1,3 @@
-import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
@@ -34,9 +33,8 @@ moduleFor(
         {
           helperDefinitionCount: 1,
           // from this.render
+          componentDefinitionCount: 1,
           templateCacheMisses: 1,
-          // from debugRenderTree
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'calculate foo-bar helper only'
       );
@@ -87,11 +85,9 @@ moduleFor(
       this.assertText('One');
       this.expectCacheChanges(
         {
-          componentDefinitionCount: 1,
           // 1 from this.render, 1 from component-one
+          componentDefinitionCount: 2,
           templateCacheMisses: 2,
-          // debugRenderTree
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'test case component and component-one no change'
       );

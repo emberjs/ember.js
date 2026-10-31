@@ -681,19 +681,15 @@ moduleFor(
       this.render('{{foo-bar}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
+      assert.notOk(fooBarInstance.parentView);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
+      assert.notOk(fooBarInstance.parentView);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 
@@ -1393,11 +1389,7 @@ moduleFor(
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
+      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
 
       runTask(() => this.rerender());
 
@@ -1411,11 +1403,7 @@ moduleFor(
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
+      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
     }
 
     ['@test newly-added sub-components get correct parentView'](assert) {
@@ -1453,27 +1441,18 @@ moduleFor(
         }
       );
 
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
+      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
 
       runTask(() => this.rerender());
 
-      assert.equal(
+      assert.notOk(
         outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView (after rerender)'
+        'x-outer has no parentView below a Glimmer root (after rerender)'
       );
 
       runTask(() => this.context.set('showInner', true));
 
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
+      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
       assert.equal(
         inner.parentView,
         outer,
@@ -1482,11 +1461,7 @@ moduleFor(
 
       runTask(() => this.context.set('showInner', false));
 
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
+      assert.notOk(outer.parentView, 'x-outer has no parentView below a Glimmer root');
     }
 
     ['@test specifying classNames results in correct class'](assert) {

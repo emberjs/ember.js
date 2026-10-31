@@ -66,19 +66,15 @@ moduleFor(
       this.render('{{component "foo-bar"}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
+      assert.notOk(fooBarInstance.parentView);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
+      assert.notOk(fooBarInstance.parentView);
       assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 
