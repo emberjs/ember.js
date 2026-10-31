@@ -4,6 +4,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import type TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
 import InternalTargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support-internal';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
@@ -39,6 +40,9 @@ import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
 const EMPTY_ARRAY = Object.freeze([]);
+
+const DEPRECATION_MESSAGE =
+  'The classic `Component` class from `@ember/component` is deprecated. Use a Glimmer component from `@glimmer/component`, or a template-only component, instead. The cheat sheet at https://ember-learn.github.io/ember-octane-vs-classic-cheat-sheet/ shows the replacements.';
 
 /**
   Determines if the element matches the specified selector.
@@ -797,6 +801,7 @@ declare const SIGNATURE: unique symbol;
   @uses Ember.TargetActionSupport
   @uses Ember.ActionSupport
   @public
+  @deprecated Use a Glimmer component (`@glimmer/component`) or a template-only component instead. See https://deprecations.emberjs.com/id/ember-component
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -910,6 +915,8 @@ class Component<S = unknown>
 
   init(properties?: object | undefined) {
     super.init(properties);
+
+    deprecateUntil(DEPRECATION_MESSAGE, DEPRECATIONS.DEPRECATE_EMBER_COMPONENT);
 
     // Handle methods from ViewMixin.
     // The native class inheritance will not work for mixins. To work around this,
