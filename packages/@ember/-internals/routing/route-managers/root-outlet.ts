@@ -3,6 +3,7 @@
 import type {
   CapturedArguments,
   CustomRenderNode,
+  DynamicScope,
   InternalComponentCapabilities,
   InternalComponentManager,
   WithCreateInstance,
@@ -10,11 +11,18 @@ import type {
 } from '@glimmer/interfaces';
 import { internalHelper } from '@ember/-internals/glimmer/lib/helpers/internal-helper';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  createConstRef,
+  NULL_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
+import { hasClassicInterop } from 'router_js';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
+import { assert } from '@ember/debug';
 import type { OutletParent, OutletState } from './outlet-state';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
@@ -135,8 +143,15 @@ const PROVIDER_TEMPLATE = precompileTemplate(
   }
 );
 
-class OutletArgProvider {
-  readonly childOutletRef: Reference<object | null>;
+export class OutletArgProvider {
+  readonly childOutletRef: Reference<OutletArgProvider | null>;
+
+  /**
+    What `{{outlet}}` renders in components below this level.
+    Only classic levels support it. A route template reads `@outlet` instead.
+  */
+  readonly scopeOutletRef: Reference<OutletArgProvider | null>;
+
   readonly self: Reference;
 
   // Without it, an exiting level renders whatever route replaced it.
@@ -149,6 +164,9 @@ class OutletArgProvider {
   ) {
     this.childOutletRef = childOutletRefFor(outletRef);
     this.lastState = valueForRef(outletRef)!;
+    this.scopeOutletRef = hasClassicInterop(this.lastState.manager)
+      ? this.childOutletRef
+      : NULL_REFERENCE;
     this.self = createConstRef(this, 'this');
   }
 
@@ -163,6 +181,16 @@ class OutletArgProvider {
   }
 }
 
+const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
+  ...CAPABILITIES,
+  /**
+    Carries the child outlet to `{{outlet}}` in components below this level.
+    A non-classic level clears it. Else a component below it reads the value
+    of the parent level, which is this level, and renders it again.
+  */
+  dynamicScope: true,
+};
+
 class OutletArgProviderManager
   implements
     InternalComponentManager<OutletArgProvider, OutletArgProvider>,
@@ -170,10 +198,20 @@ class OutletArgProviderManager
     WithCustomDebugRenderTree<OutletArgProvider, OutletArgProvider>
 {
   getCapabilities(): InternalComponentCapabilities {
-    return CAPABILITIES;
+    return PROVIDER_CAPABILITIES;
   }
 
-  create(_owner: object, definition: OutletArgProvider): OutletArgProvider {
+  create(
+    _owner: object,
+    definition: OutletArgProvider,
+    _args: unknown,
+    _env: unknown,
+    dynamicScope: DynamicScope | null
+  ): OutletArgProvider {
+    assert('Expected the outlet to be created with a dynamic scope', dynamicScope !== null);
+
+    dynamicScope.set('outletState', definition.scopeOutletRef);
+
     return definition;
   }
 
@@ -203,10 +241,10 @@ setInternalComponentManager(new OutletArgProviderManager(), OutletArgProvider.pr
 setComponentTemplate(PROVIDER_TEMPLATE, OutletArgProvider.prototype);
 
 // bucket -> the provider wrapping its manager's wrapper
-const managerOutlets = new WeakMap<object, object>();
+const managerOutlets = new WeakMap<object, OutletArgProvider>();
 
 /** One outlet level, or `null`. */
-function outletFor(outletStateRef: Reference<OutletState | undefined>): object | null {
+function outletFor(outletStateRef: Reference<OutletState | undefined>): OutletArgProvider | null {
   let state = valueForRef(outletStateRef);
 
   if (state === undefined) {
@@ -230,7 +268,7 @@ function outletFor(outletStateRef: Reference<OutletState | undefined>): object |
 
 function childOutletRefFor(
   parentRef: Reference<OutletParent | undefined>
-): Reference<object | null> {
+): Reference<OutletArgProvider | null> {
   let outletStateRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
   let ref = createComputeRef(() => outletFor(outletStateRef));
@@ -242,6 +280,31 @@ function childOutletRefFor(
 
   return ref;
 }
+
+/**
+  `{{outlet}}` compiles to `{{component (-outlet @outlet)}}`.
+
+  A route template has `@outlet`, for every route manager.
+  A component has no `@outlet`, so it reads the dynamic scope.
+  Only classic levels fill the scope, for example for a layout wrapper.
+*/
+export const outletHelper = /*@__PURE__*/ internalHelper(
+  ({ positional }: CapturedArguments, _owner?: object, scope?: DynamicScope) => {
+    assert(
+      'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
+      scope
+    );
+
+    let argRef = positional[0]!;
+    let scopeRef = scope.get('outletState');
+
+    return createComputeRef(() => {
+      let outlet = valueForRef(argRef) as OutletArgProvider | null | undefined;
+
+      return outlet === undefined ? valueForRef(scopeRef) : outlet;
+    });
+  }
+);
 
 setInternalComponentManager(new RootOutletManager(), RootOutlet.prototype);
 setComponentTemplate(ROOT_OUTLET_TEMPLATE, RootOutlet.prototype);
