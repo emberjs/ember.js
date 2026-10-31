@@ -2,13 +2,17 @@
   "solution": {
     "@glimmer/component": {
       "impact": "patch",
-      "oldVersion": "2.2.0",
-      "newVersion": "2.2.1",
+      "oldVersion": "2.2.1",
+      "newVersion": "2.2.2",
       "tagName": "latest",
       "constraints": [
         {
           "impact": "patch",
           "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :house: Internal"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/component/package.json"
@@ -17,5 +21,5 @@
       "oldVersion": "0.97.0"
     }
   },
-  "description": "## Release (2026-10-23)\n\n* @glimmer/component 2.2.1 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/component`\n  * [#21766](https://github.com/emberjs/ember.js/pull/21766) [BUGFIX] Point @glimmer/component typesVersions at the emitted types ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": "## Release (2026-10-31)\n\n* @glimmer/component 2.2.2 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/component`\n  * [#21757](https://github.com/emberjs/ember.js/pull/21757) [BUGFIX] Do not publish CHANGELOG.md and tsconfig.json in @glimmer/component ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* `@glimmer/component`\n  * [#21758](https://github.com/emberjs/ember.js/pull/21758) [CLEANUP] Inline BaseComponentManager in @glimmer/component ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
 }
