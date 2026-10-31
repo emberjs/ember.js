@@ -137,7 +137,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     if (typeof funcOrClassBody === 'function') {
       this.owner.register(`helper:${name}`, helper(funcOrClassBody));
     } else if (typeof funcOrClassBody === 'object' && funcOrClassBody !== null) {
-      this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
+      this.owner.register(`helper:${name}`, helperFromBody(funcOrClassBody));
     } else {
       throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
     }
@@ -225,4 +225,19 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     runTask(() => this.rerender());
     this.assertInvariants();
   }
+}
+
+/**
+  With `EMBER_DROP_CLASSIC_FEATURES`, `Helper` has no `extend`, so the body
+  goes on the prototype of a subclass.
+*/
+function helperFromBody(body: Record<string, unknown>) {
+  if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    return Helper.extend(body);
+  }
+
+  class BodyHelper extends Helper {}
+  Object.defineProperties(BodyHelper.prototype, Object.getOwnPropertyDescriptors(body));
+
+  return BodyHelper;
 }

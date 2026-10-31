@@ -100,7 +100,7 @@ moduleFor(
           nameBuilder;
 
           compute() {
-            this.get('nameBuilder').build();
+            this.nameBuilder.build();
           }
         }
       );
