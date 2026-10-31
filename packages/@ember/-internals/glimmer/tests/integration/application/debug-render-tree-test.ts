@@ -985,6 +985,76 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
+      async '@test Glimmer components'() {
+        this.add(
+          'template:application',
+          precompileTemplate(
+            '<HelloWorld @name="first" />{{#if this.showSecond}}<HelloWorld @name="second" />{{/if}}',
+            { moduleName: 'my-app/templates/application.hbs' }
+          )
+        );
+
+        this.add(
+          'component:hello-world',
+          setComponentTemplate(precompileTemplate('Hello World'), class extends Component {})
+        );
+
+        await this.visit('/');
+
+        this.assertRenderTree([
+          {
+            type: 'component',
+            name: 'hello-world',
+            args: { positional: [], named: { name: 'first' } },
+            instance: (instance: Component<{ Args: { name: string } }>) =>
+              instance.args.name === 'first',
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ]);
+
+        runTask(() => {
+          this.controllerFor('application')!.set('showSecond', true);
+        });
+
+        this.assertRenderTree([
+          {
+            type: 'component',
+            name: 'hello-world',
+            args: { positional: [], named: { name: 'first' } },
+            instance: (instance: Component<{ Args: { name: string } }>) =>
+              instance.args.name === 'first',
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'component',
+            name: 'hello-world',
+            args: { positional: [], named: { name: 'second' } },
+            instance: (instance: Component<{ Args: { name: string } }>) =>
+              instance.args.name === 'second',
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ]);
+
+        runTask(() => {
+          this.controllerFor('application')!.set('showSecond', false);
+        });
+
+        this.assertRenderTree([
+          {
+            type: 'component',
+            name: 'hello-world',
+            args: { positional: [], named: { name: 'first' } },
+            instance: (instance: Component<{ Args: { name: string } }>) =>
+              instance.args.name === 'first',
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ]);
+      }
+
       async '@test classic components'() {
         this.add(
           'template:application',

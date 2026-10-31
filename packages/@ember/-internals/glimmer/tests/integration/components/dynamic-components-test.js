@@ -7,8 +7,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import ClassicComponent from '@ember/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { PositionalComponent } from '../../utils/positional-component';
 
 moduleFor(
   'Components test: dynamic components',
@@ -553,167 +553,6 @@ moduleFor(
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
     }
 
-    ['@test positional parameters does not clash when rendering different components']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar'),
-          class extends ClassicComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:foo-bar-baz',
-        setComponentTemplate(
-          precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar-baz'),
-          class extends ClassicComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render('{{component this.componentName this.name this.age}}', {
-        componentName: 'foo-bar',
-        name: 'Alex',
-        age: 29,
-      });
-
-      this.assertText('hello Alex (29) from foo-bar');
-
-      runTask(() => this.rerender());
-
-      this.assertText('hello Alex (29) from foo-bar');
-
-      runTask(() => set(this.context, 'name', 'Ben'));
-
-      this.assertText('hello Ben (29) from foo-bar');
-
-      runTask(() => set(this.context, 'age', 22));
-
-      this.assertText('hello Ben (22) from foo-bar');
-
-      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
-
-      this.assertText('hello Ben (22) from foo-bar-baz');
-
-      runTask(() => {
-        set(this.context, 'componentName', 'foo-bar');
-        set(this.context, 'name', 'Alex');
-        set(this.context, 'age', 29);
-      });
-
-      this.assertText('hello Alex (29) from foo-bar');
-    }
-
-    ['@test positional parameters does not pollute the attributes when changing components']() {
-      this.owner.register(
-        'component:normal-message',
-        setComponentTemplate(
-          precompileTemplate('Normal: {{this.something}}!'),
-          class extends ClassicComponent {
-            static positionalParams = ['something'];
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:alternative-message',
-        setComponentTemplate(
-          precompileTemplate('Alternative: {{this.something}} {{this.somethingElse}}!'),
-          class extends ClassicComponent {
-            static positionalParams = ['somethingElse'];
-            something = 'Another';
-          }
-        )
-      );
-
-      this.render('{{component this.componentName this.message}}', {
-        componentName: 'normal-message',
-        message: 'Hello',
-      });
-
-      this.assertText('Normal: Hello!');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Normal: Hello!');
-
-      runTask(() => set(this.context, 'componentName', 'alternative-message'));
-
-      this.assertText('Alternative: Another Hello!');
-
-      runTask(() => set(this.context, 'message', 'Hi'));
-
-      this.assertText('Alternative: Another Hi!');
-
-      runTask(() => {
-        set(this.context, 'componentName', 'normal-message');
-        set(this.context, 'message', 'Hello');
-      });
-
-      this.assertText('Normal: Hello!');
-    }
-
-    ['@test static arbitrary number of positional parameters']() {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.names as |name|}}{{name}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'names';
-          }
-        )
-      );
-
-      this.render(`{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" elementId="helper"}}`);
-
-      this.assertText('Foo4Bar5Baz');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Foo4Bar5Baz');
-    }
-
-    ['@test dynamic arbitrary number of positional parameters']() {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.n as |name|}}{{name}}{{/each}}'),
-          class extends ClassicComponent {
-            static positionalParams = 'n';
-          }
-        )
-      );
-
-      this.render(`{{component "sample-component" this.user1 this.user2}}`, {
-        user1: 'Foo',
-        user2: 4,
-      });
-
-      this.assertText('Foo4');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Foo4');
-
-      runTask(() => this.context.set('user1', 'Bar'));
-
-      this.assertText('Bar4');
-
-      runTask(() => this.context.set('user2', '5'));
-
-      this.assertText('Bar5');
-
-      runTask(() => {
-        this.context.set('user1', 'Foo');
-        this.context.set('user2', 4);
-      });
-
-      this.assertText('Foo4');
-    }
-
     ['@test component helper emits useful backtracking re-render assertion message']() {
       this.owner.register(
         'component:outer-component',
@@ -754,6 +593,114 @@ moduleFor(
           componentName: 'outer-component',
         });
       }, expectedBacktrackingMessage);
+    }
+
+    ['@test positional parameters does not clash when rendering different components']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            'hello {{get this.positional 0}} ({{get this.positional 1}}) from foo-bar'
+          ),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(
+          precompileTemplate(
+            'hello {{get this.positional 0}} ({{get this.positional 1}}) from foo-bar-baz'
+          ),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component this.componentName this.name this.age}}', {
+        componentName: 'foo-bar',
+        name: 'Alex',
+        age: 29,
+      });
+
+      this.assertText('hello Alex (29) from foo-bar');
+
+      runTask(() => this.rerender());
+
+      this.assertText('hello Alex (29) from foo-bar');
+
+      runTask(() => set(this.context, 'name', 'Ben'));
+
+      this.assertText('hello Ben (29) from foo-bar');
+
+      runTask(() => set(this.context, 'age', 22));
+
+      this.assertText('hello Ben (22) from foo-bar');
+
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+      this.assertText('hello Ben (22) from foo-bar-baz');
+
+      runTask(() => {
+        set(this.context, 'componentName', 'foo-bar');
+        set(this.context, 'name', 'Alex');
+        set(this.context, 'age', 29);
+      });
+
+      this.assertText('hello Alex (29) from foo-bar');
+    }
+
+    ['@test static arbitrary number of positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component "sample-component" "Foo" 4 "Bar" 5 "Baz"}}');
+
+      this.assertText('Foo4Bar5Baz');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Foo4Bar5Baz');
+    }
+
+    ['@test dynamic arbitrary number of positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional key="@index" as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component "sample-component" this.user1 this.user2}}', {
+        user1: 'Foo',
+        user2: 4,
+      });
+
+      this.assertText('Foo4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Foo4');
+
+      runTask(() => set(this.context, 'user1', 'Bar'));
+
+      this.assertText('Bar4');
+
+      runTask(() => set(this.context, 'user2', '5'));
+
+      this.assertText('Bar5');
+
+      runTask(() => {
+        set(this.context, 'user1', 'Foo');
+        set(this.context, 'user2', 4);
+      });
+
+      this.assertText('Foo4');
     }
   }
 );
