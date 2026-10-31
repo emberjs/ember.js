@@ -1,11 +1,4 @@
-import type {
-  Cursor,
-  Environment,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
-  SimpleDocument,
-  TreeBuilder,
-} from '@glimmer/interfaces';
+import type { Cursor, Environment, TreeBuilder } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
 import createHTMLDocument from '@simple-dom/document';
 
@@ -15,12 +8,6 @@ import type { RenderDelegateOptions } from '../../render-delegate';
 import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
 import { RenderTest } from '../../render-test';
 import { JitRenderDelegate } from '../jit/delegate';
-
-export interface NodeEnvironmentOptions {
-  document: SimpleDocument;
-  appendOperations?: GlimmerTreeConstruction;
-  updateOperations?: GlimmerTreeChanges;
-}
 
 export class NodeJitRenderDelegate extends JitRenderDelegate {
   static override style = 'node jit';
