@@ -4,6 +4,7 @@ import {
   RenderingTestCase,
   runTask,
   testUnless,
+  expectClassicComponentDeprecation,
 } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
@@ -13,226 +14,238 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../../utils/helpers';
 
-moduleFor(
-  'Components test: send (classic component)',
-  class extends RenderingTestCase {
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test sending to undefined actions triggers an error`](assert) {
-      assert.expect(3);
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Components test: send (classic component)',
+    class extends RenderingTestCase {
+      [`${testUnless(
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      )} @test sending to undefined actions triggers an error`](assert) {
+        expectClassicComponentDeprecation();
 
-      expectDeprecation(
-        /Calling `\.send\(\)` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+        assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 4 : 3);
 
-      let component;
+        expectDeprecation(
+          /Calling `\.send\(\)` on/,
+          DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+        );
 
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          init() {
-            super.init();
-            component = this;
+        let component;
+
+        this.owner.register(
+          'component:foo-bar',
+          class extends Component {
+            init() {
+              super.init();
+              component = this;
+            }
+
+            @action
+            foo(message) {
+              assert.equal('bar', message);
+            }
           }
+        );
 
-          @action
-          foo(message) {
-            assert.equal('bar', message);
-          }
-        }
-      );
+        this.render('{{foo-bar}}');
 
-      this.render('{{foo-bar}}');
+        runTask(() => component.send('foo', 'bar'));
 
-      runTask(() => component.send('foo', 'bar'));
+        expectAssertion(() => {
+          return component.send('baz', 'bar');
+        }, /had no action handler for: baz/);
+      }
 
-      expectAssertion(() => {
-        return component.send('baz', 'bar');
-      }, /had no action handler for: baz/);
-    }
+      [`${testUnless(
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      )} @test \`send\` will call send from a target if it is defined`]() {
+        expectClassicComponentDeprecation();
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test \`send\` will call send from a target if it is defined`]() {
-      expectDeprecation(
-        /Calling `\.send\(\)` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+        expectDeprecation(
+          /Calling `\.send\(\)` on/,
+          DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+        );
 
-      let component;
-      let target = {
-        send: (message, payload) => {
-          this.assert.equal('foo', message);
-          this.assert.equal('baz', payload);
-        },
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            component = this;
-          }
-          target = target;
-        }
-      );
-
-      this.render('{{foo-bar}}');
-
-      runTask(() => component.send('foo', 'baz'));
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test a handled action can be bubbled to the target for continued processing`]() {
-      this.assert.expect(3);
-
-      expectDeprecation(
-        /Calling `\.send\(\)` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
-
-      let component;
-
-      this.owner.register(
-        'component:foo-bar',
-        Component.extend({
-          init() {
-            this._super(...arguments);
-            component = this;
+        let component;
+        let target = {
+          send: (message, payload) => {
+            this.assert.equal('foo', message);
+            this.assert.equal('baz', payload);
           },
-          actions: {
-            poke: () => {
-              this.assert.ok(true, 'component action called');
-              return true;
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+            target = target;
+          }
+        );
+
+        this.render('{{foo-bar}}');
+
+        runTask(() => component.send('foo', 'baz'));
+      }
+
+      [`${testUnless(
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      )} @test a handled action can be bubbled to the target for continued processing`]() {
+        expectClassicComponentDeprecation();
+
+        this.assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 4 : 3);
+
+        expectDeprecation(
+          /Calling `\.send\(\)` on/,
+          DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+        );
+
+        let component;
+
+        this.owner.register(
+          'component:foo-bar',
+          Component.extend({
+            init() {
+              this._super(...arguments);
+              component = this;
             },
-          },
-          target: Controller.extend({
             actions: {
               poke: () => {
-                this.assert.ok(true, 'action bubbled to controller');
+                this.assert.ok(true, 'component action called');
+                return true;
               },
             },
-          }).create(),
-        })
-      );
+            target: Controller.extend({
+              actions: {
+                poke: () => {
+                  this.assert.ok(true, 'action bubbled to controller');
+                },
+              },
+            }).create(),
+          })
+        );
 
-      this.render('{{foo-bar poke="poke"}}');
+        this.render('{{foo-bar poke="poke"}}');
 
-      runTask(() => component.send('poke'));
-    }
+        runTask(() => component.send('poke'));
+      }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test action can be handled by a superclass' actions object`](assert) {
-      this.assert.expect(5);
+      [`${testUnless(
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      )} @test action can be handled by a superclass' actions object`](assert) {
+        expectClassicComponentDeprecation();
 
-      expectDeprecation(
-        /Calling `\.send\(\)` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+        this.assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 6 : 5);
 
-      let component;
+        expectDeprecation(
+          /Calling `\.send\(\)` on/,
+          DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+        );
 
-      let SuperComponent = class extends Component {
-        @action
-        foo() {
-          assert.ok(true, 'foo');
-        }
+        let component;
 
-        @action
-        bar(msg) {
-          assert.equal(msg, 'HELLO');
-        }
-      };
-
-      this.owner.register(
-        'component:x-index',
-        class extends SuperComponent.extend({
-          actions: {
-            bar(msg) {
-              assert.equal(msg, 'HELLO');
-              this._super(msg);
-            },
-          },
-        }) {
-          init() {
-            super.init(...arguments);
-            component = this;
+        let SuperComponent = class extends Component {
+          @action
+          foo() {
+            assert.ok(true, 'foo');
           }
 
           @action
-          baz() {
-            assert.ok(true, 'baz');
+          bar(msg) {
+            assert.equal(msg, 'HELLO');
           }
-        }
-      );
+        };
 
-      this.render('{{x-index}}');
-
-      runTask(() => {
-        component.send('foo');
-        component.send('bar', 'HELLO');
-        component.send('baz');
-      });
-    }
-
-    ['@test actions cannot be provided at create time'](assert) {
-      this.owner.register('component:foo-bar', class extends Component {});
-      let ComponentFactory = this.owner.factoryFor('component:foo-bar');
-
-      expectAssertion(() => {
-        ComponentFactory.create({
-          actions: {
-            foo() {
-              assert.ok(true, 'foo');
+        this.owner.register(
+          'component:x-index',
+          class extends SuperComponent.extend({
+            actions: {
+              bar(msg) {
+                assert.equal(msg, 'HELLO');
+                this._super(msg);
+              },
             },
-          },
+          }) {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+
+            @action
+            baz() {
+              assert.ok(true, 'baz');
+            }
+          }
+        );
+
+        this.render('{{x-index}}');
+
+        runTask(() => {
+          component.send('foo');
+          component.send('bar', 'HELLO');
+          component.send('baz');
         });
-      }, /`actions` must be provided at extend time, not at create time/);
-      // but should be OK on an object that doesn't mix in Ember.ActionHandler
-      EmberObject.create({
-        actions: ['foo'],
-      });
-    }
+      }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test asserts if called on a destroyed component`]() {
-      expectDeprecation(
-        /Calling `\.send\(\)` on/,
-        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
-      );
+      ['@test actions cannot be provided at create time'](assert) {
+        this.owner.register('component:foo-bar', class extends Component {});
+        let ComponentFactory = this.owner.factoryFor('component:foo-bar');
 
-      let component;
+        expectAssertion(() => {
+          ComponentFactory.create({
+            actions: {
+              foo() {
+                assert.ok(true, 'foo');
+              },
+            },
+          });
+        }, /`actions` must be provided at extend time, not at create time/);
+        // but should be OK on an object that doesn't mix in Ember.ActionHandler
+        EmberObject.create({
+          actions: ['foo'],
+        });
+      }
 
-      this.owner.register(
-        'component:rip-alley',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            component = this;
+      [`${testUnless(
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      )} @test asserts if called on a destroyed component`]() {
+        expectClassicComponentDeprecation();
+
+        expectDeprecation(
+          /Calling `\.send\(\)` on/,
+          DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+        );
+
+        let component;
+
+        this.owner.register(
+          'component:rip-alley',
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+
+            toString() {
+              return 'component:rip-alley';
+            }
           }
+        );
 
-          toString() {
-            return 'component:rip-alley';
-          }
-        }
-      );
+        this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
+          shouldRender: true,
+        });
 
-      this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
-        shouldRender: true,
-      });
+        runTask(() => {
+          set(this.context, 'shouldRender', false);
+        });
 
-      runTask(() => {
-        set(this.context, 'shouldRender', false);
-      });
-
-      expectAssertion(() => {
-        component.send('trigger-me-dead');
-      }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'.");
+        expectAssertion(() => {
+          component.send('trigger-me-dead');
+        }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'.");
+      }
     }
-  }
-);
+  );
+}

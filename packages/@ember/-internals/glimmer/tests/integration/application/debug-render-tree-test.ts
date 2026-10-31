@@ -1,4 +1,10 @@
-import { ApplicationTestCase, ModuleBasedTestResolver, moduleFor } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  moduleFor,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import {
@@ -21,6 +27,7 @@ import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { precompileTemplate } from '@ember/template-compilation';
 import { runTask } from 'internal-test-helpers/lib/run';
 import templateOnly from '@ember/component/template-only';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
@@ -1055,7 +1062,9 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@test classic components'() {
+      async [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test classic components`]() {
+        expectClassicComponentDeprecation();
+
         this.add(
           'template:application',
           precompileTemplate(

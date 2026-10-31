@@ -273,6 +273,13 @@ export const DEPRECATIONS = {
     until: '7.9.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-registry-proxy-mixin',
   }),
+  DEPRECATE_EMBER_COMPONENT: deprecation({
+    id: 'ember-component',
+    for: 'ember-source',
+    since: { available: '7.6.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/ember-component',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
