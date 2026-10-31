@@ -2,15 +2,17 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import Component from '@ember/component';
+import { DynamicScope } from '@ember/-internals/glimmer/lib/renderer';
+import { setComponentTemplate } from '@ember/component';
 import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
 import type Resolver from '../test-resolver';
+import TopLevelComponent from '../top-level-component';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
-import { runAppend, runDestroy } from '../run';
+import { runDestroy, runTask } from '../run';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
@@ -20,6 +22,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
   renderer: Renderer;
   element: HTMLElement;
   component: any;
+  root: object | null = null;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -121,9 +124,8 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
-      if (this.component) {
-        runDestroy(this.component);
-      }
+      runDestroy(this.root);
+      runDestroy(this.component);
       if (this.owner) {
         runDestroy(this.owner);
       }
@@ -133,24 +135,28 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
   }
 
   render(templateStr: string, context = {}) {
-    let { owner } = this;
+    let test = this;
 
-    owner.register(
-      'template:-top-level',
-      this.compile(templateStr, {
-        moduleName: '-top-level',
+    class Root extends TopLevelComponent {
+      constructor(...args: ConstructorParameters<typeof TopLevelComponent>) {
+        super(...args);
+
+        Object.defineProperties(this, Object.getOwnPropertyDescriptors(context));
+        test.component = this;
+      }
+    }
+
+    setComponentTemplate(this.compile(templateStr, { moduleName: '-top-level' }), Root);
+
+    this.root = runTask(() =>
+      this.renderer.render(Root, {
+        into: this.element as unknown as SimpleElement,
+        /**
+          The default scope of a component root does not pass `view` to its
+          children, and classic components read `parentView` from there.
+        */
+        dynamicScope: DynamicScope.root(),
       })
     );
-
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
-    });
-
-    owner.register('component:-top-level', Component.extend(attrs));
-
-    this.component = owner.lookup('component:-top-level');
-
-    runAppend(this.component);
   }
 }

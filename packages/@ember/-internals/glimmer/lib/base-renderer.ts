@@ -11,6 +11,7 @@ import {
 } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
+  DynamicScope,
   Cursor,
   DebugRenderTree,
   Environment,
@@ -122,7 +123,7 @@ export class ComponentRootState implements RendererRoot {
   constructor(
     state: RendererState,
     definition: object,
-    options: { into: Cursor; args?: Record<string, unknown> }
+    options: { into: Cursor; args?: Record<string, unknown>; dynamicScope?: DynamicScope }
   ) {
     /**
      * One guard covers the first render and every rerender.
@@ -137,7 +138,8 @@ export class ComponentRootState implements RendererRoot {
           state.builder(state.env, options.into),
           state.owner,
           definition,
-          options.args
+          options.args,
+          options.dynamicScope
         );
 
         this.#result = associateDestroyableChild(this, iterator.sync());
@@ -491,10 +493,11 @@ export class BaseRenderer {
 
   render(
     component: object,
-    options: { into: IntoTarget; args?: Record<string, unknown> }
+    options: { into: IntoTarget; args?: Record<string, unknown>; dynamicScope?: DynamicScope }
   ): RendererRoot {
     const root = new ComponentRootState(this.state, component, {
       args: options.args,
+      dynamicScope: options.dynamicScope,
       into: toCursor(options.into),
     });
     return this.state.renderRoot(root);

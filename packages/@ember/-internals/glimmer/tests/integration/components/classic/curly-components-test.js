@@ -1,6 +1,5 @@
 import {
   moduleFor,
-  RenderingTestCase,
   strip,
   classes,
   runTask,
@@ -17,6 +16,7 @@ import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
 import { set, get, computed, observer } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -24,7 +24,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Components test: curly components (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test it can have a custom id and it is not bound']() {
       this.owner.register(
         'component:foo-bar',

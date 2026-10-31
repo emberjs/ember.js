@@ -154,7 +154,6 @@ moduleFor(
         ComponentWithBacktrackingSet;
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        includeTopLevel: 'outlet',
         renderTree: [
           '{{outlet}} for application',
           '@Component',

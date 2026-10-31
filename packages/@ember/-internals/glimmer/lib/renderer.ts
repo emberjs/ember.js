@@ -64,6 +64,10 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
+  static root() {
+    return new DynamicScope(null, UNDEFINED_REFERENCE);
+  }
+
   constructor(
     public view: View | null,
     public outletState: Reference<OutletState | undefined>
@@ -224,7 +228,7 @@ export class Renderer extends BaseRenderer {
 
   _appendDefinition(root: ClassicComponent, definition: CurriedValue, target: SimpleElement): void {
     let self = createConstRef(definition, 'this');
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
+    let dynamicScope = DynamicScope.root();
     let rootState = new ClassicRootState(
       root,
       this.state.context,
