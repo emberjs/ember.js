@@ -1,60 +1,70 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component as EmberComponent } from '../../../utils/helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-moduleFor(
-  'Syntax test: {{#each}} with native arrays (classic component)',
-  class extends RenderingTestCase {
-    makeList(items) {
-      this.list = items;
-    }
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Syntax test: {{#each}} with native arrays (classic component)',
+    class extends RenderingTestCase {
+      makeList(items) {
+        this.list = items;
+      }
 
-    replaceList(list) {
-      runTask(() => set(this.context, 'list', list));
-    }
+      replaceList(list) {
+        runTask(() => set(this.context, 'list', list));
+      }
 
-    objectAt(idx) {
-      return this.list[idx];
-    }
+      objectAt(idx) {
+        return this.list[idx];
+      }
 
-    render(template, context = {}) {
-      context.list = this.list;
+      render(template, context = {}) {
+        context.list = this.list;
 
-      return super.render(template, context);
-    }
+        return super.render(template, context);
+      }
 
-    [`@test updating and setting within #each`]() {
-      this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+      [`@test updating and setting within #each`]() {
+        expectClassicComponentDeprecation();
 
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init(...arguments);
-          this.isEven = true;
-          this.tagName = 'li';
-        }
+        this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-        _isEven() {
-          this.set('isEven', this.get('item.value') % 2 === 0);
-        }
+        let FooBarComponent = class extends EmberComponent {
+          init() {
+            super.init(...arguments);
+            this.isEven = true;
+            this.tagName = 'li';
+          }
 
-        didUpdate() {
-          this._isEven();
-        }
-      };
+          _isEven() {
+            this.set('isEven', this.get('item.value') % 2 === 0);
+          }
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
-          FooBarComponent
-        )
-      );
+          didUpdate() {
+            this._isEven();
+          }
+        };
 
-      this.render(strip`
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
+            FooBarComponent
+          )
+        );
+
+        this.render(strip`
         {{#each this.list as |item|}}
           <li>Prev</li>
           {{foo-bar item=item}}
@@ -62,17 +72,18 @@ moduleFor(
         {{/each}}
       `);
 
-      this.assertText('Prev1NextPrev2NextPrev3Next');
+        this.assertText('Prev1NextPrev2NextPrev3Next');
 
-      this.assertStableRerender();
+        this.assertStableRerender();
 
-      runTask(() => set(this.objectAt(0), 'value', 3));
+        runTask(() => set(this.objectAt(0), 'value', 3));
 
-      this.assertText('PrevNextPrev2NextPrev3Next');
+        this.assertText('PrevNextPrev2NextPrev3Next');
 
-      this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+        this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-      this.assertText('Prev1NextPrev2NextPrev3Next');
+        this.assertText('Prev1NextPrev2NextPrev3Next');
+      }
     }
-  }
-);
+  );
+}

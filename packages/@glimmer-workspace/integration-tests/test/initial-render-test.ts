@@ -1,6 +1,7 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import { htmlSafe } from '@ember/template';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { castToBrowser, expect } from '@glimmer/debug-util';
 import {
   assertElementShape,
@@ -27,6 +28,7 @@ import {
   trackedContext,
   withRoot,
 } from '@glimmer-workspace/integration-tests';
+import { expectClassicComponentDeprecation } from 'internal-test-helpers';
 
 class RenderTests extends InitialRenderSuite {
   static override suiteName = 'initial render (client)';
@@ -910,8 +912,10 @@ class Rehydration extends AbstractRehydrationTests {
   // The curly forms below go through the delegate's real owner: a real classic `Component`
   // (`@ember/component`) or a Glimmer component, resolved by name by Ember's resolver.
 
-  @test
+  @test({ skip: DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved })
   'curly invocation of a classic Component: multiple invocations'() {
+    expectClassicComponentDeprecation();
+
     this.delegate.registerClassicComponent('foo-bar', 'Hello {{yield}}');
     let template = '{{#foo-bar}}World{{/foo-bar}}';
     this.renderServerSide(template, {});
@@ -927,8 +931,10 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertStableRerender();
   }
 
-  @test
+  @test({ skip: DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved })
   'curly invocation of a classic Component: mismatched multiple invocations'() {
+    expectClassicComponentDeprecation();
+
     this.delegate.registerClassicComponent('foo-bar', 'Hello {{yield}}');
     this.renderServerSide('{{#foo-bar}}World{{/foo-bar}}', {});
 
