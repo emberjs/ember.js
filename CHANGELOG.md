@@ -1,5 +1,20 @@
 # Ember Changelog
 
+## Release (2026-10-31)
+
+* @glimmer/component 2.2.2 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/component`
+  * [#21757](https://github.com/emberjs/ember.js/pull/21757) [BUGFIX] Do not publish CHANGELOG.md and tsconfig.json in @glimmer/component ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer/component`
+  * [#21758](https://github.com/emberjs/ember.js/pull/21758) [CLEANUP] Inline BaseComponentManager in @glimmer/component ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v7.5.0-beta.1 (October 28, 2026)
 
 - [#21460](https://github.com/emberjs/ember.js/pull/21460) [FEATURE] Implement the Route Manager API per [RFC #1169](https://rfcs.emberjs.com/id/1169-route-manager-api/).
