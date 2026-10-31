@@ -14,7 +14,13 @@ import {
   registerHandler as registerWarnHandler,
 } from '../lib/warn';
 
-import { deprecate, warn, assert as emberAssert } from '../index';
+import {
+  deprecate,
+  warn,
+  assert as emberAssert,
+  getDebugFunction,
+  setDebugFunction,
+} from '../index';
 
 import { moduleForDevelopment, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
@@ -400,6 +406,28 @@ moduleForDevelopment(
       });
 
       warn('foo', { id: 'ember-debug.do-not-raise' });
+    }
+
+    ['@test getDebugFunction returns the active deprecate stub, so it can be restored'](assert) {
+      let original = getDebugFunction('deprecate');
+      let calls = [];
+      let outer = (message) => calls.push(`outer: ${message}`);
+      let inner = (message) => calls.push(`inner: ${message}`);
+
+      try {
+        setDebugFunction('deprecate', outer);
+
+        let saved = getDebugFunction('deprecate');
+        setDebugFunction('deprecate', inner);
+        deprecate('first', false, { id: 'test', until: 'forever', for: 'me', since: {} });
+        setDebugFunction('deprecate', saved);
+
+        deprecate('second', false, { id: 'test', until: 'forever', for: 'me', since: {} });
+      } finally {
+        setDebugFunction('deprecate', original);
+      }
+
+      assert.deepEqual(calls, ['inner: first', 'outer: second']);
     }
   }
 );
