@@ -9,7 +9,7 @@
 import { reportingA } from '@ember/array/index-internal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { assert } from '@ember/debug';
-import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { flushChanges } from '@ember/-internals/metal/lib/watchers';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import { stashParamNames } from '@ember/routing/lib/utils';
@@ -193,7 +193,7 @@ export function finalizeQueryParamChange(
   // Some QPs have been updated, and those changes need to be propogated
   // immediately. Eventually, we should work on making this async somehow.
   if (qpUpdated === true) {
-    flushAsyncObservers(false);
+    flushChanges(false);
   }
 
   if (replaceUrl) {
