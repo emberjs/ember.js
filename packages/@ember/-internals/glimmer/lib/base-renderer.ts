@@ -546,6 +546,12 @@ export function renderComponent(
       hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
     });
     RENDERER_CACHE.set(owner, renderer);
+
+    /**
+     * A root joins the owner only after its first render.
+     * If that render throws, this link is the only way to destroy the root.
+     */
+    associateDestroyableChild(owner, renderer);
   }
 
   /**
