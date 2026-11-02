@@ -10,6 +10,8 @@ import {
   type StandardGetterDecorator,
 } from './decorator-util';
 
+export const CACHED_GETTER_SYMBOL = Symbol('CACHED_GETTER');
+
 /**
  * @decorator
  *
@@ -124,13 +126,17 @@ export const cached: MethodDecorator & StandardGetterDecorator = (...args: any[]
   const caches = new WeakMap();
   const getter = descriptor.get;
 
-  descriptor.get = function (): unknown {
+  const cachedGetter = function (this: any): unknown {
     if (!caches.has(this)) {
       caches.set(this, createCache(getter.bind(this)));
     }
 
     return getValue(caches.get(this));
   };
+
+  (cachedGetter as any)[CACHED_GETTER_SYMBOL] = true;
+
+  descriptor.get = cachedGetter;
 };
 
 function cached2023(args: Parameters<Decorator>) {
