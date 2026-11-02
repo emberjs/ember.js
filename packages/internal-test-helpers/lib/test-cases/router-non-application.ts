@@ -2,7 +2,6 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import { DynamicScope } from '@ember/-internals/glimmer/lib/renderer';
 import { setComponentTemplate } from '@ember/component';
 import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -151,11 +150,6 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     this.root = runTask(() =>
       this.renderer.render(Root, {
         into: this.element as unknown as SimpleElement,
-        /**
-          The default scope of a component root does not pass `view` to its
-          children, and classic components read `parentView` from there.
-        */
-        dynamicScope: DynamicScope.root(),
       })
     );
   }
