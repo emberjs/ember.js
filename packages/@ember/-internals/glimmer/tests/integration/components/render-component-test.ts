@@ -527,6 +527,36 @@ moduleFor(
       );
     }
 
+    async '@test destroying the owner releases a root whose first render threw'(
+      assert: QUnit['assert']
+    ) {
+      class Boom extends GlimmerComponent {
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          throw new Error('boom');
+        }
+      }
+
+      let Thrower = setComponentTemplate(precompileTemplate(''), Boom);
+
+      let owner = buildOwner({});
+      let element = document.createElement('div');
+
+      assert.throws(() => renderComponent(Thrower, { owner, into: element }), /boom/);
+
+      let renderer = renderers[renderers.length - 1]!;
+
+      assert.strictEqual(renderer.state.roots.length, 1, 'the failed root stays in its renderer');
+
+      destroy(owner);
+      await renderSettled();
+
+      assert.false(renderers.includes(renderer), 'renderer of the failed root is deregistered');
+
+      destroy(this);
+      await renderSettled();
+    }
+
     async '@test destroying the result removes its root from a shared renderer'(
       assert: QUnit['assert']
     ) {
