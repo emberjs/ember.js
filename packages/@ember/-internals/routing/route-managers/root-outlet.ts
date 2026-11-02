@@ -14,7 +14,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   createComputeRef,
   createConstRef,
-  NULL_REFERENCE,
+  createPrimitiveRef,
   valueForRef,
 } from '@glimmer/reference/lib/reference';
 import { hasClassicInterop } from 'router_js';
@@ -143,6 +143,12 @@ const PROVIDER_TEMPLATE = precompileTemplate(
   }
 );
 
+/**
+  What a non-classic level puts into the dynamic scope.
+  It renders nothing, like `null`, but `outletHelper` can tell it apart.
+*/
+const NON_CLASSIC_SCOPE: Reference<null> = createPrimitiveRef(null);
+
 export class OutletArgProvider {
   readonly childOutletRef: Reference<OutletArgProvider | null>;
 
@@ -166,7 +172,7 @@ export class OutletArgProvider {
     this.lastState = valueForRef(outletRef)!;
     this.scopeOutletRef = hasClassicInterop(this.lastState.manager)
       ? this.childOutletRef
-      : NULL_REFERENCE;
+      : NON_CLASSIC_SCOPE;
     this.self = createConstRef(this, 'this');
   }
 
@@ -185,8 +191,8 @@ const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
   ...CAPABILITIES,
   /**
     Carries the child outlet to `{{outlet}}` in components below this level.
-    A non-classic level clears it. Else a component below it reads the value
-    of the parent level, which is this level, and renders it again.
+    A non-classic level puts `NON_CLASSIC_SCOPE` there. Else a component below
+    it reads the value of the parent level, which is this level, again.
   */
   dynamicScope: true,
 };
@@ -287,6 +293,8 @@ function childOutletRefFor(
   A route template has `@outlet`, for every route manager.
   A component has no `@outlet`, so it reads the dynamic scope.
   Only classic levels fill the scope, for example for a layout wrapper.
+
+  Under a non-classic level, a component `{{outlet}}` asserts.
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
   ({ positional }: CapturedArguments, _owner?: object, scope?: DynamicScope) => {
@@ -300,6 +308,12 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
     return createComputeRef(() => {
       let outlet = valueForRef(argRef) as OutletArgProvider | null | undefined;
+
+      assert(
+        '{{outlet}} in a component works only under a classic route. ' +
+          'Render {{outlet}} in the route template, or pass @outlet={{@outlet}} to the component.',
+        outlet !== undefined || scopeRef !== NON_CLASSIC_SCOPE
+      );
 
       return outlet === undefined ? valueForRef(scopeRef) : outlet;
     });
