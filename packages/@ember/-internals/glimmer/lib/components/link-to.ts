@@ -39,9 +39,13 @@ interface QueryParams {
   values: Nullable<{}>;
 }
 
+// Models can throw on unknown properties, so check with `in` before the read.
 function isQueryParams(value: unknown): value is QueryParams {
   return (
-    typeof value === 'object' && value !== null && (value as QueryParams)['isQueryParams'] === true
+    typeof value === 'object' &&
+    value !== null &&
+    'isQueryParams' in value &&
+    value.isQueryParams === true
   );
 }
 
