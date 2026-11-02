@@ -985,30 +985,17 @@ class PlainRouteManager {
   }
 }
 
+const Layout = setComponentTemplate(
+  precompileTemplate('[layout:{{outlet}}]', { strictMode: true }),
+  templateOnly()
+);
+
 moduleFor(
   'Route manager - {{outlet}} under a non-classic level',
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
 
-      let Layout = setComponentTemplate(
-        precompileTemplate('[layout:{{outlet}}]', { strictMode: true }),
-        templateOnly()
-      );
-
-      let Parent = setComponentTemplate(
-        precompileTemplate('parent:{{outlet}}<Layout />', {
-          strictMode: true,
-          scope: () => ({ Layout }),
-        }),
-        templateOnly()
-      );
-
-      class PlainRoute {}
-
-      setRouteManager(() => new PlainRouteManager({ parent: Parent }), PlainRoute);
-
-      this.add('route:parent', PlainRoute);
       this.add(
         'component:child-layout',
         setComponentTemplate(precompileTemplate('[child-layout:{{outlet}}]'), templateOnly())
@@ -1026,13 +1013,67 @@ moduleFor(
       });
     }
 
-    async ['@test {{outlet}} in a component renders only below a classic level'](assert) {
+    /**
+      Registers `parent` as a non-classic route that renders `Parent`.
+
+      @private
+    */
+    addNonClassicParent(Parent) {
+      class PlainRoute {}
+
+      setRouteManager(() => new PlainRouteManager({ parent: Parent }), PlainRoute);
+
+      this.add('route:parent', PlainRoute);
+    }
+
+    async ['@test {{outlet}} in the route template renders the child route'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:{{outlet}}', { strictMode: true }),
+          templateOnly()
+        )
+      );
+
       await this.visit('/parent/child/leaf');
 
       assert.strictEqual(
         this.element.textContent,
-        'app:parent:child:[child-layout:leaf][layout:]',
-        'the non-classic invokable renders {{outlet}}, its component does not, and a component below the classic child does again'
+        'app:parent:child:[child-layout:leaf]',
+        'the non-classic invokable renders {{outlet}}, and so does a component below the classic child'
+      );
+    }
+
+    async ['@test {{outlet}} in a component asserts'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:<Layout />', { strictMode: true, scope: () => ({ Layout }) }),
+          templateOnly()
+        )
+      );
+
+      await assert.rejectsAssertion(
+        this.visit('/parent/child/leaf'),
+        /\{\{outlet\}\} in a component works only under a classic route/
+      );
+    }
+
+    async ['@test {{outlet}} in a component renders the @outlet it receives'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:<Layout @outlet={{@outlet}} />', {
+            strictMode: true,
+            scope: () => ({ Layout }),
+          }),
+          templateOnly()
+        )
+      );
+
+      await this.visit('/parent/child/leaf');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:[layout:child:[child-layout:leaf]]',
+        'the component renders the child route through the @outlet it receives'
       );
     }
   }
