@@ -1,5 +1,5 @@
 import Route from '@ember/routing/route';
-import { setRouteManager } from '@ember/routing';
+import { routeCapabilities, setRouteManager } from '@ember/routing';
 import { setComponentTemplate } from '@ember/component';
 import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
@@ -939,6 +939,141 @@ moduleFor(
         this.element.textContent,
         'app:stamp[local](local:L)',
         'round-trip back to the application owner renders correctly'
+      );
+    }
+  }
+);
+
+/**
+  The smallest manager without classic interop.
+  Each route renders the component that `invokables` maps its name to.
+
+  @private
+*/
+class PlainRouteManager {
+  capabilities = routeCapabilities('1.0', { classicInterop: false });
+
+  constructor(invokables) {
+    this.invokables = invokables;
+  }
+
+  createRoute(_factory, { name }) {
+    return { name };
+  }
+
+  getDestroyable() {
+    return null;
+  }
+
+  willEnter() {}
+
+  enter() {
+    return resolve(undefined);
+  }
+
+  didEnter() {}
+  willExit() {}
+  exit() {}
+  didExit() {}
+
+  getRouteWrapper() {
+    return ContextOutlet;
+  }
+
+  getInvokable({ name }) {
+    return resolve(this.invokables[name]);
+  }
+}
+
+const Layout = setComponentTemplate(
+  precompileTemplate('[layout:{{outlet}}]', { strictMode: true }),
+  templateOnly()
+);
+
+moduleFor(
+  'Route manager - {{outlet}} under a non-classic level',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      this.add(
+        'component:child-layout',
+        setComponentTemplate(precompileTemplate('[child-layout:{{outlet}}]'), templateOnly())
+      );
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('child:<ChildLayout />'));
+      this.add('template:parent.child.leaf', precompileTemplate('leaf'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child', function () {
+            this.route('leaf');
+          });
+        });
+      });
+    }
+
+    /**
+      Registers `parent` as a non-classic route that renders `Parent`.
+
+      @private
+    */
+    addNonClassicParent(Parent) {
+      class PlainRoute {}
+
+      setRouteManager(() => new PlainRouteManager({ parent: Parent }), PlainRoute);
+
+      this.add('route:parent', PlainRoute);
+    }
+
+    async ['@test {{outlet}} in the route template renders the child route'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:{{outlet}}', { strictMode: true }),
+          templateOnly()
+        )
+      );
+
+      await this.visit('/parent/child/leaf');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:child:[child-layout:leaf]',
+        'the non-classic invokable renders {{outlet}}, and so does a component below the classic child'
+      );
+    }
+
+    async ['@test {{outlet}} in a component asserts'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:<Layout />', { strictMode: true, scope: () => ({ Layout }) }),
+          templateOnly()
+        )
+      );
+
+      await assert.rejectsAssertion(
+        this.visit('/parent/child/leaf'),
+        /\{\{outlet\}\} in a component works only under a classic route/
+      );
+    }
+
+    async ['@test {{outlet}} in a component renders the @outlet it receives'](assert) {
+      this.addNonClassicParent(
+        setComponentTemplate(
+          precompileTemplate('parent:<Layout @outlet={{@outlet}} />', {
+            strictMode: true,
+            scope: () => ({ Layout }),
+          }),
+          templateOnly()
+        )
+      );
+
+      await this.visit('/parent/child/leaf');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:[layout:child:[child-layout:leaf]]',
+        'the component renders the child route through the @outlet it receives'
       );
     }
   }
