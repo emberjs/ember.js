@@ -700,6 +700,7 @@ function rendererFor(owner: object, env: RenderComponentEnv | undefined): BaseRe
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env['hasDOM']) : true,
     });
+    associateDestroyableChild(owner, renderer);
     RENDERER_FOR_OWNER.set(owner, renderer);
   }
 
@@ -807,14 +808,6 @@ export function renderComponent(
 
   let root = renderer.render(component, { into: replaceLastRender(into, element), args });
   let glimmerResult = root.result;
-
-  /**
-   * The destruction of the root, and not only of its Glimmer result,
-   * also removes the root from the renderer.
-   * After that, nothing holds the root or `into`.
-   */
-  associateDestroyableChild(owner, root);
-
   let result: RenderResult = {
     destroy() {
       destroy(root);
