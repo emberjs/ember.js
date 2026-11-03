@@ -19,7 +19,8 @@ import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import type Registry from '@ember/-internals/container/lib/registry';
-import type { SimpleElement } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { adapterForDocument, setRenderAdapter } from '@ember/-internals/glimmer/lib/render-adapter';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -103,6 +104,10 @@ class ApplicationInstance extends EngineInstance {
     options = new _BootOptions(options);
 
     this.setupRegistry(options);
+
+    if (options.document) {
+      setRenderAdapter(this, adapterForDocument(options.document as unknown as SimpleDocument));
+    }
 
     let rootElement = options.rootElement ?? this.application.rootElement;
     if (typeof rootElement === 'string') {
@@ -298,10 +303,6 @@ class ApplicationInstance extends EngineInstance {
     registry.register('-environment:main', coptions.toEnvironment(), {
       instantiate: false,
     });
-    registry.register('service:-document', coptions.document!, {
-      instantiate: false,
-    });
-
     super.setupRegistry(registry, coptions);
   }
 }
