@@ -4,7 +4,7 @@
 
 import type { InternalFactoryManager } from '@ember/-internals/container/lib/container';
 import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import getDebugName from '@ember/-internals/utils/lib/get-debug-name';
 import { assert } from '@ember/debug';
@@ -15,6 +15,7 @@ import { setHelperManager } from '@glimmer/manager/lib/public/api';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { IS_CLASSIC_HELPER } from './helper-brand';
 
 export { isClassicHelper } from './helper-brand';
@@ -111,9 +112,7 @@ declare const SIGNATURE: unique symbol;
   @public
   @since 1.13.0
 */
-// ESLint doesn't understand declaration merging.
-/* eslint-disable import/export */
-export default interface Helper<S = unknown> {
+interface Helper<S = unknown> {
   /**
     Override this function when writing a class-based helper.
 
@@ -125,7 +124,7 @@ export default interface Helper<S = unknown> {
   */
   compute(positional: Positional<S>, named: Named<S>): Return<S>;
 }
-export default class Helper<S = unknown> extends FrameworkObject {
+class Helper<S = unknown> extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
@@ -191,7 +190,59 @@ export default class Helper<S = unknown> extends FrameworkObject {
     join(() => dirtyTag(this[RECOMPUTE_TAG]));
   }
 }
-/* eslint-enable import/export */
+
+/**
+  The `Helper` base class when the `EMBER_DROP_CLASSIC_FEATURES` build flag
+  is set. It extends no other class.
+
+  The owner passes itself to the constructor. `invokeHelper` can create a
+  helper without an owner. The helper manager destroys every helper when its
+  template output goes away. If a subclass overrides `willDestroy`, it runs
+  then.
+*/
+class PlainHelper {
+  static isHelperFactory = true;
+  static [IS_CLASSIC_HELPER] = true;
+
+  /** The container and the helper manager create instances only through `create`. */
+  static create<T extends PlainHelper>(
+    this: new (owner: InternalOwner | undefined) => T,
+    props: object
+  ): T {
+    return new this(getOwner(props));
+  }
+
+  [RECOMPUTE_TAG]: DirtyableTag = createTag();
+
+  constructor(owner: InternalOwner | undefined) {
+    if (owner) {
+      setOwner(this, owner);
+    }
+
+    assert('expected compute to be defined', (this as { compute?: unknown }).compute);
+
+    if (this.willDestroy !== PlainHelper.prototype.willDestroy) {
+      registerDestructor(this, () => this.willDestroy());
+    }
+  }
+
+  destroy() {
+    destroy(this);
+  }
+
+  willDestroy() {}
+
+  recompute() {
+    join(() => dirtyTag(this[RECOMPUTE_TAG]));
+  }
+}
+
+const ExportedHelper = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainHelper : Helper
+) as typeof Helper;
+type ExportedHelper<S = unknown> = Helper<S>;
+
+export default ExportedHelper;
 
 interface ClassicHelperStateBucket {
   instance: HelperInstance<unknown>;
@@ -267,7 +318,7 @@ function isFactoryManager(obj: unknown): obj is InternalFactoryManager<object> {
 
 setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
   return new ClassicHelperManager(owner);
-}, Helper);
+}, ExportedHelper);
 
 ///////////
 

@@ -6,6 +6,7 @@ import {
   runDestroy,
   runTask,
   defineSimpleHelper,
+  testUnless,
 } from 'internal-test-helpers';
 import { Helper } from '@ember/-internals/glimmer';
 import Component from '@glimmer/component';
@@ -73,7 +74,7 @@ moduleFor(
       this.assertText('hello | hello world');
     }
 
-    ['@test throws if `this._super` is not called from `init`']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test throws if \`this._super\` is not called from \`init\``]() {
       this.registerHelper('hello-world', {
         init() {},
       });
@@ -83,7 +84,9 @@ moduleFor(
       }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
     }
 
-    ['@test class-based helper can recompute a new value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper can recompute a new value`](
+      assert
+    ) {
       let destroyCount = 0;
       let computeCount = 0;
       let helper;
@@ -117,7 +120,9 @@ moduleFor(
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
-    ['@test class-based helper lifecycle'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper lifecycle`](
+      assert
+    ) {
       let hooks = [];
       let helper;
 
@@ -159,7 +164,9 @@ moduleFor(
       assert.deepEqual(hooks, ['init', 'compute', 'compute', 'destroy', 'willDestroy']);
     }
 
-    ['@test class-based helper with static arguments can recompute a new value'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper with static arguments can recompute a new value`](
+      assert
+    ) {
       let destroyCount = 0;
       let computeCount = 0;
       let helper;
@@ -194,7 +201,7 @@ moduleFor(
     }
 
     // https://github.com/emberjs/ember.js/issues/14774
-    ['@test class-based helper with static arguments can recompute a new value without a runloop'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper with static arguments can recompute a new value without a runloop`](
       assert
     ) {
       let destroyCount = 0;
@@ -289,7 +296,9 @@ moduleFor(
       assert.strictEqual(computeCount, 3, 'compute is called exactly 3 times');
     }
 
-    ['@test class-based helper compute is called for param changes'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper compute is called for param changes`](
+      assert
+    ) {
       let createCount = 0;
       let computeCount = 0;
 
@@ -510,7 +519,9 @@ moduleFor(
       }, /Attempted to resolve `some-helper`, which was expected to be a modifier, but nothing was found./);
     }
 
-    ['@test class-based helper is torn down'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper is torn down`](
+      assert
+    ) {
       let destroyCalled = 0;
 
       this.registerHelper('some-helper', {
@@ -530,7 +541,7 @@ moduleFor(
       assert.strictEqual(destroyCalled, 1, 'destroy called once');
     }
 
-    ['@test class-based helper used in subexpression can recompute']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper used in subexpression can recompute`]() {
       let helper;
       let phrase = 'overcomes by';
 
@@ -577,7 +588,7 @@ moduleFor(
       this.assertText('Who overcomes by force hath overcome but half his foe');
     }
 
-    ['@test class-based helper used in subexpression can recompute component']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper used in subexpression can recompute component`]() {
       let helper;
       let phrase = 'overcomes by';
 
@@ -632,7 +643,9 @@ moduleFor(
       this.assertText('Who overcomes by force hath overcome but half his foe');
     }
 
-    ['@test class-based helper used in subexpression is destroyed'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test class-based helper used in subexpression is destroyed`](
+      assert
+    ) {
       let destroyCount = 0;
 
       this.registerHelper('dynamic-segment', {
