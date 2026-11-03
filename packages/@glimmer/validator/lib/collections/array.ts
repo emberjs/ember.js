@@ -6,6 +6,7 @@
 // and it will blow up in JS in exactly the same way, so it is safe to assume
 // that properties within the getter have the correct type in TS.
 
+import { tagMetaFor } from '../meta';
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
@@ -70,7 +71,7 @@ class TrackedArray<T = unknown> {
      */
     let nativelyAccessingLengthFromWriteMethod = false;
 
-    return new Proxy(clone, {
+    const proxy = new Proxy(clone, {
       get(target, prop /*, _receiver */) {
         const index = convertToInt(prop);
 
@@ -150,6 +151,18 @@ class TrackedArray<T = unknown> {
         return TrackedArray.prototype;
       },
     }) as TrackedArray<T>;
+
+    /**
+     * Classic consumers (`@computed`, observers) find tags with
+     * `tagFor(proxy, key)`. These keys are the dependent keys for
+     * a change to the array.
+     */
+    const tags = tagMetaFor(proxy);
+
+    tags.set('[]', this.#collection);
+    tags.set('length', this.#collection);
+
+    return proxy;
   }
 
   #collection = createUpdatableTag();
