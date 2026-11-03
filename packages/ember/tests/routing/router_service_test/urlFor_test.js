@@ -211,7 +211,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          assert.equal(expectedURL, this.routerService.get('currentURL'));
+          assert.equal(expectedURL, this.routerService.currentURL);
         });
     }
 
@@ -239,7 +239,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          assert.equal(expectedURL, this.routerService.get('currentURL'));
+          assert.equal(expectedURL, this.routerService.currentURL);
         });
     }
 
@@ -259,7 +259,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
+          actualURL = `${this.routerService.currentURL}?foo=bar`;
 
           assert.equal(expectedURL, actualURL);
         });
@@ -291,7 +291,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
+          actualURL = `${this.routerService.currentURL}?foo=bar`;
 
           assert.equal(expectedURL, actualURL);
         });
