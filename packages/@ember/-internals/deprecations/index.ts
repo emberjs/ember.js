@@ -20,6 +20,12 @@ export function isRemoved(options: DeprecationOptions) {
   return emberVersionGte(options.until);
 }
 
+declare global {
+  interface ImportMetaEnv {
+    EMBER_DROP_CLASSIC_FEATURES?: boolean | string;
+  }
+}
+
 interface DeprecationObject {
   options: DeprecationOptions;
   test: boolean;
