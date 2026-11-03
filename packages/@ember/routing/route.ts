@@ -1,7 +1,6 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
-import { defineProperty } from '@ember/-internals/metal/lib/properties';
-import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
+import { changeProperties } from '@ember/-internals/metal/lib/property_events';
+import { flushChanges, watchProperty } from '@ember/-internals/metal/lib/watchers';
 import {
   eventedOn,
   eventedOne,
@@ -12,25 +11,20 @@ import {
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
-import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import getProperties from '@ember/-internals/metal/lib/get_properties';
-import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
-import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
 import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
@@ -374,7 +368,9 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
         object[name] = get(model, name);
       }
     } else {
-      object = getProperties(model, params);
+      for (let name of params) {
+        object[name] = get(model, name);
+      }
     }
 
     return object;
@@ -969,7 +965,7 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     let definedController = this.controllerFor(controllerName, true);
     let controller = definedController ?? this.generateController(controllerName);
     let queryParams = get(this, '_qp') as Route<Model>['_qp'];
-    addQueryParamsObservers(controller, queryParams.propertyNames);
+    watchQueryParams(controller, queryParams.propertyNames);
     this.controller = controller;
     return controller;
   }
@@ -1009,7 +1005,11 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
       });
 
       let qpValues = getQueryParamsFor(this, transition[STATE_SYMBOL]!);
-      setProperties(controller, qpValues);
+      changeProperties(() => {
+        for (let [prop, value] of Object.entries(qpValues)) {
+          set(controller, prop, value);
+        }
+      });
     }
 
     this.setupController(controller, context, transition);
@@ -1020,7 +1020,7 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
-    flushAsyncObservers(false);
+    flushChanges(false);
   }
 
   /*
@@ -1582,9 +1582,14 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     return params;
   }
 
+  #store?: { find(name: string, value: unknown): unknown };
+
   /** @deprecated Manually define your own store, such as with `@service store` */
-  @computed
   protected get _store() {
+    return (this.#store ??= this._buildStore());
+  }
+
+  private _buildStore() {
     const owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let routeName = this.routeName;
@@ -1631,12 +1636,17 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     };
   }
 
+  #qp?: QueryParamMeta;
+
   /**
     @private
     @property _qp
     */
-  @computed
   protected get _qp(): QueryParamMeta {
+    return (this.#qp ??= this._buildQp());
+  }
+
+  private _buildQp(): QueryParamMeta {
     let combinedQueryParameterConfiguration: ReturnType<typeof mergeEachQueryParams> = {};
 
     let controllerName = this.controllerName || this.routeName;
@@ -1938,25 +1948,10 @@ function mergeEachQueryParams(
   return qps;
 }
 
-function addQueryParamsObservers(controller: any, propNames: string[]) {
-  propNames.forEach((prop) => {
-    if (descriptorForProperty(controller, prop) === undefined) {
-      let desc = lookupDescriptor(controller, prop);
-
-      if (desc !== null && (typeof desc.get === 'function' || typeof desc.set === 'function')) {
-        defineProperty(
-          controller,
-          prop,
-          dependentKeyCompat({
-            get: desc.get,
-            set: desc.set,
-          })
-        );
-      }
-    }
-
-    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
-  });
+function watchQueryParams(controller: any, propNames: string[]) {
+  for (let prop of propNames) {
+    watchProperty(controller, prop, () => controller._qpChanged(controller, prop));
+  }
 }
 
 function getEngineRouteName(engine: EngineInstance, routeName: string) {
