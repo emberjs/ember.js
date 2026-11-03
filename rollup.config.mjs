@@ -418,6 +418,12 @@ function resolveTS() {
       if (result === null && importer) {
         // the rest of rollup couldn't find it
         let stem = resolve(dirname(importer), source);
+        if (source.endsWith('.js')) {
+          let fullPath = stem.slice(0, -'.js'.length) + '.ts';
+          if (existsSync(fullPath)) {
+            return fullPath;
+          }
+        }
         for (let candidate of ['.ts', '/index.ts']) {
           let fullPath = stem + candidate;
           if (existsSync(fullPath)) {
