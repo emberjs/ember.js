@@ -1,12 +1,13 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, runTask } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { set } from '@ember/object';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component as EmberComponent } from '../../../utils/helpers';
 
 moduleFor(
   'Components test: dynamic components (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test it has an element']() {
       let instance;
 

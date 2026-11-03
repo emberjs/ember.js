@@ -1,7 +1,7 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
-import Component from '@ember/component';
+import { setComponentTemplate } from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import type Resolver from '../test-resolver';
@@ -12,7 +12,8 @@ import type EngineInstance from '@ember/engine/instance';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import buildOwner from '../build-owner';
 import { define } from '../module-for';
-import { runAppend, runDestroy, runTask } from '../run';
+import { runDestroy, runTask } from '../run';
+import TopLevelComponent from '../top-level-component';
 import AbstractTestCase from './abstract';
 
 const TextNode = window.Text;
@@ -22,6 +23,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   renderer: Renderer;
   element: HTMLElement;
   component: any;
+  root: object | null = null;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -81,9 +83,8 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
-      if (this.component) {
-        runDestroy(this.component);
-      }
+      runDestroy(this.root);
+      runDestroy(this.component);
       if (this.owner) {
         runDestroy(this.owner);
       }
@@ -97,25 +98,24 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   }
 
   render(templateStr: string, context = {}) {
-    let { owner } = this;
+    let test = this;
 
-    owner.register(
-      'template:-top-level',
-      this.compile(templateStr, {
-        moduleName: '-top-level',
+    class Root extends TopLevelComponent {
+      constructor(...args: ConstructorParameters<typeof TopLevelComponent>) {
+        super(...args);
+
+        Object.defineProperties(this, Object.getOwnPropertyDescriptors(context));
+        test.component = this;
+      }
+    }
+
+    setComponentTemplate(this.compile(templateStr, { moduleName: '-top-level' }), Root);
+
+    this.root = runTask(() =>
+      this.renderer.render(Root, {
+        into: this.element,
       })
     );
-
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
-    });
-
-    owner.register('component:-top-level', Component.extend(attrs));
-
-    this.component = owner.lookup('component:-top-level');
-
-    runAppend(this.component);
   }
 
   renderComponent(component: object, options: { expect: string }) {

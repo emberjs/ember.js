@@ -15,6 +15,10 @@ moduleFor(
       assert
     ) {
       let shouldThrow = true;
+
+      // In production, a retry after the error creates a new root component.
+      // The state lives outside the root, so that the new root also sees it.
+      let state = { switch: true };
       let FooBarComponent = class extends Component {
         constructor(owner, args) {
           super(owner, args);
@@ -30,8 +34,8 @@ moduleFor(
       );
 
       assert.throws(() => {
-        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
-          switch: true,
+        this.render('{{#if this.state.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          state,
         });
       }, /silly mistake in init/);
 
@@ -43,11 +47,11 @@ moduleFor(
 
       this.assertText('');
 
-      runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(state, 'switch', false));
 
       shouldThrow = false;
 
-      runTask(() => set(this.context, 'switch', true));
+      runTask(() => set(state, 'switch', true));
 
       if (DEBUG) {
         this.assertText('', 'it does not rerender after error in development');

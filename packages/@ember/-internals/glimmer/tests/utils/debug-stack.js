@@ -1,12 +1,10 @@
 function debugStackMessage(message, renderTree, includeTopLevel) {
   let topLevel = '';
 
-  if (includeTopLevel === 'outlet') {
-    // The application root renders through `renderComponent`, whose root
-    // component (the root outlet) is labeled `{ROOT}` in the render stack.
-    topLevel = '{ROOT}\n {4}';
-  } else if (includeTopLevel) {
-    topLevel = '-top-level\n {4}';
+  // Component roots are labeled `{ROOT}` in the render stack.
+  // A classic root passes its own label.
+  if (includeTopLevel) {
+    topLevel = `${includeTopLevel === true ? '{ROOT}' : includeTopLevel}\n {4}`;
   }
 
   return `${message}[\\S\\s]*- While rendering:\n {2}${topLevel}${renderTree.join('\\n\\s*')}`;

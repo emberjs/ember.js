@@ -456,7 +456,7 @@ moduleFor(
         model: {
           myProp: 1,
         },
-        changeValue: () => this.context.incrementProperty('model.myProp'),
+        changeValue: () => this.context.set('model.myProp', this.context.model.myProp + 1),
       });
 
       assert.equal(this.$('#nested-prop').text(), '1');

@@ -3,7 +3,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 import templateOnlyComponent from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
-import EmberObject from '@ember/object';
+import EmberObject, { setProperties } from '@ember/object';
 import Component from '@glimmer/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
@@ -48,7 +48,7 @@ moduleFor(
 
       this.assertInnerHTML('|FOO|BAR|');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => setProperties(this.context, { foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|foo|bar|');
     }
@@ -76,7 +76,7 @@ moduleFor(
 
       this.assertInnerHTML('|||');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => setProperties(this.context, { foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|||');
     }

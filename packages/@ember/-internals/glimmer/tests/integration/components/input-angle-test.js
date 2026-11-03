@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTestCase, runDestroy, runTask } from 'internal-test-helpers';
-import { action, set } from '@ember/object';
+import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
@@ -288,10 +288,10 @@ moduleFor(
       assert.expect(2);
 
       this.render(`<Input @enter={{this.foo}} />`, {
-        foo: action(function (value, event) {
+        foo: (value, event) => {
           assert.ok(true, 'action was triggered');
           assert.ok(event instanceof Event, 'Native event was passed');
-        }),
+        },
       });
 
       this.triggerEvent('keyup', {
@@ -320,10 +320,10 @@ moduleFor(
       assert.expect(2);
 
       this.render(`<Input @escape-press={{this.foo}} />`, {
-        foo: action(function (value, event) {
+        foo: (value, event) => {
           assert.ok(true, 'action was triggered');
           assert.ok(event instanceof Event, 'Native event was passed');
-        }),
+        },
       });
 
       this.triggerEvent('keyup', { key: 'Escape' });
