@@ -270,6 +270,11 @@ class ExpressionNormalizer {
 
     let positional = this.block.builder.positional(paramList, paramLoc);
 
+    assertUniqueNames(
+      hash.pairs.map((pair) => ({ name: pair.key, loc: this.block.loc(pair.loc) })),
+      (name) => `Duplicate named argument \`${name}\`. A named argument can only be passed once`
+    );
+
     let named = this.block.builder.named(
       hash.pairs.map((p) => this.namedArgument(p)),
       this.block.loc(hash.loc)
@@ -564,6 +569,20 @@ class ElementNormalizer {
 
     // the head, attributes and modifiers are in the current scope
     let path = this.classifyTag(tagHead, rest, element.loc);
+
+    let located = element.attributes
+      .filter((a) => a.name !== '...attributes')
+      .map((a) => ({ name: a.name, loc: this.ctx.loc(a.loc) }));
+
+    assertUniqueNames(
+      located.filter(({ name }) => name[0] !== '@'),
+      (name) =>
+        `Duplicate attribute \`${name}\`. An element can only have one attribute with a given name`
+    );
+    assertUniqueNames(
+      located.filter(({ name }) => name[0] === '@'),
+      (name) => `Duplicate named argument \`${name}\`. A named argument can only be passed once`
+    );
 
     let attrs = element.attributes.filter((a) => a.name[0] !== '@').map((a) => this.attr(a));
     let args = element.attributes.filter((a) => a.name[0] === '@').map((a) => this.arg(a));
@@ -1088,5 +1107,24 @@ function printHead(node: ASTv1.PathExpression | ASTv1.CallNode): string {
     return printHead(node.path);
   } else {
     return new Printer({ entityEncoding: 'raw' }).print(node);
+  }
+}
+
+/**
+ * Attributes, component arguments and named arguments are keyed by name, so a template must
+ * not repeat one. Reports the second occurrence.
+ */
+function assertUniqueNames(
+  entries: readonly { name: string; loc: SourceSpan }[],
+  message: (name: string) => string
+): void {
+  let seen = new Set<string>();
+
+  for (let { name, loc } of entries) {
+    if (seen.has(name)) {
+      throw generateSyntaxError(message(name), loc);
+    }
+
+    seen.add(name);
   }
 }
