@@ -422,4 +422,9 @@ const Observable = DeprecatedMixin.create(InternalObservable, {
   },
 });
 
-export default Observable;
+const ExportedObservable = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : Observable
+) as typeof Observable;
+type ExportedObservable = Observable;
+
+export default ExportedObservable;

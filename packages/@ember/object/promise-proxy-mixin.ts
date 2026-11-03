@@ -266,4 +266,9 @@ function promiseAlias<T, N extends MethodNamesOf<Promise<T>>>(name: N) {
   };
 }
 
-export default PromiseProxyMixin;
+const ExportedPromiseProxyMixin = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : PromiseProxyMixin
+) as typeof PromiseProxyMixin;
+type ExportedPromiseProxyMixin<T> = PromiseProxyMixin<T>;
+
+export default ExportedPromiseProxyMixin;
