@@ -1,4 +1,3 @@
-import { ENV } from '@ember/-internals/environment/lib/env';
 import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import type { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
@@ -17,7 +16,6 @@ interface ActiveObserver {
   suspended: boolean;
 }
 
-const SYNC_DEFAULT = !ENV._DEFAULT_ASYNC_OBSERVERS;
 export const SYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
 export const ASYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
 
@@ -40,7 +38,7 @@ export function addObserver(
   path: string,
   target: object | Function | null,
   method?: string | Function,
-  sync = SYNC_DEFAULT
+  sync = false
 ): void {
   let eventName = changeEvent(path);
 
@@ -68,7 +66,7 @@ export function removeObserver(
   path: string,
   target: object | Function | null,
   method?: string | Function,
-  sync = SYNC_DEFAULT
+  sync = false
 ): void {
   let eventName = changeEvent(path);
 
