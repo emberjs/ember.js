@@ -54,10 +54,12 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       **[Deprecated]** features in §02; RFC 1249 accepted (rfcs#1249 merged 2026-10-26) with ids
       `template-ampersand-mustache`, `template-caret-else`, `template-inverse-block-with-else`,
       `template-raw-block`, `until: 8.0.0`. Guides: ember-learn/deprecation-app#1442 (open).
-- [ ] B4. RFC 1253 (`mut`, `deprecate-mut-helper`, until 8.0.0) and RFC 1248 (`readonly`,
+- [x] B4. RFC 1253 (`mut`, `deprecate-mut-helper`, until 8.0.0) and RFC 1248 (`readonly`,
       `deprecate-readonly-helper`, until next LTS) accepted 2026-11-02; not yet implemented.
       Mark **[Deprecated]** in §08-2.11, §08-2.12 and the keyword lists (§03, §08-1, §0.1/§0.5).
-- [ ] B5. RFC 1216 (classic `@ember/component`, id `ember-component`, until 8.0.0), RFC 1234
+      Done differently: recorded as accepted RFCs on the [Legacy] sections; whether to mark them
+      [Deprecated] (a new implementation SHOULD NOT include) is the author's call, §08-14 Q17.
+- [x] B5. RFC 1216 (classic `@ember/component`, id `ember-component`, until 8.0.0), RFC 1234
       (`EmberObject`, opt-in, until 9.0.0), RFC 1115 (observers, until 8.0.0) accepted: note in
       the [Legacy] areas of §08 (classic components) and §07-3.6 (computed/observers).
 - [ ] B6. Other behavior changes on main: #21778 (destroyable hierarchy in base renderer),

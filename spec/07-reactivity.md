@@ -1443,6 +1443,16 @@ nothing.
 
 ### 07-3.6 Interop with the Ember object model **[Legacy]**
 
+*Deprecations accepted:* RFC 1234 (`rfcs/text/1234-deprecate-ember-object.md`) deprecates
+`EmberObject`, opt-in at first, id `deprecate-ember-object`, `until: '9.0.0'`; RFC 1115
+(`rfcs/text/1115-deprecate-observable.md`) deprecates `observer`, `addObserver` and
+`removeObserver`, id `deprecate-ember-object-observers`, `until: '8.0.0'`. Ember `main` already
+reports the mixin deprecations of RFC 1116 and the array ones of RFC 1114 (for example
+`ProxyMixin`, `Observable`, `A()` and the array computed macros), through public wrappers around
+internal copies that Ember itself uses (`-proxy-internal.ts`, `observable-internal.ts`,
+`array/index-internal.ts`). None of this changes the behavior below, which is what existing code
+observes until removal.
+
 #### 07-3.6.1 The object-level cell
 
 Every object has an **object-level cell** ("this object changed in some way"). It is

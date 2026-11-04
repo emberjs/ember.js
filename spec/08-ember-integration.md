@@ -495,6 +495,11 @@ is reused otherwise (chapter 07 caching semantics).
 
 ### 2.11 `mut` **[Legacy]**
 
+*Deprecation accepted:* RFC 1253 (`rfcs/text/1253-deprecate-mut-helper.md`, accepted
+2026-11-02) deprecates every use of `mut` in loose and strict templates, with id
+`deprecate-mut-helper`, `until: '8.0.0'`, reported at runtime when the helper is invoked. It is
+not implemented in Ember yet. Whether the spec marks `mut` **[Deprecated]** is open (§14 Q17).
+
 - **Access**: strict keyword (`STRICT_MODE_KEYWORDS`); loose name `mut`.
 - **Source**: `packages/@ember/-internals/glimmer/lib/helpers/mut.ts:53-72`.
 - **Semantics**: `(mut path)` requires its single positional argument to be *updatable*
@@ -513,6 +518,12 @@ is reused otherwise (chapter 07 caching semantics).
   `classic/mut-test.js:329-457`).
 
 ### 2.12 `readonly` **[Legacy]**
+
+*Deprecation accepted:* RFC 1248 (`rfcs/text/1248-deprecate-readonly-helper.md`, accepted
+2026-11-02) deprecates every use of `readonly`, with id `deprecate-readonly-helper`, reported at
+runtime the first time the helper is invoked. It is intimate API, so `until` is the next LTS
+rather than the next major (left `TBD` in the RFC). Not implemented in Ember yet. Whether the
+spec marks it **[Deprecated]** is open (§14 Q17).
 
 - **Access**: strict keyword; loose name `readonly`.
 - **Source**: `packages/@ember/-internals/glimmer/lib/helpers/readonly.ts:122-126`,
@@ -537,6 +548,9 @@ is reused otherwise (chapter 07 caching semantics).
   if v is an Ember proxy (ObjectProxy/ArrayProxy): v = content of v   // bypasses unknownProperty
   return EachInWrapper(v)
   ```
+
+  The proxy step stays only until the `deprecate-proxy-mixin` deprecation is removed
+  (`helpers/each-in.ts:315-321`; RFC 1116).
 
   The `{{#each}}` machinery (§05) asks the environment's `toIterator` (§10.2) to iterate it.
   For an `EachInWrapper(v)`:
@@ -909,6 +923,13 @@ DOM builder service, `template:-root`, and `renderer:-dom` (`setup-registry.ts:1
 ---
 
 ## 6. Classic components (`@ember/component`) **[Legacy]**
+
+*Deprecation accepted:* RFC 1216 (`rfcs/text/1216-deprecate-ember-component.md`) deprecates the
+classic `Component` class (the default export of `@ember/component`; `setComponentTemplate`,
+`setComponentManager`, `capabilities` and `template-only` stay), with id `ember-component`,
+`until: '8.0.0'`, reported when the class is extended or instantiated. Not implemented in Ember
+yet. The spec keeps classic components in scope as **[Legacy]** (STATUS "Decisions"); whether that
+changes is open (§14 Q17).
 
 A classic component is any class whose internal component manager is the *curly component
 manager* (`component-managers/curly.ts`); `Component` from `@ember/component` has it
@@ -1986,3 +2007,11 @@ non-keyword `bar` fails at runtime in DEBUG with a message that mentions "strict
 template" even though the template is loose (`resolution.ts:425-454`). In production the
 failure mode is unspecified. §03-5.3 explains why arguments get `Strict` resolution; whether
 this should instead be a compile-time error is open.
+
+**Q17. Accepted deprecations of [Legacy] features.** RFCs accepted in 2026 deprecate `mut`
+(RFC 1253, until 8.0.0, §2.11), `readonly` (RFC 1248, until the next LTS, §2.12) and the classic
+`Component` class (RFC 1216, until 8.0.0, §6); none is implemented in Ember yet. The spec marks
+them **[Legacy]**, which a new implementation must still provide. **[Deprecated]** would say it
+SHOULD NOT (§00-0.5), as for the Handlebars leftovers of §02-11 item 15. Should any of these
+become **[Deprecated]**? Unlike the Handlebars leftovers, all three are in wide use, and the
+STATUS decision keeps classic components in scope.
