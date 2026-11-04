@@ -2,7 +2,7 @@
 
 This file is the single source of truth for resuming work on the spec. Keep it current: an
 agent or session that has only this file, `plan.md`, and the git history must be able to
-continue the work. Last updated: 2026-10-15.
+continue the work. Last updated: 2026-11-04.
 
 ## Working protocol
 
@@ -111,8 +111,9 @@ continue the work. Last updated: 2026-10-15.
   - *T21 timing* (pushing the RFC and the guides) is out of scope.
   - *Numeric character references* (T26) decode as in HTML: astral code points are kept whole,
     0x80–0x9F are remapped through the Windows-1252 table, and NUL, surrogates and values above
-    U+10FFFF become U+FFFD (§02-6.3). The current `String.fromCharCode` decoding is a bug and
-    **[Out of spec]** (§00-0.5.1, §02-11 item 6). Corpus impact, from `tools/char-ref-impact.mjs`
+    U+10FFFF become U+FFFD (§02-6.3). The old `String.fromCharCode` decoding was a bug; it is
+    fixed on `main` by simple-html-tokenizer 1.0.0 (emberjs/ember.js#21730; T27), so this is no
+    longer **[Out of spec]**. Corpus impact, from `tools/char-ref-impact.mjs`
     over the same 28,786 templates: 61 use a numeric reference, and none changes meaning. Still
     open for the author: whether a reference with no `;` should also follow HTML.
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
@@ -142,9 +143,9 @@ continue the work. Last updated: 2026-10-15.
 ## Upstream fix branches
 
 Fixes requested by the author during review. The spec branch has `origin/main` merged in at
-`a7fc67e74b` (upstream base `a9501d5d40`, 2026-10-12; earlier merges at `def1faa2cf`, base
-`9bec1cb2a8`, and `98fa794473`, base `675744ab35`), so the landed fixes below are in this
-checkout, and the spec's citations are against `a9501d5d40` (T18). Branches still open for
+`a1c8221703` (upstream base `493985e956`, 2026-11-04, T27; earlier merges at `a7fc67e74b`, base
+`a9501d5d40`; `def1faa2cf`, base `9bec1cb2a8`; and `98fa794473`, base `675744ab35`), so the landed
+fixes below are in this checkout, and the spec's citations are against `493985e956` (T27). Branches still open for
 review are based on `9bec1cb2a8`.
 
 | Spec item | Repo | Branch | State | Summary |
@@ -153,18 +154,18 @@ review are based on `9bec1cb2a8`.
 | §01-1.11 item 7 | content-tag | `fix-multibyte-indentation-panic` | **Shipped in content-tag 4.2.1** (embroider-build/content-tag#134) | `strip_indent` counts only ASCII spaces and tabs as indentation. |
 | §07-3.1.5 | ember.js | `fix/tracked-accessor-object-tag` | **Landed on main** (emberjs/ember.js#21636) | The `@tracked accessor` setter also dirties the object-level cell. Test in the stable-decorator smoke tests. |
 | §05-11.3 | ember.js | `fix/modifier-destruction-order` | **Landed on main** (emberjs/ember.js#21639) | With the debug render tree on, modifiers are now destroyed child-first, as in production (author ruling, 2026-09-30). |
-| §08-14 Q2 | ember.js | `test/outlet-inside-component` | **PR open**: emberjs/ember.js#21640 (test only) | Tests showing that `{{outlet}}` inside a component stopped rendering with the route manager merge (`4b5d79a6d7d1b`). No fix yet. |
+| §08-14 Q2 | ember.js | `test/outlet-inside-component` | **Superseded** by emberjs/ember.js#21762 (merged 2026-11-02, `2661751e2f`), which includes these tests and the fix; emberjs/ember.js#21640 is still open and can be closed | `{{outlet}}` inside a component renders again below classic routes (§08-8.3). |
 | §08-2.20 | ember.js | `cleanup/remove-action-keyword` | **Landed on main** (emberjs/ember.js#21641) | `action` is no longer a syntax keyword, a strict-mode keyword, or rewritten by `transform-action-syntax`. |
 | §05-14 item 12 | ember.js | `fix/triple-curly-literals-and-keywords` | Open for review | String literals and append keywords (`if`, `unless`, `helper`, …) honour `{{{…}}}`. |
 | §05-14 item 1 | ember.js | `fix/namespaced-attribute-updates` | Open for review | Updates of a namespaced attribute keep its namespace after removal. |
 | §05-14 item 6 | ember.js | `fix/svg-inside-foreign-object` | Open for review | `<svg>`/`<math>` inside `<foreignObject>` get their own namespace. |
 | §02-11 item 1 | ember.js | `fix/literal-mustache-arguments` | Local, not pushed (T20); the spec no longer waits on it (§02-3.7 E48, 2026-10-15) | `{{"foo" bar}}` is a syntax error instead of dropping the arguments. |
-| §02-11 item 15 | ember.js | `test/handlebars-legacy-features` | Local, not pushed (T21) | Tests only: parser and rendering tests for `{{&}}`, `{{^}}`, `{{^foo}}…{{else}}` and raw blocks, designated as inherited from Handlebars (legacy behavior). These features are now deprecated; the deprecations themselves are not implemented yet. |
-| §02-11 item 15 | deprecation-app, rfcs | `deprecate-legacy-handlebars-syntax` | Local, not pushed (T21) | Four deprecation guides (`46ae444`) and the deprecation RFC (`66fbfd71`). |
+| §02-11 item 15 | ember.js | `test/handlebars-legacy-features` | **Landed on main** (emberjs/ember.js#21723, merge `d125e25fe2`) | Tests only: parser and rendering tests for `{{&}}`, `{{^}}`, `{{^foo}}…{{else}}` and raw blocks, designated as inherited from Handlebars (legacy behavior). These features are now deprecated; the deprecations themselves are not implemented yet. Cited in §02-2.7, §02-3.2, §02-3.3. |
+| §02-11 item 15 | deprecation-app, rfcs | `deprecate-legacy-handlebars-syntax` | RFC **accepted** (emberjs/rfcs#1249, merged 2026-10-26); guides **PR open** (ember-learn/deprecation-app#1442) | Four deprecation guides and the deprecation RFC (`rfcs/text/1249-deprecate-legacy-handlebars-syntax.md`). Next: implement the four deprecations in Ember. |
 | §02-11 item 17 | ember.js | `fix/blocks-straddling-markup` | **Parked** (T22, author 2026-10-14) | `{{else}}`/closer inside a tag is an error; `{{else}}` inside an HTML comment from the block is comment text; a closer there is an error. Not landing now: a longer deprecation cycle comes first. The spec differs for a closer in a comment (comment text, so the block is unclosed) and goes further: all mustache syntax in a comment is comment text (§02-6.7). |
 | §05-14 item 13 | ember.js | `proposal/duplicate-attributes-and-arguments-are-errors` | **PR open**: emberjs/ember.js#21718 | Duplicate attributes and named arguments become compile errors; the PR description is the full explainer. |
-| §02-11 item 6 | ember.js | `fix-numeric-char-refs` | **PR open**: emberjs/ember.js#21728 (T26) | `@glimmer/syntax` supplies its own `EntityParser` that decodes numeric references as HTML does (§02-6.3). |
-| §02-11 item 6 | simple-html-tokenizer | `fix-numeric-char-refs` | **PR open**: emberjs/simple-html-tokenizer#115 (T26) | The same fix upstream, using native `String.fromCodePoint`; labelled `breaking`, to be released as a new major so Ember apps pick it up only through an Ember release. |
+| §02-11 item 6 | ember.js | `fix-numeric-char-refs` | **Closed** (emberjs/ember.js#21728), in favour of the upstream fix | `@glimmer/syntax` supplied its own `EntityParser`. |
+| §02-11 item 6 | simple-html-tokenizer | `fix-numeric-char-refs` | **Landed**: emberjs/simple-html-tokenizer#115 (merged 2026-10-15), released as 1.0.0 and on Ember `main` through emberjs/ember.js#21730 (`f46ea015cb`) | Numeric references decode as HTML does (§02-6.3). |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
 that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
@@ -179,7 +180,7 @@ repo).
 |---|---|---|---|
 | 00 overview | ~350 | Drafted. §0.1 and §0.2 were updated for the wire-format decision and the non-goals (T6). §0.6 matches this table. §0.7 (consolidated open questions) written by T2b; pruned to 31 open items by T12. | — |
 | 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. T9a ran the babel plugin (`wire`, `hbs`) and the runtime `template()` against §01-1.11 items 1–3, §01-1.4 and §01-1.5.6 (all confirmed; `.work/T9a-compile-paths.md`). |
-| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24/T25: parsing is HTML-first (§02-1.1); its compatibility issues and their resolutions are §02-1.4, all **[Out of spec]** for the current implementation, as is the literal-mustache error E48. T26: numeric character references decode as in HTML (§02-6.3), **[Out of spec]** as well. | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
+| 02 syntax | ~1600 | Drafted. T19 restated the parsing model as one scan (§02-1.1); the current two-pass parser is an implementation note (§02-1.5). T24/T25: parsing is HTML-first (§02-1.1); its compatibility issues and their resolutions are §02-1.4, all **[Out of spec]** for the current implementation, as is the literal-mustache error E48. T26: numeric character references decode as in HTML (§02-6.3); fixed upstream since T27 (simple-html-tokenizer 1.0.0). | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes, plus about 40 for T19). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1, 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 14. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. T9b ran throwaway browser tests for the public-manager component ordering across a tree, component-hook vs modifier-install order, update ordering, deferred destructors and modifier destruction: all confirmed except modifier destruction order, which is creation order (not child-first) when the debug render tree is on (Ember DEBUG default) (§05-11.3; since fixed, #21639). None of these have upstream tests. |
@@ -224,12 +225,13 @@ Run these in order, one at a time.
 | T18 | Merge of `origin/main` (`a7fc67e74b`, base `a9501d5d40`, includes all of W2): citation remap and the post-W2 refresh (Next steps item 6) | Sonnet (remap, FLAGs), Opus (prose) | `.work/T18-merge-w2-landed.md` | done; 142 citations remapped, 26 FLAGs and about 100 moved or deleted test spans fixed by hand (deleted tests now cite their Ember twins); W2 tests cited on `main` (§05-7.6, §06-2.2, §08-6.1, §08-6.6); §05-14 item 12 resolved (the yield and has-block suites now run under angle brackets); §09 harness description and counts; behavior changes written in: render-error cleanup is development-only (new §05-14 item 15, upstream PR #21634), `transform-resolutions` in production (§03-7.11), `@dependentKeyCompat` read fix and computed-macro deprecation (§07-3.6.5, §07-3.6.7). Two claims lost their only test and are now marked untested: the compiler `keywords` option (§01, §03) and `insertBefore=<node>` (§05) |
 | T19 | Author question: can §02 be a single-pass parser (HTML tokenizer with mustache states) instead of Handlebars-then-HTML layering? | Opus | `.work/T19-single-pass-parser.md` | done; yes. Compatibility does not preclude it, but four HTML-blind properties must hold (§02-1.1): Handlebars lexing, whitespace control, block structure, and error priority. §02-1 rewritten (model, rationale §02-1.4, implementation note §02-1.5), §02-6.1 is the scan, §02-6.11 states the block-straddling rule, §02-9.1 the error priority. §02-5.3 corrected: a closer's standalone check uses the *first* inverse. New §02-11 open questions on block straddling, error priority and the `else if` standalone quirk. Author feedback (`1871c6cf4a`) applied: error priority relaxed, out-of-spec marker, T20–T22 planned |
 | T20 | Upstream PR: a literal mustache with arguments (`{{"foo" bar}}`) becomes an error instead of dropping them (§02-11 item 1) | Opus (decision), Sonnet (PR) | `.work/T20-literal-mustache-params.md` | code done on local branch `fix/literal-mustache-arguments` (worktree `../ember.js-t20`, `985c4f5a0e`): error right away (author, `036d98ba70`); full suite green; corpus of 28,770 templates, none newly rejected; PR description drafted in the checklist. Not pushed. The spec states the error without waiting for it (T24, E48); landing it is outside the spec |
-| T21 | Audit the Handlebars leftovers (§02-11 item 15): prove which Ember cannot use, remove those from the parser, add legacy-designated tests for the rest | Sonnet (experiments), Opus (case for removal) | `.work/T21-handlebars-leftovers.md` | steps 1–4 done: every feature is usable, so nothing is removed. Only F1 `{{&}}`, F2 `{{^}}`, F3 `{{^foo}}…{{else}}` and F5 raw blocks are inherited legacy; `foo/bar`, escapes and whitespace control are tested Ember features (author, 2026-10-14). 18 legacy-designated tests on local branch `test/handlebars-legacy-features` (worktree `../ember.js-t21`, `4b96a37a2c`, `8aea3f031a`, on `origin/main` `c02a9ee118`). Not pushed. Steps 5–7 done (2026-10-14): deprecation guides (deprecation-app `46ae444`), deprecation RFC (rfcs `66fbfd71`), spec marks all four **[Deprecated]**. Not pushed. Next: implement the deprecations in Ember (template-compiler plugin, as `deprecate-render` was) once the RFC is accepted. When to push the RFC and guides is outside the spec (author, 2026-10-15) |
+| T21 | Audit the Handlebars leftovers (§02-11 item 15): prove which Ember cannot use, remove those from the parser, add legacy-designated tests for the rest | Sonnet (experiments), Opus (case for removal) | `.work/T21-handlebars-leftovers.md` | steps 1–4 done: every feature is usable, so nothing is removed. Only F1 `{{&}}`, F2 `{{^}}`, F3 `{{^foo}}…{{else}}` and F5 raw blocks are inherited legacy; `foo/bar`, escapes and whitespace control are tested Ember features (author, 2026-10-14). 18 legacy-designated tests on local branch `test/handlebars-legacy-features` (worktree `../ember.js-t21`, `4b96a37a2c`, `8aea3f031a`, on `origin/main` `c02a9ee118`). Landed as emberjs/ember.js#21723 (2026-11-02). Steps 5–7 done (2026-10-14): deprecation guides (deprecation-app `46ae444`), deprecation RFC (rfcs `66fbfd71`), spec marks all four **[Deprecated]**. RFC accepted (emberjs/rfcs#1249, 2026-10-26); guides open as ember-learn/deprecation-app#1442. Next: implement the deprecations in Ember (template-compiler plugin, as `deprecate-render` was) once the RFC is accepted. When to push the RFC and guides is outside the spec (author, 2026-10-15) |
 | T22 | Upstream PR: blocks whose `{{else}}` or closer is inside a tag or HTML comment become parse errors, with tests and the no-sane-template-breaks argument (§02-11 item 17) | Opus | `.work/T22-straddling-blocks-errors.md` | code done on local branch `fix/blocks-straddling-markup` (worktree `../ember.js-t22`, `1fc261a10e`) with option (b) for `{{else}}` (author, `036d98ba70`); complexity and its limit in the checklist; full suite green; corpus of 28,770 templates, none changed; PR description drafted. **Parked** (author, 2026-10-14): not landing now; probably a longer deprecation cycle. Since T24 the spec makes these errors in tags and comment text in comments, **[Out of spec]** for the current implementation (§02-6.11); the deprecation id, `until` and timing are outside the spec |
 | T23 | Rendering tests for `{{else …}}` chains (split from T21; no rendering test exists) | Sonnet | `.work/T23-else-chain-rendering.md` | planned; seed tests from T21 in the checklist |
 | T24 | Author feedback `03c77f86b4`: the current implementation can be out of spec; mustache syntax in HTML comments is comment text; T20 and T22 rules stated as errors; T21 timing out of scope | Opus | `.work/T24-out-of-spec-feedback.md` | done; [Out of spec] redefined, §00-0.5.1 lists every place, §02-1.1/1.4/6.7/6.11/3.7, E48–E50, §02-11 items 1, 17, 19 |
 | T25 | Author follow-up to T24: HTML-first parsing everywhere, compatibility issues enumerated and resolved | Opus | `.work/T25-html-first.md` | done; §02-1.1 rewritten (state table), §02-1.4 is the issue list with corpus impact, §02-2.2, §02-5, §02-6.1, §02-6.2, §02-6.8, §02-11 items 7, 19; §00-0.5.1 rows |
 | T26 | Author ruling: numeric character references that decode differently from HTML are a bug; the spec follows HTML (§02-11 item 6) | Opus | none (done in one session) | done; §02-6.3 states the HTML rule with the current behavior **[Out of spec]**, §02-11 item 6, §00-0.5.1 row, §00-0.7.1 item 4; corpus impact none (`tools/char-ref-impact.mjs`); fixes open as emberjs/ember.js#21728 and emberjs/simple-html-tokenizer#115 |
+| T27 | Merge of `origin/main` (`a1c8221703`, base `493985e956`) and the RFC updates of 2026-10/11 | Sonnet (citations), Opus (prose) | `.work/T27-merge-and-rfcs.md` | done; about 257 citations remapped, 12 FLAGs, moved classic tests, §02 tokenizer citations re-derived for simple-html-tokenizer 1.0.0. Prose: numeric references fixed upstream (no longer [Out of spec]); `{{outlet}}` dynamically scoped again below classic routes (#21762, §08-8.3, Q2 resolved); RFC 1249 accepted and the legacy-Handlebars tests cited; RFCs 1253 (`mut`), 1248 (`readonly`), 1216 (classic components), 1234 (`EmberObject`), 1115 (observers) recorded on the [Legacy] sections, with §08-14 Q17 for the author; renderer lifetime (#21778), cache tag reuse (#21664), Glimmer-root harness (§09). New finding: the dynamic-scope assertion exists only below classic roots (§05-14 item 16). `users-todo-list.md` refreshed |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -265,8 +267,8 @@ into §00-0.7.
 - **Parser.** Some inputs crash with a `TypeError` instead of a syntax error:
   `{{^foo}}…{{/foo}}`, `{{foo=bar}}`, `{{(foo).bar}}`, `</div {{x}}>`, `<div /{{x}}>`,
   `<!--{{x}}-->`, `{{#each-in}}` with no params. Some input is silently dropped: `a < b`
-  becomes `"a "`, and an unterminated tag or comment at EOF disappears. `&#128512;` decodes
-  wrongly.
+  becomes `"a "`, and an unterminated tag or comment at EOF disappears. (`&#128512;` decoded
+  wrongly; fixed upstream, T27.)
 - **Static semantics.**
   - `action`, `mut`, `readonly` and `unbound` can't be shadowed in strict mode on the babel
     path, but can on the runtime path.
@@ -342,10 +344,14 @@ Suggestions for the plan's author, based on what is still open:
    The remote branch `test/w2-glimmer-harness` still exists on `origin` (emberjs/ember.js) at
    `8939c50aff`; it is superseded and can be deleted.
 7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
-   merged at `a7fc67e74b`, upstream base `a9501d5d40`). After the next merge, run
-   `python3 spec/tools/remap-citations.py a9501d5d40 <new base> --apply` once, fix its FLAG lines
+   merged at `a1c8221703`, upstream base `493985e956`). After the next merge, run
+   `python3 spec/tools/remap-citations.py 493985e956 <new base> --apply` once, fix its FLAG lines
    by hand, then run `check-citations.py` and check the prose against what the merge changed
-   (`git diff a9501d5d40 <new base> -- packages`), as T8, T13, T17 and T18 did. The tool follows
+   (`git diff 493985e956 <new base> -- packages`), as T8, T13, T17, T18 and T27 did. Also check
+   dependency upgrades in `package.json`: citations into `node_modules` packages (for example
+   `node_modules/simple-html-tokenizer/dist/index.js` in §02) are not remapped at all, and
+   simple-html-tokenizer 1.0.0 changed its file layout (T27). A bare file name shared by two
+   files (`attribute-bindings-test.js`) can be remapped against the wrong file (T27). The tool follows
    hunks only: it mis-shifts citations to files that were moved or split (T17 and T18 re-derived
    the test citations by matching unique source lines of the old file against the new files), so
    re-check every citation to a test file that `git diff -M --stat` shows as moved. Neither
