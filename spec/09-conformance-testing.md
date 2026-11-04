@@ -403,7 +403,7 @@ These are incorporated by reference. The owning section has the detail.
 | §06-12 | Owner fallback and a partly effective §01-1.8.1 rule, both untested |
 | §07-4.3 | `@x` vs `this.args.x` equivalence (T3 "Unsupported claims") |
 | §07-5 items 3, 11 | `getValue` after a throw; frozen `TrackedValue` with equal writes |
-| §08-14 | `Class.create(ownerInjection)` path; one ordering; `{{outlet}}` inside a component (emberjs/ember.js#21640 adds the test) |
+| §08-14 | `Class.create(ownerInjection)` path; one ordering; `{{outlet}}` inside a component (now tested: `application/outlet-inside-component-test.js`, `routing/route_manager_test.js:993-1080`, emberjs/ember.js#21762) |
 | §07-2 | The [Proposed] core is tested only by `spec/prototype/reactive/test.mjs` |
 
 ### 9.6.2 Sections without a test citation

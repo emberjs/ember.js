@@ -763,7 +763,7 @@ observed.
 `[53, name]` — `(-get-dynamic-var name)`; reads the named entry of the *dynamic scope*
 (§05-5.8). `name` is any expression (in practice a string literal).
 A private keyword. Ember's outlets once used it, but `{{outlet}}` now compiles to
-`<@outlet />` (§08-8.3) and no current Ember template emits it. Consumer `expressions.ts:117-120`.
+`{{component (-outlet @outlet)}}` (§08-8.3) and no current Ember template emits it. Consumer `expressions.ts:117-120`.
 
 ### 4.6.13 `Log` (54)
 
@@ -1438,7 +1438,7 @@ Notes:
 | `{{yield (hash a=1)}}` | `[[[18,1,[[28,[37,1],null,[["a"],[1]]]]]],["&default"],["yield","hash"]]` |
 | `<input disabled value="x" />` | `[[[10,"input"],[14,"disabled",""],[14,2,"x"],[12],[13]],[],["input"]]` |
 | `{{-get-dynamic-var "outletState"}}{{#-with-dynamic-vars outletState=@x}}y{{/-with-dynamic-vars}}` | `[[[1,[53,"outletState"]],[45,[["outletState"],[[30,1]]],[[[1,"y"]],[]]]],["@x"],["-get-dynamic-var","-with-dynamic-vars"]]` |
-| `{{outlet}}` (Ember) | `[[[8,[30,1],null,null,null]],["@outlet"],[]]` |
+| `{{outlet}}` (Ember) | `[[[46,[28,[37,1],[[30,1]],null],null,null,null]],["@outlet"],["component","-outlet"]]` |
 | `{{mount "engine"}}` (Ember) | `[[[46,[28,[37,1],["engine"],null],null,null,null]],[],["component","-mount"]]` |
 
 Note in the `<XFoo/>` row how the component name is stored post-customization, and in

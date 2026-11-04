@@ -237,8 +237,12 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 9. `assert-against-named-outlets` — **[Dev]** `{{outlet "name"}}` is a compile error
    `Named outlets were removed in Ember 4.0. See https://deprecations.emberjs.com/v3.x#toc_route-render-template for guidance on alternative APIs for named outlet use cases. <loc>`.
 10. `transform-wrap-mount-and-outlet` — `{{mount …}}` → `{{component (-mount …)}}`;
-    `{{outlet}}` → `<@outlet />` (`transform-wrap-mount-and-outlet.ts:38-68`). Both are
-    skipped if the name is a local.
+    `{{outlet}}` → `{{component (-outlet @outlet)}}` (`transform-wrap-mount-and-outlet.ts:38-68`;
+    emberjs/ember.js#21762, which restored the dynamically scoped `-outlet` helper after
+    emberjs/ember.js#21460 had made it `<@outlet />`). Both are skipped if the name is a local.
+    `-mount` and `-outlet` are strict-mode keywords (`plugins/index.ts:62-65`), so both
+    rewrites work in strict templates (test
+    `application/outlet-inside-component-test.js:56-72`).
 11. `transform-resolutions` (loose only) — first param of `{{helper "x"}}`, `(helper "x")`,
     `{{modifier "x"}}`, `(modifier "x")` becomes `(-resolve "helper:x")` / `(-resolve "modifier:x")`;
     a non-literal first param becomes, in DEBUG builds only,
@@ -254,7 +258,8 @@ Strict mode runs `auto-import-builtins` first, then steps 1, 2, 5, 7, 8, 9, 10
 Verified output (loose mode, dev build of `ember-template-compiler`):
 
 ```text
-{{outlet}}                          => [[8,[30,1],null,null,null]]      symbols ["@outlet"]
+{{outlet}}                          => [[46,[28,[37,1],[[30,1]],null],null,null,null]]
+                                        symbols ["@outlet"], upvars ["component","-outlet"]
 {{#each-in x as |k v|}}{{/each-in}} => [[42,[28,[37,1],[[31,2]],null],null,[[],[1,2]],null]]
                                         symbols ["v","k"], upvars ["each","-each-in","x"]
 <Foo::Bar />                        => [[8,[39,0],null,null,null]]      upvars ["foo/bar"]
@@ -262,8 +267,8 @@ Verified output (loose mode, dev build of `ember-template-compiler`):
 
 AST transforms themselves are not part of the contract (§00-0.1 "Non-goals"). A new
 implementation that does not reuse Ember's AST plugins MUST still produce the same
-observable results: `{{outlet}}` MUST read the `@outlet` argument of the
-enclosing template (lexically), `{{#each-in}}` MUST behave per §2.13, `{{#each}}` MUST consume the
+observable results: `{{outlet}}` MUST render the outlet of §8.3 (the enclosing template's
+`@outlet` argument if it has one, otherwise the dynamically scoped outlet), `{{#each-in}}` MUST behave per §2.13, `{{#each}}` MUST consume the
 collection-contents storage per §2.14, etc.
 
 ---
@@ -1442,16 +1447,36 @@ replaces the root's current chain and invalidates that storage
 (`root-outlet.ts:102-123`). If the application instance was booted with
 `shouldRender: false`, no rendering happens (`router.ts:794-797`).
 
-### 8.3 The outlet protocol (`{{outlet}}` ≡ `<@outlet />`)
+### 8.3 The outlet protocol
 
-`{{outlet}}` is compiled to `<@outlet />` (§1.4(10)): it invokes whatever component value is in
-the lexically enclosing template's `@outlet` argument. `@outlet` is supplied by the outlet
-machinery to each route template (below). Therefore:
+`{{outlet}}` is compiled to `{{component (-outlet @outlet)}}` (§1.4(10)). The internal helper
+`-outlet` (`root-outlet.ts:299-320`) is supplied only by the router's resolver
+(`router-resolver.ts:8-11`); anywhere else, for example under `renderComponent`, its lookup is a
+**[Dev]** assertion: ``The `{{outlet}}` keyword requires the router, which is not available
+here. It is only supported in templates rendered by an Ember application (e.g. not via
+`renderComponent`).`` (`resolver.ts:189-193`). Its value is:
 
-- `{{outlet}}` is meaningful only in a route template (or in a block lexically inside one,
-  e.g. passed to a classic component: `classic/utils-test.js:118-132`). In an ordinary component's
-  own template `@outlet` is not supplied and nothing renders (see Q2).
-- A block param named `outlet` shadows it (`refinements-test.gjs:25-27`).
+1. the lexically enclosing template's `@outlet` argument, when that is not `undefined`. The
+   outlet machinery passes `@outlet` to every route template, under every route manager (below),
+   and a component can be passed one explicitly (`<Layout @outlet={{@outlet}} />`; test
+   `routing/route_manager_test.js:1060-1079`);
+2. otherwise the *dynamically scoped outlet*: the `outletState` entry of the dynamic scope
+   (§05-5.8). Each outlet level's provider (below) has the `dynamicScope` capability and sets
+   that entry to its child outlet when it is created (`root-outlet.ts:190-198, 207-222`), but
+   only if the level's route manager has classic interop (`hasClassicInterop`,
+   `root-outlet.ts:170-176`). So `{{outlet}}` inside a component (template-only, classic or
+   strict) renders the next level when the component is rendered below a classic route (tests
+   `application/outlet-inside-component-test.js:24-72`).
+   Below a level whose manager is not classic, the entry holds a marker that renders nothing.
+   **[Dev]** `{{outlet}}` with no `@outlet` there asserts
+   ``{{outlet}} in a component works only under a classic route. Render {{outlet}} in the route template, or pass @outlet={{@outlet}} to the component.``
+   (`root-outlet.ts:311-316`; test `routing/route_manager_test.js:1046-1058`). In production it
+   renders nothing.
+
+Invoked with no dynamic scope (the helper used dynamically), it asserts **[Dev]**
+`Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.`
+(`root-outlet.ts:301-304`). A block param named `outlet` shadows the keyword
+(`refinements-test.gjs:25-27`).
 
 The value of `@outlet` for a level whose parent state is `P` is a reactive computation
 (`root-outlet.ts:249-288`):
@@ -1890,20 +1915,16 @@ For debug labels in the backtracking message (§10.4) the outlet providers are n
 ---
 ## 14. Open questions / inconsistencies
 
-**Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.
-lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
-dynamically scoped (it worked inside any component rendered by a route template). A component
-template containing `{{outlet}}` now silently renders nothing; and a component passed `@outlet`
-explicitly could render the outlet anywhere. Also, `@outlet` is visible as an ordinary named
-argument (e.g. `{{#if @outlet}}`), which is new surface.
-*Confirmed regression.* The change came with the route manager merge (`4b5d79a6d7d1b`,
-emberjs/ember.js#21460), which changed `transform-wrap-mount-and-outlet` from
-`{{component (-outlet)}}` (which read the outlet state from the dynamic scope) to `<@outlet />`.
-Branch `test/outlet-inside-component` (tracked in emberjs/ember.js#21640) adds tests for
-`{{outlet}}` inside a template-only and a classic component rendered by the application
-template: both pass at `4b5d79a6d7d1b^1` and fail at `4b5d79a6d7d1b` and on current `main`,
-where the outlet renders as an empty comment. Whether to restore the dynamically scoped
-behavior is open.
+**Q2. `{{outlet}}` outside route templates.** *Fixed upstream* (emberjs/ember.js#21762,
+`2661751e2f`, 2026-11-02). The route manager merge (`4b5d79a6d7d1b`, emberjs/ember.js#21460) had
+compiled `{{outlet}}` to `<@outlet />`, so `{{outlet}}` in a component's own template silently
+rendered nothing. #21762 restored the dynamically scoped `{{component (-outlet @outlet)}}`, with
+the rule of §8.3: `@outlet` when the template has one, otherwise the dynamically scoped outlet,
+which only classic levels provide. Its tests include those of emberjs/ember.js#21640, which is
+now superseded. Two points remain for the author: `@outlet` is still visible as an ordinary named
+argument of every route template (`{{#if @outlet}}`), which is surface that did not exist before
+the merge; and `{{outlet}}` in a component below a non-classic route asserts instead of rendering.
+Both are what `main` does, and the spec describes them as normative.
 
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
 `undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:701-702`), but the

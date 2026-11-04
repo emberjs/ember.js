@@ -354,9 +354,9 @@ to addon tooling.
     `destroy()` works (resolved: it destroys the root before or after its first render), but
     the replace-previous-render logic sees no previous render, so both renders stay live. Each
     outlet level renders one microtask late, and nothing tests whether the empty intermediate state can be observed.
-    `{{outlet}}` inside a component stopped rendering with the route manager merge
-    (`4b5d79a6d7d1b`), a confirmed regression tracked in emberjs/ember.js#21640.
-    (§08-14 Q2, Q9, Q14)
+    `{{outlet}}` inside a component, which stopped rendering with the route manager merge, is
+    fixed upstream (emberjs/ember.js#21762) for components below classic routes; below other
+    route managers it asserts. (§08-14 Q2, Q9, Q14)
 
 *Note:* §04-4.14 lists wire-format issues (no version marker, unused upvars, `InElement`
 guid collisions). The wire format is informative (§0.2), so these are not requirements.

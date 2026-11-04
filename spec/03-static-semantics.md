@@ -594,7 +594,7 @@ or `<div {{(if c (modifier on "click" f))}}>`.
 only for misuse diagnostics and `getTemplateLocals` filtering. Their meaning comes from:
 
 - Ember AST rewrites: `each-in` → `each` + `(-each-in)` (§03-7.6); `mount` →
-  `{{component (-mount ...)}}` and `outlet` → `<@outlet />` (§03-7.10).
+  `{{component (-mount ...)}}` and `outlet` → `{{component (-outlet @outlet)}}` (§03-7.10).
 - Runtime built-in keyword helpers: `mut`, `readonly`, `unbound`, and the internal
   `-each-in`, `-track-array`, `-in-el-null`, `-resolve`, `-hash`, `-normalize-class`
   (`packages/@ember/-internals/glimmer/lib/resolver.ts:88-98`). In loose mode, a free
@@ -1172,11 +1172,11 @@ emberjs/ember.js#21635 this threw a `TypeError`.
   `{{{ }}}`) whose path is not `hasLocal`:
   - `{{mount <params> <hash>}}` → `{{component (-mount <params> <hash>)}}`. `-mount` is a
     `Helper` free variable in loose mode, and a `Keyword` in strict mode.
-  - `{{outlet}}` → `<@outlet />`, a self-closing component invocation of the named argument
-    `@outlet`. This allocates the arg slot `@outlet` (verified). Any hash is dropped. Positional
-    args were already rejected in dev. So `{{outlet}}` is **lexically** scoped: it reads the
-    `@outlet` argument of the template it is written in, and is not dynamically scoped
-    (runtime meaning: §08-8.3).
+  - `{{outlet}}` → `{{component (-outlet @outlet)}}`. This allocates the arg slot `@outlet`
+    (verified, T27). Any hash is dropped. Positional args were already rejected in dev. `-outlet`
+    is a `Helper` free variable in loose mode and a `Keyword` in strict mode. At runtime it
+    renders the template's `@outlet` if that is defined, and otherwise the dynamically scoped
+    outlet (§08-8.3; emberjs/ember.js#21762).
 
   Only mustaches are handled. `(outlet)` and `(mount)` produce the keyword misuse error.
 

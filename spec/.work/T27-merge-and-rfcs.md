@@ -46,7 +46,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
 - [x] B1. Numeric character references: simple-html-tokenizer 1.0 (#115 merged 2026-10-15) is on
       main via emberjs/ember.js#21730 (`f46ea015cb`); #21728 closed. Verify the built behavior,
       then drop **[Out of spec]** from §02-6.3, §00-0.5.1 row, §02-11 item 6, §00-0.7.1 item 4.
-- [ ] B2. `{{outlet}}` (#21762, `2661751e2f`): renders inside components again; allowed in
+- [x] B2. `{{outlet}}` (#21762, `2661751e2f`): renders inside components again; allowed in
       strict mode (`-outlet` in `STRICT_MODE_KEYWORDS`); compiled to `{{component (-outlet @outlet)}}`;
       dynamic outlet only below classic routes. Update §03-7, §03 keyword tables, §08-1.4(10),
       §08 outlet sections and §08-14 Q2/Q9/Q14, §00-0.7, §09 table. #21640 is superseded.
