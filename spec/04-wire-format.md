@@ -588,7 +588,7 @@ is the name. Emitted for **every** free variable in "strict resolution", which c
 1. In strict mode, a host-provided *keyword* name (the `keywords` compile option; Ember
    passes `STRICT_MODE_KEYWORDS`: `mut`, `readonly`, `unbound`, `-each-in`,
    `-in-el-null`, `-track-array`, `-mount`,
-   `packages/@ember/template-compiler/lib/plugins/index.ts:52-65`).
+   `packages/@ember/template-compiler/lib/plugins/index.ts:52-66`).
 2. In loose mode, a free name in an *argument* position of a call, e.g. `bar` in
    `{{foo bar}}` → `[1,[28,[35,0],[[31,1]],null]]` (§4.12.4). See Open question 2.
 

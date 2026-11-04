@@ -107,22 +107,22 @@ evaluate(computation C):
 - Frames nest strictly (LIFO). A conforming implementation MUST restore the previous active
   computation even when `fn` throws.
   *Source:* `beginTrackFrame` / `endTrackFrame`
-  (`packages/@glimmer/validator/lib/tracking.ts:177-209`), and `track`, which uses `try/finally`
-  (`tracking.ts:371-383`).
+  (`packages/@glimmer/validator/lib/tracking.ts:231-263`), and `track`, which uses `try/finally`
+  (`tracking.ts:451-463`).
 - The implementation does not allocate a tracker per frame. `beginTrackFrame` takes the tracker
-  for the frame's depth from a pool (`TRACKER_POOL`, `tracking.ts:175-193`; an untrack frame
+  for the frame's depth from a pool (`TRACKER_POOL`, `tracking.ts:229-247`; an untrack frame
   takes a depth but no tracker), and `endTrackFrame` empties it when it combines the frame's
-  tags (`Tracker.combine` and `clear`, `tracking.ts:95-132`). `Tracker.add` finds out whether
+  tags (`Tracker.combine` and `clear`, `tracking.ts:126-186`). `Tracker.add` finds out whether
   the frame has a tag already from an index stored on the tag (`slot`) instead of a `Set`
-  (`tracking.ts:79-93`; `validators.ts:117-124`). None of this is observable beyond the
+  (`tracking.ts:110-124`; `validators.ts:117-124`). None of this is observable beyond the
   contract above: a frame that consumed one tag, any number of times, ends with that tag; a
   frame that consumed none ends with `CONSTANT_TAG`; otherwise the result is a combined tag.
   A tag that a nested frame consumed between two consumptions in the outer frame is still kept
   (tests `tracking-test.ts:257-309`).
 - [Dev] After an unrecoverable render error, the implementation resets all open frames.
   It also empties every pooled tracker, so the tags of a frame that never ended do not appear in
-  the next frame at the same depth (`tracking.ts:236-240`; tests `tracking-test.ts:310-338`).
-  *Source:* `resetTracking` (`tracking.ts:225-247`), called from the render error paths
+  the next frame at the same depth (`tracking.ts:316-320`; tests `tracking-test.ts:310-338`).
+  *Source:* `resetTracking` (`tracking.ts:305-327`), called from the render error paths
   (`packages/@glimmer/runtime/lib/vm/update.ts:60-66`, `packages/@glimmer/runtime/lib/vm/append.ts:790`).
   The reset runs only in development builds; production builds leave the frames open
   (suspected bug, §05-14 item 15).
@@ -130,13 +130,13 @@ evaluate(computation C):
 ### 07-1.3 Consumption and nesting
 
 1. Reading a cell while a computation `C` is active adds that cell to `C`'s consumed set.
-   *Source:* `consumeTag` (`tracking.ts:253-257`), `Tracker.add` (`tracking.ts:79-93`).
+   *Source:* `consumeTag` (`tracking.ts:333-337`), `Tracker.add` (`tracking.ts:110-124`).
 2. **Nesting.** When a computation `C` is evaluated, or its cached value is returned, while an
    outer computation `P` is active, `C`'s entire dependency set is added to `P`'s consumed set.
    `P` therefore becomes invalid whenever any cell that `C` depends on is invalidated. This holds
    *even if `C` is not re-evaluated*, i.e. when `C`'s cached value is returned.
    *Source:* `getValue` consumes the cache's combined tag on both the recompute path and the
-   cached path (`tracking.ts:310-323`). `valueForRef` does the same
+   cached path (`tracking.ts:390-403`). `valueForRef` does the same
    (`packages/@glimmer/reference/lib/reference.ts:153-183`). Tests:
    `packages/@glimmer/validator/test/tracking-test.ts:410` ("nested memoizations work, and
    automatically propogate"), `:86` ("it works for nested tags").
@@ -157,8 +157,8 @@ evaluate(computation C):
 
 1. Inside an untracked frame there is no active computation. Reads consume nothing, and
    `isTracking()` is false.
-   *Source:* `beginUntrackFrame` sets the current tracker to `null` (`tracking.ts:211-222`);
-   `untrack(fn)` (`tracking.ts:389-397`).
+   *Source:* `beginUntrackFrame` sets the current tracker to `null` (`tracking.ts:291-302`);
+   `untrack(fn)` (`tracking.ts:469-477`).
    *Tests:* `tracking-test.ts:44` ("it ignores tags consumed within an untrack frame"),
    `:141` ("nested tracks and untracks work").
 2. A tracking frame opened *inside* an untracked frame is a fresh computation. Its consumption
@@ -168,7 +168,7 @@ evaluate(computation C):
    inside an untracked frame to a cell that was consumed earlier in the same transaction still
    asserts. Reads inside an untracked frame are not recorded as consumed for the purposes of the
    assertion.
-   *Tests:* `test/tracking-test.ts:633` ("it ignores untrack for consumption"), `:649` ("it does not
+   *Tests:* `test/tracking-test.ts:826` ("it ignores untrack for consumption"), `:842` ("it does not
    ignore untrack for dirty").
 4. Some framework code paths evaluate user code in an untracked frame. They are listed where
    they occur. Examples: the getter of a classic computed property with explicit dependent keys
@@ -189,10 +189,10 @@ evaluate(computation C):
 3. An evaluated computation whose dependency set is **empty is constant**. It MUST never become
    invalid, so its cached value is final. Consumers MAY treat a constant computation as a static
    value and MAY discard any machinery for updating it.
-   *Source:* `Tracker.combine` returns `CONSTANT_TAG` for an empty set (`tracking.ts:95-110`);
-   `isConst` (`tracking.ts:328-336`); `isConstRef` checks
+   *Source:* `Tracker.combine` returns `CONSTANT_TAG` for an empty set (`tracking.ts:126-141`);
+   `isConst` (`tracking.ts:408-416`); `isConstRef` checks
    (`packages/@glimmer/runtime/lib/compiled/opcodes/content.ts:109-120`: no updating operation
-   is installed for a constant text position). *Test:* `test/tracking-test.ts:469`.
+   is installed for a constant text position). *Test:* `test/tracking-test.ts:662`.
 4. **Constant is decided per evaluation.** A computation that was non-constant can become
    constant after a re-evaluation that consumes nothing. From then on it is final.
    *Source:* `valueForRef` short-circuits permanently once `ref.tag === CONSTANT_TAG`
@@ -210,7 +210,7 @@ normative.
 | Cell kind | Default policy | Configurable? | Source / test |
 |---|---|---|---|
 | `@tracked` property (any decorator form) and classic `tracked()` | **Always invalidate**, even when the new value is identical (`===`) to the old | Yes: `@tracked({ equals })`. When `equals(old, new)` returns true, the write is skipped entirely (the value is *not* stored and nothing is invalidated) | `packages/@ember/-internals/metal/lib/tracked.ts:351-364`, `:429-442`; tests `packages/@ember/-internals/metal/tests/tracked/options_test.js:9,29,44` |
-| Standalone `tracked(value, options)` (`TrackedValue`) | `Object.is`: equal writes do not invalidate and do not store | Yes: `options.equals` | `packages/@glimmer/validator/lib/tracked-value.ts:123-141,149-161`; tests `packages/@ember/-internals/metal/tests/tracked/standalone_test.js:37,50,63`, `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:238` |
+| Standalone `tracked(value, options)` (`TrackedValue`) | `Object.is`: equal writes do not invalidate and do not store | Yes: `options.equals` | `packages/@glimmer/validator/lib/tracked-value.ts:123-141,149-161`; tests `packages/@ember/-internals/metal/tests/tracked/standalone_test.js:37,50,63`, `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:241` |
 | `trackedArray` element / `length`, `trackedObject` property, `trackedMap`/`trackedWeakMap` value, `trackedSet`/`trackedWeakSet` membership | `Object.is` against the current value | Yes: `options.equals` (per collection) | §07-3.5 |
 | Plain (untracked) property written with Ember `set()` | Invalidate iff `currentValue !== newValue` (strict inequality, so `NaN → NaN` invalidates and `+0 → -0` does not) | No | `packages/@ember/-internals/metal/lib/property_set.ts:85-103` |
 | `notifyPropertyChange(obj, key)` | Always invalidate (it is an explicit invalidation with no value) | No | `packages/@ember/-internals/metal/lib/property_events.ts:50-81` |
@@ -250,7 +250,7 @@ p.full;            // MUST be 'x b' (re-evaluated synchronously on this read)
    - `getValue(cache)`: the cache *records* the partial dependency set and keeps its **previous**
      cached value. A later `getValue` while those dependencies are still valid returns the
      previous value (or `undefined` if there was none) **without re-running the function and
-     without rethrowing**. (`tracking.ts:313-320`: `LAST_VALUE` is not assigned on a throw, but
+     without rethrowing**. (`tracking.ts:393-400`: `LAST_VALUE` is not assigned on a throw, but
      `TAG` and `SNAPSHOT` are.)
    - Template value computations: the dependency set is *not* recorded, so the next read
      re-evaluates (`reference.ts:168-175`: `ref.tag` is assigned only after `track()` returns).
@@ -276,12 +276,12 @@ error. The write happens anyway in production builds.
 *Source:* every `beginTrackFrame` begins a debug transaction and every `endTrackFrame` ends one.
 The consumed set is cleared only when the outermost transaction ends
 (`packages/@glimmer/validator/lib/debug.ts:66-89`). Consumption is recorded in `Tracker.add`
-(`tracking.ts:82-84`, `debug.ts:180-197`). The check happens in `dirtyTagFor`
+(`tracking.ts:113-115`, `debug.ts:180-197`). The check happens in `dirtyTagFor`
 (`meta.ts:37-43`) and `DIRTY_TAG` (`validators.ts:226-230`). Render transactions are wrapped
 with `debug.runInTrackingTransaction` (`packages/@glimmer/runtime/lib/render.ts:31-38` for
 initial render; `packages/@glimmer/runtime/lib/vm/update.ts:46-70` for revalidation).
-*Tests:* `test/tracking-test.ts:575,602,616`; `packages/@ember/-internals/metal/tests/tracked/validation_test.js:372`;
-`packages/@ember/-internals/glimmer/tests/integration/components/curly-components-test.js:1271-1376`;
+*Tests:* `test/tracking-test.ts:768,795,809`; `packages/@ember/-internals/metal/tests/tracked/validation_test.js:372`;
+`packages/@ember/-internals/glimmer/tests/integration/components/curly-components-test.js:1137-1242`;
 `packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:350-404`.
 
 Consequences, all normative for development builds:
@@ -291,7 +291,7 @@ Consequences, all normative for development builds:
 2. Reading a cell in one computation and writing it in a *later sibling* computation in the
    same render transaction asserts. The canonical case is a child component's constructor
    writing state that an ancestor's template already rendered. Tests: "when a shared dependency
-   is changed during children's rendering (tracked)", `components/curly-components-test.js:1331-1376`.
+   is changed during children's rendering (tracked)", `components/curly-components-test.js:1197-1242`.
 3. Reads made in an untracked frame are *not* recorded (§07-1.4, item 3).
 4. Reads made with *no* open tracking frame at all are not recorded.
 5. The **commit phase** of a render transaction runs *after* the render transaction's debug
@@ -336,7 +336,7 @@ Stack trace for the update:
   transactions contribute the label `- While rendering:`. Component frames contribute the
   component's debug name, and value computations contribute a label derived from the template
   expression (e.g. `this.value`, ``(result of a `TEST_HELPER` helper)``).
-  Tests: `packages/@ember/-internals/glimmer/tests/utils/debug-stack.js:1-38` pins the shape:
+  Tests: `packages/@ember/-internals/glimmer/tests/utils/debug-stack.js:1-36` pins the shape:
   `- While rendering:\n  {ROOT}\n    x-outer\n      this.wrapper.content`.
 - The implementation removes the assertion machinery's own stack frames from the error's
   `stack` below "Stack trace for the update:" (`debug.ts:209-224`). This is cosmetic.
@@ -357,7 +357,7 @@ DOM updates, `renderSettled()`, and the run loop.
    (`packages/@ember/-internals/glimmer/lib/environment.ts:22-25`); backburner `_ensureInstance`
    / `buildNext` (`node_modules/backburner.js/dist/backburner.js:7-35,1013-1020`).
    *Test:* "tracked properties rerender when updated outside of a runloop",
-   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:293`.
+   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:296`.
 2. **Run loop begin → schedule revalidation.** Whenever a run loop begins, every registered
    renderer (every renderer with at least one root) schedules its `revalidate` into the
    `'render'` queue, at most once per run loop.
@@ -577,7 +577,7 @@ function untrack<T>(fn: () => T): T;
 ```
 
 Runs `fn` in an untracked frame (§07-1.4) and returns its result. This already exists
-internally (`tracking.ts:389-397`), and Ember uses it for equality checks and classic computed
+internally (`tracking.ts:469-477`), and Ember uses it for equality checks and classic computed
 getters. It is public so that other chapters can say "evaluated untracked" and have a
 user-visible equivalent, and so that effects can read state without depending on it.
 
@@ -764,7 +764,7 @@ a helper reading `named.name`, and so on. Consequences:
 - A consumer that reads an argument depends on the argument expression's cells. This is why
   inner state changes do not re-run outer getters: test "downstream property changes do not
   invalidate upstream component getters/arguments",
-  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:699-770`.
+  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:704-775`.
 
 Replaces the per-argument compute references and `argsProxyFor`
 (`packages/@glimmer/manager/lib/util/args-proxy.ts:59-188`).
@@ -829,7 +829,7 @@ update:   if isValid(g): skip region (its dependencies are still consumed by the
 This matters for observable hooks. A manager's `update` hook (capability `updateHook`), and the
 `didUpdate` hooks queued by the region, run **when the region is invalid**. That happens when
 any cell consumed anywhere in the region changed, *including in descendants*. It does not
-depend only on the component's own arguments (`component.ts:440-445,940-966`). The classic
+depend only on the component's own arguments (`component.ts:442-447,942-968`). The classic
 (curly) manager filters `didUpdateAttrs`/`didReceiveAttrs` by its own argument validity
 (`packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:443-471`). It still fires
 `didUpdate`/`didRender` for every invalid region (`curly.ts:479-483`); this coarse granularity is
@@ -1253,10 +1253,10 @@ Any other decorator kind (method, getter, setter, class) throws
 - Reading a tracked property with no active computation is an ordinary property read.
 - Tracked properties are reactive through *any* access path: `this.x` in JS, `{{this.x}}` in
   templates, Ember `get`, getters, methods, and so on. Test:
-  `packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:15-142`.
+  `packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:24-151`.
 - Ordinary getters that read tracked properties are reactive without any annotation (they are
-  plain code inside the reader's computation). Tests: `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:383`,
-  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:452`.
+  plain code inside the reader's computation). Tests: `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:388`,
+  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:457`.
 
 ### 07-3.2 Standalone `tracked(value, options?)` → `TrackedValue`
 
@@ -1293,7 +1293,7 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
 - `tracked` used as a **template helper** (`(tracked 0)`) works through the default function
   helper manager. The helper computation consumes nothing, so it is constant: the same
   `TrackedValue` persists for the life of the helper invocation (test
-  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:270-291`).
+  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:273-294`).
 
 ### 07-3.3 `@cached` (`@glimmer/tracking`)
 
@@ -1322,7 +1322,7 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
 
 ### 07-3.4 Cache primitives (`@glimmer/tracking/primitives/cache`)
 
-(RFC 0615, `rfcs/text/0615-autotracking-memoization.md`. Implementation `tracking.ts:261-361`.)
+(RFC 0615, `rfcs/text/0615-autotracking-memoization.md`. Implementation `tracking.ts:341-441`.)
 
 **`createCache(fn, debuggingLabel?)`**
 
@@ -1349,7 +1349,7 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
 - **[Dev]** Never evaluated: ``isConst() can only be used on a cache once getValue() has been called at least once. Called with cache function:\n\n${String(fn)}``.
 - Returns `true` iff the most recent evaluation consumed nothing (§07-1.5, item 3).
 
-Tests: `packages/@glimmer/validator/test/tracking-test.ts:361-520`.
+Tests: `packages/@glimmer/validator/test/tracking-test.ts:361-713`.
 
 **[Proposed]** `isValid(cache)`: §07-2.2.3. Under the proposal, these functions are a
 compatibility layer over `cached()` (§07-2.2.6): a `createCache` cache is a `cached()` value.
@@ -1476,7 +1476,7 @@ assertions** (`:80-95`): exactly two arguments; `obj` not null/undefined (``Cann
 with `this.`.
 
 `get` on an args proxy (`get(this.args, 'foo')`) works and is reactive (tests
-`packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:828,853`).
+`packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:833,858`).
 
 #### 07-3.6.3 `set(obj, key, value)` / `trySet` (`@ember/object`)
 
@@ -1538,7 +1538,7 @@ of `computed()`:
   detail with one observable consequence: a chain through an uncomputed computed property does
   not force its evaluation.
 - Tests: `validation_test.js:168,209,260`,
-  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:411,772,798`.
+  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:416,777,803`.
 - **[Dev]** The macros of `@ember/object/computed` that wrap `computed()` (`alias`, `and`, `or`,
   `not`, `bool`, `match`, `equal`, `gt`/`gte`/`lt`/`lte`, `oneWay`, `readOnly`,
   `deprecatingAlias`) are deprecated (`deprecate-computed-macros`, available since 7.5.0, until
@@ -1599,7 +1599,7 @@ property, development builds replace it with an accessor whose setter asserts:
 It is not installed for array index keys, for accessors, or for non-configurable or non-writable
 properties. `set()` bypasses it (`packages/@ember/-internals/utils/lib/mandatory-setter.ts:27-110`;
 installed from `tags.ts:38-40`, `chain-tags.ts:122,142`). Template path reads do **not** install
-it (test `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:616-648`).
+it (test `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:621-653`).
 Plain properties read by templates and then assigned directly (without `set`) silently fail to
 update. That is expected behavior, not an error.
 
@@ -1634,7 +1634,7 @@ computations (`packages/@glimmer/manager/lib/util/args-proxy.ts:139-188`):
   (Production builds: the proxies are non-extensible and assignment has no effect.)
 - Dependent-key chains may name `args.foo` (e.g. `@computed('args.foo')`). The (argsProxy, key)
   cell resolves to "the argument computation's dependencies" (`args-proxy.ts:32-56,180-181`;
-  tests `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:772-826`).
+  tests `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:777-831`).
   For positional arguments, the key `'[]'` means all positional arguments.
 
 ---
@@ -1658,7 +1658,7 @@ computations (`packages/@glimmer/manager/lib/util/args-proxy.ts:139-188`):
    required for them.
 4. Re-evaluation during revalidation affects only positions whose computation is invalid; a
    position whose computation is valid does not re-run user code. (Tests: evaluation counts in
-   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:238-268,699-770`.)
+   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:241-271,704-775`.)
    An implementation SHOULD avoid needless re-evaluation, but the counts are not part of the
    contract (§00-0.1).
 
@@ -1713,7 +1713,7 @@ Both evaluate the same argument computation. `@x` reads it directly. `this.args.
 then the args proxy returns `getValue(argComputation)`, which consumes its dependencies, plus
 the (argsProxy, 'x') property cell (also never invalidated). The two forms are therefore
 reactively equivalent (`packages/@glimmer/manager/lib/util/args-proxy.ts:32-56`). No test
-compares the two forms directly. `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:486-537`
+compares the two forms directly. `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:491-542`
 exercises `this.args` reactivity only.
 
 ### 07-4.4 Arguments
@@ -1755,7 +1755,7 @@ exercises `this.args` reactivity only.
 4. A helper value computation that consumes nothing is **constant**. The helper is never called
    again, even if the JS code it would call reads non-tracked state that has since changed. Test:
    "functional helpers autotrack based on non-argument tracked props that are accessed",
-   `packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:274`.
+   `packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:292`.
 5. **[Dev]** Reading and then writing the same cell inside a helper's value computation throws
    the write-after-consume assertion, with the helper's debug label in the stack
    (`helper-manager-test.js:379-404`).
@@ -1809,7 +1809,7 @@ Ember objects via `notifyPropertyChange` do cause updates
 These bind names to computations and do not evaluate them. A bound value is evaluated when
 something reads it (lazily). A yielded value that is a path shares its computation with the
 yielder (§07-4.2 "Sharing"; tests
-`packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:538-614`).
+`packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:543-619`).
 
 ### 07-4.8 Components
 
@@ -1865,7 +1865,7 @@ yielder (§07-4.2 "Sharing"; tests
    extra run loops in tests?
 3. **`getValue` after a throw returns stale data.** After `fn` throws, `getValue` stores the
    partial dependency set and keeps `LAST_VALUE`. Later reads silently return the previous (or
-   `undefined`) value without rethrowing until a dependency changes (`tracking.ts:311-320`).
+   `undefined`) value without rethrowing until a dependency changes (`tracking.ts:391-400`).
    Template computations re-evaluate instead. This looks unintentional, and it is untested.
    `cached()` inherits it unless item 15 decides otherwise.
 4. **Validity snapshot vs. writes during evaluation.** In production builds, a write to a
@@ -1874,7 +1874,7 @@ yielder (§07-4.2 "Sharing"; tests
    valid while holding a stale value. The dev-mode assertion prevents this, but the production
    behavior is unspecified.
 5. **The `createCache` debug label is ignored.** `getValue` calls `beginTrackFrame()` without
-   the label (`tracking.ts:311`). So caches never appear in the write-after-consume tracking
+   the label (`tracking.ts:391`). So caches never appear in the write-after-consume tracking
    stack, even though `createCache` accepts and stores a `debuggingLabel`.
 6. **Per-index cells in `trackedArray` are ineffective.** Every index read also consumes the
    collection cell, and every index write invalidates the collection cell, so invalidation is

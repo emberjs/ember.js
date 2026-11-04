@@ -114,7 +114,7 @@ Facts an adapter has to work with (details and citations in `.work/T16-harness.m
    - The **Ember harness** (`packages/internal-test-helpers/lib/`): `moduleFor` and
      `RenderingTestCase` build a real application owner, register things through the
      resolver, render through a classic top-level component with `runAppend`
-     (`lib/test-cases/rendering.ts:99-119`), and update with `runTask`, which is `run()`
+     (`lib/test-cases/rendering.ts:100-119`), and update with `runTask`, which is `run()`
      (`lib/run.ts:16-18`). There is no delegate. Its tests talk to Ember directly.
 5. **Build matrix.** CI runs development and production builds, and variants for deprecations,
    optional features and stable decorators (`.github/workflows/ci-jobs.yml`, `testem.cjs`). In a
@@ -217,7 +217,7 @@ implementation.
   deep-imports `BaseRenderer` and `ResolverImpl`, which `@ember/-internals/glimmer` does not
   export, so seam A must replace those modules too. Public `renderComponent` replaces an
   earlier render into the same element by rendering before that render's first node and
-  destroying it (`replaceLastRender`, `base-renderer.ts:737-750`); the rehydration variant
+  destroying it (`replaceLastRender`, `base-renderer.ts:738-751`); the rehydration variant
   therefore renders its partial rehydrations with `BaseRenderer.render` directly.
 - **Seam C: one compile function.** The two harness compile helpers (§9.3 item 3) become calls
   to the adapter's `compile`. Every other test-time compile already goes through them or

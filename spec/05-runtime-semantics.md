@@ -266,7 +266,7 @@ If a reactive value's computation consumed no tracked storage when it was run (t
 or any later re-evaluation), it is **constant** from then on (§07-0, §07-1.5 items 3–4, which
 own the definition): it is never re-run, and positions that display it are never updated and set up
 no update work (`packages/@glimmer/reference/lib/reference.ts:141-160`,
-`packages/@glimmer/validator/lib/tracking.ts:95-106`). For example, with
+`packages/@glimmer/validator/lib/tracking.ts:126-137`). For example, with
 `self = { name: "a" }` where `name` is an ordinary (untracked) property, `{{this.name}}`
 renders `a` and continues to show `a` even if `name` is later reassigned and an update pass is
 run. Only mutations of tracked storage (chapter 07; in Ember also `set()`/`notifyPropertyChange`
@@ -861,7 +861,7 @@ toBool(v):
   return Boolean(v)
 ```
 
-Consequences (tables: `packages/@ember/-internals/glimmer/tests/utils/shared-conditional-tests.js:437-473`):
+Consequences (tables: `packages/@ember/-internals/glimmer/tests/utils/shared-conditional-tests.js:445-481`):
 `[]` and `emberA()` are falsy, `[0]` is truthy, `new String("")`, `new Boolean(false)`, `new
 Date()` and `htmlSafe(" ")` are truthy, `"false"`, `"null"`, `"0"`… (non-empty strings) are truthy, an ObjectProxy is truthy iff its `isTruthy`
 (by default: iff its `content` is truthy), `htmlSafe("")` is falsy, `0`, `""`, `NaN`, `null`,
@@ -941,11 +941,11 @@ Ember's `toIterator` (`packages/@ember/-internals/glimmer/lib/utils/iterator.ts:
 
 | Input | Items (value, memo) |
 |---|---|
-| not an object/function (`null`, `undefined`, `false`, numbers, strings…) | none (empty); only an `undefined` path is tested (`syntax/each-test.js:1304-1331`) |
+| not an object/function (`null`, `undefined`, `false`, numbers, strings…) | none (empty); only an `undefined` path is tested (`syntax/each-test.js:1311-1338`) |
 | native array (only if not already handled above) | `(a[i], i)` — holes of sparse arrays are visited as `undefined` (`syntax/each-test.js:1336-1361`, via `emberA`) |
 | Ember array (`isEmberArray`) | `(objectAt(a, i), i)` (`syntax/each-test.js:1043-1051`) |
-| object with `Symbol.iterator` (Set, generator, Map…) | `(value, i)` — for a `Map`, value is the `[key, value]` entry (native `Set`: `syntax/each-test.js:1053-1069`; custom iterable: `syntax/each-test.js:1081-1087`, and, autotracked, `lib/suites/each.ts:88-132`; the `Map` entry shape is untested) |
-| object with a `forEach` method | `forEach` is called once, eagerly; items collected as `(item, i)` (`syntax/each-test.js:1071-1079`) |
+| object with `Symbol.iterator` (Set, generator, Map…) | `(value, i)` — for a `Map`, value is the `[key, value]` entry (native `Set`: `syntax/each-test.js:1060-1076`; custom iterable: `syntax/each-test.js:1088-1094`, and, autotracked, `lib/suites/each.ts:88-127`; the `Map` entry shape is untested) |
+| object with a `forEach` method | `forEach` is called once, eagerly; items collected as `(item, i)` (`syntax/each-test.js:1078-1086`) |
 | any other object | none (empty) (untested) |
 | wrapper produced by `-each-in` (§5.5) | see §5.5 |
 
@@ -977,10 +977,10 @@ This is required behavior (author ruling, 2026-09-30), although no test pins it.
 
 | `key` | key of item `(value, memo)` |
 |---|---|
-| `"@identity"` (default) | `value` itself; `null` is mapped to a private sentinel object (primitives: `syntax/each-test.js:467-483`, mixed objects and primitives: `syntax/each-test.js:485-503`; untracked items with `@identity` are not re-read: `lib/suites/each.ts:301-317`) |
-| `"@index"` | `String(memo)` (`syntax/each-test.js:449-465`; `lib/suites/each.ts:160-186`) (for arrays: the index as a string; for `each-in`, the property/map key as a string — so `@index` in `each-in` keys by property name, and distinct object Map keys that stringify alike collide: `packages/@ember/-internals/glimmer/tests/integration/syntax/each-in-test.js:724-835`) |
+| `"@identity"` (default) | `value` itself; `null` is mapped to a private sentinel object (primitives: `syntax/each-test.js:472-488`, mixed objects and primitives: `syntax/each-test.js:490-508`; untracked items with `@identity` are not re-read: `lib/suites/each.ts:296-312`) |
+| `"@index"` | `String(memo)` (`syntax/each-test.js:454-470`; `lib/suites/each.ts:155-181`) (for arrays: the index as a string; for `each-in`, the property/map key as a string — so `@index` in `each-in` keys by property name, and distinct object Map keys that stringify alike collide: `packages/@ember/-internals/glimmer/tests/integration/syntax/each-in-test.js:724-835`) |
 | `"@key"` | `memo` (for arrays the index number; for `each-in` the property/map key; tested only for `each-in`, `each-in-test.js:750-768`) |
-| any other string `p` | `value == null ? value : getPath(value, p)` (Ember `get`, supports dotted paths; `syntax/each-test.js:413-447`, `lib/suites/each.ts:134-158`) |
+| any other string `p` | `value == null ? value : getPath(value, p)` (Ember `get`, supports dotted paths; `syntax/each-test.js:418-452`, `lib/suites/each.ts:129-153`) |
 | [Dev] string starting with `@` other than the above | throws `invalid keypath: '${path}', valid keys: @index, @identity, or a path` (untested) |
 
 (`iterable.ts:37-76`.) **Duplicate keys** are made unique within one iteration: the first
@@ -989,7 +989,7 @@ synthetic identity for the pair `(k, n)` that is the same object in every later 
 (`iterable.ts:78-139`). Thus the list `["a", "b", "a", "a"]` has keys `a, b, (a,1), (a,2)`,
 and removing the first `"a"` makes the old `(a,1)` item become key `a` — i.e. DOM is matched by
 occurrence number, not by position. Tests confirm only that every duplicate renders and
-survives updates (`syntax/each-test.js:505-525`, `573-595`, `655-674`; `lib/suites/each.ts:228-267`); the
+survives updates (`syntax/each-test.js:510-530`, `573-595`, `655-674`; `lib/suites/each.ts:223-262`); the
 occurrence-numbering rule itself is untested.
 
 Key comparison is by `===` (SameValueZero is **not** used: `NaN` keys never match; see Open
@@ -1013,7 +1013,7 @@ renderEach(L, key, bodyBlock, elseBlock):
 Block params: the first is the item value, the second is the memo (the index number for
 arrays/iterables; the key for `each-in`). Both are reactive: when the item is retained with a
 new value or a new index, positions that read them are updated in place
-(`lib/suites/each.ts:188-226`, `syntax/each-test.js:395-411`, `updating-test.ts:1663-1697`,
+(`lib/suites/each.ts:183-221`, `syntax/each-test.js:400-416`, `updating-test.ts:1663-1697`,
 `1822-1857`). Extra block params beyond two are `undefined` (untested).
 
 #### 5.4.4 Update algorithm
@@ -1024,7 +1024,7 @@ On an update pass, if the list computation is invalid, a new iterator is compute
    the whole outer region R is replaced: every existing item is destroyed and the list (or the
    `else` block) is rendered from scratch (`lists.ts:26`). *No* item DOM is reused across an
    empty/non-empty transition. Tests confirm the rendered output and that removed components
-   are destroyed on emptying (`updating-test.ts:1982-2019`; `lib/suites/each.ts:134-158`,
+   are destroyed on emptying (`updating-test.ts:1982-2019`; `lib/suites/each.ts:129-153`,
    `310-337`); node non-reuse across the transition is untested.
 2. Otherwise, if the iterator is a new one (the list computation was re-evaluated), the list is
    **synchronized** (below). If the list computation was valid, synchronization is skipped
@@ -1085,15 +1085,15 @@ Observable consequences:
 Tests: `updating-test.ts:1489-1528` (bounds after swap/delete/empty), `1545-1982` (keyed updates,
 `else`), `1982-2055` (a component's `willDestroy` has run by the time `rerender` returns, both
 for a removed item and for the whole list emptied; see §05-11.3); `updating-test.ts:552-562`
-(a helper passed to `each` is not torn down when the list toggles between empty and non-empty); `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:350-718`
+(a helper passed to `each` is not torn down when the list toggles between empty and non-empty); `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:345-713`
 pins the exact retain/move/insert/delete steps (in `LOCAL_DEBUG` builds only), e.g. swapping
 items 1 and 7 of `1..8` is `retain 1, move 8, retain 3..7, move 2`; rotating `[8,1..7]` →
 `move 8, move-retain 1, retain 2..7`; random shuffles perform no inserts or deletes and at most
 `length` moves+retains. Duplicate primitives, duplicate objects, and duplicate key values all
-render every occurrence (`each.ts:229-267`, `syntax/each-test.js:655-674`). Sync steps run only when `LOCAL_DEBUG` is set;
+render every occurrence (`each.ts:224-262`, `syntax/each-test.js:660-679`). Sync steps run only when `LOCAL_DEBUG` is set;
 in normal test runs those tests return early, so the step sequences are pinned only for
 developers who enable that flag. Insert and delete steps are asserted only as upper bounds
-(`each.ts:622-696`); that inserted items render before later retained items are revalidated,
+(`each.ts:617-691`); that inserted items render before later retained items are revalidated,
 and that deleted items are removed in old-list order, are untested.
 
 ### 5.5 `{{#each-in}}`
@@ -1104,7 +1104,7 @@ and that deleted items are removed in old-list order, are untested.
 (`packages/@ember/template-compiler/lib/plugins/transform-each-in-into-each.ts`). The `-each-in`
 helper consumes the object's identity storage (`tagForObject`), unwraps proxies to their
 content, and wraps the object so `toIterator` iterates its entries
-(`packages/@ember/-internals/glimmer/lib/helpers/each-in.ts:301-322`,
+(`packages/@ember/-internals/glimmer/lib/helpers/each-in.ts:302-325`,
 `packages/@ember/-internals/glimmer/lib/utils/iterator.ts:20-34`, `119-189`, `249-257`):
 
 | Source | (value, memo=key) pairs |
@@ -1288,7 +1288,7 @@ Inside the component, the block named `n` is in slot `&n`; `inverse` is always a
 declare block params and receive yielded values
 (`lib/suites/component-invocation.ts:142-160`); a `<:default>` block and an
 arbitrary `<:baz>` block (`component-invocation.ts:131-139`, `packages/@ember/-internals/glimmer/tests/integration/helpers/yield-test.js:35-58`); an implicit default
-(`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:237-253`). Passing both `<:else>` and `<:inverse>` is a compile-time
+(`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:238-254`). Passing both `<:else>` and `<:inverse>` is a compile-time
 error (`packages/@glimmer-workspace/integration-tests/test/syntax/named-blocks-test.ts:73-105`).
 A block is a closure
 (§05-1.1) that also records its declared block-parameter count.
@@ -1506,12 +1506,12 @@ Tests (classic components, whose hooks map onto these, §08-6.7): `init`, `didRe
 `willRender` and `willInsertElement` run top → middle → bottom; `didInsertElement` and
 `didRender` run bottom → middle → top; on update `willUpdate`/`willRender` run top → bottom and
 `didUpdate`/`didRender` bottom → top, and re-rendering a middle component involves only it and its
-ancestors' hooks as shown (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:305-537`); the
-sibling case is in `packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:538-858`; changed attributes trigger `didUpdateAttrs`/
-`didReceiveAttrs` before `willUpdate` (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:859-1043`). For public managers only the
+ancestors' hooks as shown (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:306-538`); the
+sibling case is in `packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:539-859`; changed attributes trigger `didUpdateAttrs`/
+`didReceiveAttrs` before `willUpdate` (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:860-1044`). For public managers only the
 per-instance sequences `createComponent, getContext, didCreateComponent` and
 `updateComponent, didUpdateComponent` are tested
-(`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:476-535`,
+(`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:486-545`,
 `694-757`). The ordering across a tree of public-manager components was observed by experiment
 (T9b; a parent `p` with children `c1`, `c2`, all with `updateHook`, `destructor` and
 `asyncLifecycleCallbacks`): initial render `p.createComponent, c1.createComponent,
@@ -1526,12 +1526,12 @@ The public custom component manager (chapter 06) maps: `createComponent` ← `cr
 `didUpdate` (only with `asyncLifecycleCallbacks`), `destroyComponent` ← a destructor registered
 on the destroyable (only with `destructor`)
 (`packages/@glimmer/manager/lib/public/component.ts:143-199`; tests:
-`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:426-862`
+`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:436-872`
 — initial `['createComponent', 'getContext', 'didCreateComponent']`, on arg change
 `['updateComponent', 'didUpdateComponent']`, siblings updated in document order, no
 `updateComponent` without the `updateHook` capability). Classic components show the same
 shape: sync pre-render hooks parent-first, `didInsertElement`/`didRender` child-first
-(`classic/life-cycle-test.js:305-537`). Since the custom manager has
+(`classic/life-cycle-test.js:306-538`). Since the custom manager has
 `updateHook` and `createInstance`, `updateComponent` is called whenever the component's update
 region is invalid — i.e. when anything consumed in its subtree changed, not only when its
 arguments changed (see Open questions).
@@ -1557,7 +1557,7 @@ modifiers are created for that element (`statements.ts:149-152`, `166-168`). The
 (Tests: `packages/@glimmer-workspace/integration-tests/lib/suites/components.ts:109-137`,
 `555-623`: an attribute before `...attributes` is clobbered by the invocation, after it wins;
 forwarded classes before the splat merge as `"qux bar foo top"`, after as `"top foo bar qux"`;
-`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:973-1097`.)
+`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:970-1094`.)
 
 - `class` is merged in recording order: `"inner caller"`;
 - `title`: recorded `inner`, then `caller` ⇒ **caller wins** (attributes *before*
@@ -1567,7 +1567,7 @@ forwarded classes before the splat merge as `"qux bar foo top"`, after as `"top 
 - attribute order in the DOM is the order of *first* recording of each name: `class`, `title`,
   `data-x` (except that `type` is always applied last);
 - modifiers forwarded through `...attributes` to several elements run on each, in document
-  order (`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:1163-1193`, `1342-1390`);
+  order (`packages/@ember/-internals/glimmer/tests/integration/components/angle-bracket-invocation-test.js:1160-1190`, `1342-1390`);
 - modifiers are created in the order `m1` (from the splat), then `m2` (the element's own
   modifiers come after all attributes, including the splat); they are installed in that order.
   Consequence for `{{on}}`: the DOM runs listeners in the order they were added, so the
@@ -1614,9 +1614,9 @@ attributes override them, except `class`, which is merged (manager classes first
 layout also has an element with `...attributes`, the attrs block is evaluated there as well
 (§05-7.5), so the invocation's attributes appear on both the wrapper and that element. Tests (they
 replaced tests that ran on a fake classic component, emberjs/ember.js#21679):
-`packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:436-457`
-› "invocation attributes win over attributeBindings", `:414-434` › "invocation attributes are
-merged with the classes of the component", `:459-477` › "explicit ...attributes in the layout
+`packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:437-458`
+› "invocation attributes win over attributeBindings", `:415-435` › "invocation attributes are
+merged with the classes of the component", `:460-478` › "explicit ...attributes in the layout
 receive the invocation attributes".
 
 ### 7.7 Arguments on update
@@ -1977,10 +1977,10 @@ and after the new content has been rendered. Eager destructors (used by managers
 
 Test status: the eager half is pinned. A classic component's `willDestroyElement` sees its
 element still attached with its siblings intact, for items removed from an `each` and from
-`if` blocks (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1429-1586`), and it runs
-before the replacement content is created (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1161-1184`). The deferred half is pinned only as
+`if` blocks (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1430-1587`), and it runs
+before the replacement content is created (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1162-1185`). The deferred half is pinned only as
 "after the replacement content's hooks" (`didDestroyElement` and `willDestroy`,
-`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1202-1221`); that deferred destructors run
+`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1203-1222`); that deferred destructors run
 after the old DOM has been removed, in the run loop's `actions` queue, with `isDestroyed`
 becoming true in the `destroy` queue, was observed by experiment (T9b; verified by experiment,
 T9b): a helper with a destroyable inside `{{#if}}<p id=x>…</p>{{/if}}`, after the `if` went false,
@@ -2007,15 +2007,15 @@ scheduled is a walk of the *region* tree in creation order:
   after the parent. Siblings are destroyed in document order. Pinned for classic components:
   `willDestroyElement`/`willClearRender` (eager), then `didDestroyElement`, then `willDestroy`,
   each phase running top → middle → bottom
-  (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:305-537`,
+  (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:306-538`,
   `538-858`). The eager phase interleaves the two hooks per component, `top.willDestroyElement,
   top.willClearRender, middle.willDestroyElement, …`, then all `didDestroyElement`, then all
-  `willDestroy` (`life-cycle-test.js:510-531`). In non-interactive mode only `willDestroy` runs,
+  `willDestroy` (`life-cycle-test.js:511-532`). In non-interactive mode only `willDestroy` runs,
   in the same order. Public-manager components show the same parent-first order (verified by
   experiment, T9b): removing `p` (layout: `c1`, `c2`) gave `p.destroyComponent, c1.destroyComponent,
   c2.destroyComponent`, and a tree `top{d0, e0{d1}, d2}` gave `d0, e0, d1, d2` (each component before
   the components of its own layout, document order otherwise), all in the `actions` queue. The same parent-first order holds for a component and the component inside
-  its layout in each removed `each` item, item by item in list order (`classic/life-cycle-test.js:1161-1222`).
+  its layout in each removed `each` item, item by item in list order (`classic/life-cycle-test.js:1162-1223`).
 - **Modifiers: child before parent.** A modifier is registered when its element closes, so a
   nested element's modifier precedes its ancestor's; siblings in document order; several
   modifiers on one element in source order. `<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>`
@@ -2032,7 +2032,7 @@ scheduled is a walk of the *region* tree in creation order:
   destroyed modifiers in the order they were *created*, interleaved with components, because of
   an extra association in `addModifier` (found by experiment, T9b).
 - Replacement content is rendered (and its synchronous hooks run) before the old content's
-  deferred destructors run (`classic/life-cycle-test.js:1044-1250`: after resetting an `each` to empty,
+  deferred destructors run (`classic/life-cycle-test.js:1045-1251`: after resetting an `each` to empty,
   the `else` content's components run `init … didInsertElement` before the removed items'
   `didDestroyElement`/`willDestroy`, whereas the removed items' eager `willDestroyElement` /
   `willClearRender` run *before* the `else` content's `init`).
@@ -2072,9 +2072,9 @@ destroying throws (`destroyable/index.ts:138-174`).
   unrecoverable error occur during render. You should reload the application after fixing the
   cause of the error.` In production, rendering is attempted again on the next revalidation
   (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:71-93`; tests:
-  `packages/@ember/-internals/glimmer/tests/integration/components/error-handling-test.js:14-57`).
+  `packages/@ember/-internals/glimmer/tests/integration/components/error-handling-test.js:14-61`).
   Errors thrown from `didInsertElement` or `destroy` leave the renderer usable
-  (`classic/error-handling-test.js:10-80`).
+  (`classic/error-handling-test.js:100-170`).
 - [Dev] Runtime errors with messages pinned by tests are quoted in the relevant sections
   (§05-3.5, §05-7.2, §05-8.2, §05-9.2, §05-10.2, §05-5.4.2, §05-5.7). Additional development-time
   assertions from the manager layer (chapter 06) include
@@ -2141,7 +2141,7 @@ results instead:
    (`packages/@ember/application/instance.ts:344-349`,
    `packages/@ember/-internals/glimmer/lib/setup-registry.ts:16-32`), and `renderComponent`
    always uses the client builder and clears its target element on the first render
-   (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:430-442,737-749`).
+   (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:430-442,738-750`).
 4. The server render is non-interactive (above): no modifier is created, installed or
    updated during it (author ruling, commit `eb4f794d62`).
 
@@ -2236,7 +2236,7 @@ clearMismatch(c): remove c and every following sibling up to (not including) the
    then disable rehydration in this container until that close marker is reached
 ```
 
-Consequences (tests: `initial-render-test.ts:199-1634`,
+Consequences (tests: `initial-render-test.ts:199-1659`,
 `packages/@glimmer-workspace/integration-tests/test/chaos-rehydration-test.ts:80-336`):
 
 - Server text differing from the client value is repaired in place (0 nodes removed); an

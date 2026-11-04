@@ -81,7 +81,7 @@ Two resolvers exist:
 - `ResolverImpl` — used by `renderComponent` (`base-renderer.ts:430-442`).
 - `RouterResolver extends ResolverImpl` — used by the application `Renderer`
   (`renderer.ts:200-212`). It adds the `-mount` keyword helper to *both*
-  `lookupBuiltInHelper` and `lookupHelper` (`router-resolver.ts:6-28`).
+  `lookupBuiltInHelper` and `lookupHelper` (`router-resolver.ts:8-31`).
 
 A conforming implementation MUST make `{{mount}}` fail in a `renderComponent` tree with the
 **[Dev]** assertion
@@ -175,7 +175,7 @@ auto-imported; they must be imported (`import { concat, get, uniqueId } from '@e
 mut, readonly, unbound, -each-in, -in-el-null, -track-array, -mount
 ```
 
-(`plugins/index.ts:52-65`). These free names compile to strict-keyword references
+(`plugins/index.ts:52-66`). These free names compile to strict-keyword references
 (`GetStrictKeyword`, §04) and are resolved at runtime by `lookupBuiltInHelper`
 (§1.1). `action` was removed from this list by emberjs/ember.js#21641 (§2.20).
 
@@ -237,7 +237,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 9. `assert-against-named-outlets` — **[Dev]** `{{outlet "name"}}` is a compile error
    `Named outlets were removed in Ember 4.0. See https://deprecations.emberjs.com/v3.x#toc_route-render-template for guidance on alternative APIs for named outlet use cases. <loc>`.
 10. `transform-wrap-mount-and-outlet` — `{{mount …}}` → `{{component (-mount …)}}`;
-    `{{outlet}}` → `<@outlet />` (`transform-wrap-mount-and-outlet.ts:38-69`). Both are
+    `{{outlet}}` → `<@outlet />` (`transform-wrap-mount-and-outlet.ts:38-68`). Both are
     skipped if the name is a local.
 11. `transform-resolutions` (loose only) — first param of `{{helper "x"}}`, `(helper "x")`,
     `{{modifier "x"}}`, `(modifier "x")` becomes `(-resolve "helper:x")` / `(-resolve "modifier:x")`;
@@ -522,7 +522,7 @@ is reused otherwise (chapter 07 caching semantics).
 ### 2.13 `each-in` (keyword) / `-each-in`
 
 - **Access**: block keyword `{{#each-in}}` in both modes, rewritten per §1.4(5).
-- **Source**: `packages/@ember/-internals/glimmer/lib/helpers/each-in.ts:301-322`,
+- **Source**: `packages/@ember/-internals/glimmer/lib/helpers/each-in.ts:302-325`,
   iteration in `lib/utils/iterator.ts:12-34,119-189,249-257`.
 - `(-each-in x)` evaluates to an opaque wrapper around the iterable; evaluation:
 
@@ -790,7 +790,7 @@ Examples: `FooBar`→`foo-bar`, `XFoo`→`x-foo`, `Foo::BarBaz`→`foo/bar-baz`,
 Curly names (`{{foo-bar}}`, `{{foo/bar}}`) and `{{component "foo/bar"}}` strings are used
 verbatim.
 
-**Lookup** (`resolver.ts:48-86, 222-283`):
+**Lookup** (`resolver.ts:48-86,222-283`):
 
 ```text
 lookupComponent(name, owner):
@@ -856,7 +856,7 @@ lookupHelper(name, owner):                               // resolver.ts:137-186
 
 The registry is configured with `helper: { instantiate: false }` (`setup-registry.ts:43`), so
 registering a plain function as `helper:foo` makes `{{foo}}` call it via the default helper
-manager (`render-component-test.ts:1055-1071`). Names without a dash resolve
+manager (`render-component-test.ts:1085-1101`). Names without a dash resolve
 (`custom-helper-test.js:30-36`); names containing `.` cannot be expressed (§5.1).
 **[Dev]** not found: `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
 
@@ -882,9 +882,9 @@ Strict-mode templates never consult the registry for free names; a free name tha
 lexically in scope nor a strict keyword is a compile-time error (§03) or, for names that reach
 the runtime as strict keywords, **[Dev]**
 `Attempted to resolve a <kind> in a strict mode template, but that value was not in scope: <name>`
-(`resolution.ts:425-454`; test `render-component-test.ts:1074-1083`). A loose-mode component
+(`resolution.ts:425-454`; test `render-component-test.ts:1104-1113`). A loose-mode component
 invoked *from* a strict template still resolves through the owner passed down the tree
-(`render-component-test.ts:1055-1071`).
+(`render-component-test.ts:1085-1101`).
 
 ### 5.6 Built-in component registrations
 
@@ -907,7 +907,7 @@ DOM builder service, `template:-root`, and `renderer:-dom` (`setup-registry.ts:1
 
 A classic component is any class whose internal component manager is the *curly component
 manager* (`component-managers/curly.ts`); `Component` from `@ember/component` has it
-(`component.ts:1694`). Subclasses inherit it. This section specifies what templates and
+(`component.ts:1696`). Subclasses inherit it. This section specifies what templates and
 component authors observe. Capabilities of the manager (`curly.ts:550-564`): dynamic layout,
 dynamic tag, prepare-args, create-args, attribute hook, element hook, create-caller, dynamic
 scope, update hook, create-instance, wrapped, will-destroy.
@@ -918,7 +918,7 @@ A classic component may be invoked with curly syntax (`{{foo-bar a=1}}`, `{{#foo
 `{{component "foo-bar"}}`) or angle brackets (`<FooBar @a={{1}} class="x" />`). Arguments:
 
 **Positional parameters** (`curly.ts:189-254`). The class's static `positionalParams`
-(default `[]`, set via `reopenClass`, `component.ts:1690-1692`) maps positional args to named
+(default `[]`, set via `reopenClass`, `component.ts:1692-1694`) maps positional args to named
 args:
 
 - `positionalParams` is a **string** `P` and positional args were passed: named arg `P` is a
@@ -999,7 +999,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
 - **Tag name**: `component.tagName || 'div'` (`curly.ts:175-183`). `tagName` may be passed as an
   argument (`{{foo-bar tagName="span"}}`), set in the class or in `init`
   (`classic/curly-components-test.js:246-319`). **[Dev]** `tagName` may not be a computed property
-  (`component.ts:986-989`). It is read once when the element is created; later changes are
+  (`component.ts:988-991`). It is read once when the element is created; later changes are
   ignored.
 - **Tagless** (`tagName === ''`): no element. **[Dev]** assertions
   (`curly.ts:491-540`): no `classNameBindings`
@@ -1023,7 +1023,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
   6. If `'ariaRole' in component`: attribute `role` bound reactively to `this.ariaRole`
      (absent when `null`/`undefined`; `classic/curly-components-test.js:1200-1283`).
 - **elementId**: if not provided and the component is not tagless, `init` sets
-  `elementId = guidFor(this)` (`component.ts:991-993`). It is not reactive: changing the bound
+  `elementId = guidFor(this)` (`component.ts:993-995`). It is not reactive: changing the bound
   `id`/`elementId` argument later does not change the DOM (`classic/curly-components-test.js:28-142`).
   **[Dev]** after insertion, setting a different `elementId` throws
   `Changing a view's elementId after creation is not allowed`
@@ -1032,7 +1032,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
 - `classNames` and `classNameBindings` are *concatenated properties* (subclasses append to
   superclass values) and `attributeBindings` too (`component.ts:806-822`). **[Dev]** must be
   arrays, not computed properties; `classNames` entries must be static strings
-  (`component.ts:963-989`).
+  (`component.ts:965-991`).
 
 ### 6.4 `attributeBindings` and `classNameBindings` micro-syntax
 
@@ -1041,7 +1041,7 @@ Source: `packages/@ember/-internals/glimmer/lib/utils/bindings.ts`.
 **attributeBindings** entries (processed from the *end* of the concatenated array to the
 start; the first time an *attribute name* is seen wins, so subclass entries override
 superclass entries for the same attribute — `curly.ts:93-120`,
-`attribute-bindings-test.js:682-716`):
+`attribute-bindings-test.js:1754-1788`):
 
 ```text
 "prop"            → attribute "prop" bound to this.prop       [Dev] prop may not contain '.' ("Illegal attributeBinding: '${prop}' is not a valid attribute name.")
@@ -1050,13 +1050,13 @@ superclass entries for the same attribute — `curly.ts:93-120`,
 attr === "id"     → evaluated ONCE: get(component, prop); if null/undefined use elementId; set as a static id
 ```
 
-The `class` assertion is tested in `attribute-bindings-test.js:872-885`.
+The `class` assertion is tested in `attribute-bindings-test.js:1944-1957`.
 Bound attributes use the normal dynamic-attribute semantics of §05 (property-vs-attribute
 normalization, `null`/`undefined`/`false` remove, URL sanitization of `href` etc.:
-`attribute-bindings-test.js:887-906` gives `unsafe:javascript:…`). Attribute names are
+`attribute-bindings-test.js:1959-1978` gives `unsafe:javascript:…`). Attribute names are
 case-normalized as HTML (`data-FOO` → `data-foo`), but SVG mixed case is preserved
-(`viewBox`) (`:280-353`). The property name is looked up as written (`tiTLe` binds attribute
-`title` because the attribute name is normalized; `:241-278`). The bound value is a reactive
+(`viewBox`) (`:1352-1425`). The property name is looked up as written (`tiTLe` binds attribute
+`title` because the attribute name is normalized; `:1313-1350`). The bound value is a reactive
 read of the component property (so both internal `set` and upstream argument changes update
 it).
 
@@ -1085,7 +1085,7 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
 - When a property `k` of the component is changed through Ember's property-change machinery
   (`set`, `this.set`, tracked/`notifyPropertyChange`), and the component is not currently
   receiving attrs (§6.1 update), and `k` is an updatable named argument,
-  the new value is written to that argument (`component.ts:1039-1050`). This propagates
+  the new value is written to that argument (`component.ts:1041-1052`). This propagates
   through intermediate classic components (`classic/mut-test.js:10-117,119-150`,
   `classic/curly-components-test.js:1567-1780`).
 - `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`classic/mut-test.js:329-457`).
@@ -1098,16 +1098,16 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
 ### 6.6 `this`, blocks and `{{yield}}`
 
 - Inside the component's template `this` is the component instance; `{{this}}` renders its
-  `toString()` (`components/curly-components-test.js:1499-1553`).
+  `toString()` (`components/curly-components-test.js:1365-1419`).
 - A block passed to the component (`{{#foo-bar}}…{{/foo-bar}}`) is evaluated with the
   *caller's* `this` and scope ("it preserves the outer context when yielding",
   `:123-145`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
-  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:739-1247`).
+  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:663-1113`).
 - Named blocks (§05-6.4) work the same way on a classic component invoked with angle brackets:
   `<:baz>`, `<:default>`, and `<:else as |v|>`/`<:inverse as |v|>` with block params. Tests:
-  `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:479-496`
-  › "it can yield to a named block", `:498-515` › "it can yield to an explicit default named
-  block", `:517-541` › "it can yield a value to the else and inverse named blocks". (The comment at
+  `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js:480-497`
+  › "it can yield to a named block", `:499-516` › "it can yield to an explicit default named
+  block", `:518-542` › "it can yield a value to the else and inverse named blocks". (The comment at
   `helpers/yield-test.js:35` about named blocks failing with the default backing class concerns
   an unregistered default class, not classic subclasses.)
 - `@component` or other `@`-names that are not passed are `undefined`.
@@ -1136,7 +1136,7 @@ siblings in document order):
                (I) state → inDOM; didInsertElement; didRender
 ```
 
-Test: `classic/life-cycle-test.js:305-420,538-640` (the exact sequence including `on(init)`).
+Test: `classic/life-cycle-test.js:306-421,539-641` (the exact sequence including `on(init)`).
 Non-interactive environments get only `init`, `on(init)`, `didReceiveAttrs` (and on update
 `didUpdateAttrs`, `didReceiveAttrs`).
 
@@ -1158,8 +1158,8 @@ private "dirty" storage (invalidated by `rerender()`):
   region is invalid, even when no argument changed (§06-8.5). Because the region includes
   descendants, calling `rerender()` on a component also runs
   `willUpdate/willRender/didUpdate/didRender` on **every ancestor classic component** (not
-  descendants): `classic/life-cycle-test.js:380-470`. Changing an argument used only by the top
-  component runs hooks only on that component (`:470-501`). This ancestor behavior is
+  descendants): `classic/life-cycle-test.js:381-471`. Changing an argument used only by the top
+  component runs hooks only on that component (`:471-502`). This ancestor behavior is
   required, for the same reason as `updateComponent`'s coarse granularity (§06-4.4): these
   hooks exist for older component patterns that depend on it. An implementation with
   finer-grained invalidation MUST still run them on every ancestor classic component.
@@ -1167,7 +1167,7 @@ private "dirty" storage (invalidated by `rerender()`):
   revalidation of the renderer, in `destroying` throws
   `You can't call rerender on a view being destroyed` (`views/lib/views/states.ts:18-107`).
 
-**Destruction** (`utils/curly-component-state-bucket.ts:47-69`, `component.ts:1596-1600`,
+**Destruction** (`utils/curly-component-state-bucket.ts:47-69`, `component.ts:1598-1602`,
 `renderer.ts:262-270`), when the component's region is torn down:
 
 ```text
@@ -1185,8 +1185,8 @@ later (runloop 'destroy' queue):
     the component is marked destroyed
 ```
 
-(`packages/@ember/object/core.ts:300-301`, `packages/@ember/-internals/glimmer/lib/component.ts:1596-1600`;
-§06-10.2 gives the queue mapping.) Test: `classic/life-cycle-test.js:502-534` — the full order for three nested components is
+(`packages/@ember/object/core.ts:301-302`, `packages/@ember/-internals/glimmer/lib/component.ts:1598-1602`;
+§06-10.2 gives the queue mapping.) Test: `classic/life-cycle-test.js:503-535` — the full order for three nested components is
 `top.willDestroyElement, top.willClearRender, middle.willDestroyElement, middle.willClearRender,
 bottom.willDestroyElement, bottom.willClearRender, top.didDestroyElement, middle.didDestroyElement,
 bottom.didDestroyElement, top.willDestroy, middle.willDestroy, bottom.willDestroy`.
@@ -1195,16 +1195,16 @@ Setting properties in `willDestroyElement` must not assert (`classic/curly-compo
 
 ### 6.8 Element access and view hierarchy
 
-- `this.element` (`component.ts:1427-1429`, `renderer.ts:301-309`): the wrapper element once
+- `this.element` (`component.ts:1429-1431`, `renderer.ts:301-309`): the wrapper element once
   created (available from `willInsertElement` on), `null` for tagless components and before
   creation. In a non-interactive environment accessing it throws
   `Accessing \`this.element\` is not allowed in non-interactive environments (such as FastBoot).`
 - `readDOMAttr(name)` reads a live property/attribute of the element using the same
-  property-vs-attribute normalization as rendering (`component.ts:1088-1105`).
+  property-vs-attribute normalization as rendering (`component.ts:1090-1107`).
 - `parentView` is the nearest enclosing classic component (tracked through the dynamic
   scope; template-only and Glimmer components are skipped; it propagates across `{{outlet}}`
-  boundaries and is `null` at the top of the tree — `route-managers/classic/outlet-component.ts:106-125`). `childViews` lists child
-  classic components (`component.ts:1321-1323`). `nearestOfType` / `nearestWithProperty` walk
+  boundaries and is `null` at the top of the tree — `route-managers/classic/outlet-component.ts:108-127`). `childViews` lists child
+  classic components (`component.ts:1323-1325`). `nearestOfType` / `nearestWithProperty` walk
   `parentView` **[Legacy]**.
 - `getViewId(view)` is `elementId` for tagged views with an id, else `guidFor`
   (`views/lib/system/utils.ts:64-70`); the renderer keeps a registry id → view used by the
@@ -1219,8 +1219,8 @@ If a classic component (tagged) defines a method named after an event in the dis
 mapping (§12.1: `click`, `keyDown`, `doubleClick`, `focusIn`, …), the event dispatcher
 invokes it for events whose target is within the component's element; see §12.2 for
 dispatch and bubbling. When a component class is first instantiated, the dispatcher lazily
-installs root listeners for the events it handles (`component.ts:923-944`). Calling
-`component.on(eventName, …)` also ensures the listener exists (`component.ts:1019-1031`).
+installs root listeners for the events it handles (`component.ts:925-946`). Calling
+`component.on(eventName, …)` also ensures the listener exists (`component.ts:1021-1033`).
 
 ### 6.10 `send`, `target`, and actions **[Legacy]**
 
@@ -1234,7 +1234,7 @@ for completeness.
 ### 6.11 Root classic components (`appendTo`) **[Legacy]**
 
 `component.appendTo(target)` / `append()` render a classic component as a new root
-(`component.ts:1448-1515`, `renderer.ts:216-239`). The root is rendered with the root template
+(`component.ts:1450-1517`, `renderer.ts:216-239`). The root is rendered with the root template
 `{{component this}}` where `this` is a curried definition of the instance (`templates/root.ts`),
 using a special manager that uses the existing instance instead of creating one
 (`component-managers/root.ts:26-115`). **[Dev]** assertions: target must exist
@@ -1342,7 +1342,7 @@ loose mode asserts (**[Dev]**) `Could not find component \`<TextArea />\` (did y
 ### 7.4 `LinkTo`
 
 Access: `import { LinkTo } from '@ember/routing'`; `<LinkTo>` / `{{#link-to}}` (loose).
-Source `components/link-to.ts:265-701`; template `templates/link-to.ts:5-22`:
+Source `components/link-to.ts:269-705`; template `templates/link-to.ts:5-22`:
 
 ```hbs
 <a id={{this.id}} class={{this.class}}
@@ -1355,8 +1355,8 @@ bindings), so they render only when passed as invocation attributes. `href` come
 `...attributes` and cannot be overridden. It uses the `-routing` service.
 
 **Arguments**: `@route`, `@model`, `@models`, `@query`, `@replace`, `@disabled`,
-`@current-when`, `@activeClass`, `@loadingClass`, `@disabledClass` (`link-to.ts:567-582`).
-**[Dev]** assertions at creation (`link-to.ts:272-294`, `598-613`):
+`@current-when`, `@activeClass`, `@loadingClass`, `@disabledClass` (`link-to.ts:571-586`).
+**[Dev]** assertions at creation (`link-to.ts:276-298`, `598-613`):
 - in a routeless engine: `You attempted to use the <LinkTo> component within a routeless engine, this is not supported. If you are using the ember-engines addon, use the <LinkToExternal> component instead. See https://github.com/ember-engines/ember-engines for more info.`
 - none of route/model/models/query: `You must provide at least one of the \`@route\`, \`@model\`, \`@models\` or \`@query\` arguments to \`<LinkTo>\`.`
 - both model and models: `You cannot provide both the \`@model\` and \`@models\` arguments to the <LinkTo> component.`
@@ -1384,14 +1384,14 @@ href     = isLoading ? '#' : routing.generateURL(route, models, query)
            (reactive to router state; [Dev] errors re-thrown as "While generating link to route \"${route}\": ${message}")
 ```
 
-**Class** (`link-to.ts:296-318`): `"ember-view"`, then
+**Class** (`link-to.ts:300-322`): `"ember-view"`, then
 `+ classFor('active')` if active (and `" ember-transitioning-out"` if `willBeActive === false`),
 else `" ember-transitioning-in"` if `willBeActive` is true; `+ classFor('loading')` if loading;
 `+ classFor('disabled')` if disabled, where
 `classFor(s) = @sClass true/null/undefined → " s"; non-empty string → " " + string; false/"" → ""`
 (**[Dev]** must be string or boolean).
 
-**Click** (`link-to.ts:351-401`): on `click`:
+**Click** (`link-to.ts:355-405`): on `click`:
 1. If not a *simple click* (not a `MouseEvent`, or any of shift/meta/alt/ctrl pressed, or
    `button !== 0`), do nothing (browser default).
 2. If the element's `target` is neither `""` nor `"_self"`, do nothing.
@@ -1421,7 +1421,7 @@ route manager's output is rendered through.
 
 ### 8.2 Outlet state
 
-`packages/@ember/-internals/routing/route-managers/outlet-state.ts:29-77`,
+`packages/@ember/-internals/routing/route-managers/outlet-state.ts:29-74`,
 `packages/@ember/routing/router.ts:787-847`.
 
 After each transition settles (`_setOutlets`), the router builds a chain of `OutletState`
@@ -1439,7 +1439,7 @@ The first time, the router creates an *updatable root* (`createRootOutletState`)
 `outlets.main` getter consumes a private tracked storage, and calls
 `applicationInstance.renderRootComponent(new RootOutlet(root))`. On later transitions it only
 replaces the root's current chain and invalidates that storage
-(`root-outlet.ts:94-115`). If the application instance was booted with
+(`root-outlet.ts:102-123`). If the application instance was booted with
 `shouldRender: false`, no rendering happens (`router.ts:794-797`).
 
 ### 8.3 The outlet protocol (`{{outlet}}` ≡ `<@outlet />`)
@@ -1463,7 +1463,7 @@ childOutlet(P) = let S = P.outlets.main in
                         S.manager.getRouteWrapper() the first time
 ```
 
-The *provider* for a bucket is a component with template (`root-outlet.ts:129-136`)
+The *provider* for a bucket is a component with template (`root-outlet.ts:137-144`)
 
 ```hbs
 <this.component @Component={{this.state.invokable}} @bucket={{this.bucket}}
@@ -1473,7 +1473,7 @@ The *provider* for a bucket is a component with template (`root-outlet.ts:129-13
 where `this.component` is the manager's *route wrapper* and `this.state` is the current
 `OutletState` for that bucket, except that if the parent now points at a *different* bucket
 the provider keeps reporting its **last** state for its own bucket (so an exiting level
-continues to render its old content until it is torn down, `root-outlet.ts:142-163`).
+continues to render its old content until it is torn down, `root-outlet.ts:163-187`).
 
 Observable consequences:
 
@@ -1486,7 +1486,7 @@ Observable consequences:
 
 ### 8.4 Classic routes and route templates
 
-The classic route manager's route wrapper (`route-managers/classic/outlet-component.ts:62-68`)
+The classic route manager's route wrapper (`route-managers/classic/outlet-component.ts:64-70`)
 renders:
 
 ```hbs
@@ -1499,7 +1499,7 @@ and the invokable for a classic route (`classic/manager.ts:404-457`) is built fr
 1. If the registered value has a component manager (e.g. a template-tag component,
    `template()`, or a class — RFC `rfcs/text/1046-template-tag-in-routes.md`), it is invoked
    directly as a component with arguments `@model`, `@controller`, `@outlet`
-   (`rendering-test.js:548-631`).
+   (`rendering-test.js:547-630`).
 2. Else it must be a template factory (**[Dev]** otherwise:
    ``Failed to render the ${name} route, expected `template:${name}` to resolve into a component or a `TemplateFactory`, got: ${label}. Most likely an improperly defined class or an invalid module export.``);
    it is wrapped as a *route template* component: its `this` is the route's **controller**
@@ -1514,7 +1514,7 @@ The controller is created (idempotently) before the route renders (`classic/mana
 `@model` is the route's resolved model (the outlet state's `context`). A route template is
 always a "fragment" (no wrapper element; `rendering-test.js:436-446`). The outlet level runs
 under the route's owner (engine instance for routes in routable engines) and propagates the
-enclosing classic `parentView` through (`outlet-component.ts:106-178`). Instrumentation
+enclosing classic `parentView` through (`outlet-component.ts:108-180`). Instrumentation
 `render.outlet` with payload `{ object: "<route>:main" }` wraps each level's initial render.
 
 ### 8.5 `{{mount}}` and routeless engines
@@ -1569,7 +1569,7 @@ commit `eb4f794d62`; §06-2.2 owns the rule, its reason and its tests).
 ### 9.1 Renderers and roots
 
 A *renderer* owns an environment (owner, document, `isInteractive`, `hasDOM`), a resolver, a
-DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-415, 423-506`).
+DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-415,423-506`).
 
 - Adding a root (`renderRoot`) appends it, makes it a destroyable child of the renderer's
   state, registers a destructor that removes it from the list when it is destroyed (below),
@@ -1583,7 +1583,7 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-
   the start of the iteration; if roots were added during the iteration, loop again, in a new
   runtime transaction, which renders the new roots and revalidates the others. A root that is
   destroyed is skipped and left out of the list: at once when no transaction is running, else
-  when the transaction ends (`base-renderer.ts:265-271, 335-338, 349-365`). A root can be
+  when the transaction ends (`base-renderer.ts:265-271,335-338,349-365`). A root can be
   destroyed before its first render, and it then never renders (`:154-163`). When the list
   becomes empty the renderer is deregistered. The renderer records the "last validated" point
   in the reactivity timeline.
@@ -1617,7 +1617,7 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-
 
 ### 9.3 `renderComponent` (`@ember/renderer`)
 
-`renderComponent(component, { into, owner = {}, env, args })` (`base-renderer.ts:656-839`):
+`renderComponent(component, { into, owner = {}, env, args })` (`base-renderer.ts:656-832`):
 
 - `component`: any value with a component manager.
 - `into`: an `Element`, a `SimpleElement`, or a cursor `{ element, nextSibling }`.
@@ -1629,7 +1629,7 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-
   (default `globalThis.document`); other keys are forwarded (private).
 - `args`: an object whose properties become the component's named arguments; reads are
   reactive if the object's properties are tracked (e.g. `trackedObject`, getters reading
-  tracked state: `render-component-test.ts:441-468,653-724`).
+  tracked state: `render-component-test.ts:441-468,683-754`).
 
 Algorithm:
 
@@ -1651,14 +1651,14 @@ return result
 
 Observable details pinned by tests (`render-component-test.ts`):
 - Existing children of `into` are removed on the first render into a DOM element
-  (`:621-651`).
+  (`:651-681`).
 - Destroying a result destroys its root, so the renderer does not keep the root (or the
   element rendered into) alive afterwards, and a renderer whose last root is destroyed leaves
-  the global renderer list (`:488-558`).
+  the global renderer list (`:488-588`).
 - Rendering again into the same element inserts the new content *before* the previous
-  content and destroys the previous render (`:826-997`, including the quirks listed in Q9).
+  content and destroys the previous render (`:856-1027`, including the quirks listed in Q9).
 - Multiple `renderComponent` roots with the same owner share one renderer and therefore one
-  render loop/reactivity (`:725-824`). Rendering into a detached element works (`:560-620`).
+  render loop/reactivity (`:755-854`). Rendering into a detached element works (`:590-650`).
 - Modifiers may call `renderComponent` (`:469-487`); `captureRenderTree` includes these roots
   regardless of owner (`:128-203`).
 - `{{mount}}` is not available (§1.1).
@@ -1767,7 +1767,7 @@ consumed.
 - **[Dev]** Backtracking re-render ("you updated X after it was consumed") message:
   ``You attempted to update `${key}` on `${debugName(obj)}`, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.``
   (note two spaces; `environment.ts:91-101`), followed by the render-tree path
-  (`rendering-test.js:472-523`).
+  (`rendering-test.js:472-522`).
 
 ### 10.5 Destruction scheduling
 
@@ -1834,7 +1834,7 @@ When an interactive application instance boots, the dispatcher `setup(customEven
 - Listeners are **lazy**: for each event, a single listener on the root element is added the
   first time a component class whose prototype has a function for the mapped method name is
   instantiated, or when `component.on(<method name>)` is called (`event_dispatcher.ts:196-293`,
-  `component.ts:923-944,1019-1031`).
+  `component.ts:925-946,1021-1033`).
 
 ### 12.2 Dispatch
 
@@ -1885,7 +1885,7 @@ Ember-specific node types and names (`tests/integration/application/debug-render
 
 For debug labels in the backtracking message (§10.4) the outlet providers are named
 `{{outlet}} for <route>` and a route level's component `@Component`
-(`root-outlet.ts:184-186`, `rendering-test.js:494-503`).
+(`root-outlet.ts:228-230`, `rendering-test.js:494-502`).
 
 ---
 ## 14. Open questions / inconsistencies
@@ -1931,10 +1931,10 @@ during render), `renderRoot` defers the new root and `root.result` is `undefined
 which is then skipped and removed (§9.1). (That `destroy()` did nothing here is resolved.) What
 remains is that the "replace previous render into the same
 element" logic still sees no previous render, because the cache entry records the missing
-result and is never updated (`:737-744`, `824`). The new render is not placed before the old
+result and is never updated (`:738-745`, `824`). The new render is not placed before the old
 content, the old render is not destroyed, and both renders remain live, which is exactly what
-`render-component-test.ts:870-997` asserts ("appear as siblings", with a comment calling the
-resulting order "kinda bonkers"). The doc comment on `replaceLastRender` (`:717-736`) describes
+`render-component-test.ts:900-1027` asserts ("appear as siblings", with a comment calling the
+resulting order "kinda bonkers"). The doc comment on `replaceLastRender` (`:747-766`) describes
 the replacement without mentioning this case. The intended semantics are unclear.
 
 **Q10. `this.attrs` deprecation past its `until`.** `attrs-arg-access` has `until: '6.0.0'`
@@ -1955,7 +1955,7 @@ code can observe the empty intermediate state (e.g. `didInsertElement` of a pare
 before the child exists) is not tested.
 
 **Q15. `{{mount}}` null placeholder.** A null engine name renders an empty comment
-(`<!---->`, `mount-test.js:218-242`). This is the generic "dynamic component is null"
+(`<!---->`, `mount-test.js:217-241`). This is the generic "dynamic component is null"
 behaviour of §05; implementations must preserve the comment only if DOM-shape compatibility
 at that level is required.
 

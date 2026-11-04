@@ -579,7 +579,7 @@ are *not* added automatically. The list is part of the public contract
 ### 1.4.6 `locals` (low-level)
 
 The Ember/Glimmer precompiler also accepts `locals: string[]` — the list of template names
-to treat as outer block parameters (`packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:693-695`, `:786-789`).
+to treat as outer block parameters (`packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:687-689`, `:780-783`).
 This is how the babel plugin passes lexical scope (§1.5.5). The compiled payload's scope
 closure references each *used* local by the same identifier, in order of first use
 (`packages/@glimmer/syntax/lib/symbol-table.ts:96-114`, `packages/@glimmer/compiler/lib/compiler.ts:147-158`);
@@ -832,7 +832,7 @@ Observable options:
 | `moduleName` | §1.3.5. |
 | `isProduction` | When true, `{{#in-element}}` does not wrap its destination in the [Dev] null check (`packages/@ember/template-compiler/lib/plugins/transform-in-element.ts:35-43`). No other built-in effect. |
 | `locals`, `lexicalScope` | §1.4.6. |
-| `keywords` | Additional names treated as keywords in strict mode (resolved by the runtime environment rather than erroring; `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:663-676`; untested since W2 dropped the Glimmer test "Non-native keyword"). Normally set only by step 5. |
+| `keywords` | Additional names treated as keywords in strict mode (resolved by the runtime environment rather than erroring; `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:657-670`; untested since W2 dropped the Glimmer test "Non-native keyword"). Normally set only by step 5. |
 | `plugins.ast` | Extra AST transforms. Implementation-defined; not part of the spec (§00-0.1 "Non-goals"). |
 | `parseOptions` | Passed to the Handlebars parser (`srcName` etc., §02). |
 | `mode: 'codemod'` | Parse-only mode used by tooling (§02). |
@@ -854,7 +854,7 @@ their existence and order as AST transforms is not (§00-0.1 "Non-goals"). The b
   TransformWrapMountAndOutlet.
 
 Their individual semantics belong to §03 and §08. `STRICT_MODE_KEYWORDS`
-(`…/plugins/index.ts:52-65`) = `mut`, `readonly`, `unbound`, and the internal
+(`…/plugins/index.ts:52-66`) = `mut`, `readonly`, `unbound`, and the internal
 names `-each-in`, `-in-el-null`, `-track-array`, `-mount` introduced by the transforms.
 (TransformActionSyntax and `action` were removed by emberjs/ember.js#21641; §03-7.3.)
 
@@ -1003,7 +1003,7 @@ these cases (§05).
 - Without an owner, a single ownerless `Template` is cached and returned.
 - With an owner, one `Template` per owner is cached (WeakMap keyed by owner); repeated calls
   with the same owner return the identical object (test
-  `packages/@ember/-internals/glimmer/tests/unit/template-factory-test.js:13-80`, which also
+  `packages/@ember/-internals/glimmer/tests/unit/template-factory-test.js:12-79`, which also
   pins that `precompile` + `createTemplateFactory` and `compile` produce equivalent factories).
 - `factory.__id` and `factory.__meta = { moduleName }` exist for [Legacy] addon
   compatibility; a missing id is replaced by `client-<n>`.

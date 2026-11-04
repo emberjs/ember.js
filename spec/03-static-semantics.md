@@ -23,7 +23,7 @@ construct is rewritten before it is classified.
    bad block-param syntax, literal callees in sub-expressions) happen here.
 2. **Ember's source rewrites** (§03-7), implemented today as AST plugins run in array order
    over the ASTv1 tree. Each plugin is a full traversal
-   (`packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:794-802`). The Ember
+   (`packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:788-796`). The Ember
    plugin list depends on the mode (§03-7). User plugins registered with the Ember compiler run
    *before* the built-in ones (`packages/@ember/template-compiler/lib/compile-options.ts:161-171`).
    Babel's `scope-locals-crawl` plugin runs *after* all of these
@@ -75,9 +75,9 @@ the compiler. Most of them end with a location suffix built by `calculateLocatio
 | Option | Meaning |
 |---|---|
 | `strictMode: boolean` | Selects strict mode (RFC 0496) or **[Loose mode]**. The default is `false` for `precompile`, and `true` for the runtime `template()` API (`packages/@ember/template-compiler/lib/template.ts:240`). The babel plugin forces it to `true` for template-tag / RFC 931 input (`babel-plugin-ember-template-compilation/src/plugin.ts:428-430`). |
-| `locals: string[]` | Names bound in the **template scope** from outside (JS bindings). The parser stores them as the template's `blockParams` (`tokenizer-event-handlers.ts:788-791`), and normalization uses them as the program's template locals (`normalize.ts:43-50`). The babel plugin fills this from the JS scope (§03-3.2). A `null` value is deleted (`compile-options.ts:128-135`). |
+| `locals: string[]` | Names bound in the **template scope** from outside (JS bindings). The parser stores them as the template's `blockParams` (`tokenizer-event-handlers.ts:782-785`), and normalization uses them as the program's template locals (`normalize.ts:43-50`). The babel plugin fills this from the JS scope (§03-3.2). A `null` value is deleted (`compile-options.ts:128-135`). |
 | `lexicalScope: (name) => boolean` | A predicate that also puts names in the template scope. The runtime `template()` API builds it from `scope` or `eval` (§03-3.2). `precompileJSON` defaults it to `() => false` (`packages/@glimmer/compiler/lib/compiler.ts:87`). |
-| `keywords: string[]` | Extra "non-native" strict-mode keywords (§03-4.6). Ember sets it to `STRICT_MODE_KEYWORDS` whenever `strictMode` is true (`compile-options.ts:144-146`). It is ignored in loose mode (`tokenizer-event-handlers.ts:663-677`, `normalize.ts:127-129`). |
+| `keywords: string[]` | Extra "non-native" strict-mode keywords (§03-4.6). Ember sets it to `STRICT_MODE_KEYWORDS` whenever `strictMode` is true (`compile-options.ts:144-146`). It is ignored in loose mode (`tokenizer-event-handlers.ts:657-671`, `normalize.ts:127-129`). |
 | `customizeComponentName(name)` | **[Loose mode]** Maps the name of a free angle-bracket component (§03-5.6). Ember installs the dasherizer (`compile-options.ts:64-73`). |
 | `isProduction` | When true, `TransformInElement` does not add the `-in-el-null` check (§03-7.9). |
 | `meta.moduleName` | Used in error messages. |
@@ -214,7 +214,7 @@ Shadowing rules that a conforming implementation MUST follow:
   shadow these names, since the current behavior is almost certainly unintended.
 - `@args` and `this` are never shadowed by block params, because block params cannot be
   named `@x` (a parse error) and element block params cannot be named `this`
-  (`tokenizer-event-handlers.ts:470`). But see §03-3.5 for curly block params named `this`.
+  (`tokenizer-event-handlers.ts:464`). But see §03-3.5 for curly block params named `this`.
 
 ### 03-3.5 `this`
 
@@ -229,7 +229,7 @@ unless `this` is bound in scope. In that case it is a `Local` named `this`
   `scope: () => ({ this: ... })` does the same (`template.ts:288-306`).
 - **[Quirk]** A *curly* block param is named `this`: `{{#let this.x as |this|}}{{this.y}}{{/let}}`
   compiles, and inside the block `this` is the block param (verified, in both modes). Element
-  block params reject `this` (`tokenizer-event-handlers.ts:470`), but the Handlebars
+  block params reject `this` (`tokenizer-event-handlers.ts:464`), but the Handlebars
   block-param grammar does not. See §03-10.
 
 ### 03-3.6 `@args`
@@ -911,7 +911,7 @@ this applies, because a free uppercase tag is an error.
 
 - **Literals in callee position.** In the parser, a mustache whose path is a literal
   **drops** its params and hash: `{{"foo" 1}}` is `{{"foo"}}` and `{{true 1}}` is `{{true}}`
-  (`packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts:247-255`; verified). See
+  (`packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts:241-249`; verified). See
   §03-10. Normalization has an `Unexpected literal \`<v>\`` check for this case
   (`normalize.ts:451-456, 1071-1074`), but that check is unreachable for mustaches coming from
   the parser. It is reachable for block statements, sub-expressions, and modifiers built by
@@ -928,7 +928,7 @@ this applies, because a free uppercase tag is an error.
   Whether the value is then invoked is a runtime decision (§05).
 - **`...attributes`** is only valid as an attribute. On any element or component it allocates
   the `attrs` block symbol (`normalize.ts:712-714`). `{{...attributes}}` anywhere else is the
-  parse error `Illegal use of ...attributes` (`handlebars-node-visitors.ts:240-244`).
+  parse error `Illegal use of ...attributes` (`handlebars-node-visitors.ts:234-238`).
 - **`type` attribute ordering.** On an element with no `...attributes`, a `type` attribute is
   moved after all other attributes, and modifiers come after all attributes
   (`visitors/element/classified.ts:102-156`). This is a static reordering. §05-4.1 owns the

@@ -101,7 +101,7 @@ Consequences:
 - A class inherits its superclass's manager, because `Object.getPrototypeOf(Child) ===
   Parent` for ES classes. This is how every subclass of `@glimmer/component`'s
   `Component` finds the Glimmer component manager. Tests:
-  `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:152-206`
+  `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:174-228`
   and
   `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:145-181`.
 - An object instance inherits the manager associated with its prototype object. Template-only
@@ -152,7 +152,7 @@ fails, the runtime throws one of these, where the prefix is asserted by tests:
 
 Sources: `packages/@glimmer/manager/lib/public/component.ts:127-135`,
 `helper.ts:89-97`, `modifier.ts:90-98`. Tests:
-`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:535-583`,
+`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:545-593`,
 `custom-modifier-manager-test.js:20-41,323-361`,
 `packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:313-348`.
 
@@ -349,10 +349,10 @@ so Ember's behavior is the specification. Concretely:
   instance (§08-8.6).
 
 Tests (under `{{mount}} owner tests`):
-`packages/@ember/-internals/glimmer/tests/integration/mount-test.js:506-520` › "components
+`packages/@ember/-internals/glimmer/tests/integration/mount-test.js:505-519` › "components
 rendered inside an engine are created with the engine as their owner" pins the non-curried case,
-`:524-537` › "a component curried in the application is created with the engine as owner when
-invoked in an engine" pins the first bullet, and `:539-559` › "a component curried in an engine
+`:523-536` › "a component curried in the application is created with the engine as owner when
+invoked in an engine" pins the first bullet, and `:538-558` › "a component curried in an engine
 is created with the host owner when invoked in the host" pins the second. The
 Glimmer suite's `owner-test.ts` tests that expected the defining owner on an internal
 `MountManager` contradicted this rule and were dropped (`.work/W2-coverage-ledger.md`, 9.2). The
@@ -449,7 +449,7 @@ as follows (`computed` dependent keys, `get`-based tracking; see `07-reactivity.
 
 Tests: `computed('args.named.firstName', ...)`, `computed('args.positional.[]')`,
 `computed('args.positional.0', ...)` in
-`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:253-424`.
+`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:275-434`.
 
 ### 3.5 `invokeHelper` arguments
 
@@ -513,7 +513,7 @@ Source: `packages/@glimmer/interfaces/lib/managers/component.d.ts:23-52`.
 
 A hook whose capability is off is never called, even if it is defined. Test: "updating
 arguments does not trigger updateComponent or didUpdateComponent if `updateHook` is false",
-`custom-component-manager-test.js:810-850`.
+`custom-component-manager-test.js:820-860`.
 
 ### 4.3 Initial render sequence
 
@@ -548,9 +548,9 @@ this order:
    of the instance. The result is not reactive, so a later change to what `getContext`
    would return has no effect (`component.ts:186-188`). The context MAY be any value,
    including `null`. With `null`, `{{this.x}}` renders empty and `@args` still work. Test:
-   "it can have no template context", `custom-component-manager-test.js:120-150`. It MAY
+   "it can have no template context", `custom-component-manager-test.js:142-172`. It MAY
    also be an object unrelated to the instance. Test: "it can customize the template
-   context", `custom-component-manager-test.js:208-251`.
+   context", `custom-component-manager-test.js:230-273`.
 7. **Layout render.** The component's template renders with `this` = context, `@name`
    bound to the named arguments, and the invocation's blocks and `...attributes`
    available (`05-runtime-semantics.md`). Positional arguments are not accessible from the
@@ -560,7 +560,7 @@ this order:
    `didCreateComponent(instance)` is called.
 
 Observed step order: `createComponent`, `getContext`, *(render)*, `didCreateComponent`
-(`custom-component-manager-test.js:474-532`).
+(`custom-component-manager-test.js:484-542`).
 
 `didCreateComponent` is called at the end of the same render transaction, synchronously. It
 is "async" only relative to the render. It is **not** deferred to a later task.
@@ -611,9 +611,9 @@ runs, even if its own invalidation is finer-grained. Tests:
 - "updateComponent fires consistently with or without args": three invocations with no
   args, a static `@id`, and a dynamic `@id`. Changing only `{{this.value}}` inside their
   yielded blocks calls `updateComponent` on all three
-  (`custom-component-manager-test.js:750-808`).
+  (`custom-component-manager-test.js:760-818`).
 - "updating attributes triggers updateComponent and didUpdateComponent"
-  (`custom-component-manager-test.js:689-748`).
+  (`custom-component-manager-test.js:699-758`).
 
 Conversely, if an argument changes but nothing in the region consumed it (no read of
 `args.named.x`, no `@x` in the layout), the region stays valid and `updateComponent` is not
@@ -636,7 +636,7 @@ When the block containing the component is torn down (`05-runtime-semantics.md`;
   render-queue work that removed the DOM
   (`packages/@ember/-internals/glimmer/lib/environment.ts:35-41`). The component's DOM has
   already been removed by then. Test: "it can opt-in to running destructor",
-  `custom-component-manager-test.js:426-473`.
+  `custom-component-manager-test.js:436-483`.
 - If `destructor` is false, nothing is called. The instance is simply dropped.
 - The instance **itself is not** associated into the destroyable tree by the adapter. Only
   the adapter's internal bucket is. So `isDestroying(instance)` stays `false` unless the
@@ -871,7 +871,7 @@ Manager semantics (`ClassicHelperManager`, `helper.ts:206-262`):
   value", including without a run loop, `custom-helper-test.js:86-231`.
 - Destruction: the instance is destroyed through the destroyable tree. Ember's object model
   registers an *eager* destructor that calls `instance.destroy()` and a deferred destructor
-  that calls `instance.willDestroy()` (`packages/@ember/object/core.ts:300-301`). Observed
+  that calls `instance.willDestroy()` (`packages/@ember/object/core.ts:301-302`). Observed
   order: `destroy`, then `willDestroy`. Test: "class-based helper lifecycle", with the
   sequence `['init','compute','compute','destroy','willDestroy']`
   (`custom-helper-test.js:120-160`).
@@ -1192,7 +1192,7 @@ the user-facing semantics.
 | Root (top-level classic view) | `.../component-managers/root.ts:83-97` | dynamicLayout, dynamicTag, attributeHook, elementHook, createCaller, dynamicScope, updateHook, createInstance, wrapped |
 | Mount (`{{mount}}`) | `.../component-managers/mount.ts:38-52` | dynamicLayout, createArgs, createCaller, dynamicScope, updateHook, createInstance, hasSubOwner |
 | Route template | `.../component-managers/route-template.ts:22-36` | createArgs, createInstance |
-| Classic outlet | `packages/@ember/-internals/routing/route-managers/classic/outlet-component.ts:70-94` | createArgs, dynamicScope, createInstance, hasSubOwner |
+| Classic outlet | `packages/@ember/-internals/routing/route-managers/classic/outlet-component.ts:72-96` | createArgs, dynamicScope, createInstance, hasSubOwner |
 | Internal (`<Input>`, `<Textarea>`) | `packages/@ember/-internals/glimmer/lib/components/internal.ts:159-173` | createArgs, createCaller, createInstance |
 
 ### 8.5 Classic curly manager (manager-level contract) [Legacy]
@@ -1279,14 +1279,14 @@ RFCs 0416 and 0748.
 
 `Component` (the default export) is associated with a manager built from `capabilities('3.13',
 { destructor: true, asyncLifecycleCallbacks: false, updateHook: false })`
-(`ember-component-manager.ts:9-13`). Hooks:
+(`ember-component-manager.ts:14-18`). Hooks:
 
 - `createComponent(Class, args)` returns `new Class(owner, args.named)`, where `owner` is
   the factory's owner (`base-component-manager.ts:20-29`). **Positional arguments are not
   exposed.**
 - `getContext(instance)` returns the instance.
 - There is no `updateComponent`. Arguments are live proxies, so there is nothing to push.
-- `destroyComponent(instance)` (`ember-component-manager.ts:33-42`): if
+- `destroyComponent(instance)` (`ember-component-manager.ts:63-72`): if
   `instance.isDestroying`, it returns. Otherwise it sets the instance's destroying flag and
   schedules two things in the run loop:
   - `instance.willDestroy()` in the `actions` queue;
@@ -1393,7 +1393,7 @@ were observed by experiment (verified by experiment, T9b: deferred destructor in
 after DOM removal, `isDestroyed` false there and true after the `destroy` queue); the
 `@glimmer/destroyable` tests use their own two-queue flush, and no upstream test pins the Ember
 mapping. Eager-before-DOM-removal is pinned for classic
-components (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1429-1586`).
+components (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1430-1587`).
 
 ### 10.3 How template-created objects join the tree
 
@@ -1426,7 +1426,7 @@ When a block is torn down:
 
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
-attached (tested, `classic/life-cycle-test.js:1429-1586`), and deferred ones run after it is detached
+attached (tested, `classic/life-cycle-test.js:1430-1587`), and deferred ones run after it is detached
 (verified by experiment, T9b; §05-11.2).
 
 ---
@@ -1467,7 +1467,7 @@ Installs run child-first and updates run parent-first. This section is the owner
 commit-phase order. §05-1.4 and §07-1.10 refer to it.
 
 Test status: the child-first order of creation and update hooks is pinned for classic
-components (`classic/life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
+components (`classic/life-cycle-test.js:306-538`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
 bottom → top), and the child-first order of modifier installs by
 `packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:84-238`. The hook
 order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is
