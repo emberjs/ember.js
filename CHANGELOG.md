@@ -1,5 +1,11 @@
 # Ember Changelog
 
+## v7.5.0-beta.2 (November 4, 2026)
+
+- [#21762](https://github.com/emberjs/ember.js/pull/21762) [BUGFIX] Render {{outlet}} inside components again
+- [#21778](https://github.com/emberjs/ember.js/pull/21778) [BUGFIX] correct the destroyable hierarchy in base renderer
+- [#21782](https://github.com/emberjs/ember.js/pull/21782) [BUGFIX] backport assorted renderer and outlet fixes
+
 ## v7.5.0-beta.1 (October 28, 2026)
 
 - [#21460](https://github.com/emberjs/ember.js/pull/21460) [FEATURE] Implement the Route Manager API per [RFC #1169](https://rfcs.emberjs.com/id/1169-route-manager-api/).
