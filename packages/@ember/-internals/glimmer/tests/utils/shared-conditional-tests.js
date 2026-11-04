@@ -13,7 +13,7 @@ import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
-import { A as emberA, removeAt } from '@ember/array';
+import { A, removeAt } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -25,6 +25,12 @@ import Component from '@glimmer/component';
 // itself is asserted by the dedicated proxy tests, so it is silenced here.
 const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
 const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
+
+// The tests of `A` cover its deprecation.
+function emberA(items) {
+  return ignoreDeprecation(() => A(items));
+}
 
 function objectProxy(props) {
   return ignoreDeprecation(() => ObjectProxy.create(props));
@@ -342,7 +348,7 @@ export const ArrayTestCases = {
     this.assertText('T1F2');
   },
 
-  ['@test it considers empty Ember arrays falsy']() {
+  [`${testUnless(EMBER_A_REMOVED)} @test it considers empty Ember arrays falsy`]() {
     this.renderValues(emberA(['hello']), emberA());
 
     this.assertText('T1F2');
@@ -401,7 +407,9 @@ export const ArrayTestCases = {
     this.assertText('T1F2');
   },
 
-  [`${testUnless(ARRAY_PROXY_REMOVED)} @test it considers array proxies with empty arrays falsy`]() {
+  [`${testUnless(
+    ARRAY_PROXY_REMOVED || EMBER_A_REMOVED
+  )} @test it considers array proxies with empty arrays falsy`]() {
     this.renderValues(
       arrayProxy({ content: emberA(['hello']) }),
       arrayProxy({ content: emberA() })
@@ -443,7 +451,7 @@ const IfUnlessWithTestCases = [
     'undefined',
     1,
     ['hello'],
-    emberA(['hello']),
+    ...unlessRemoved(EMBER_A_REMOVED, () => [emberA(['hello'])]),
     {},
     { foo: 'bar' },
     EmberObject.create(),
@@ -467,7 +475,7 @@ const IfUnlessWithTestCases = [
     '',
     0,
     [],
-    emberA(),
+    ...unlessRemoved(EMBER_A_REMOVED, () => [emberA()]),
     ...unlessRemoved(OBJECT_PROXY_REMOVED, () => [objectProxy({ content: undefined })]),
     htmlSafe(''),
   ]),
@@ -481,7 +489,7 @@ const IfUnlessWithTestCases = [
     'undefined',
     1,
     ['hello'],
-    emberA(['hello']),
+    ...unlessRemoved(EMBER_A_REMOVED, () => [emberA(['hello'])]),
     ...unlessRemoved(ARRAY_PROXY_REMOVED, () => [
       arrayProxy({ content: ['hello'] }),
       arrayProxy({ content: [] }),
@@ -505,7 +513,7 @@ const IfUnlessWithTestCases = [
     '',
     0,
     [],
-    emberA(),
+    ...unlessRemoved(EMBER_A_REMOVED, () => [emberA()]),
   ]),
 
   ObjectTestCases,

@@ -1,11 +1,12 @@
-import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+import { moduleFor } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { Component as EmberComponent } from '../../../utils/helpers';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 
 moduleFor(
   'Helpers test: {{yield}} helper (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     // INUR not need with no data update
     ['@test yield should not introduce a view'](assert) {
       let ParentCompComponent = class extends EmberComponent {

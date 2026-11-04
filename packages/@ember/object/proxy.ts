@@ -1,9 +1,11 @@
 /**
 @module @ember/object/proxy
+@deprecated
 */
 
 import { FrameworkObject } from '@ember/object/-internals';
-import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import type _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import InternalProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /**
@@ -82,7 +84,7 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @extends EmberObject
   @uses Ember.ProxyMixin
   @public
-  @deprecated Use tracked properties or a native `Proxy` instead.
+  @deprecated Use tracked properties or a native `Proxy` instead. https://deprecations.emberjs.com/id/deprecate-object-proxy.
 */
 interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
   // Proxies forward to their content. This behavior *actually* comes from the
@@ -132,6 +134,6 @@ class ObjectProxy<Content = unknown> extends FrameworkObject {
     );
   }
 }
-ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+ObjectProxy.PrototypeMixin.reopen(InternalProxyMixin);
 
 export default ObjectProxy;

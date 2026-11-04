@@ -30,7 +30,7 @@ module('Helpers test: {{concat}}', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it concats static arguments', async function (assert) {
-    await render(<template>{{concat "foo" " " "bar" " " "baz"}}</template>);
+    await render(<template>{{concat 'foo' ' ' 'bar' ' ' 'baz'}}</template>);
 
     await assert.stableRender('foo bar baz');
   });
@@ -62,7 +62,12 @@ module('Helpers test: {{concat}}', function (hooks) {
     let state = new State({ first: 'one', second: 'two', third: 'three', fourth: 'four' });
 
     await render(
-      <template>{{concat (concat state.model.first state.model.second) (concat state.model.third state.model.fourth)}}</template>
+      <template>
+        {{concat
+          (concat state.model.first state.model.second)
+          (concat state.model.third state.model.fourth)
+        }}
+      </template>
     );
 
     await assert.stableRender('onetwothreefour');
@@ -89,10 +94,17 @@ module('Helpers test: {{concat}}', function (hooks) {
     let eq = (actual, expected) => actual === expected;
 
     await render(
-      <template>{{#if (eq (concat state.model.first state.model.second) "onetwo")}}Truthy!{{else}}False{{/if}}</template>
+      <template>
+        {{#if (eq (concat state.model.first state.model.second) 'onetwo')}}
+          Truthy!
+        {{else}}
+          False
+        {{/if}}
+      </template>
     );
 
-    await assert.stableRender('Truthy!');
+    assert.dom().hasText('Truthy!');
+    await assert.stableRender();
 
     state.model.first = 'three';
     await settled();

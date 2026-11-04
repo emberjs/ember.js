@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Nullable, Recast } from '@glimmer/interfaces';
-import type { TokenizerState } from 'simple-html-tokenizer';
 import { getLast, isPresentArray } from '@glimmer/debug-util/lib/present';
 import assert from '@glimmer/debug-util/lib/assert';
 import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
@@ -16,10 +14,6 @@ import { NON_EXISTENT_LOCATION } from '../source/location';
 import { generateSyntaxError } from '../syntax-error';
 import { appendChild, isHBSLiteral, printLiteral } from '../utils';
 import b from '../v1/parser-builders';
-
-const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState.beforeAttributeName;
-const COMMENT = 'comment' as TokenizerState.comment;
-const ATTRIBUTE_VALUE_UNQUOTED = 'attributeValueUnquoted' as TokenizerState.attributeValueUnquoted;
 
 export interface PendingError {
   mustache(span: SourceSpan): never;
@@ -278,7 +272,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         this.assertNotInEndTag('mustaches', mustache.loc);
         // A `/` that is not followed by `>` is ignored, as in HTML (`<div / {{x}}>`)
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
+        tokenizer.transitionTo('beforeAttributeName');
         break;
       case 'attributeName':
       case 'afterAttributeName':
@@ -286,18 +280,18 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         this.beginAttributeValue(false);
         this.finishAttributeValue();
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
+        tokenizer.transitionTo('beforeAttributeName');
         break;
       case 'afterAttributeValueQuoted':
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
+        tokenizer.transitionTo('beforeAttributeName');
         break;
 
       // Attribute values
       case 'beforeAttributeValue':
         this.beginAttributeValue(false);
         this.appendDynamicAttributeValuePart(mustache);
-        tokenizer.transitionTo(ATTRIBUTE_VALUE_UNQUOTED);
+        tokenizer.transitionTo('attributeValueUnquoted');
         break;
       case 'attributeValueDoubleQuoted':
       case 'attributeValueSingleQuoted':
@@ -345,7 +339,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     }
 
     this.appendToCommentData(pending + this.sourceForNode(node));
-    this.tokenizer.transitionTo(COMMENT);
+    this.tokenizer.transitionTo('comment');
     return true;
   }
 

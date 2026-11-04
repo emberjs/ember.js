@@ -29,7 +29,7 @@ import { isPath, trackLocals } from './utils';
   with
 
   ```handlebars
-  <@outlet />
+  {{component (-outlet @outlet)}}
   ```
 
   @private
@@ -51,17 +51,16 @@ export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironme
           return;
         }
 
-        if (node.path.original === 'mount') {
-          let subexpression = b.sexpr(b.path('-mount'), node.params, node.hash, node.loc);
+        if (node.path.original === 'mount' || node.path.original === 'outlet') {
+          let params = node.path.original === 'outlet' ? [b.path('@outlet')] : node.params;
+          let subexpression = b.sexpr(
+            b.path(`-${node.path.original}`),
+            params,
+            node.hash,
+            node.loc
+          );
 
           return b.mustache(b.path('component'), [subexpression], b.hash(), undefined, node.loc);
-        }
-
-        if (node.path.original === 'outlet') {
-          return b.element(
-            { path: b.fullPath(b.at('@outlet')), selfClosing: true },
-            { loc: node.loc }
-          );
         }
       },
     },

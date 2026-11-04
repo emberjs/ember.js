@@ -23,11 +23,13 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 
 const { isEnabled, isRemoved } = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    [`${testUnless(isRemoved)} @test empty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test empty part 1/2`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -51,7 +53,8 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    [`${testUnless(isRemoved)} @test notEmpty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test notEmpty part 1/2`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 

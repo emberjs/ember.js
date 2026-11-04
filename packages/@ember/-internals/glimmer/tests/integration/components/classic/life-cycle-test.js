@@ -1,4 +1,4 @@
-import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import { classes, moduleFor, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
@@ -7,10 +7,11 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
 import { addListener } from '@ember/-internals/metal';
 
-class LifeCycleHooksTest extends RenderingTestCase {
+class LifeCycleHooksTest extends ClassicRenderingTestCase {
   constructor() {
     super(...arguments);
     this.hooks = [];
@@ -1350,7 +1351,7 @@ moduleFor(
 
 moduleFor(
   'Run loop and lifecycle hooks (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test afterRender set']() {
       let ComponentClass = class extends Component {
         width = '5';

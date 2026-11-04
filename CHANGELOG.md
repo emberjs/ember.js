@@ -1,10 +1,134 @@
 # Ember Changelog
 
-## v7.4.0-beta.1 (September 14, 2026)
+## v7.5.0-beta.1 (October 28, 2026)
+
+- [#21460](https://github.com/emberjs/ember.js/pull/21460) [FEATURE] Implement the Route Manager API per [RFC #1169](https://rfcs.emberjs.com/id/1169-route-manager-api/).
+- [#21517](https://github.com/emberjs/ember.js/pull/21517) [DEPRECATION] Deprecate `send` and `TargetActionSupport` mixins and related per [RFC #1041](https://rfcs.emberjs.com/id/1041-deprecate-target-action-support/).
+- [#21542](https://github.com/emberjs/ember.js/pull/21542) [DEPRECATION] Deprecate the `Evented` mixin, its event methods, and public event utilities per [RFC #1111](https://rfcs.emberjs.com/id/1111-deprecate-evented-mixin/).
+- [#21577](https://github.com/emberjs/ember.js/pull/21577) [DEPRECATION] Deprecate `Mixin.create()` and classic mixin usage per [RFC #1116](https://rfcs.emberjs.com/id/1116-deprecate-mixins/).
+- [#21579](https://github.com/emberjs/ember.js/pull/21579) [DEPRECATION] Deprecate `ArrayProxy`, `ObjectProxy`, and `PromiseProxyMixin` per [RFC #1112](https://rfcs.emberjs.com/id/1112-deprecate-proxy/).
+- [#21632](https://github.com/emberjs/ember.js/pull/21632) [DEPRECATION] Deprecate utilities from `@ember/utils` and the `empty`, `notEmpty`, and `none` computed macros per [RFC #334](https://rfcs.emberjs.com/id/0334-deprecate-ember-utils/).
+- [#21688](https://github.com/emberjs/ember.js/pull/21688) [DEPRECATION] Deprecate classic computed property macros from `@ember/object/computed` per [RFC #1234](https://github.com/emberjs/rfcs/pull/1234).
+- [#21588](https://github.com/emberjs/ember.js/pull/21588) [DEPRECATION] Deprecate the `Observable`, `Enumerable`, `MutableEnumerable`, `EmberArray`, `MutableArray`, `NativeArray`, `ControllerMixin`, `ActionHandler`, `ProxyMixin`, `ContainerProxyMixin`, and `RegistryProxyMixin` mixins per [RFC #1116](https://rfcs.emberjs.com/id/1116-deprecate-mixins/).
+- [#21687](https://github.com/emberjs/ember.js/pull/21687) [DEPRECATION] Deprecate `A()`, array computed macros, and Ember array methods on array-valued query parameters per [RFC #1114](https://rfcs.emberjs.com/id/1114-deprecate-ember-array/).
+- [#21635](https://github.com/emberjs/ember.js/pull/21635) [BUGFIX] Fix parser crashes and mis-parsed HTML comments and closing tags
+- [#21636](https://github.com/emberjs/ember.js/pull/21636) [BUGFIX] @tracked accessor should dirty the SELF_TAG
+- [#21639](https://github.com/emberjs/ember.js/pull/21639) [BUGFIX] Modifier destruction order varied between dev and prod
+- [#21694](https://github.com/emberjs/ember.js/pull/21694) [BUGFIX] Do not hide a change after a read of a dependentKeyCompat getter
+- [#21707](https://github.com/emberjs/ember.js/pull/21707) [BUGFIX] Fix published types related to ModifierManager and HelperManager
+- [#21727](https://github.com/emberjs/ember.js/pull/21727) [BUGFIX] Keep generic classes generic through extend()
+- [#21663](https://github.com/emberjs/ember.js/pull/21663) [PERFORMANCE] Pool the trackers of tracking frames
+- [#21664](https://github.com/emberjs/ember.js/pull/21664) [PERFORMANCE] Reuse the combined tag of a cache that reads the same tags again
+- [#21665](https://github.com/emberjs/ember.js/pull/21665) [PERFORMANCE] Use an index in the loop over the subtags of a combined tag
+- [#21666](https://github.com/emberjs/ember.js/pull/21666) [PERFORMANCE] Make the functions of a TrackedValue on their first use
+- [#21667](https://github.com/emberjs/ember.js/pull/21667) [PERFORMANCE] Make the value field of a TrackedValue general from the first instance
+- [#21601](https://github.com/emberjs/ember.js/pull/21601) [PERFORMANCE] Skip Object.keys allocation in FunctionHelperManager.getValue
+- [#21600](https://github.com/emberjs/ember.js/pull/21600) [PERFORMANCE] Avoid closure allocation in destroy()
+- [#21598](https://github.com/emberjs/ember.js/pull/21598) [PERFORMANCE] Simplify ArrayIterator to a cached length and a position counter
+- [#21770](https://github.com/emberjs/ember.js/pull/21770) [CLEANUP] Remove more dead browser guards, re-enable IE-disabled tests
+- [#21641](https://github.com/emberjs/ember.js/pull/21641) [CLEANUP] Remove action keyword handling
+- [#21627](https://github.com/emberjs/ember.js/pull/21627) [CLEANUP] Remove dead EXTEND_PROTOTYPES and EMBER_LOAD_HOOKS env flags
+- [#21696](https://github.com/emberjs/ember.js/pull/21696) Modernize EmberRouter: no computed, get() or set()
+- [#21725](https://github.com/emberjs/ember.js/pull/21725) Keep pushObject/removeObject on DataAdapter#releaseMethods until 8.0.0
+- [#21602](https://github.com/emberjs/ember.js/pull/21602) Decode the opcode header once per instruction via RuntimeOp.seek
+
+## v7.4.0 (October 26, 2026)
 
 - [#21586](https://github.com/emberjs/ember.js/pull/21586) Update browser support per Ember's browser support policy (RFC #685). Support is now Support is now Chrome >= 109, Edge >= 149 Firefox >= 121, Safari >= 16.6, ChromeAndroid >= 151, FirefoxAndroid >= 153
+- [#21619](https://github.com/emberjs/ember.js/pull/21619) [BUGFIX] Type overload for one of the new tracked forms was not appropriately allowing the equality options
+- [#21623](https://github.com/emberjs/ember.js/pull/21623) [BUGFIX] Include renderComponent roots in captureRenderTree
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
+- [#21719](https://github.com/emberjs/ember.js/pull/21719) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed
 - [#21536](https://github.com/emberjs/ember.js/pull/21536) [DOC] Document the `key` option for `{{#each-in}}`
 - [#21571](https://github.com/emberjs/ember.js/pull/21571) Improve batch rendering performance by moving VM blocks out of the DESTRYABLE_META
+
+## Release (2026-10-23)
+
+* @glimmer/component 2.2.1 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/component`
+  * [#21766](https://github.com/emberjs/ember.js/pull/21766) [BUGFIX] Point @glimmer/component typesVersions at the emitted types ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2026-10-20)
+
+* @glimmer/syntax 0.97.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#21730](https://github.com/emberjs/ember.js/pull/21730) Upgrade simple-html-tokenizer for html entity parsing bugfix ([@ef4](https://github.com/ef4))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#21756](https://github.com/emberjs/ember.js/pull/21756) [BUGFIX] Publish type declarations for @glimmer/syntax ([@johanrd](https://github.com/johanrd))
+
+#### Committers: 2
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Johan Røed ([@johanrd](https://github.com/johanrd))
+
+## Release (2026-10-20)
+
+* @glimmer/component 2.2.0 (minor)
+* @glimmer/syntax 0.96.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#21641](https://github.com/emberjs/ember.js/pull/21641) Cleanup: remove action keyword handling ([@ef4](https://github.com/ef4))
+  * [#21560](https://github.com/emberjs/ember.js/pull/21560) Correct dependency declarations for `@glimmer/syntax` so that it can be published ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21321](https://github.com/emberjs/ember.js/pull/21321) Perf: avoid array spread in PathExpression.original getter ([@johanrd](https://github.com/johanrd))
+  * [#21320](https://github.com/emberjs/ember.js/pull/21320) [CLEANUP] Rename localAssert → assert, enable babel-plugin-debug-macros stripping ([@johanrd](https://github.com/johanrd))
+  * [#21318](https://github.com/emberjs/ember.js/pull/21318) Perf: Eliminate double normalization of params in callParts ([@johanrd](https://github.com/johanrd))
+  * [#21314](https://github.com/emberjs/ember.js/pull/21314) Perf: cache newline offsets in Source for O(log n) loc conversion ([@johanrd](https://github.com/johanrd))
+  * [#21232](https://github.com/emberjs/ember.js/pull/21232) Clean up scope bag, wire format, and debug render tree ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21069](https://github.com/emberjs/ember.js/pull/21069) Internalize @handlebars/parser ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#20908](https://github.com/emberjs/ember.js/pull/20908) Internalize the glimmer-vm repo ([@ef4](https://github.com/ef4))
+* `@glimmer/component`
+  * [#21575](https://github.com/emberjs/ember.js/pull/21575) Manage destruction with symbol-properties, rather than weakmap ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21561](https://github.com/emberjs/ember.js/pull/21561) Update @glimmer/component's package.json to declare type=module ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21558](https://github.com/emberjs/ember.js/pull/21558) Prepare `@glimmer/component` for being published and remove `@glimmer/env`, using export conditions for dev and prod ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#21635](https://github.com/emberjs/ember.js/pull/21635) [BUGFIX] parser crashes and mis-parsed HTML comments and closing tags ([@ef4](https://github.com/ef4))
+  * [#21188](https://github.com/emberjs/ember.js/pull/21188) Get @glimmer/syntax publishable again and get some smoke tests going for prettier ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21562](https://github.com/emberjs/ember.js/pull/21562) correct repository meta for @glimmer/component and @glimmer/syntax ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :memo: Documentation
+* `@glimmer/component`
+  * [#21547](https://github.com/emberjs/ember.js/pull/21547) [DOC release] Display newly added keywords and organize template helpers into one module ([@kategengler](https://github.com/kategengler))
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21468](https://github.com/emberjs/ember.js/pull/21468) Update some API docs to use template tag where appropriate ([@kategengler](https://github.com/kategengler))
+
+#### :house: Internal
+* `@glimmer/component`, `@glimmer/syntax`
+  * [#21754](https://github.com/emberjs/ember.js/pull/21754) Revert "Prepare Release" ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21749](https://github.com/emberjs/ember.js/pull/21749) Prepare Release ([@github-actions[bot]](https://github.com/apps/github-actions))
+  * [#21746](https://github.com/emberjs/ember.js/pull/21746) Revert "Prepare Release" ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21735](https://github.com/emberjs/ember.js/pull/21735) Prepare Release ([@github-actions[bot]](https://github.com/apps/github-actions))
+  * [#21350](https://github.com/emberjs/ember.js/pull/21350) Remove barrel file imports from internal code for better tree-shaking ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/syntax`
+  * [#21381](https://github.com/emberjs/ember.js/pull/21381) Update linting deps ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21320](https://github.com/emberjs/ember.js/pull/21320) [CLEANUP] Rename localAssert → assert, enable babel-plugin-debug-macros stripping ([@johanrd](https://github.com/johanrd))
+  * [#21317](https://github.com/emberjs/ember.js/pull/21317) Add tests for parser escape-sequence and error-case contract ([@johanrd](https://github.com/johanrd))
+  * [#21070](https://github.com/emberjs/ember.js/pull/21070) Upgrade embroider deps (inc rollup) from #21068 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 5
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- GitHub Actions [Bot] ([@github-actions](https://github.com/apps/github-actions))
+- Johan Røed ([@johanrd](https://github.com/johanrd))
+- Katie Gengler ([@kategengler](https://github.com/kategengler))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## v7.3.1 (October 13, 2026)
+
+- [#21619](https://github.com/emberjs/ember.js/pull/21619) [BUGFIX] Type overload for one of the new tracked forms was not appropriately allowing the equality options
+- [#21623](https://github.com/emberjs/ember.js/pull/21623) [BUGFIX] Include renderComponent roots in captureRenderTree
+- [#21682](https://github.com/emberjs/ember.js/pull/21682) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
 
 ## v7.3.0 (September 14, 2026)
 
@@ -91,6 +215,13 @@
 - [#21185](https://github.com/emberjs/ember.js/pull/21185) Use zizmor to lint actions & workflows
 - [#21188](https://github.com/emberjs/ember.js/pull/21188) Prepare @glimmer/syntax publishing again and add smoke tests for prettier's use of it
 - [#21234](https://github.com/emberjs/ember.js/pull/21234) Refactor tracked collections to use Proxy-based approach
+
+## v6.12.1 (October 13, 2026)
+
+- [#21591](https://github.com/emberjs/ember.js/pull/21591) [BUGFIX] Destroy dynamic modifiers that were set after the initial render
+- [#21638](https://github.com/emberjs/ember.js/pull/21638) [BUGFIX] Include renderComponent roots in captureRenderTree (lts-6-12)
+- [#21683](https://github.com/emberjs/ember.js/pull/21683) [BUGFIX] Release renderComponent roots (and renderers) when the result is destroyed (lts-6-12)
+- [#21685](https://github.com/emberjs/ember.js/pull/21685) [BUGFIX] Reset tracking when the cleanup of a render error throws
 
 ## v6.12.0 (March 31, 2026)
 

@@ -81,6 +81,8 @@ jobs:
       - name: build
         run: pnpm build
       - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
+      - name: check published packages (publint, arethetypeswrong)
+        run: pnpm check:packages
 
   basic-test:
     name: Basic Test
@@ -169,12 +171,12 @@ jobs:
           BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
 
+      - id: bs-setup
+        uses: ./.github/actions/browserstack-setup
       - name: test:browserstack
         env:
-          BROWSERSTACK_USERNAME: emberjscoreteam_A3VLS
-          # This is in plaintext on purpose. It has no privileged access to anything (this is a free
-          # account) and it allows us to run browserstack tests against PRs.
-          BROWSERSTACK_ACCESS_KEY: ZDM256rfimuXwkpamsUe
+          BROWSERSTACK_USERNAME: ${{ steps.bs-setup.outputs.username }}
+          BROWSERSTACK_ACCESS_KEY: ${{ steps.bs-setup.outputs.access-key }}
         run: pnpm test:browserstack
 
   smoke-test:
@@ -267,7 +269,7 @@ jobs:
       - name: Setup firefox
         uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
         with:
-          firefox-version: 115.9.1esr
+          firefox-version: "121.0"
       - run: firefox --version
       - name: test
         run: pnpm ember test --path dist -c testem.ci-browsers.cjs

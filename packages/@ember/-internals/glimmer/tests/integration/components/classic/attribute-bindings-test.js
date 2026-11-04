@@ -2,12 +2,12 @@ import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-help
 
 import { set } from '@ember/object';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
-  'Attribute bindings integration',
+  'Attribute bindings integration (classic component)',
   class extends RenderingTestCase {
     ['@test it can have attribute bindings']() {
       let FooBarComponent = class extends Component {

@@ -6,12 +6,13 @@ import {
   runTask,
   ignoreDeprecation,
   defineSimpleModifier,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -156,6 +157,12 @@ class BasicEachTest extends TogglingEachTest {}
 // `ArrayProxy` is deprecated; the deprecation itself is asserted by the
 // dedicated `ArrayProxy` tests, so it is silenced in these rendering fixtures.
 const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
+
+// The tests of `A` cover its deprecation.
+function emberA(items) {
+  return ignoreDeprecation(() => A(items));
+}
 
 function arrayProxy(props) {
   return ignoreDeprecation(() => ArrayProxy.create(props));
@@ -163,12 +170,11 @@ function arrayProxy(props) {
 
 const TRUTHY_CASES = [
   ['hello'],
-  emberA(['hello']),
+  ...(EMBER_A_REMOVED ? [] : [emberA(['hello'])]),
   new Set(['hello']),
   new ForEachable(['hello']),
-  ...(ARRAY_PROXY_REMOVED
-    ? []
-    : [arrayProxy({ content: ['hello'] }), arrayProxy({ content: emberA(['hello']) })]),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: ['hello'] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA(['hello']) })]),
   new ArrayIterable(['hello']),
 ];
 
@@ -179,12 +185,11 @@ const FALSY_CASES = [
   '',
   0,
   [],
-  emberA([]),
+  ...(EMBER_A_REMOVED ? [] : [emberA([])]),
   new Set([]),
   new ForEachable([]),
-  ...(ARRAY_PROXY_REMOVED
-    ? []
-    : [arrayProxy({ content: [] }), arrayProxy({ content: emberA([]) })]),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: [] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA([]) })]),
   new ArrayIterable([]),
 ];
 
@@ -1040,15 +1045,17 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with emberA-wrapped arrays',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return { list: wrapped, delegate: wrapped };
+if (!EMBER_A_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each}} with emberA-wrapped arrays',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        return { list: wrapped, delegate: wrapped };
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each}} with native Set',
@@ -1088,7 +1095,7 @@ moduleFor(
   }
 );
 
-if (!ARRAY_PROXY_REMOVED) {
+if (!ARRAY_PROXY_REMOVED && !EMBER_A_REMOVED) {
   moduleFor(
     'Syntax test: {{#each}} with array proxies, modifying itself',
     class extends EachTest {
@@ -1333,7 +1340,7 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
   class extends RenderingTestCase {
-    ['@test it should itterate over holes']() {
+    [`${testUnless(EMBER_A_REMOVED)} @test it should itterate over holes`]() {
       let sparseArray = [];
       sparseArray[3] = 'foo';
       sparseArray[4] = 'bar';
@@ -1361,43 +1368,42 @@ moduleFor(
 );
 
 /* globals MutationObserver: false */
-if (typeof MutationObserver === 'function') {
-  moduleFor(
-    'Syntax test: {{#each as}} DOM mutation test',
-    class extends RenderingTestCase {
-      constructor() {
-        super(...arguments);
-        this.observer = null;
+moduleFor(
+  'Syntax test: {{#each as}} DOM mutation test',
+  class extends RenderingTestCase {
+    constructor() {
+      super(...arguments);
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = (this.observer = new MutationObserver(function () {}));
+      observer.observe(element, { childList: true, characterData: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
       }
 
-      observe(element) {
-        let observer = (this.observer = new MutationObserver(function () {}));
-        observer.observe(element, { childList: true, characterData: true });
-      }
+      super.teardown();
+    }
 
-      teardown() {
-        if (this.observer) {
-          this.observer.disconnect();
-        }
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
 
-        super.teardown();
-      }
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
 
-      assertNoMutation() {
-        this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
-      }
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
+      let page = { title: 'Blog Posts' };
 
-      expectMutations() {
-        this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
-      }
+      let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
 
-      ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
-        let page = { title: 'Blog Posts' };
-
-        let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
-
-        this.render(
-          strip`
+      this.render(
+        strip`
           <h1>{{this.page.title}}</h1>
 
           <ul id="posts">
@@ -1406,10 +1412,10 @@ if (typeof MutationObserver === 'function') {
             {{/each}}
           </ul>
           `,
-          { page, model }
-        );
+        { page, model }
+      );
 
-        this.assertHTML(strip`
+      this.assertHTML(strip`
         <h1>Blog Posts</h1>
 
         <ul id="posts">
@@ -1418,18 +1424,19 @@ if (typeof MutationObserver === 'function') {
         </ul>
       `);
 
-        this.observe(this.$('#posts')[0]);
+      this.observe(this.$('#posts')[0]);
 
-        // MutationObserver is async
-        return RSVP.Promise.resolve(() => {
+      // MutationObserver is async
+      return RSVP.Promise.resolve()
+        .then(() => {
           this.assertStableRerender();
         })
-          .then(() => {
-            this.assertNoMutation();
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context, 'page', { title: 'Essays' }));
+          runTask(() => set(this.context, 'page', { title: 'Essays' }));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Essays</h1>
 
           <ul id="posts">
@@ -1437,13 +1444,13 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            this.assertNoMutation();
+        })
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+          runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Think Pieces™</h1>
 
           <ul id="posts">
@@ -1451,13 +1458,12 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            // The last set is localized to the `page` object, so we do not expect Glimmer
-            // to re-iterate the list
-            this.assertNoMutation();
-          });
-      }
+        })
+        .then(() => {
+          // The last set is localized to the `page` object, so we do not expect Glimmer
+          // to re-iterate the list
+          this.assertNoMutation();
+        });
     }
-  );
-}
+  }
+);

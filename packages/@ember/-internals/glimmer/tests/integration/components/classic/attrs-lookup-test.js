@@ -4,10 +4,10 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import { set, computed } from '@ember/object';
 
-import { Component, htmlSafe } from '../../utils/helpers';
+import { Component, htmlSafe } from '../../../utils/helpers';
 
 moduleFor(
-  'Components test: attrs lookup',
+  'Components test: attrs lookup (classic component)',
   class extends RenderingTestCase {
     ['@test it should be able to lookup attrs without `attrs.` - template access']() {
       this.owner.register(

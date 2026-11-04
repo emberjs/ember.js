@@ -7,8 +7,6 @@ import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-t
 import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
-const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
-
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
 
@@ -57,9 +55,7 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     window.QUnit = originalQUnit;
     window.onerror = originalWindowOnerror;
     setOnerror(undefined);
-    if (HAS_UNHANDLED_REJECTION_HANDLER) {
-      window.onunhandledrejection = originalWindowUnhandledRejection;
-    }
+    window.onunhandledrejection = originalWindowUnhandledRejection;
     console.error = originalConsoleError; // eslint-disable-line no-console
     QUnit.onUncaughtException = originalQUnitUncaughtException;
   }
@@ -223,11 +219,6 @@ moduleFor(
 function testAdapter(message, generatePromise, timeout = 10) {
   return class PromiseFailureTests extends AdapterSetupAndTearDown {
     [`@test ${message} when TestAdapter without \`exception\` method is present - rsvp`](assert) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(1);
 
       let thrown = new Error('the error');

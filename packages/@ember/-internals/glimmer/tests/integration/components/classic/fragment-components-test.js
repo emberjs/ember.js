@@ -4,10 +4,10 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 moduleFor(
-  'Components test: fragment components',
+  'Components test: fragment components (classic component)',
   class extends RenderingTestCase {
     getCustomDispatcherEvents() {
       return {

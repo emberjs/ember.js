@@ -406,9 +406,7 @@ function assertPrimitiveUsage(assert: Assert, setManager: any) {
     setManager(() => ({}) as any, 'foo' as any);
   }, /Attempted to set a manager on a non-object value/u);
 
-  if (typeof Symbol === 'function') {
-    assert.throws(() => {
-      setManager(() => ({}) as any, Symbol('foo') as any);
-    }, /Attempted to set a manager on a non-object value/u);
-  }
+  assert.throws(() => {
+    setManager(() => ({}) as any, Symbol('foo') as any);
+  }, /Attempted to set a manager on a non-object value/u);
 }

@@ -4,10 +4,10 @@ import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 moduleFor(
-  'ClassNameBindings integration',
+  'ClassNameBindings integration (classic component)',
   class extends RenderingTestCase {
     ['@test it can have class name bindings on the class definition']() {
       let FooBarComponent = class extends Component {

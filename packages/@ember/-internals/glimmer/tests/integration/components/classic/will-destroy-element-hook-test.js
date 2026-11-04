@@ -4,10 +4,10 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 moduleFor(
-  'Component willDestroyElement hook',
+  'Component willDestroyElement hook (classic component)',
   class extends RenderingTestCase {
     ['@test it calls willDestroyElement when removed by if'](assert) {
       let didInsertElementCount = 0;

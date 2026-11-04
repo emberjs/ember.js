@@ -87,11 +87,6 @@ export class EachSuite extends RenderTest {
 
   @test
   'autotracked custom iterable'() {
-    if (typeof Symbol !== 'function') {
-      QUnit.assert.ok(true, 'skipping platform without iterable');
-      return;
-    }
-
     let list = {
       arr: [1, 2, 3, 4],
       version: tracked(0),

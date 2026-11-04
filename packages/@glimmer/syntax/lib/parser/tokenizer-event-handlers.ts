@@ -1,5 +1,4 @@
 import type { Nullable } from '@glimmer/interfaces';
-import type { TokenizerState } from 'simple-html-tokenizer';
 import {
   asPresentArray,
   assertPresentArray,
@@ -314,11 +313,6 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   private parsePossibleBlockParams() {
-    // const enums that we can't use directly
-    const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState.beforeAttributeName;
-    const ATTRIBUTE_NAME = 'attributeName' as TokenizerState.attributeName;
-    const AFTER_ATTRIBUTE_NAME = 'afterAttributeName' as TokenizerState.afterAttributeName;
-
     // Regex to validate the identifier for block parameters.
     // Based on the ID validation regex in Handlebars.
 
@@ -346,7 +340,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     type Handler = (next: string) => void;
 
-    assert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
+    assert(this.tokenizer.state === 'attributeName', 'must be in attributeName state');
 
     const element = this.currentStartTag;
     const as = this.currentAttr;
@@ -360,7 +354,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         if (isSpace(next)) {
           // " as ..."
           state = { state: 'BeforeStartPipe' };
-          this.tokenizer.transitionTo(AFTER_ATTRIBUTE_NAME);
+          this.tokenizer.transitionTo('afterAttributeName');
           this.tokenizer.consume();
         } else if (next === '|') {
           // " as|..."
@@ -383,7 +377,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
           this.tokenizer.consume();
         } else if (next === '|') {
           state = { state: 'BeforeBlockParamName' };
-          this.tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
+          this.tokenizer.transitionTo('beforeAttributeName');
           this.tokenizer.consume();
         } else {
           // " as {{...", " as bs...", " as =...", " as ...", " as/>..."

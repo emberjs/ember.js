@@ -6,10 +6,11 @@ import { set, setProperties } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import ClassicComponent from '@ember/component';
 import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
+
+import { PositionalComponent } from '../../utils/positional-component';
 
 class CustomModifierManager {
   constructor(owner) {
@@ -309,24 +310,6 @@ moduleFor(
       });
 
       this.assertText('Joel Kang, hello');
-    }
-
-    '@test positional parameters are not allowed'() {
-      let TestComponent = class extends ClassicComponent {
-        static positionalParams = ['first', 'second'];
-      };
-
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(precompileTemplate('{{this.first}}{{this.second}}'), TestComponent)
-      );
-
-      // this is somewhat silly as the browser "corrects" for these as
-      // attribute names, but regardless the thing we care about here is that
-      // they are **not** used as positional params
-      this.render('<SampleComponent one two />');
-
-      this.assertText('');
     }
 
     '@test can invoke curried components with capitalized block param names'() {
@@ -963,6 +946,20 @@ moduleFor(
         attrs: {},
         content: 'Outside the let',
       });
+    }
+
+    '@test positional parameters are not allowed'() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.positional.length}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('<SampleComponent one two />');
+
+      this.assertText('0');
     }
   }
 );

@@ -1,6 +1,5 @@
 import {
   moduleFor,
-  RenderingTestCase,
   strip,
   classes,
   runTask,
@@ -17,6 +16,7 @@ import { on } from '@ember/object/evented';
 import { service } from '@ember/service';
 import { set, get, computed, observer } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
+import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -24,7 +24,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Components test: curly components (classic component)',
-  class extends RenderingTestCase {
+  class extends ClassicRenderingTestCase {
     ['@test it can have a custom id and it is not bound']() {
       this.owner.register(
         'component:foo-bar',
@@ -2472,6 +2472,156 @@ moduleFor(
 
       assert.strictEqual(willDestroyElement, 1, 'willDestroyElement is called exactly once');
       assert.strictEqual(destroyed, 1, 'destroy is called exactly once');
+    }
+
+    ['@test static arbitrary number of positional parameters (keyed each)'](assert) {
+      this.owner.register(
+        'component:sample-component',
+        template(
+          strip`
+            {{#each this.names as |name|}}
+              {{name}}
+            {{/each}}
+          `,
+          {
+            component: class extends Component {
+              static positionalParams = 'names';
+            },
+            strictMode: false,
+          }
+        )
+      );
+
+      this.render(strip`
+      <div id="args-3">{{sample-component "Foo" 4 "Bar"}}</div>
+      <div id="args-5">{{sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+    }
+
+    ['@test dynamic arbitrary number of positional parameters (keyed each)']() {
+      this.owner.register(
+        'component:sample-component',
+        template(
+          strip`
+            {{#each this.n as |name|}}
+              {{name}}
+            {{/each}}
+          `,
+          {
+            component: class extends Component {
+              static positionalParams = 'n';
+            },
+            strictMode: false,
+          }
+        )
+      );
+
+      this.render(`{{sample-component this.user1 this.user2}}`, {
+        user1: 'Foo',
+        user2: 4,
+      });
+
+      this.assertText('Foo4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Foo4');
+
+      runTask(() => this.context.set('user1', 'Bar'));
+
+      this.assertText('Bar4');
+
+      runTask(() => this.context.set('user2', '5'));
+
+      this.assertText('Bar5');
+
+      runTask(() => {
+        this.context.set('user1', 'Foo');
+        this.context.set('user2', 4);
+      });
+
+      this.assertText('Foo4');
+    }
+
+    ['@test static named positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}}{{this.age}}'),
+          class extends Component {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
+
+      this.render('{{sample-component "Quint" 4}}');
+
+      this.assertText('Quint4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Quint4');
+    }
+
+    ['@test dynamic named positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}}{{this.age}}'),
+          class extends Component {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
+
+      this.render('{{sample-component this.myName this.myAge}}', {
+        myName: 'Quint',
+        myAge: 4,
+      });
+
+      this.assertText('Quint4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Quint4');
+
+      runTask(() => this.context.set('myName', 'Sergio'));
+
+      this.assertText('Sergio4');
+
+      runTask(() => this.context.set('myAge', 2));
+
+      this.assertText('Sergio2');
+
+      runTask(() => {
+        this.context.set('myName', 'Quint');
+        this.context.set('myAge', 4);
+      });
+
+      this.assertText('Quint4');
+    }
+
+    ['@test can access properties off of rest style positionalParams array']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{this.things.length}}`),
+          class extends Component {
+            static positionalParams = 'things';
+          }
+        )
+      );
+
+      this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+      this.assertText('3');
     }
   }
 );

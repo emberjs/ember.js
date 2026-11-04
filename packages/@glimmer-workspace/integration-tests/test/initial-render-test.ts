@@ -943,6 +943,31 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'curly invocation of a Glimmer component: multiple invocations'() {
+    this.delegate.registerComponent('Curly', 'Curly', 'foo-bar', 'Hello {{yield}}');
+    let template = '{{#foo-bar}}World{{/foo-bar}}';
+    this.renderServerSide(template, {});
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
+    this.assertStableRerender();
+  }
+
+  @test
+  'curly invocation of a Glimmer component: mismatched multiple invocations'() {
+    this.delegate.registerComponent('Curly', 'Curly', 'foo-bar', 'Hello {{yield}}');
+    this.renderServerSide('{{#foo-bar}}World{{/foo-bar}}', {});
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
+
+    this.renderClientSide('{{#foo-bar}}Chad{{/foo-bar}}', {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.strictEqual(toTextContent(this.element), 'Hello Chad');
+    this.assertStableRerender();
+  }
+
+  @test
   '{{component}} invocation: component invocations'() {
     this.delegate.registerComponent(
       'Glimmer',

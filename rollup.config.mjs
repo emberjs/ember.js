@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { globSync } from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
+import { dts } from 'rollup-plugin-dts';
 import sharedBabelConfig from './babel.config.mjs';
 
 // eslint-disable-next-line no-redeclare
@@ -36,6 +37,7 @@ let configs = [
   glimmerComponent({ prod: true }),
   glimmerSyntaxESM(),
   glimmerSyntaxCJS(),
+  glimmerSyntaxTypes(),
 ];
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
@@ -171,6 +173,19 @@ function glimmerSyntaxCJS() {
       resolveTS(),
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
+  };
+}
+
+function glimmerSyntaxTypes() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: [
+      { file: 'packages/@glimmer/syntax/dist/es/index.d.ts' },
+      { file: 'packages/@glimmer/syntax/dist/cjs/index.d.cts' },
+    ],
+    external: ['simple-html-tokenizer'],
+    plugins: [dts({ respectExternal: true, tsconfig: './packages/@glimmer/syntax/tsconfig.json' })],
   };
 }
 
@@ -403,6 +418,12 @@ function resolveTS() {
       if (result === null && importer) {
         // the rest of rollup couldn't find it
         let stem = resolve(dirname(importer), source);
+        if (source.endsWith('.js')) {
+          let fullPath = stem.slice(0, -'.js'.length) + '.ts';
+          if (existsSync(fullPath)) {
+            return fullPath;
+          }
+        }
         for (let candidate of ['.ts', '/index.ts']) {
           let fullPath = stem + candidate;
           if (existsSync(fullPath)) {
@@ -537,6 +558,16 @@ function pruneEmptyBundles() {
   };
 }
 
+// Mixins that Ember deprecates but still uses internally exist twice: a public
+// copy that emits the deprecation, and an internal copy that applies silently.
+// The internal copies are an implementation detail, so they are kept out of
+// `renamed-modules` rather than being advertised as importable module paths.
+// Matches `foo-internal.js` and `-internal.js`, but deliberately not the
+// long-standing `-internals.js` modules, which stay listed.
+function isInternalCopy(name) {
+  return /(^|\/|-)internal\.js$/.test(name);
+}
+
 function packageMeta() {
   return {
     name: 'package-meta',
@@ -547,7 +578,8 @@ function packageMeta() {
             (name) =>
               name.startsWith('packages/') &&
               !name.startsWith('packages/shared-chunks/') &&
-              name.endsWith('.js')
+              name.endsWith('.js') &&
+              !isInternalCopy(name)
           )
           .sort()
           .map((name) => {
