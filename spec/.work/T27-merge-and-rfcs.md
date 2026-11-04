@@ -50,7 +50,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       strict mode (`-outlet` in `STRICT_MODE_KEYWORDS`); compiled to `{{component (-outlet @outlet)}}`;
       dynamic outlet only below classic routes. Update §03-7, §03 keyword tables, §08-1.4(10),
       §08 outlet sections and §08-14 Q2/Q9/Q14, §00-0.7, §09 table. #21640 is superseded.
-- [ ] B3. Legacy Handlebars tests landed (#21723, `d125e25fe2`): cite them for the four
+- [x] B3. Legacy Handlebars tests landed (#21723, `d125e25fe2`): cite them for the four
       **[Deprecated]** features in §02; RFC 1249 accepted (rfcs#1249 merged 2026-10-26) with ids
       `template-ampersand-mustache`, `template-caret-else`, `template-inverse-block-with-else`,
       `template-raw-block`, `until: 8.0.0`. Guides: ember-learn/deprecation-app#1442 (open).

@@ -476,7 +476,8 @@ whitespace stripping (§02-5.3) applies to raw blocks. There is no syntactic tra
 that a block was raw.
 
 **[Deprecated]** Raw blocks are inherited from Handlebars (§02-11 item 15). Deprecation id
-`template-raw-block`, until 8.0.0 (not yet implemented in Ember). A new implementation SHOULD NOT
+`template-raw-block`, until 8.0.0 (RFC 1249, `rfcs/text/1249-deprecate-legacy-handlebars-syntax.md`;
+not yet implemented in Ember). Tests: `packages/@glimmer/syntax/test/handlebars-legacy-test.ts:82-105`, `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts:80-113`. A new implementation SHOULD NOT
 accept `{{{{`, and SHOULD reject it with a syntax error that suggests an ordinary block with
 `\{{` escapes in its body (§02-2.2).
 
@@ -565,7 +566,8 @@ escapeFlag is the 4th char, or the 3rd when there is no tilde — i.e. the char 
 `{{` or `{{~`). `{{&…}}}` is not valid (`{{&` closes with `}}`).
 
 **[Deprecated]** `{{&foo}}` is inherited from Handlebars (§02-11 item 15). Deprecation id
-`template-ampersand-mustache`, until 8.0.0 (not yet implemented in Ember). A new implementation
+`template-ampersand-mustache`, until 8.0.0 (RFC 1249; not yet implemented in Ember). Tests:
+`packages/@glimmer/syntax/test/handlebars-legacy-test.ts:29-46`, `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts:13-31`. A new implementation
 SHOULD NOT accept it, and SHOULD reject it with a syntax error that suggests `{{{foo}}}`.
 
 The first `expr` is the callee/value (`path`), the rest are positional `params`, then an optional
@@ -601,15 +603,15 @@ the `program`. Glimmer handles the two forms differently:
   (span: the whole block; `handlebars-node-visitors.ts:127-134`; test
   `parser-error-test.ts:110-119`).
 - **With `{{else}}`**, `{{^foo}}a{{else}}b{{/foo}}` is accepted by the current implementation
-  and means `{{#foo}}b{{else}}a{{/foo}}` (untested). **[Deprecated]** (author rulings of
-  2026-10-13 and 2026-10-14; deprecation id `template-inverse-block-with-else`, until 8.0.0, not
-  yet implemented in Ember): a new implementation SHOULD NOT accept this form, and SHOULD reject
+  and means `{{#foo}}b{{else}}a{{/foo}}` (tests `packages/@glimmer/syntax/test/handlebars-legacy-test.ts:66-80`, `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts:59-78`).
+  **[Deprecated]** (author rulings of 2026-10-13 and 2026-10-14; RFC 1249; deprecation id
+  `template-inverse-block-with-else`, until 8.0.0, not yet implemented in Ember): a new implementation SHOULD NOT accept this form, and SHOULD reject
   it with the same error as the form without `{{else}}`. Block params on such a block attach to
   the swapped half, so `{{^each xs as |i|}}…{{else}}{{i}}{{/each}}` never binds `i`.
 
 `{{^}}` *inside* a block is a synonym for `{{else}}`. **[Deprecated]** (inherited from
-Handlebars, §02-11 item 15; deprecation id `template-caret-else`, until 8.0.0, not yet
-implemented in Ember): a new implementation SHOULD NOT accept it, and SHOULD reject it with a
+Handlebars, §02-11 item 15; RFC 1249; deprecation id `template-caret-else`, until 8.0.0, not yet
+implemented in Ember; tests `packages/@glimmer/syntax/test/handlebars-legacy-test.ts:48-64`, `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts:33-57`): a new implementation SHOULD NOT accept it, and SHOULD reject it with a
 syntax error that suggests `{{else}}`.
 
 ### 3.4 Sub-expressions
@@ -1754,10 +1756,13 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     inherited from Handlebars and had no test in Ember or Glimmer. T21 found every one usable.
     *Decided* (author, 2026-10-14): all four go through a full deprecation cycle and are
     **[Deprecated]**, until 8.0.0, with the ids `template-ampersand-mustache`,
-    `template-caret-else`, `template-inverse-block-with-else` and `template-raw-block`. A
-    deprecation RFC and the four deprecation guides are drafted (T21); the Ember deprecations are
-    not implemented yet. Until they are removed, T21's branch `test/handlebars-legacy-features`
-    tests them in modules named "Inherited from Handlebars (legacy behavior)". `foo/bar` paths, `\{{` escapes and
+    `template-caret-else`, `template-inverse-block-with-else` and `template-raw-block`. The
+    deprecation RFC is accepted (emberjs/rfcs#1249, merged 2026-10-26); the four deprecation
+    guides are open as ember-learn/deprecation-app#1442; the Ember deprecations are not
+    implemented yet. Until they are removed, the tests from T21 (emberjs/ember.js#21723, merged
+    2026-11-02) pin them in modules named "Inherited from Handlebars (legacy behavior)"
+    (`packages/@glimmer/syntax/test/handlebars-legacy-test.ts`,
+    `packages/@glimmer-workspace/integration-tests/test/handlebars-legacy-test.ts`). `foo/bar` paths, `\{{` escapes and
     whitespace control also came from Handlebars, but Ember tests and documents them, so they
     are Ember features (§02-4.2, §02-2.2, §02-5), not leftovers (author, 2026-10-14). `{{else …}}`
     chains are core syntax; their missing rendering tests are task T23.
