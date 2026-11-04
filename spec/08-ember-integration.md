@@ -1041,7 +1041,7 @@ Source: `packages/@ember/-internals/glimmer/lib/utils/bindings.ts`.
 **attributeBindings** entries (processed from the *end* of the concatenated array to the
 start; the first time an *attribute name* is seen wins, so subclass entries override
 superclass entries for the same attribute — `curly.ts:93-120`,
-`attribute-bindings-test.js:1754-1788`):
+`packages/@ember/-internals/glimmer/tests/integration/components/classic/attribute-bindings-test.js:682-716`):
 
 ```text
 "prop"            → attribute "prop" bound to this.prop       [Dev] prop may not contain '.' ("Illegal attributeBinding: '${prop}' is not a valid attribute name.")
@@ -1050,13 +1050,13 @@ superclass entries for the same attribute — `curly.ts:93-120`,
 attr === "id"     → evaluated ONCE: get(component, prop); if null/undefined use elementId; set as a static id
 ```
 
-The `class` assertion is tested in `attribute-bindings-test.js:1944-1957`.
+The `class` assertion is tested in `attribute-bindings-test.js:872-885`.
 Bound attributes use the normal dynamic-attribute semantics of §05 (property-vs-attribute
 normalization, `null`/`undefined`/`false` remove, URL sanitization of `href` etc.:
-`attribute-bindings-test.js:1959-1978` gives `unsafe:javascript:…`). Attribute names are
+`attribute-bindings-test.js:887-906` gives `unsafe:javascript:…`). Attribute names are
 case-normalized as HTML (`data-FOO` → `data-foo`), but SVG mixed case is preserved
-(`viewBox`) (`:1352-1425`). The property name is looked up as written (`tiTLe` binds attribute
-`title` because the attribute name is normalized; `:1313-1350`). The bound value is a reactive
+(`viewBox`) (`:280-353`). The property name is looked up as written (`tiTLe` binds attribute
+`title` because the attribute name is normalized; `:241-278`). The bound value is a reactive
 read of the component property (so both internal `set` and upstream argument changes update
 it).
 
@@ -1075,7 +1075,7 @@ it).
 
 `prop` may be a dotted path (and may start with `attrs.` **[Legacy]**). "truthy" here is JS
 truthiness, not Ember `toBool`. **[Dev]** entries must be non-empty strings without spaces
-(`curly.ts:491-518`). Tests: `class-bindings-test.js`.
+(`curly.ts:491-518`). Tests: `packages/@ember/-internals/glimmer/tests/integration/components/classic/class-bindings-test.js`.
 
 ### 6.5 Two-way binding
 

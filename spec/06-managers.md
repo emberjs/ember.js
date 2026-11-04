@@ -1272,7 +1272,7 @@ manager is:
 ## 9 `@glimmer/component`
 
 Sources: `packages/@glimmer/component/src/index.ts:418-434` and
-`packages/@glimmer/component/src/-private/{component,base-component-manager,ember-component-manager}.ts`.
+`packages/@glimmer/component/src/-private/{component,ember-component-manager}.ts`.
 RFCs 0416 and 0748.
 
 ### 9.1 Manager
@@ -1282,7 +1282,7 @@ RFCs 0416 and 0748.
 (`ember-component-manager.ts:14-18`). Hooks:
 
 - `createComponent(Class, args)` returns `new Class(owner, args.named)`, where `owner` is
-  the factory's owner (`base-component-manager.ts:20-29`). **Positional arguments are not
+  the factory's owner (`ember-component-manager.ts:48-57`). **Positional arguments are not
   exposed.**
 - `getContext(instance)` returns the instance.
 - There is no `updateComponent`. Arguments are live proxies, so there is nothing to push.

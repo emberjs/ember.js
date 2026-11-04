@@ -12,7 +12,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       06:78, 07:188, 07:1585, 07:1589, 07:1805, 08:955, 08:1230, 08:1457 at the time of the
       dry run). For each, open the new file and re-derive the span from the construct the prose
       names. Note any whose content changed meaning (not just moved) under "Notes for B" below.
-- [ ] A3. Moved test files (`git diff -M --name-status a9501d5d40 493985e956 -- packages | grep ^R`):
+- [x] A3. Moved test files (`git diff -M --name-status a9501d5d40 493985e956 -- packages | grep ^R`):
       seven files moved into `tests/integration/components/classic/`. Rewrite every spec
       citation to their old paths (including bare-filename citations) to the new path, and
       re-check the spans by matching source lines. Deleted files:
@@ -23,10 +23,13 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       `observable.ts`, `mixin.ts`, `array/index.ts`, `controller/index.ts`,
       `target_action_support.ts`, `action_support.ts`, `registry_proxy.ts`, `container_proxy.ts`,
       `action_handler.ts`): citations into those files may now point at the wrong file; re-derive.
-- [ ] A4. `python3 spec/tools/check-citations.py` clean; `python3 spec/tools/xref.py` clean.
+- [x] A4. `python3 spec/tools/check-citations.py` clean; `python3 spec/tools/xref.py` clean.
       Hand-check bare continuation spans (`` `573-595` `` with no file name) near changed citations.
 
 ### Notes for B
+
+- A3 result: only `attribute-bindings-test.js` (08:1044-1059) and `class-bindings-test.js` (08:1078) cited the moved test files; they now use the `components/classic/` path. The A1 remap had wrongly shifted the bare `attribute-bindings-test.js` spans (another file of that name is ambiguous); restored to the original, still-valid spans 682-716, 872-885, 887-906, 280-353, 241-278. No citations to the deleted `mutable_enumerable_test.js`, `enumerable_test.js` or `internal-mixin-create.ts`. `base-component-manager.ts` (06:1275, 1285) is re-pointed to `ember-component-manager.ts:48-57` (`createComponent`, inlined unchanged) and dropped from the source list.
+- A4 residue: `check-citations.py` still reports 10 `simple-html-tokenizer/dist/es6/index.js` nofile (sibling repo not present here) and 02:1258 `index.js:397-415` ambiguous; both predate this merge. `xref.py` is clean.
 
 (Sonnet: list here anything where the cited code's behavior changed.)
 
