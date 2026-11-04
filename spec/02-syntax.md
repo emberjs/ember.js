@@ -106,7 +106,7 @@ Entry point: `preprocess(input, options)` —
 | Option | Effect |
 |---|---|
 | `mode: 'precompile'` (default) | Whitespace control is applied (§02-5); HTML character references are decoded (§02-6.3); a single leading newline directly after `<pre>`/`<textarea>` start tags is dropped (§02-6.8). |
-| `mode: 'codemod'` | The Handlebars pass uses `parseWithoutProcessing` (§02-1.5) — **no** whitespace control at all, neither `~` stripping nor standalone stripping (strip *flags* are still recorded on nodes). Character references are **not** decoded (a `CodemodEntityParser` that never matches is used). The `<pre>`/`<textarea>` newline is kept. (`tokenizer-event-handlers.ts:729-738,751-772`; `simple-html-tokenizer/dist/es6/index.js:70`.) |
+| `mode: 'codemod'` | The Handlebars pass uses `parseWithoutProcessing` (§02-1.5) — **no** whitespace control at all, neither `~` stripping nor standalone stripping (strip *flags* are still recorded on nodes). Character references are **not** decoded (a `CodemodEntityParser` that never matches is used). The `<pre>`/`<textarea>` newline is kept. (`tokenizer-event-handlers.ts:729-738,751-772`; `node_modules/simple-html-tokenizer/dist/index.js:2294-2296`.) |
 | `parseOptions.ignoreStandalone: true` | Standalone-line stripping (§02-5.3) is disabled; `~` stripping still applies (`whitespace-control.js:9,116`; test `packages/@glimmer/syntax/test/parser-whitespace-test.ts:23-31,91-97`). Ignored in codemod mode (where nothing is stripped). |
 | `parseOptions.srcName` | Recorded as `source` in the Handlebars pass's locations only (§02-1.5); not observable in ASTv1. |
 | `meta.moduleName` | Module name used in error messages (§02-9.1). Default `'an unknown module'` (`packages/@glimmer/syntax/lib/source/source.ts:21`). |
@@ -124,7 +124,7 @@ printed text is later parsed again in precompile mode. See §02-10.
   `Lexical error on line N. Unrecognized text.` (`src/handlebars.l:31,44`;
   `lib/parser.js:1686-1697`). Implementations MUST reject NUL in content with a lexical error.
 - The HTML tokenizer replaces every `\r\n` and every lone `\r` with `\n` in each text run it
-  tokenizes (`preprocessInput`, `simple-html-tokenizer/dist/es6/index.js:38,45-47,650-651`).
+  tokenizes (`preprocessInput`, `node_modules/simple-html-tokenizer/dist/index.js:2189,2193-2195,2231-2232`).
   Consequently **every `TextNode.chars`, attribute text, and HTML comment value contains only
   `\n` line terminators**, in both modes. Mustache string literals are *not* normalized
   (they are not HTML-tokenized).
@@ -208,7 +208,7 @@ so can be deleted at all, depends only on the HTML state, which the scan already
    whitespace-control pass (§02-5) then edits the `ContentStatement`s. Every lexical and grammar
    error is thrown here, before any HTML is looked at, which is why the current parser reports
    them ahead of HTML errors (§02-9.1, "Error priority").
-2. **The HTML pass** (`simple-html-tokenizer` 0.5.11, driven by
+2. **The HTML pass** (`simple-html-tokenizer` 1.0.0, driven by
    `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts` and
    `packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts`). The Handlebars AST is
    walked in source order. The text of each `ContentStatement` (a text run) is fed into one
@@ -225,7 +225,7 @@ blocks can straddle markup (§02-6.11). Whitespace control runs on `ContentState
 HTML is seen, so it also deletes whitespace inside tags (§02-5). The Handlebars lexer starts a new
 `CONTENT` token at every escape as well as at every construct (§02-2.2), and after each
 `ContentStatement` the walk calls `flushData`, which ends a text node in `data` state and returns
-the tokenizer to `beforeData` (`simple-html-tokenizer/dist/es6/index.js:665-670`). That splits
+the tokenizer to `beforeData` (`node_modules/simple-html-tokenizer/dist/index.js:2242-2247`). That splits
 text nodes at escapes, and re-applies the `<pre>`/`<textarea>` newline rule after every construct
 (§02-6.8).
 
@@ -971,14 +971,14 @@ parse(source):
 
 *Implementation note:* in the current parser (§02-1.5), a text run is a `ContentStatement`,
 fed with `tokenizePart(value)` and then `flushData()` (`handlebars-node-visitors.ts:372-377`);
-`flushData` is the step after each construct above (`simple-html-tokenizer/dist/es6/index.js:665-670`),
+`flushData` is the step after each construct above (`node_modules/simple-html-tokenizer/dist/index.js:2242-2247`),
 but it also runs at each escape, which is **[Out of spec]** (§02-2.2). A block's programs are
 visited recursively, with a `Block` node pushed for each.
 
 ### 6.2 HTML tokenizer states
 
 The tokenizer is a simplified subset of the WHATWG tokenizer
-(`simple-html-tokenizer/dist/es6/index.js:61-630`). The states, and the events they emit to the
+(`node_modules/simple-html-tokenizer/dist/index.js:2286-2703`). The states, and the events they emit to the
 parser, are:
 
 | State | Behavior (on next char `c`) |
@@ -1007,13 +1007,13 @@ section of the message is empty) (`tokenizer-event-handlers.ts:554-556`; tests
 `parser-node-test.ts:43-61`).
 
 Only whitespace per `[\t\n\f ]` counts as whitespace in the HTML tokenizer
-(`simple-html-tokenizer/dist/es6/index.js:36`); `\r` never reaches it (§02-1.3).
+(`node_modules/simple-html-tokenizer/dist/index.js:2188`); `\r` never reaches it (§02-1.3).
 
 ### 6.3 Text and character references
 
 In precompile mode, `&` in `data` and in all three attribute-value states starts a character
-reference (`consumeCharRef`, `simple-html-tokenizer/dist/es6/index.js:686-704`;
-`EntityParser`, lines 9-34):
+reference (`consumeCharRef`, `node_modules/simple-html-tokenizer/dist/index.js:2260-2273`;
+`EntityParser`, lines 2134-2186):
 
 ```
 consumeCharRef():
@@ -1051,14 +1051,13 @@ Normative consequences (all reproduced by tests or directly observable):
   `amp`, `AMP`, `nbsp`, `notin`, `excl`), and are case-sensitive.
 - A numeric reference MUST decode as it does in HTML (`numericCharRef` above): `&#128512;` and
   `&#x1F600;` are U+1F600, `&#146;` is U+2019 and `&#150;` is U+2013, and `&#0;`, `&#xD800;`
-  and `&#x110000;` are U+FFFD. **[Out of spec]** (author, 2026-10-15; §00-0.5.1): the current
-  implementation decodes with `String.fromCharCode` and applies no replacement
-  (`simple-html-tokenizer/dist/es6/index.js:22,26`). Code points above U+FFFF are truncated
-  modulo 2^16 (`&#128512;` → U+F600, `&#x110041;` → `A`), 0x80–0x9F stay C1 controls,
-  `&#0;` → U+0000, and `&#xD800;` → a lone surrogate. No template in the corpus changes
+  and `&#x110000;` are U+FFFD (`decodeNumericCharRef`,
+  `node_modules/simple-html-tokenizer/dist/index.js:2182-2185`; simple-html-tokenizer 1.0.0,
+  emberjs/simple-html-tokenizer#115, on `main` through emberjs/ember.js#21730). Before 1.0.0 the
+  tokenizer decoded with `String.fromCharCode` and applied no replacement, so `&#128512;` was
+  U+F600 (author ruling of 2026-10-15 that this was a bug; T26). No template in the corpus changes
   meaning (`tools/char-ref-impact.mjs`: 28,786 templates, 61 with a numeric reference, none
-  affected). Fixes are open as emberjs/ember.js#21728 and emberjs/simple-html-tokenizer#115
-  (T26).
+  affected).
 - The `;` search stops at the next construct (§02-1.1); a reference cannot span a mustache.
 - References are **not** decoded when the most recent tag name is exactly `script` or `style`
   (data state only; attribute values are always decoded). They *are* decoded in `<textarea>`
@@ -1254,8 +1253,8 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
   text `"\nfoo"` after the mustache.
   **[Out of spec]** (§02-1.4; §00-0.5.1): the current implementation removes a newline at the
   start of every text run that begins in `beforeData` while the tokenizer's `tagNameBuffer` is
-  `pre` or `textarea` (`simple-html-tokenizer/dist/es6/index.js:70-75`). The buffer holds the
-  name of the most recent *start* tag and is cleared when an end tag finishes (`index.js:397-415`),
+  `pre` or `textarea` (`node_modules/simple-html-tokenizer/dist/index.js:2294-2297`). The buffer holds the
+  name of the most recent *start* tag and is cleared when an end tag finishes (`index.js:2516-2529`),
   so the rule is re-applied after every construct until the first nested tag:
   `<pre>{{x}}\nfoo</pre>` → `"foo"`, `<pre>a{{x}}\nfoo</pre>` → `"foo"`, and
   `<pre>{{a}}\n{{b}}</pre>` renders `ab` (the text between them is an empty `TextNode`), while
@@ -1263,7 +1262,7 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
 - **`<title>`, `<style>`, `<script>`** (exact lower-case names): while the most recent tag
   name is one of these, a `<` in data starts a tag **only** if it begins the exact text
   `</title>`, `</style>`, `</script>` respectively (`isIgnoredEndTag`,
-  `simple-html-tokenizer/dist/es6/index.js:712-717`). All other `<` are text:
+  `node_modules/simple-html-tokenizer/dist/index.js:2282-2285`). All other `<` are text:
   `<title><b>x</b></title>` → one TextNode `<b>x</b>`; `<svg><title><div></div></title></svg>`
   likewise (test `parser-node-test.ts:96-102`). Mustaches are still recognized inside these
   elements (§02-1.1). References are decoded in `title` but not in `script`/`style`
@@ -1710,12 +1709,11 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    element's block-params list (`<Foo as |a {{! c}}|>`) is accepted onto `comments` and the
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
    block there errors with E21.
-6. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
-   replacement of 0, surrogates, or C1 controls). `&#128512;` yields U+F600. *Decided* (author,
-   2026-10-15): this is a bug. A numeric reference decodes as in HTML (§02-6.3), and the current
-   implementation is **[Out of spec]**. No corpus template depends on the old behavior. Fixes
-   are open as emberjs/ember.js#21728 (`@glimmer/syntax` supplies its own `EntityParser`) and
-   emberjs/simple-html-tokenizer#115 (asks for a new major); when they land is outside the spec
+6. **Numeric character references** used `String.fromCharCode` (no astral support, no WHATWG
+   replacement of 0, surrogates, or C1 controls) until simple-html-tokenizer 1.0.0. *Decided*
+   (author, 2026-10-15): that was a bug, and a numeric reference decodes as in HTML (§02-6.3).
+   *Fixed* on `main` by emberjs/simple-html-tokenizer#115 and emberjs/ember.js#21730
+   (`f46ea015cb`); the alternative fix emberjs/ember.js#21728 was closed
    (T26). Still open: HTML also decodes a reference with no `;` (`&#65`, and the legacy names
    such as `&amp` and `&lt`), which a template keeps literal (§02-6.3). Should that follow HTML
    too?

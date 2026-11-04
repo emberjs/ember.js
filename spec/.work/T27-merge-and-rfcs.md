@@ -43,7 +43,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
 
 ## B. Prose (Opus)
 
-- [ ] B1. Numeric character references: simple-html-tokenizer 1.0 (#115 merged 2026-10-15) is on
+- [x] B1. Numeric character references: simple-html-tokenizer 1.0 (#115 merged 2026-10-15) is on
       main via emberjs/ember.js#21730 (`f46ea015cb`); #21728 closed. Verify the built behavior,
       then drop **[Out of spec]** from §02-6.3, §00-0.5.1 row, §02-11 item 6, §00-0.7.1 item 4.
 - [ ] B2. `{{outlet}}` (#21762, `2661751e2f`): renders inside components again; allowed in
@@ -67,3 +67,11 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       render through a Glimmer root component without the classic dynamic scope; §09 harness).
       Read each diff and update the owning prose.
 - [ ] B7. STATUS: merge base, upstream-branch table, T21/T26 rows, T27 row, date.
+- [ ] B8. Author request (2026-11-04): a good current summary of the questions that need
+      answering. Refresh `users-todo-list.md` (drop what is settled, add new ones), and check it
+      against §00-0.7 and STATUS "Next steps".
+
+B1 note: confirmed with simple-html-tokenizer 1.0.0 directly (`&#128512;` → U+1F600, `&#x80;` →
+U+20AC, NUL/surrogate/out-of-range → U+FFFD, `&#65` literal). Also the 10 citations to
+`simple-html-tokenizer/dist/es6/index.js` (0.5.11 layout) were stale: 1.0.0 ships one
+`dist/index.js`; all re-derived against `node_modules/simple-html-tokenizer/dist/index.js`.
