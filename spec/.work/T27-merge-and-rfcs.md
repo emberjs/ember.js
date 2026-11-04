@@ -62,7 +62,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
 - [x] B5. RFC 1216 (classic `@ember/component`, id `ember-component`, until 8.0.0), RFC 1234
       (`EmberObject`, opt-in, until 9.0.0), RFC 1115 (observers, until 8.0.0) accepted: note in
       the [Legacy] areas of §08 (classic components) and §07-3.6 (computed/observers).
-- [ ] B6. Other behavior changes on main: #21778 (destroyable hierarchy in base renderer),
+- [x] B6. Other behavior changes on main: #21778 (destroyable hierarchy in base renderer),
       #21779 (owner releases a root whose first render threw), #21664 (reuse the combined tag of a
       cache, `validator/lib/tracking.ts`), `each-in.ts`, #21771 (`LinkTo` model properties),
       #21687/#21588 deprecations (array macros, `A()`, mixins), #21775 + `f758602aeb` (tests
@@ -77,3 +77,10 @@ B1 note: confirmed with simple-html-tokenizer 1.0.0 directly (`&#128512;` → U+
 U+20AC, NUL/surrogate/out-of-range → U+FFFD, `&#65` literal). Also the 10 citations to
 `simple-html-tokenizer/dist/es6/index.js` (0.5.11 layout) were stale: 1.0.0 ships one
 `dist/index.js`; all re-derived against `node_modules/simple-html-tokenizer/dist/index.js`.
+
+B6 notes: renderer lifetime (§08-9.3, #21778/#21779), cache tag reuse (§07-1, #21664), each-in proxy
+step (§08-2.13), §09 harness (Glimmer root, #21775, `f758602aeb`). New finding: the
+`outletState`-only dynamic-scope assertion exists only below classic `appendTo` roots; apps
+(`ApplicationInstance#renderRootComponent` → `renderComponent`) use Glimmer's general
+`DynamicScopeImpl` (§05-14 item 16, for the author). `LinkTo` `isQueryParams` (#21771) needs no
+spec change (§08-7.4 pseudo-code describes the object shape only).

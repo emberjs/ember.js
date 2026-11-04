@@ -1229,6 +1229,9 @@ assertion is compiled out and Ember's dynamic scope ignores the key (`get` retur
 replaces `outletState`); a program that uses another key is not conforming, so that behavior is
 not specified.
 
+*Note (T27):* in the current implementation this assertion is raised only below a classic
+`appendTo` root; application and `renderComponent` roots accept any key (§05-14 item 16, open).
+
 Implementations SHOULD implement the dynamic scope generally, as a string-keyed scope like the
 one described above, but MUST guard it with the same assertion, until a context RFC allows
 general-purpose dynamic scope. Ember is expected to accept other keys then.
@@ -2357,3 +2360,15 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     page is already broken; in a long-lived server renderer it is a memory leak. Looks like a
     bug. Upstream PR emberjs/ember.js#21634 (open) runs the reset in every build and keeps
     only the log behind `DEBUG`.
+16. **The dynamic-scope assertion fires only below a classic root** (§05-5.8, T27). The
+    `outletState`-only assertion lives in Ember's `DynamicScope` (`packages/@ember/-internals/glimmer/lib/renderer.ts:66-92`),
+    which only a classic `appendTo` root creates (`renderer.ts:225-236`). An application's root
+    outlet and every `renderComponent` root render through Glimmer's `renderComponent`
+    (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:135-141`), whose default
+    `DynamicScopeImpl` accepts any key (`packages/@glimmer/runtime/lib/scope.ts:15-37`), so
+    `{{#-with-dynamic-vars foo=1}}{{-get-dynamic-var "foo"}}{{/-with-dynamic-vars}}` works there
+    with no assertion (from source; not run). The assertion tests now render through
+    `ClassicRenderingTestCase` for that reason (`f758602aeb`). Under the ruling of §05-5.8 the
+    current implementation is therefore out of spec outside classic roots. For the author: keep
+    the ruling (and mark that **[Out of spec]**), or limit the assertion to classic roots, or
+    let general dynamic scope stand?

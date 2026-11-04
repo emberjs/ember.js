@@ -113,9 +113,15 @@ Facts an adapter has to work with (details and citations in `.work/T16-harness.m
      with a real owner (§9.4.1 seam B).
    - The **Ember harness** (`packages/internal-test-helpers/lib/`): `moduleFor` and
      `RenderingTestCase` build a real application owner, register things through the
-     resolver, render through a classic top-level component with `runAppend`
-     (`lib/test-cases/rendering.ts:100-119`), and update with `runTask`, which is `run()`
-     (`lib/run.ts:16-18`). There is no delegate. Its tests talk to Ember directly.
+     resolver, render each test template as the template of a Glimmer root component
+     (`TopLevelComponent`, which keeps `get`, `set` and `rerender` for tests that change the
+     context; `lib/top-level-component.ts:11-27`) through the renderer, with the default dynamic
+     scope that an application also gets (`lib/test-cases/rendering.ts:100-119`), and update with
+     `runTask`, which is `run()` (`lib/run.ts:16-18`). There is no delegate. Its tests talk to
+     Ember directly. Until 2026-11 the root was a classic component appended with `runAppend`
+     (emberjs/ember.js#21775 and `f758602aeb`). The few tests that need a classic root or Ember's
+     classic `DynamicScope` (`parentView`, the `-with-dynamic-vars` assertions) render through
+     `ClassicRenderingTestCase` (`glimmer/tests/utils/classic-rendering-test-case.js`).
 5. **Build matrix.** CI runs development and production builds, and variants for deprecations,
    optional features and stable decorators (`.github/workflows/ci-jobs.yml`, `testem.cjs`). In a
    production build, `expectAssertion` degrades to `ok(true)` and `if (DEBUG)` tests are not

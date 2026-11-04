@@ -1668,9 +1668,13 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-
 - `component`: any value with a component manager.
 - `into`: an `Element`, a `SimpleElement`, or a cursor `{ element, nextSibling }`.
 - `owner`: any object (default: a fresh `{}`); used for injections, resolution of loose-mode
-  names (§5), and lifetime: the render's root is associated as a destroyable child of the
-  owner, so destroying the owner destroys the render and removes the root from the renderer
-  (`render-component-test.ts:114-283`).
+  names (§5), and lifetime: the renderer that `renderComponent` creates for an owner is a
+  destroyable child of the owner, and each root is a destroyable child of its renderer's state
+  (§9.1), so destroying the owner destroys the renderer and every root in it
+  (`base-renderer.ts:685-707`; tests `render-component-test.ts:114-283`). This includes a root
+  whose first render threw, which stays in its renderer until then (test
+  `render-component-test.ts:530-558`; emberjs/ember.js#21778, #21779). Before #21778 each root
+  was made a child of the owner only after its first render returned, so such a root leaked.
 - `env.isInteractive` (default `true`), `env.hasDOM` (default `true`), `env.document`
   (default `globalThis.document`); other keys are forwarded (private).
 - `args`: an object whose properties become the component's named arguments; reads are
@@ -1681,7 +1685,8 @@ Algorithm:
 
 ```text
 renderer = per-owner cached renderer, or create one: BaseRenderer.strict(owner, document, env)
-           (ResolverImpl, client DOM builder); a renderer set via setRenderer(owner, r) is reused
+           (ResolverImpl, client DOM builder) and associate it as a destroyable child of owner;
+           a renderer set via setRenderer(owner, r) is reused (and is not made a child of owner)
 key = into.element if cursor else into
 last = cache[key]
 if last has a glimmerResult: last.result.destroy()    // destruction is asynchronous
@@ -1689,7 +1694,6 @@ if last has a glimmerResult: last.result.destroy()    // destruction is asynchro
 else if no last and `into` is a real DOM Element: into.innerHTML = ''     // first time only; target = into
 root = renderer.render(component, { into: target, args })   // renders synchronously unless inside a transaction (§9.1)
 glimmerResult = root.result                            // undefined if the root is waiting for a transaction
-associate root as a destroyable child of owner
 result = { destroy(): destroys the root }              // removes it from the renderer, then clears its DOM
 cache[key] = { result, glimmerResult }                 // entry deleted when glimmerResult is destroyed, if still its own
 return result
@@ -1735,7 +1739,9 @@ run loop occurs (`base-renderer.ts:590-615`, tests `render-settled-test.gjs:15-8
 ### 9.6 Dynamic scope
 
 Ember's dynamic scope object (`renderer.ts:66-92`) carries `view` (the nearest classic
-component, §6.8) and `outletState`. **[Dev]** The private keywords `-with-dynamic-vars` and
+component, §6.8) and `outletState`. Only a classic `appendTo` root creates it (`renderer.ts:225-236`);
+an application's root outlet and `renderComponent` roots use Glimmer's general default scope, in
+which the outlet providers set `outletState` (§8.3) (§05-14 item 16). **[Dev]** The private keywords `-with-dynamic-vars` and
 `-get-dynamic-var` with any key other than `outletState` assert at runtime; the messages
 (``Using `-with-dynamic-scope` is only supported for `outletState` (you used `${key}`).`` and
 the `-get-dynamic-scope` variant) and the rule that implementations keep this assertion until a

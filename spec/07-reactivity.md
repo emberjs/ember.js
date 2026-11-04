@@ -185,7 +185,10 @@ evaluate(computation C):
    happens *during* the evaluation, after the cell was read, is a write-after-consume
    (§07-1.9). In production builds it is unspecified whether such a write leaves `C` valid or
    invalid.
-   *Source:* the snapshot is taken after `endTrackFrame()` (`tracking.ts:396-398`).
+   *Source:* the snapshot is taken after the frame ends (`endCacheFrame`, `tracking.ts:396-398`).
+   When a cache's evaluation consumed the same cells as last time, in the same order, the frame
+   reuses the previous combined tag instead of allocating one (`tracking.ts:43-49, 275-289`;
+   emberjs/ember.js#21664). That is an optimization with no observable effect.
 3. An evaluated computation whose dependency set is **empty is constant**. It MUST never become
    invalid, so its cached value is final. Consumers MAY treat a constant computation as a static
    value and MAY discard any machinery for updating it.
