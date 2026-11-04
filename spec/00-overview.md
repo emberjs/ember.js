@@ -225,8 +225,10 @@ This section is a curated index of the chapters' *Open questions / inconsistenci
 sections. Each line states a question or suspected bug and names the item that owns it.
 The owning item has the details, citations, and test status. The list is not exhaustive:
 minor items, such as error-message typos, dead code, and debug-only labels, stay in their
-chapters. Nothing here changes the normative text. Where current behavior is specified and
-looks like a bug, the spec still describes the current behavior (§0.1).
+chapters. Nothing here changes the normative text. A suspected bug is specified as current
+behavior until the author rules on it; a ruling can make the current implementation
+**[Out of spec]** (§0.5.1). The author-facing summary of what still needs a decision is
+`spec/users-todo-list.md`.
 
 ### 0.7.1 Decide first: preserve or change
 
@@ -240,9 +242,11 @@ choice breaks someone.
 2. Duplicate attributes and duplicate named arguments are accepted. A component's layout
    sees the first `@a` while its manager sees the last, and `class` is merged only when the
    element has modifiers or `...attributes`. Should duplicates become a compile-time error?
-   A proposal to make them errors is open as emberjs/ember.js#21718. (§05-14 item 13)
+   A proposal to make them errors is open, and approved, as emberjs/ember.js#21718.
+   (§05-14 item 13)
 3. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
-   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 12)
+   `{{{if c x}}}` and `{{{helper h}}}` render text. A fix is on the local branch
+   `fix/triple-curly-literals-and-keywords` (not pushed). (§05-14 item 12)
 4. `&#128512;` decoded through `String.fromCharCode` to U+F600. *Decided* (author,
    2026-10-15): a bug; numeric references decode as in HTML. *Fixed* on `main` (simple-html-tokenizer
    1.0.0, emberjs/ember.js#21730). Still open: whether a reference with no `;` also follows HTML.
@@ -356,7 +360,8 @@ to addon tooling.
     outlet level renders one microtask late, and nothing tests whether the empty intermediate state can be observed.
     `{{outlet}}` inside a component, which stopped rendering with the route manager merge, is
     fixed upstream (emberjs/ember.js#21762) for components below classic routes; below other
-    route managers it asserts. (§08-14 Q2, Q9, Q14)
+    route managers it asserts, and `@outlet` is visible to every route template. Both are
+    described as normative unless the author rules otherwise. (§08-14 Q2, Q9, Q14)
 
 *Note:* §04-4.14 lists wire-format issues (no version marker, unused upvars, `InElement`
 guid collisions). The wire format is informative (§0.2), so these are not requirements.
@@ -386,3 +391,13 @@ A prototype on top of today's `@glimmer/validator` passes tests for each rule
 existing behavior. Points to review are §07-5 items 14–19: Ember's default effect schedule,
 whether `cached()` should rethrow a stored error, the scheduled (not synchronous) first run,
 ordering within a batch, equality cut-off, and implicit async tracking.
+
+### 0.7.11 Found in the T27 merge
+
+31. The `outletState`-only dynamic-scope assertion that §05-5.8 makes normative exists only
+    below a classic `appendTo` root. Application and `renderComponent` roots use Glimmer's
+    general scope, where any key works. Keep the ruling (current implementation **[Out of
+    spec]**), limit it to classic roots, or allow general dynamic scope? (§05-14 item 16)
+32. Accepted RFCs deprecate `mut` (RFC 1253), `readonly` (RFC 1248) and the classic
+    `Component` class (RFC 1216). The spec keeps them **[Legacy]** (required). Should any become
+    **[Deprecated]** (a new implementation SHOULD NOT include it)? (§08-14 Q17)

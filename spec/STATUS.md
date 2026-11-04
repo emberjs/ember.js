@@ -311,6 +311,8 @@ into §00-0.7.
 ## Next steps
 
 Suggestions for the plan's author, based on what is still open:
+(The author-facing list of decisions still needed is `users-todo-list.md`, refreshed in T27;
+§00-0.7 is the full index, with the T27 findings in §00-0.7.11.)
 
 1. **Decide the remaining "preserve or change" items in §00-0.7.1** (item 1 is resolved).
    The most urgent is the `strict`/`strictMode` option split (item 2; T9a confirmed all three

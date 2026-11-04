@@ -69,7 +69,7 @@ each item or small group (`spec(T27): …`), staging only files you changed.
       render through a Glimmer root component without the classic dynamic scope; §09 harness).
       Read each diff and update the owning prose.
 - [x] B7. STATUS: merge base, upstream-branch table, T21/T26 rows, T27 row, date.
-- [ ] B8. Author request (2026-11-04): a good current summary of the questions that need
+- [x] B8. Author request (2026-11-04): a good current summary of the questions that need
       answering. Refresh `users-todo-list.md` (drop what is settled, add new ones), and check it
       against §00-0.7 and STATUS "Next steps".
 
