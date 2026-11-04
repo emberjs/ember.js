@@ -185,7 +185,7 @@ evaluate(computation C):
    happens *during* the evaluation, after the cell was read, is a write-after-consume
    (§07-1.9). In production builds it is unspecified whether such a write leaves `C` valid or
    invalid.
-   *Source:* the snapshot is taken after `endTrackFrame()` (`tracking.ts:316-318`).
+   *Source:* the snapshot is taken after `endTrackFrame()` (`tracking.ts:396-398`).
 3. An evaluated computation whose dependency set is **empty is constant**. It MUST never become
    invalid, so its cached value is final. Consumers MAY treat a constant computation as a static
    value and MAY discard any machinery for updating it.
@@ -1582,11 +1582,11 @@ triggers them (`dependent-key-compat-test.js:259-290`).
 #### 07-3.6.8 Proxies and `unknownProperty`
 
 `ObjectProxy`/`ArrayProxy` forward unknown reads through `unknownProperty`
-(`packages/@ember/-internals/runtime/lib/mixins/-proxy.ts:121-124`). That code is ordinary code
+(`packages/@ember/-internals/runtime/lib/mixins/-proxy-internal.ts:89-92`). That code is ordinary code
 running in the reader's computation, so it consumes the proxy's `content` and the content's
 property cells. In addition, dependent-key chains through a proxy use a custom cell resolution
 that combines the proxy's own (proxy, key) cell, its `content` cell, and the content's (content,
-key) cell (`-proxy.ts:32-61`). Nothing beyond "the code that runs is tracked" needs to be
+key) cell (`-proxy-internal.ts:31-61`). Nothing beyond "the code that runs is tracked" needs to be
 specified for templates.
 
 #### 07-3.6.9 Mandatory setter **[Dev]**
@@ -1802,7 +1802,7 @@ the (obj, key) cell of every key, and the `[]` cell of array values
 (`iterator.ts:119-141`). Adding a *new* key to a plain object is therefore not observed unless
 the object-level cell or an existing key cell is invalidated. `trackedObject`, `trackedMap`, and
 Ember objects via `notifyPropertyChange` do cause updates
-(`packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:369,391`).
+(`packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:387,409`).
 
 #### 07-4.7.4 `{{#let}}`, block params, `{{yield}}`
 

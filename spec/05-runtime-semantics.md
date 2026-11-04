@@ -942,8 +942,8 @@ Ember's `toIterator` (`packages/@ember/-internals/glimmer/lib/utils/iterator.ts:
 | Input | Items (value, memo) |
 |---|---|
 | not an object/function (`null`, `undefined`, `false`, numbers, strings…) | none (empty); only an `undefined` path is tested (`syntax/each-test.js:1311-1338`) |
-| native array (only if not already handled above) | `(a[i], i)` — holes of sparse arrays are visited as `undefined` (`syntax/each-test.js:1336-1361`, via `emberA`) |
-| Ember array (`isEmberArray`) | `(objectAt(a, i), i)` (`syntax/each-test.js:1043-1051`) |
+| native array (only if not already handled above) | `(a[i], i)` — holes of sparse arrays are visited as `undefined` (`syntax/each-test.js:1343-1368`, via `emberA`) |
+| Ember array (`isEmberArray`) | `(objectAt(a, i), i)` (`syntax/each-test.js:1048-1058`) |
 | object with `Symbol.iterator` (Set, generator, Map…) | `(value, i)` — for a `Map`, value is the `[key, value]` entry (native `Set`: `syntax/each-test.js:1060-1076`; custom iterable: `syntax/each-test.js:1088-1094`, and, autotracked, `lib/suites/each.ts:88-127`; the `Map` entry shape is untested) |
 | object with a `forEach` method | `forEach` is called once, eagerly; items collected as `(item, i)` (`syntax/each-test.js:1078-1086`) |
 | any other object | none (empty) (untested) |
@@ -1223,7 +1223,7 @@ the offending name, are
 binding and
 ``Using `-get-dynamic-scope` is only supported for `outletState` (you used `${key}`).`` for a
 read (`packages/@ember/-internals/glimmer/lib/renderer.ts:76-91`, Ember's `DynamicScope`; §08-9.6;
-tests `packages/@ember/-internals/glimmer/tests/integration/syntax/with-dynamic-var-test.js:6-33`).
+tests `packages/@ember/-internals/glimmer/tests/integration/syntax/with-dynamic-var-test.js:4-41`).
 The messages name `-…-dynamic-scope`, not the keywords' own names. In production builds the
 assertion is compiled out and Ember's dynamic scope ignores the key (`get` returns and `set`
 replaces `outletState`); a program that uses another key is not conforming, so that behavior is

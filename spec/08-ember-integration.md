@@ -952,7 +952,7 @@ component = factory.create(props)        // untracked; init() runs, then `didRec
 The properties are assigned by `create`, after the constructor and before `init()`: a classic
 component's constructor sees neither named nor positional arguments (both are `undefined` there),
 unlike a `@glimmer/component`, which has `this.args` in its constructor. Test:
-`packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js:763-795`
+`packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js:1295-1320`
 › "renders with dot path and rest parameter does not leak" reads its positional param in
 `init()` for this reason (W2 finding 8).
 
@@ -1227,7 +1227,7 @@ installs root listeners for the events it handles (`component.ts:925-946`). Call
 `component.send(name, ...args)` emits the `DEPRECATE_TARGET_ACTION_SUPPORT` deprecation, then
 calls `this.actions[name]` if present; if absent or it returns `true`, forwards to
 `this.target.send(...)`; **[Dev]** asserts `${this} had no action handler for: ${name}` when
-there is neither (`packages/@ember/-internals/views/lib/mixins/action_support.ts:19-51`).
+there is neither (`packages/@ember/-internals/views/lib/mixins/action_support-internal.ts:18-48`).
 `_target` defaults to the caller's `this`. These are not template features and are listed only
 for completeness.
 
@@ -1454,7 +1454,7 @@ machinery to each route template (below). Therefore:
 - A block param named `outlet` shadows it (`refinements-test.gjs:25-27`).
 
 The value of `@outlet` for a level whose parent state is `P` is a reactive computation
-(`root-outlet.ts:206-244`):
+(`root-outlet.ts:249-288`):
 
 ```text
 childOutlet(P) = let S = P.outlets.main in

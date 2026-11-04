@@ -75,7 +75,7 @@ exercise this.
   a subclass whose superclass already has one is allowed, and the subclass's manager wins
   (§1.2).
 
-Tests: `packages/@glimmer/manager/test/managers-test.ts:108,210,321,385-412`.
+Tests: `packages/@glimmer/manager/test/managers-test.ts:108,210,321,385-410`.
 
 In production builds neither check runs. A second association on the same object silently
 replaces the first.
