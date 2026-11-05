@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-23T17:00:54.807Z",
+    "capturedAt": "2026-11-05T15:03:02.331Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "057856d",
-    "totalTests": 7203,
+    "emberCommit": "2d896c5",
+    "totalTests": 7206,
     "totalModules": 684,
     "quarantinedTests": 0,
-    "totalAssertions": 36008,
-    "totalAssertionsPassing": 35990
+    "totalAssertions": 36297,
+    "totalAssertionsPassing": 36262
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -19,10 +19,10 @@
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests)": {
-      "total": 7,
-      "passing": 7,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 8,
+      "passing": 8,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests, with router not started)": {
@@ -272,15 +272,10 @@
     },
     "@glimmer/validator: tracking": {
       "total": 40,
-      "passing": 39,
+      "passing": 40,
       "assertionsTotal": 121,
-      "assertionsPassing": 120,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 121,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > debug": {
       "total": 4,
@@ -312,15 +307,10 @@
     },
     "@glimmer/validator: tracking > tracking cache": {
       "total": 14,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 70,
-      "assertionsPassing": 69,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 70,
+      "failingTests": []
     },
     "@glimmer/validator: validators": {
       "total": 22,
@@ -450,8 +440,8 @@
     "AngleBracket Invocation": {
       "total": 32,
       "passing": 32,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 8,
+      "assertionsPassing": 8,
       "failingTests": [],
       "skippedTests": [
         " it can resolve <XBlah /> to x-blah",
@@ -463,7 +453,6 @@
         " it can have a custom id attribute and it is bound",
         " it can render a basic component with a block",
         " it can yield internal and external properties positionally",
-        " positional parameters are not allowed",
         " can invoke curried components with capitalized block param names",
         " can invoke curried components with named args",
         " can invoke curried components with a path",
@@ -594,10 +583,10 @@
       "failingTests": []
     },
     "Application test: debug render tree": {
-      "total": 12,
-      "passing": 12,
-      "assertionsTotal": 437,
-      "assertionsPassing": 437,
+      "total": 13,
+      "passing": 13,
+      "assertionsTotal": 510,
+      "assertionsPassing": 510,
       "failingTests": [],
       "skippedTests": [
         " {{mount}}",
@@ -1064,36 +1053,36 @@
     "CP Macro `intersect`": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "CP Macro `uniqBy`": {
       "total": 5,
       "passing": 5,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macro `union`": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macro `uniq`": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macros": {
       "total": 25,
       "passing": 25,
-      "assertionsTotal": 186,
-      "assertionsPassing": 186,
+      "assertionsTotal": 193,
+      "assertionsPassing": 193,
       "failingTests": []
     },
     "Cache": {
@@ -1106,8 +1095,8 @@
     "Chaining array and reduced CPs": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 8,
-      "assertionsPassing": 8,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "Comparable": {
@@ -1145,8 +1134,8 @@
     "Component Tracked Properties": {
       "total": 20,
       "passing": 20,
-      "assertionsTotal": 24,
-      "assertionsPassing": 24,
+      "assertionsTotal": 26,
+      "assertionsPassing": 26,
       "failingTests": [],
       "skippedTests": [
         " tracked properties that are uninitialized do not throw an error",
@@ -1206,35 +1195,53 @@
     },
     "Components test: contextual components": {
       "total": 43,
-      "passing": 43,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
-      "failingTests": [],
+      "passing": 35,
+      "assertionsTotal": 63,
+      "assertionsPassing": 44,
+      "failingTests": [
+        {
+          "name": " GH#13742 keeps nested rest positional parameters if rendered with no positional parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " overwrites nested rest positional parameters if rendered with positional parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " bound outer named parameters get updated in the right scope",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " renders with dot path and with rest positional parameters",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " GH#17121 local variable should win over helper (with arguments)",
+          "category": "gxt:triage"
+        },
+        {
+          "name": " RFC#311 invoking named args (with arguments)",
+          "category": "gxt:triage"
+        }
+      ],
       "skippedTests": [
-        " renders with component helper",
-        " renders with component helper with invocation params, hash",
-        " GH#13742 keeps nested rest positional parameters if rendered with no positional parameters",
-        " overwrites nested rest positional parameters if rendered with positional parameters",
-        " GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters",
-        " overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters",
-        " renders with component helper with curried params, hash",
         " updates when component path is bound",
         " updates when curried hash argument is bound",
         " updates when curried hash arguments is bound in block form",
-        " nested components do not overwrite positional parameters",
-        " positional parameters are combined not clobbered",
         " nested components overwrite hash parameters",
-        " bound outer named parameters get updated in the right scope",
-        " bound outer hash parameters get updated in the right scope",
-        " component with dynamic component name resolving to undefined, then an existing component",
         " component with dynamic component name resolving to a component, then undefined",
         " component with dynamic component name resolving to null, then an existing component",
         " component with dynamic component name resolving to a component, then null",
-        " renders with dot path",
         " renders with dot path and attr",
         " renders with dot path and curried over attr",
-        " renders with dot path and with rest positional parameters",
-        " renders with dot path and rest parameter does not leak",
         " renders with dot path and updates attributes",
         " adding parameters to a contextual component's instance does not add it to other instances",
         " GH#13982 contextual component ref is stable even when bound params change",
@@ -1243,9 +1250,7 @@
         " it can invoke input component",
         " it can invoke textarea component",
         " GH#17121 local variable should win over helper (without arguments)",
-        " GH#17121 local variable should win over helper (with arguments)",
         " RFC#311 invoking named args (without arguments)",
-        " RFC#311 invoking named args (with arguments)",
         " RFC#311 invoking named args (with a block)",
         " GH#18732 (has-block) works within a yielded curried component invoked within mustaches",
         " GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (falsy)",
@@ -1518,8 +1523,8 @@
     "Ember.ArrayProxy - content change (length)": {
       "total": 13,
       "passing": 13,
-      "assertionsTotal": 86,
-      "assertionsPassing": 86,
+      "assertionsTotal": 87,
+      "assertionsPassing": 87,
       "failingTests": []
     },
     "Ember.CoreObject": {
@@ -1551,8 +1556,8 @@
     "Ember.PromiseProxy - ObjectProxy": {
       "total": 14,
       "passing": 14,
-      "assertionsTotal": 127,
-      "assertionsPassing": 127,
+      "assertionsTotal": 139,
+      "assertionsPassing": 139,
       "failingTests": []
     },
     "Ember.RSVP": {
@@ -1565,15 +1570,15 @@
     "Ember.arrayComputed - chains": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.arrayComputed - mixed sugar": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 5,
-      "assertionsPassing": 5,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.canInvoke": {
@@ -1628,8 +1633,8 @@
     "Ember.isEmpty": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 4,
-      "assertionsPassing": 4,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.makeArray": {
@@ -3151,8 +3156,8 @@
     "Query Params - main": {
       "total": 63,
       "passing": 63,
-      "assertionsTotal": 223,
-      "assertionsPassing": 223,
+      "assertionsTotal": 226,
+      "assertionsPassing": 226,
       "failingTests": []
     },
     "Query Params - model-dependent state": {
@@ -3542,10 +3547,10 @@
       ]
     },
     "Strict Mode - renderComponent": {
-      "total": 29,
-      "passing": 29,
-      "assertionsTotal": 160,
-      "assertionsPassing": 160,
+      "total": 30,
+      "passing": 30,
+      "assertionsTotal": 163,
+      "assertionsPassing": 163,
       "failingTests": [],
       "skippedTests": [
         " when args are a custom tracked class, the rendered component response appropriately",
@@ -3635,8 +3640,8 @@
     "Syntax test: {{#each as}} DOM mutation test": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "Syntax test: {{#each as}} undefined path": {
@@ -4250,8 +4255,8 @@
     "collect": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 5,
-      "assertionsPassing": 5,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "computed": {
@@ -4528,15 +4533,15 @@
     "filter": {
       "total": 13,
       "passing": 13,
-      "assertionsTotal": 29,
-      "assertionsPassing": 29,
+      "assertionsTotal": 42,
+      "assertionsPassing": 42,
       "failingTests": []
     },
     "filterBy": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 17,
-      "assertionsPassing": 17,
+      "assertionsTotal": 21,
+      "assertionsPassing": 21,
       "failingTests": []
     },
     "generateController": {
@@ -4619,8 +4624,8 @@
     "gxt-native | RenderingTestCase": {
       "total": 9,
       "passing": 9,
-      "assertionsTotal": 28,
-      "assertionsPassing": 28,
+      "assertionsTotal": 29,
+      "assertionsPassing": 29,
       "failingTests": []
     },
     "gxt-native | attributes": {
@@ -4809,8 +4814,8 @@
     "isEmpty": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 16,
-      "assertionsPassing": 16,
+      "assertionsTotal": 17,
+      "assertionsPassing": 17,
       "failingTests": []
     },
     "isEqual": {
@@ -4851,29 +4856,29 @@
     "map": {
       "total": 9,
       "passing": 9,
-      "assertionsTotal": 22,
-      "assertionsPassing": 22,
+      "assertionsTotal": 31,
+      "assertionsPassing": 31,
       "failingTests": []
     },
     "mapBy": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "max": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "min": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "mixins/array/arrayContent[Will|Did]Change": {
@@ -5047,8 +5052,8 @@
     "setDiff": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "setProperties": {
@@ -5061,36 +5066,36 @@
     "sort - concurrency": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 17,
-      "assertionsPassing": 17,
+      "assertionsTotal": 21,
+      "assertionsPassing": 21,
       "failingTests": []
     },
     "sort - sort function": {
       "total": 12,
       "passing": 12,
-      "assertionsTotal": 27,
-      "assertionsPassing": 27,
+      "assertionsTotal": 39,
+      "assertionsPassing": 39,
       "failingTests": []
     },
     "sort - sortProperties - Ember.Object": {
       "total": 24,
       "passing": 24,
-      "assertionsTotal": 52,
-      "assertionsPassing": 52,
+      "assertionsTotal": 76,
+      "assertionsPassing": 76,
       "failingTests": []
     },
     "sort - sortProperties - Native Class": {
       "total": 24,
       "passing": 24,
-      "assertionsTotal": 88,
-      "assertionsPassing": 88,
+      "assertionsTotal": 112,
+      "assertionsPassing": 112,
       "failingTests": []
     },
     "sort - stability": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 2,
-      "assertionsPassing": 2,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
       "failingTests": []
     },
     "strict mode tests": {
@@ -5110,8 +5115,8 @@
     "sum": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "syntax refinements": {
@@ -5325,6 +5330,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 13
+    "gxt:triage": 19
   }
 }
