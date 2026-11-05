@@ -3147,6 +3147,203 @@ export function markTemplateRendered(instance: any): void {
   }
 }
 
+// ── DEV: the members the templates of a render pass read ─────────────────────
+// A template reads `this.wrapper.content` through the proxy of its render
+// context (`createRenderContext`, which reads `this.wrapper`) and the tracking
+// proxy of the object that read returns (`wrapNestedObjectForTracking`, which
+// reads `.content` and its cell, as Glimmer's `getProp` consumes the member's
+// tag). The render pass records each such member read (`_noteMemberRead`)
+// with the components rendering at the read and the template path, so that a
+// later write of the member in the same render asserts, with the message
+// Glimmer gives (`checkBacktracking`). A member of a plain object is read with
+// no proxy, so it is not recorded.
+
+// Where the render pass first used a member it read (DEV): Glimmer's "was
+// first used: - While rendering:".
+interface RenderPassFirstUse {
+  /** The components rendering at the read, outermost first. */
+  readonly tree: readonly string[];
+  /** The template path read, as `this.wrapper.content`. */
+  readonly path: string;
+}
+// The members of each object the render pass's templates read, by raw object
+// (DEV): the first use of each, and how many reads used it. Created on the
+// pass's first such read, dropped with the pass.
+let _renderPassMemberReads: WeakMap<
+  object,
+  Map<string, { readonly firstUse: RenderPassFirstUse; uses: number }>
+> | null = null;
+// The template path (`this.wrapper`) through which a template of the render
+// pass last read each object, by raw object (DEV). Set while a pass runs.
+let _renderPassReadPaths: WeakMap<object, string> | null = null;
+// The last member read through a tracking proxy in the render pass, whether
+// the pass recorded it, and the tracking frame it was read in (DEV): `set()`
+// reads the value it replaces just before it writes it, in the same frame, and
+// that read uses nothing.
+let _lastMemberReadObj: object | null = null;
+let _lastMemberReadKey: string | null = null;
+let _lastMemberReadUsed = false;
+let _lastMemberReadFrame: unknown = null;
+// The name of each custom-managed component in the render tree, by the context
+// its template renders with (DEV): the name it was invoked by.
+let _debugComponentNames: WeakMap<object, string> | null = null;
+
+// DEV: a template of the render pass read `value` as `this.<key>`.
+function _noteThisPathRead(value: object, key: string): void {
+  _renderPassReadPaths!.set(_proxyToRaw.get(value) ?? value, `this.${key}`);
+}
+
+// DEV: a template of the render pass read `key` of `obj` through `obj`'s
+// tracking proxy (see above). It is a use when the read is one of the pass's
+// (validator.ts `readsForRenderPass`: inside a tracking frame, not untracked,
+// not at commit). A proxy of a proxy notes nothing: the inner proxy notes the
+// read of the raw object.
+function _noteMemberRead(obj: object, key: string): void {
+  if (_proxyToRaw.has(obj)) return;
+  _lastMemberReadObj = obj;
+  _lastMemberReadKey = key;
+  _lastMemberReadFrame = _gxtGetTracker();
+  _lastMemberReadUsed = getGxtRenderer()?.backtracking.readsForRenderPass?.() === true;
+  if (!_lastMemberReadUsed) return;
+  if (_renderPassMemberReads === null) _renderPassMemberReads = new WeakMap();
+  let reads = _renderPassMemberReads.get(obj);
+  if (reads === undefined) {
+    reads = new Map();
+    _renderPassMemberReads.set(obj, reads);
+  }
+  const read = reads.get(key);
+  if (read !== undefined) {
+    read.uses++;
+    return;
+  }
+  const objPath = _renderPassReadPaths!.get(obj);
+  reads.set(key, {
+    firstUse: {
+      tree: _renderingComponentNames(),
+      path: objPath === undefined ? `this.${key}` : `${objPath}.${key}`,
+    },
+    uses: 1,
+  });
+}
+
+// DEV: the first use of `key` of `obj` by the render pass, `undefined` when it
+// did not use it. A write at commit (a modifier's install) is not one of the
+// render's.
+function _renderPassMemberRead(obj: object, key: string): RenderPassFirstUse | undefined {
+  if (
+    _renderPassMemberReads === null ||
+    getGxtRenderer()?.backtracking.inRenderPassReads?.() !== true
+  ) {
+    return undefined;
+  }
+  return _renderPassMemberReads.get(obj)?.get(key)?.firstUse;
+}
+
+// DEV: code writes `key` of `obj` through `obj`'s tracking proxy. If the read
+// just before it was a recorded read of the same member in the same frame, it
+// was the read of the value the write replaces (`set()`), which is not a use.
+function _noteMemberWrite(obj: object, key: string): void {
+  if (_proxyToRaw.has(obj)) return;
+  if (
+    _lastMemberReadUsed &&
+    _lastMemberReadObj === obj &&
+    _lastMemberReadKey === key &&
+    _lastMemberReadFrame === _gxtGetTracker()
+  ) {
+    const reads = _renderPassMemberReads?.get(obj);
+    const read = reads?.get(key);
+    if (read !== undefined && --read.uses === 0) reads!.delete(key);
+  }
+  _lastMemberReadObj = null;
+  _lastMemberReadKey = null;
+  _lastMemberReadUsed = false;
+  _lastMemberReadFrame = null;
+}
+
+// DEV: names `context`, the context of a custom-managed component's template,
+// in the render tree.
+function _nameDebugComponent(context: unknown, name: string): void {
+  if (context === null || (typeof context !== 'object' && typeof context !== 'function')) return;
+  if (_debugComponentNames === null) _debugComponentNames = new WeakMap();
+  _debugComponentNames.set(context, name);
+}
+
+// DEV: the name of a parent view in the render tree: a custom-managed
+// component's (`_nameDebugComponent`), else a classic component's registry
+// name. The test harness's `-top-level` component is the root of the tree,
+// which the message names on its own (`renderRootLabel`).
+function _debugComponentName(view: any): string | undefined {
+  const named =
+    view !== null && typeof view === 'object' ? _debugComponentNames?.get(view) : undefined;
+  if (named !== undefined) return named;
+  const containerKey = view?._debugContainerKey;
+  if (typeof containerKey !== 'string' || !containerKey.startsWith('component:')) {
+    return undefined;
+  }
+  const name = containerKey.slice('component:'.length);
+  return name === '-top-level' ? undefined : name;
+}
+
+// DEV: the components rendering now, outermost first: the parent views whose
+// templates render. A template-only component has no parent view; the
+// message's transform (compile.ts) adds the ones the pass rendered.
+function _renderingComponentNames(): string[] {
+  const names: string[] = [];
+  let previous: unknown = null;
+  for (const view of parentViewStack) {
+    if (view === previous) continue;
+    previous = view;
+    const name = _debugComponentName(view);
+    if (name !== undefined) names.push(name);
+  }
+  return names;
+}
+
+// DEV: whether `targetObj`, its raw object or its tracking proxy is an object
+// a classic component of the pass rendered (`markTemplateRendered`).
+function _isTemplateRendered(targetObj: any): boolean {
+  if (_templateRenderedInstances.has(targetObj)) return true;
+  const rawTarget = _proxyToRaw.get(targetObj);
+  if (rawTarget && _templateRenderedInstances.has(rawTarget)) return true;
+  const proxyOfTarget = _nestedTrackingProxies.get(targetObj);
+  return Boolean(proxyOfTarget) && _templateRenderedInstances.has(proxyOfTarget);
+}
+
+// DEV: the backtracking assertion for a write of `key` on `targetObj`, a member
+// the render pass first used at `firstUse`. Its text is `checkBacktracking`'s.
+function _assertMemberBacktracking(
+  targetObj: any,
+  key: string,
+  firstUse: RenderPassFirstUse
+): void {
+  // An EmberObject's `<Name:emberN>` or a custom toString(), else the class name.
+  const toStr = targetObj?.toString?.();
+  let objName: string;
+  if (typeof toStr === 'string' && toStr !== '' && toStr !== '[object Object]') {
+    objName = toStr;
+  } else {
+    const ctorName = targetObj?.constructor?.name;
+    objName = ctorName && ctorName !== 'Object' && ctorName !== 'Array' ? ctorName : '<unknown>';
+  }
+  const { tree, path } = firstUse;
+  const lines = tree.map((name, i) => ' '.repeat((i + 2) * 2) + name);
+  lines.push(' '.repeat((tree.length + 1) * 2) + path);
+  // The root is labeled as `checkBacktracking` labels it (`renderRootLabel`).
+  let msg = `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  ${renderRootLabel()}\n${lines.join('\n')}\n\nStack trace for the update:`;
+  // compile.ts adds the template-only components of the pass to the tree.
+  const transformMsg = getGxtRenderer()?.backtracking.transformBacktrackingMessage;
+  if (transformMsg) {
+    msg = transformMsg(msg);
+  }
+  // The assert `expectAssertion()` stubs (see `checkBacktracking`).
+  const assertFn = (globalThis as any).__emberAssertFn;
+  if (typeof assertFn === 'function') {
+    assertFn(msg, false);
+  } else {
+    assert(msg, false);
+  }
+}
+
 export function beginRenderPass(): void {
   // Dispatch the registered `beforeBeginRenderPass` host hook (if any) BEFORE
   // manager.ts's bookkeeping. compile.ts contributes this hook (via
@@ -3161,15 +3358,32 @@ export function beginRenderPass(): void {
   }
   _isInRenderPass = true;
   _templateRenderedInstances.clear();
-  // DEV: the tracked values this render reads, for the per-value backtracking
-  // check (`assertTrackedCellBacktrack`), as Glimmer's render transaction.
-  if (DEBUG) beginRenderPassReads();
+  // DEV: the tracked values and the members this render reads, for the
+  // backtracking checks (`assertTrackedCellBacktrack`, `checkBacktracking`), as
+  // Glimmer's render transaction.
+  if (DEBUG) {
+    beginRenderPassReads();
+    _renderPassMemberReads = null;
+    _renderPassReadPaths = new WeakMap();
+    _lastMemberReadObj = null;
+    _lastMemberReadKey = null;
+    _lastMemberReadUsed = false;
+    _lastMemberReadFrame = null;
+  }
 }
 
 export function endRenderPass(): void {
   _isInRenderPass = false;
   _templateRenderedInstances.clear();
-  if (DEBUG) endRenderPassReads();
+  if (DEBUG) {
+    endRenderPassReads();
+    _renderPassMemberReads = null;
+    _renderPassReadPaths = null;
+    _lastMemberReadObj = null;
+    _lastMemberReadKey = null;
+    _lastMemberReadUsed = false;
+    _lastMemberReadFrame = null;
+  }
 }
 
 /**
@@ -3187,6 +3401,13 @@ export function endRenderPass(): void {
  */
 export function checkBacktracking(targetObj: any, key: string): void {
   if (!_isInRenderPass) return;
+  // DEV: a write of a member a template of the pass read asserts, when no
+  // classic component of the pass rendered the object (that case is below).
+  if (DEBUG && !_isTemplateRendered(targetObj)) {
+    const firstUse = _renderPassMemberRead(_proxyToRaw.get(targetObj) ?? targetObj, key);
+    if (firstUse !== undefined) _assertMemberBacktracking(targetObj, key, firstUse);
+    return;
+  }
   if (!_templateRenderedInstances.has(targetObj)) {
     // The target might be a Proxy created by wrapNestedObjectForTracking.
     // Check if the raw (unwrapped) target is in the set.
@@ -5976,6 +6197,8 @@ function wrapNestedObjectForTracking(obj: any): any {
       const value = Reflect.get(target, prop, target);
       // Don't create cells for methods
       if (typeof value === 'function') return value;
+      // DEV: the render pass records the read, for the backtracking check.
+      if (DEBUG && _renderPassReadPaths !== null) _noteMemberRead(target, prop);
       // Create/read cell so GXT formula tracks this dependency.
       // Use skipDefine=true to avoid overwriting @tracked getter/setters
       // which include backtracking detection. We sync the cell value
@@ -5997,6 +6220,10 @@ function wrapNestedObjectForTracking(obj: any): any {
     // this = target (not proxy). This ensures backtracking detection and
     // tracked property storage (WeakMap keyed by `this`) work correctly.
     set(target, prop, value) {
+      // DEV: `set()`'s read of the value it replaces is not a use.
+      if (DEBUG && _renderPassReadPaths !== null && typeof prop === 'string') {
+        _noteMemberWrite(target, prop);
+      }
       return Reflect.set(target, prop, value, target);
     },
   });
@@ -7153,6 +7380,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
           // again, when this read retried).
           const val = wrapper.value;
           if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
+            if (DEBUG && _renderPassReadPaths !== null) _noteThisPathRead(val, prop);
             return wrapNestedObjectForTracking(val);
           }
           return val;
@@ -7162,6 +7390,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
 
         // Wrap nested Ember objects so sub-property reads are tracked
         if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
+          if (DEBUG && _renderPassReadPaths !== null) _noteThisPathRead(val, prop);
           return wrapNestedObjectForTracking(val);
         }
         return val;
@@ -7186,6 +7415,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
         const cellVal = cell.value;
         // Wrap nested Ember objects so sub-property reads are tracked
         if (cellVal !== null && typeof cellVal === 'object' && !(cellVal instanceof Node)) {
+          if (DEBUG && _renderPassReadPaths !== null) _noteThisPathRead(cellVal, prop);
           return wrapNestedObjectForTracking(cellVal);
         }
         return cellVal;
@@ -7193,6 +7423,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
 
       // Wrap nested Ember objects for tracking even without cells
       if (value !== null && typeof value === 'object' && !(value instanceof Node)) {
+        if (DEBUG && _renderPassReadPaths !== null) _noteThisPathRead(value, prop);
         return wrapNestedObjectForTracking(value);
       }
       return value;
@@ -10928,6 +11159,15 @@ function handleCustomManagedComponent(
           }
         }
       }
+    }
+
+    // DEV: the component's name in the render tree of a backtracking message
+    // (`_renderingComponentNames`), the name it was invoked by.
+    if (DEBUG) {
+      _nameDebugComponent(
+        context,
+        resolvedName !== undefined ? _gxtRegistryName(resolvedName) : _gxtDebugName(ComponentClass)
+      );
     }
 
     // In the debug render tree the component is its manager's context, with the

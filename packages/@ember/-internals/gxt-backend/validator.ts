@@ -22,7 +22,12 @@ import {
 } from '@lifeart/gxt';
 // Routes the track() reentrancy-guard save-restore through the typed bridge
 // helper. See `withTriggerSuppressed` doc in gxt-bridge.ts.
-import { getGxtRenderer, getEmberAssertDirect, renderRootLabel } from './gxt-bridge';
+import {
+  getGxtRenderer,
+  getEmberAssertDirect,
+  installBacktrackingPart,
+  renderRootLabel,
+} from './gxt-bridge';
 
 // Create cell-like functionality using storage primitives
 const createCell = (initialValue: any, _name?: string) => {
@@ -555,6 +560,21 @@ export function endRenderPassReads(): void {
   _renderPassReads = null;
 }
 
+// Whether a read now is a read of the render pass, as in Glimmer: one inside a
+// tracking frame (a binding computing its value, a `track()` or cache frame),
+// not in `untrack` nor outside any frame, and not at commit
+// (`outsideRenderPassReads`).
+function _readsForRenderPass(): boolean {
+  return (
+    _renderPassReads !== null &&
+    _localUntrackDepth === 0 &&
+    _renderPassUntrackDepth === 0 &&
+    (_gxtGetTracker() !== null ||
+      (_trackingTagStack !== null && _trackingTagStack.length > 0) ||
+      _cacheTagTracker.length > 0)
+  );
+}
+
 // `fn()` outside the render pass's reads: what Glimmer runs after the render
 // transaction, at commit (a modifier's install), neither consumes for the
 // render nor asserts when it writes a value the render read.
@@ -580,6 +600,16 @@ export function untrackedForRenderPass<T>(fn: () => T): T {
   } finally {
     _renderPassUntrackDepth--;
   }
+}
+
+// DEV: manager.ts records the members the render pass's templates read
+// (`checkBacktracking`), and asks through the bridge whether a read now is one
+// of the pass's and whether code runs in the pass's reads (not at commit).
+if (DEBUG) {
+  installBacktrackingPart({
+    readsForRenderPass: _readsForRenderPass,
+    inRenderPassReads: () => _renderPassReads !== null,
+  });
 }
 
 // beginBacktrackingFrame / endBacktrackingFrame are installed on the typed
@@ -611,21 +641,10 @@ export function recordTrackedCellRead(cell: any, key: string | symbol, obj: obje
     _backtrackingFrame.set(cell, { key, obj });
   }
   // The render pass: as in Glimmer, a read consumes only inside a tracking
-  // frame (a binding computing its value, a `track()` or cache frame), not in
-  // `untrack` nor outside any frame. Glimmer's curly manager creates a classic
+  // frame (`_readsForRenderPass`). Glimmer's curly manager creates a classic
   // component and runs its lifecycle hooks untracked.
-  if (
-    DEBUG &&
-    _renderPassReads !== null &&
-    _localUntrackDepth === 0 &&
-    _renderPassUntrackDepth === 0 &&
-    cell !== null &&
-    typeof cell === 'object' &&
-    (_gxtGetTracker() !== null ||
-      (_trackingTagStack !== null && _trackingTagStack.length > 0) ||
-      _cacheTagTracker.length > 0)
-  ) {
-    _renderPassReads.add(cell);
+  if (DEBUG && cell !== null && typeof cell === 'object' && _readsForRenderPass()) {
+    _renderPassReads!.add(cell);
   }
   // Debug tracking transaction: record the cell as consumed so a subsequent
   // setter call in the same transaction can detect the backtracking update.
