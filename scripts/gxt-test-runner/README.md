@@ -42,9 +42,9 @@ node scripts/gxt-test-runner/runner.mjs --smoke
 ```
 
 The smoke modules (`smoke-modules.json`) hold 275 tests and 1,835 assertions.
-Three tests of `Components test: curly components` are known reds in
-`test-results/gxt-baseline.json`, so a run on the baseline reports 272/275
-tests and 1,832/1,835 assertions. The runner prints both counts on its summary
+One test of `Components test: curly components` is a known red in
+`test-results/gxt-baseline.json`, so a run on the baseline reports 274/275
+tests and 1,834/1,835 assertions. The runner prints both counts on its summary
 line; see [Baseline gating](#baseline-gating) for the verdict.
 
 ### Full run

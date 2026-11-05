@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-10-23T17:00:40.575Z",
+    "capturedAt": "2026-11-05T15:03:01.597Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "057856d",
-    "totalTests": 10376,
-    "totalModules": 1037,
+    "emberCommit": "2d896c5",
+    "totalTests": 10433,
+    "totalModules": 1053,
     "quarantinedTests": 0,
-    "totalAssertions": 61595,
-    "totalAssertionsPassing": 61298,
-    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 21a5f6c228, with the fixes of lifeart:gxt-ember-easy-fixes and lifeart:gxt-ember-hard-fixes folded in; written by runner.mjs in the GitHub Actions GXT full workflow (run 39991374779, merged from 5 shards, on the code of 057856d), and re-gated on the final tree. 10135/10376 green, 1037 modules, no timeouts, no harness errors. Against the baseline before this rebase: main moved six classic-component test files into components/classic/ and renamed their modules (suffix ' (classic component)'), same tests and results; the folded fixes turn nine tests green (the loose-mode {{attrs}} assertions, the {{fn}} updates, the EmberArray helper argument, the template-only {{debugger}} self, the modifier-install error recovery); main's rewrite of the positional-params tests of 'Component Manager - Curly Invocation' to a native class with a no-op updateComponent (51a761e28b) makes three of them known reds: the compat custom-manager arguments do not update a native component's positional params unless updateComponent writes them. The module 'Basic Custom Modifier Manager: 3.22' keeps its entry from the previous baseline: run 39991374779 had one more red there, which the review fix of the modifier-install change (a non-Error throw propagates as is) restores."
+    "totalAssertions": 61999,
+    "totalAssertionsPassing": 61705,
+    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42050816110, merged from 5 shards, on the code of 2d896c5). 10195/10433 green, 1053 modules, no timeouts, no harness errors. Against the previous baseline of this rebase (10192/10433): the compat backtracking assertion for a member that a Glimmer component's template read turns 3 known reds green ('when a shared dependency is changed during children's rendering' and its '(tracked)' variant (Components test: curly components), 'asserts when a shared dependency is changed during rendering, and keeps original context' (Components test: template-only components (glimmer components))); no other test changed status. Against the baseline on main 21a5f6c228 (10141/10377, 1038 modules): main renders the template of a rendering test through a Glimmer root, which GXT renders as a component root of the test's renderer (BaseRenderer#render); main moved classic-component tests into components/classic/ (new module names, same results) and added tests, all green except 4 known reds: 'the render stack of a backtracking message starts with -top-level' (Errors thrown during render (classic component)), '{{outlet}} in a component asserts' (Route manager - {{outlet}} under a non-classic level) and the two loose raw-block tests of '[integration] jit :: Inherited from Handlebars (legacy behavior): raw blocks'. Main's two new rehydration-stats tests of a curly Glimmer component are skipped as unsupported, as their classic-component siblings are. No test that main left unchanged went from green to red."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -20,10 +20,10 @@
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests)": {
-      "total": 7,
-      "passing": 7,
-      "assertionsTotal": 10,
-      "assertionsPassing": 10,
+      "total": 8,
+      "passing": 8,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "<LinkTo /> component (rendering tests, with router not started)": {
@@ -284,15 +284,10 @@
     },
     "@glimmer/validator: tracking": {
       "total": 40,
-      "passing": 39,
+      "passing": 40,
       "assertionsTotal": 121,
-      "assertionsPassing": 120,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 121,
+      "failingTests": []
     },
     "@glimmer/validator: tracking > debug": {
       "total": 4,
@@ -324,15 +319,10 @@
     },
     "@glimmer/validator: tracking > tracking cache": {
       "total": 14,
-      "passing": 13,
+      "passing": 14,
       "assertionsTotal": 70,
-      "assertionsPassing": 69,
-      "failingTests": [
-        {
-          "name": "it keeps its tag if it consumes the same tags in the next run",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 70,
+      "failingTests": []
     },
     "@glimmer/validator: validators": {
       "total": 22,
@@ -635,6 +625,13 @@
           "category": "gxt:triage"
         }
       ]
+    },
+    "Application test: {{outlet}} inside a component": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
     },
     "Application when LOG_ACTIVE_GENERATION=false": {
       "total": 1,
@@ -1088,36 +1085,36 @@
     "CP Macro `intersect`": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "CP Macro `uniqBy`": {
       "total": 5,
       "passing": 5,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macro `union`": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macro `uniq`": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "CP macros": {
       "total": 25,
       "passing": 25,
-      "assertionsTotal": 186,
-      "assertionsPassing": 186,
+      "assertionsTotal": 193,
+      "assertionsPassing": 193,
       "failingTests": []
     },
     "Cache": {
@@ -1137,8 +1134,8 @@
     "Chaining array and reduced CPs": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 8,
-      "assertionsPassing": 8,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "ClassNameBindings integration (classic component)": {
@@ -1433,23 +1430,10 @@
     },
     "Component Manager - Curly Invocation": {
       "total": 15,
-      "passing": 12,
+      "passing": 15,
       "assertionsTotal": 34,
-      "assertionsPassing": 31,
-      "failingTests": [
-        {
-          "name": " positional params are updated if they change (computed, arr tag)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " positional params are updated if they change (computed, individual tags)",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " positional params are updated if they change (native)",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 34,
+      "failingTests": []
     },
     "Component Rendering": {
       "total": 6,
@@ -1461,8 +1445,8 @@
     "Component Tracked Properties": {
       "total": 20,
       "passing": 20,
-      "assertionsTotal": 47,
-      "assertionsPassing": 47,
+      "assertionsTotal": 49,
+      "assertionsPassing": 49,
       "failingTests": []
     },
     "Component Tracked Properties (classic component)": {
@@ -1503,8 +1487,8 @@
     "Components test: <Input />": {
       "total": 9,
       "passing": 9,
-      "assertionsTotal": 69,
-      "assertionsPassing": 69,
+      "assertionsTotal": 89,
+      "assertionsPassing": 89,
       "failingTests": []
     },
     "Components test: <Input /> URL sanitization": {
@@ -1512,6 +1496,13 @@
       "passing": 1,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "Components test: <Input /> with an action from a classic root (classic component)": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "Components test: <Input /> with dynamic type": {
@@ -1587,8 +1578,8 @@
     "Components test: contextual components": {
       "total": 43,
       "passing": 42,
-      "assertionsTotal": 205,
-      "assertionsPassing": 200,
+      "assertionsTotal": 217,
+      "assertionsPassing": 212,
       "failingTests": [
         {
           "name": " renders with dot path and updates attributes",
@@ -1597,11 +1588,16 @@
       ]
     },
     "Components test: contextual components (classic component)": {
-      "total": 10,
-      "passing": 10,
-      "assertionsTotal": 35,
-      "assertionsPassing": 35,
-      "failingTests": []
+      "total": 23,
+      "passing": 22,
+      "assertionsTotal": 79,
+      "assertionsPassing": 78,
+      "failingTests": [
+        {
+          "name": " renders with dot path and updates attributes",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "Components test: contextual components -- mutable params": {
       "total": 2,
@@ -1618,37 +1614,29 @@
       "failingTests": []
     },
     "Components test: curly components": {
-      "total": 60,
+      "total": 58,
       "passing": 57,
-      "assertionsTotal": 238,
-      "assertionsPassing": 235,
+      "assertionsTotal": 231,
+      "assertionsPassing": 230,
       "failingTests": [
         {
           "name": " when a property is changed during children's rendering",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " when a shared dependency is changed during children's rendering",
-          "category": "gxt:triage"
-        },
-        {
-          "name": " when a shared dependency is changed during children's rendering (tracked)",
           "category": "gxt:triage"
         }
       ]
     },
     "Components test: curly components (classic component)": {
-      "total": 72,
-      "passing": 72,
-      "assertionsTotal": 498,
-      "assertionsPassing": 498,
+      "total": 77,
+      "passing": 77,
+      "assertionsTotal": 515,
+      "assertionsPassing": 515,
       "failingTests": []
     },
     "Components test: dynamic components": {
-      "total": 20,
-      "passing": 18,
-      "assertionsTotal": 69,
-      "assertionsPassing": 67,
+      "total": 19,
+      "passing": 17,
+      "assertionsTotal": 64,
+      "assertionsPassing": 62,
       "failingTests": [
         {
           "name": " it throws a useful assertion for an invalid dynamic component value in strict mode",
@@ -1661,10 +1649,10 @@
       ]
     },
     "Components test: dynamic components (classic component)": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 21,
-      "assertionsPassing": 21,
+      "total": 6,
+      "passing": 6,
+      "assertionsTotal": 39,
+      "assertionsPassing": 39,
       "failingTests": []
     },
     "Components test: fragment components (classic component)": {
@@ -1725,15 +1713,10 @@
     },
     "Components test: template-only components (glimmer components)": {
       "total": 6,
-      "passing": 5,
+      "passing": 6,
       "assertionsTotal": 38,
-      "assertionsPassing": 37,
-      "failingTests": [
-        {
-          "name": " asserts when a shared dependency is changed during rendering, and keeps original context",
-          "category": "gxt:triage"
-        }
-      ]
+      "assertionsPassing": 38,
+      "failingTests": []
     },
     "Components test: template-only components (using `templateOnlyComponent()`)": {
       "total": 4,
@@ -1759,8 +1742,8 @@
     "Components test: {{input}}": {
       "total": 7,
       "passing": 7,
-      "assertionsTotal": 25,
-      "assertionsPassing": 25,
+      "assertionsTotal": 33,
+      "assertionsPassing": 33,
       "failingTests": []
     },
     "Components test: {{input}} with dynamic type": {
@@ -2003,8 +1986,8 @@
     "Ember.ArrayProxy - content change (length)": {
       "total": 13,
       "passing": 13,
-      "assertionsTotal": 86,
-      "assertionsPassing": 86,
+      "assertionsTotal": 87,
+      "assertionsPassing": 87,
       "failingTests": []
     },
     "Ember.CoreObject": {
@@ -2031,8 +2014,8 @@
     "Ember.PromiseProxy - ObjectProxy": {
       "total": 14,
       "passing": 14,
-      "assertionsTotal": 127,
-      "assertionsPassing": 127,
+      "assertionsTotal": 139,
+      "assertionsPassing": 139,
       "failingTests": []
     },
     "Ember.RSVP": {
@@ -2045,15 +2028,15 @@
     "Ember.arrayComputed - chains": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.arrayComputed - mixed sugar": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 5,
-      "assertionsPassing": 5,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.canInvoke": {
@@ -2108,8 +2091,8 @@
     "Ember.isEmpty": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 4,
-      "assertionsPassing": 4,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
       "failingTests": []
     },
     "Ember.makeArray": {
@@ -2438,11 +2421,16 @@
       ]
     },
     "Errors thrown during render (classic component)": {
-      "total": 2,
-      "passing": 2,
-      "assertionsTotal": 8,
-      "assertionsPassing": 8,
-      "failingTests": []
+      "total": 4,
+      "passing": 3,
+      "assertionsTotal": 13,
+      "assertionsPassing": 12,
+      "failingTests": [
+        {
+          "name": " the render stack of a backtracking message starts with -top-level",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "EventDispatcher": {
       "total": 2,
@@ -2699,6 +2687,13 @@
     "GXT correctness: {{#if}} truthiness": {
       "total": 3,
       "passing": 3,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
+    "GXT custom component manager arguments": {
+      "total": 1,
+      "passing": 1,
       "assertionsTotal": 3,
       "assertionsPassing": 3,
       "failingTests": []
@@ -3017,8 +3012,8 @@
     "Helpers test: helper managers": {
       "total": 15,
       "passing": 15,
-      "assertionsTotal": 33,
-      "assertionsPassing": 33,
+      "assertionsTotal": 34,
+      "assertionsPassing": 34,
       "failingTests": []
     },
     "Helpers test: inline {{if}} and {{unless}} without the inverse argument": {
@@ -3262,6 +3257,34 @@
       "passing": 18,
       "assertionsTotal": 21,
       "assertionsPassing": 21,
+      "failingTests": []
+    },
+    "Inherited from Handlebars (legacy behavior): raw blocks": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 13,
+      "assertionsPassing": 13,
+      "failingTests": []
+    },
+    "Inherited from Handlebars (legacy behavior): {{&foo}} trusting mustache": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "Inherited from Handlebars (legacy behavior): {{^foo}} inverse block opener": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
+      "failingTests": []
+    },
+    "Inherited from Handlebars (legacy behavior): {{^}} as {{else}}": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
       "failingTests": []
     },
     "Inline style tests": {
@@ -4177,8 +4200,8 @@
     "Query Params - main": {
       "total": 63,
       "passing": 63,
-      "assertionsTotal": 223,
-      "assertionsPassing": 223,
+      "assertionsTotal": 226,
+      "assertionsPassing": 226,
       "failingTests": []
     },
     "Query Params - model-dependent state": {
@@ -4432,6 +4455,18 @@
       "assertionsTotal": 3,
       "assertionsPassing": 3,
       "failingTests": []
+    },
+    "Route manager - {{outlet}} under a non-classic level": {
+      "total": 3,
+      "passing": 2,
+      "assertionsTotal": 3,
+      "assertionsPassing": 2,
+      "failingTests": [
+        {
+          "name": " {{outlet}} in a component asserts",
+          "category": "gxt:triage"
+        }
+      ]
     },
     "Route serialize": {
       "total": 5,
@@ -4701,10 +4736,10 @@
       "failingTests": []
     },
     "Strict Mode - renderComponent": {
-      "total": 29,
-      "passing": 29,
-      "assertionsTotal": 160,
-      "assertionsPassing": 160,
+      "total": 30,
+      "passing": 30,
+      "assertionsTotal": 163,
+      "assertionsPassing": 163,
       "failingTests": [],
       "skippedTests": [
         " when args are a custom tracked class, the rendered component response appropriately",
@@ -4793,8 +4828,8 @@
     "Syntax test: {{#each as}} DOM mutation test": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "Syntax test: {{#each as}} undefined path": {
@@ -4992,6 +5027,13 @@
       "failingTests": []
     },
     "Template factory test": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
+      "failingTests": []
+    },
+    "Template factory test (classic component)": {
       "total": 1,
       "passing": 1,
       "assertionsTotal": 9,
@@ -5558,8 +5600,8 @@
     "[integration] jit :: Attributes": {
       "total": 33,
       "passing": 33,
-      "assertionsTotal": 378,
-      "assertionsPassing": 378,
+      "assertionsTotal": 380,
+      "assertionsPassing": 380,
       "failingTests": []
     },
     "[integration] jit :: Components :: -with-dynamic-vars and -get-dynamic-var": {
@@ -5853,6 +5895,43 @@
       "assertionsPassing": 63,
       "failingTests": []
     },
+    "[integration] jit :: Inherited from Handlebars (legacy behavior): raw blocks": {
+      "total": 4,
+      "passing": 2,
+      "assertionsTotal": 20,
+      "assertionsPassing": 18,
+      "failingTests": [
+        {
+          "name": "loose: a raw block yields its body with mustaches as literal text",
+          "category": "gxt:triage"
+        },
+        {
+          "name": "loose: a raw block takes arguments and still parses HTML in its body",
+          "category": "gxt:triage"
+        }
+      ]
+    },
+    "[integration] jit :: Inherited from Handlebars (legacy behavior): {{&foo}}": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
+      "failingTests": []
+    },
+    "[integration] jit :: Inherited from Handlebars (legacy behavior): {{^foo}} with {{else}}": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
+      "failingTests": []
+    },
+    "[integration] jit :: Inherited from Handlebars (legacy behavior): {{^}} as {{else}}": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
+      "failingTests": []
+    },
     "[integration] jit :: Updating": {
       "total": 66,
       "passing": 65,
@@ -5940,8 +6019,8 @@
     "[integration] jit :: [emberjs/ember.js#15675] Template <input type=\"range\" value={{this.value}} min={{this.min}} max={{this.max}} />": {
       "total": 38,
       "passing": 38,
-      "assertionsTotal": 393,
-      "assertionsPassing": 393,
+      "assertionsTotal": 395,
+      "assertionsPassing": 395,
       "failingTests": []
     },
     "[integration] jit :: [owner]": {
@@ -6555,22 +6634,22 @@
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
       "passing": 38,
-      "assertionsTotal": 393,
-      "assertionsPassing": 393,
+      "assertionsTotal": 395,
+      "assertionsPassing": 395,
       "failingTests": []
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
       "passing": 38,
-      "assertionsTotal": 393,
-      "assertionsPassing": 393,
+      "assertionsTotal": 395,
+      "assertionsPassing": 395,
       "failingTests": []
     },
     "[integration] jit :: integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type=\"range\" value=\"%x\" min=\"-5\" max=\"50\" />": {
       "total": 38,
       "passing": 38,
-      "assertionsTotal": 393,
-      "assertionsPassing": 393,
+      "assertionsTotal": 395,
+      "assertionsPassing": 395,
       "failingTests": []
     },
     "[integration] jit :: keyword helper: and": {
@@ -7401,8 +7480,8 @@
       ]
     },
     "[integration] rehydration :: rehydration": {
-      "total": 126,
-      "passing": 126,
+      "total": 128,
+      "passing": 128,
       "assertionsTotal": 664,
       "assertionsPassing": 664,
       "failingTests": [],
@@ -7439,6 +7518,8 @@
         "#each rehydration",
         "curly invocation of a classic Component: multiple invocations",
         "curly invocation of a classic Component: mismatched multiple invocations",
+        "curly invocation of a Glimmer component: multiple invocations",
+        "curly invocation of a Glimmer component: mismatched multiple invocations",
         "{{component}} invocation: component invocations",
         "{{component}} invocation: interacting with builtins",
         "Dynamic selected options",
@@ -7485,7 +7566,7 @@
       "assertionsPassing": 40,
       "failingTests": []
     },
-    "built-in component toString": {
+    "built-in component toString (classic component)": {
       "total": 1,
       "passing": 1,
       "assertionsTotal": 1,
@@ -7499,11 +7580,18 @@
       "assertionsPassing": 9,
       "failingTests": []
     },
+    "checkHasSuper": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 1,
+      "assertionsPassing": 1,
+      "failingTests": []
+    },
     "collect": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 5,
-      "assertionsPassing": 5,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
       "failingTests": []
     },
     "computed": {
@@ -7681,6 +7769,13 @@
       "assertionsPassing": 16,
       "failingTests": []
     },
+    "ember-glimmer runtime resolver cache (classic component)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 16,
+      "assertionsPassing": 16,
+      "failingTests": []
+    },
     "ember-template-compiler: Embroider-like compilation": {
       "total": 1,
       "passing": 1,
@@ -7808,15 +7903,15 @@
     "filter": {
       "total": 13,
       "passing": 13,
-      "assertionsTotal": 29,
-      "assertionsPassing": 29,
+      "assertionsTotal": 42,
+      "assertionsPassing": 42,
       "failingTests": []
     },
     "filterBy": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 17,
-      "assertionsPassing": 17,
+      "assertionsTotal": 21,
+      "assertionsPassing": 21,
       "failingTests": []
     },
     "generateController": {
@@ -7952,8 +8047,8 @@
     "isEmpty": {
       "total": 2,
       "passing": 2,
-      "assertionsTotal": 16,
-      "assertionsPassing": 16,
+      "assertionsTotal": 17,
+      "assertionsPassing": 17,
       "failingTests": []
     },
     "isEqual": {
@@ -7994,29 +8089,29 @@
     "map": {
       "total": 9,
       "passing": 9,
-      "assertionsTotal": 22,
-      "assertionsPassing": 22,
+      "assertionsTotal": 31,
+      "assertionsPassing": 31,
       "failingTests": []
     },
     "mapBy": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 6,
-      "assertionsPassing": 6,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "max": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "min": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 10,
+      "assertionsPassing": 10,
       "failingTests": []
     },
     "mixins/array/arrayContent[Will|Did]Change": {
@@ -8197,8 +8292,8 @@
     "setDiff": {
       "total": 3,
       "passing": 3,
-      "assertionsTotal": 9,
-      "assertionsPassing": 9,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "setProperties": {
@@ -8211,36 +8306,36 @@
     "sort - concurrency": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 17,
-      "assertionsPassing": 17,
+      "assertionsTotal": 21,
+      "assertionsPassing": 21,
       "failingTests": []
     },
     "sort - sort function": {
       "total": 12,
       "passing": 12,
-      "assertionsTotal": 27,
-      "assertionsPassing": 27,
+      "assertionsTotal": 39,
+      "assertionsPassing": 39,
       "failingTests": []
     },
     "sort - sortProperties - Ember.Object": {
       "total": 24,
       "passing": 24,
-      "assertionsTotal": 52,
-      "assertionsPassing": 52,
+      "assertionsTotal": 76,
+      "assertionsPassing": 76,
       "failingTests": []
     },
     "sort - sortProperties - Native Class": {
       "total": 24,
       "passing": 24,
-      "assertionsTotal": 90,
-      "assertionsPassing": 90,
+      "assertionsTotal": 114,
+      "assertionsPassing": 114,
       "failingTests": []
     },
     "sort - stability": {
       "total": 1,
       "passing": 1,
-      "assertionsTotal": 2,
-      "assertionsPassing": 2,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
       "failingTests": []
     },
     "strict mode tests": {
@@ -8260,8 +8355,8 @@
     "sum": {
       "total": 4,
       "passing": 4,
-      "assertionsTotal": 7,
-      "assertionsPassing": 7,
+      "assertionsTotal": 11,
+      "assertionsPassing": 11,
       "failingTests": []
     },
     "syntax refinements": {
@@ -8412,10 +8507,17 @@
       "failingTests": []
     },
     "{{-with-dynamic-var}}": {
-      "total": 3,
-      "passing": 3,
-      "assertionsTotal": 3,
-      "assertionsPassing": 3,
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 1,
+      "assertionsPassing": 1,
+      "failingTests": []
+    },
+    "{{-with-dynamic-var}} (classic root)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 2,
+      "assertionsPassing": 2,
       "failingTests": []
     },
     "{{in-element}}": {
@@ -8483,6 +8585,6 @@
     }
   },
   "categories": {
-    "gxt:triage": 241
+    "gxt:triage": 238
   }
 }
