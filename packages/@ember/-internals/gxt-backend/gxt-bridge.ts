@@ -197,6 +197,20 @@ export interface GxtBacktrackingCapabilities {
   checkBacktracking?(targetObj: unknown, key: string): void;
 
   /**
+   * DEV: whether a read now is one of the render pass's, as Glimmer's render
+   * consumes it: inside a tracking frame, not untracked, not at commit.
+   * validator.ts installs it; manager.ts records the members the pass's
+   * templates read with it.
+   */
+  readsForRenderPass?(): boolean;
+
+  /**
+   * DEV: whether code runs in the render pass's reads, not at commit (a
+   * modifier's install). validator.ts installs it.
+   */
+  inRenderPassReads?(): boolean;
+
+  /**
    * Rewrite the assertion message before `checkBacktracking` dispatches it.
    * compile.ts uses it to add template-only components to the render tree.
    * If it throws, the original message is used.
