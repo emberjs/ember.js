@@ -12261,39 +12261,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     }
   }
 
-  // Literal string destination ids of `{{#in-element (... "id")}}` blocks, in
-  // template order. $_inElement uses them as a fallback when the reactive
-  // destination ref resolves to null during a render-order-timing situation
-  // (nested component rendering before the outer fragment is committed). The
-  // template itself reaches gxt unstripped: with the EMBER_IN_ELEMENT flag the
-  // compiler reads the `insertBefore=` hash and passes the mode as
-  // $_inElement's 4th argument.
-  const _inElementLiteralIds: string[] = [];
-  if (transformedTemplate.includes('{{#in-element')) {
-    // Scan the pre-parse template for literal string ids inside each
-    // {{#in-element ...}} opening tag (the $_inElement render-order fallback).
-    {
-      const marker = '{{#in-element';
-      let i = 0;
-      while (true) {
-        i = transformedTemplate.indexOf(marker, i);
-        if (i === -1) break;
-        let p = i + marker.length;
-        while (
-          p < transformedTemplate.length &&
-          (transformedTemplate[p] === ' ' || transformedTemplate[p] === '\t')
-        )
-          p++;
-        const endTag = transformedTemplate.indexOf('}}', p);
-        if (endTag === -1) break;
-        const destExpr = transformedTemplate.slice(p, endTag);
-        const m = destExpr.match(/"([^"]+)"/);
-        _inElementLiteralIds.push(m && m[1] ? m[1] : '');
-        i = endTag + 2;
-      }
-    }
-  }
-
   // Build bindings set from scopeValues so the GXT compiler knows which names
   // are in scope and should NOT be transformed to built-in symbols (e.g. the
   // local `array` function should shadow the built-in $__array helper).
@@ -12352,6 +12319,7 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     dottedMustache: null,
     dynamicScope: null,
     thisAttrs: [],
+    inElementIds: [],
   };
 
   // Compile using GXT runtime compiler
@@ -12446,6 +12414,16 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       return pascalToKebab(name);
     },
   });
+
+  // The literal destination id of each `{{#in-element}}` block of the template
+  // (`"id"` of `{{#in-element (getElement "id")}}`), in template order, found on
+  // its AST (`gxtInElementIds`, ast-transforms.ts). $_inElement uses them as a
+  // fallback when the destination resolves to null during a render (a nested
+  // component rendering before the outer fragment is committed). The template
+  // itself reaches gxt unstripped: with the EMBER_IN_ELEMENT flag the compiler
+  // reads the `insertBefore=` hash and passes the mode as $_inElement's 4th
+  // argument.
+  const _inElementLiteralIds = _gxtDialectFindings.inElementIds;
 
   // Fire the AST-detected Ember-dialect asserts now (the detection ran inside the
   // transforms above; the throw/assert MUST happen here — a throw raised inside a
