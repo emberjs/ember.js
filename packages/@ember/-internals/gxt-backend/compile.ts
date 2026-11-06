@@ -249,131 +249,6 @@ function _gxtCoerceText(v: any): string {
   return String(v);
 }
 
-/**
- * Find all `as |...|` block param sections in a string, returning the names.
- * Replaces regex /as\s+\|([^|]+)\|/g
- */
-function findBlockParamNames(str: string): Set<string> {
-  const names = new Set<string>();
-  let idx = 0;
-  while (idx < str.length) {
-    const asIdx = str.indexOf('as', idx);
-    if (asIdx === -1) break;
-    // Check that 'as' is preceded by whitespace or start, and followed by whitespace then |
-    if (asIdx > 0) {
-      const before = str[asIdx - 1]!;
-      if (before !== ' ' && before !== '\t' && before !== '\n' && before !== '\r') {
-        idx = asIdx + 2;
-        continue;
-      }
-    }
-    // Skip whitespace after 'as'
-    let pos = asIdx + 2;
-    while (
-      pos < str.length &&
-      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
-    )
-      pos++;
-    if (pos >= str.length || str[pos] !== '|') {
-      idx = asIdx + 2;
-      continue;
-    }
-    // Found 'as' followed by '|', find closing '|'
-    const pipeStart = pos + 1;
-    const pipeEnd = str.indexOf('|', pipeStart);
-    if (pipeEnd === -1) break;
-    const content = str.slice(pipeStart, pipeEnd).trim();
-    // Split on whitespace
-    const parts = splitOnWhitespace(content);
-    for (const p of parts) {
-      if (p) names.add(p);
-    }
-    idx = pipeEnd + 1;
-  }
-  return names;
-}
-
-/** Split a string on whitespace without regex */
-function splitOnWhitespace(str: string): string[] {
-  const result: string[] = [];
-  let current = '';
-  for (let i = 0; i < str.length; i++) {
-    const c = str[i]!;
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
-      if (current) {
-        result.push(current);
-        current = '';
-      }
-    } else {
-      current += c;
-    }
-  }
-  if (current) result.push(current);
-  return result;
-}
-
-/**
- * Find all `<lowercase.Something>` dotted tag patterns in a string.
- * Returns array of [head, tail] pairs.
- * Replaces regex /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9]*)\s/g
- */
-function findDottedTags(str: string): Array<[string, string]> {
-  const results: Array<[string, string]> = [];
-  let idx = 0;
-  while (idx < str.length) {
-    const ltIdx = str.indexOf('<', idx);
-    if (ltIdx === -1) break;
-    let pos = ltIdx + 1;
-    // First char must be lowercase
-    if (pos >= str.length || str[pos]! < 'a' || str[pos]! > 'z') {
-      idx = ltIdx + 1;
-      continue;
-    }
-    // Read head identifier: [a-zA-Z0-9]*
-    const headStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9'))
-    )
-      pos++;
-    const head = str.slice(headStart, pos);
-    // Next must be '.'
-    if (pos >= str.length || str[pos] !== '.') {
-      idx = ltIdx + 1;
-      continue;
-    }
-    pos++; // skip dot
-    // Next must start with [a-zA-Z]
-    if (
-      pos >= str.length ||
-      !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))
-    ) {
-      idx = ltIdx + 1;
-      continue;
-    }
-    const tailStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9'))
-    )
-      pos++;
-    const tail = str.slice(tailStart, pos);
-    // Must be followed by whitespace
-    if (
-      pos < str.length &&
-      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
-    ) {
-      results.push([head, tail]);
-    }
-    idx = pos;
-  }
-  return results;
-}
-
 import { buildUntouchableThis } from '@glimmer/debug-util';
 import { isProxy } from '@ember/-internals/utils';
 // An Ember array (`EmberArray` mixin), which `{{#each}}` iterates by index.
@@ -399,7 +274,6 @@ import {
 import {
   buildGxtDialectTransforms,
   buildGxtLexicalTransforms,
-  gxtBlockParamAlias,
   GXT_SHADOWED_KEYWORD_ALIASES,
   lookupGxtComment,
   GXT_BLOCK_SCOPE_KEY,
@@ -12349,33 +12223,14 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     }
   }
 
-  // Check for <foo.bar /> — dotted paths used as tag names require
-  // the head (foo) to be in scope. In classic templates (non-strict), only
-  // `this` is implicitly in scope, so <foo.bar> is invalid unless foo is
-  // a block param. Check if the template provides any block params that
-  // could bring the head into scope.
-  {
-    const blockParamNames = findBlockParamNames(templateString);
-    const scopeKeys = options?.scopeValues
-      ? new Set(Object.keys(options.scopeValues))
-      : new Set<string>();
-    for (const [head, tail] of findDottedTags(templateString)) {
-      if (head !== 'this' && !blockParamNames.has(head) && !scopeKeys.has(head)) {
-        throw new Error(
-          `Error: You used ${head}.${tail} as a tag name, but ${head} is not in scope`
-        );
-      }
-    }
-  }
-
   // The Ember-dialect source rewrites (`{{outlet}}`, `{{#each-in}}`, `{{{…}}}`,
   // HTML comments, the implicit `<tbody>`, quoted-attribute and body bare
   // helpers, `{{#@arg}}` blocks, block params, dynamic vars, `{{on}}` hash
-  // args) and the source asserts (`<TextArea />` typo, dotted paths with a free
-  // head, dynamic `(helper)` / `(modifier)`) run as AST visitors in the GXT
-  // compiler's `transforms` hook (see `buildGxtDialectTransforms` in
-  // ast-transforms.ts). The asserts fire from this function just after the
-  // compile call, from `_gxtDialectFindings`.
+  // args) and the source asserts (`<TextArea />` typo, dotted tags and dotted
+  // paths with a free head, dynamic `(helper)` / `(modifier)`) run as AST
+  // visitors in the GXT compiler's `transforms` hook (see
+  // `buildGxtDialectTransforms` in ast-transforms.ts). The asserts fire from
+  // this function just after the compile call, from `_gxtDialectFindings`.
 
   // Transform the template
   let transformedTemplate = templateString;
@@ -12485,20 +12340,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
   // The $_tag_ember wrapper handles @-prefixed args properly for string component
   // tags, extracting them as named args for the component manager.
 
-  // Block-param names for the `gxtDottedMustacheAssert` visitor (it must not flag
-  // a `{{foo.bar}}` whose `foo` is brought into scope by an `as |foo|` block
-  // param). Computed once on the source and threaded into the dialect
-  // transforms, under the names those transforms see: a block param named like a
-  // keyword is renamed before them (`gxtBlockParamNamesTransform`).
-  const _gxtDialectBlockParamNames = new Set(
-    [...findBlockParamNames(transformedTemplate)].map((name) => gxtBlockParamAlias(name) ?? name)
-  );
-
   // Ember-dialect assert findings, populated by the read-only assert-detection
   // visitors during the compile traverse and acted on immediately after the
   // compile call below (see GxtAssertFindings for why the throw cannot live in
   // the visitor itself).
   const _gxtDialectFindings: GxtAssertFindings = {
+    dottedTag: null,
     textArea: false,
     dynamicHelper: false,
     dynamicModifier: false,
@@ -12536,7 +12383,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
       ...buildGxtDialectTransforms(
         _includeOnExtTransform,
         options?.scopeValues,
-        _gxtDialectBlockParamNames,
         _gxtDialectFindings
       ),
     ],
@@ -12605,9 +12451,16 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
   // transforms above; the throw/assert MUST happen here — a throw raised inside a
   // transform is caught into compilationResult.errors by the GXT compiler, which
   // keeps only a message. See GxtAssertFindings).
-  // Order: textarea → dotted-mustache → dynamic-helper → dynamic-modifier →
-  // dynamic scope → `this.attrs` deprecations (the source assert for dotted
-  // tags already ran above).
+  // Order: dotted tag → textarea → dotted-mustache → dynamic-helper →
+  // dynamic-modifier → dynamic scope → `this.attrs` deprecations.
+  //
+  // `<foo.bar>` with `foo` not in scope is Glimmer's syntax error in a
+  // loose-mode template only: in a strict-mode template Glimmer reads such a
+  // tag as an element (`classifyTag`).
+  if (_gxtDialectFindings.dottedTag && !__strictModeFlag) {
+    const { head, tail } = _gxtDialectFindings.dottedTag;
+    throw new Error(`Error: You used ${head}.${tail} as a tag name, but ${head} is not in scope`);
+  }
   if (_gxtDialectFindings.textArea) {
     // Use getDebugFunction('assert') so expectAssertion's stub is the one called.
     const _assert: LooseAssert = getDebugFunction('assert');

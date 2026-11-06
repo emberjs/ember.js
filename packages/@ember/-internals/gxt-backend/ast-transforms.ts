@@ -138,6 +138,13 @@ interface GxtScopeVisitor {
   block?(node: any, bound: (name: string) => boolean): void;
   /** An element, before its attributes: its tag reads the enclosing scope. */
   element?(node: any, bound: (name: string) => boolean): void;
+  /**
+   * A mustache (content, an attribute value or a part of a quoted one), before
+   * its path and arguments are walked.
+   */
+  mustache?(node: any, bound: (name: string) => boolean): void;
+  /** A sub-expression, before its path and arguments are walked. */
+  subexpression?(node: any, bound: (name: string) => boolean): void;
   /** A path expression: a path head, an argument, an attribute value. */
   path?(node: any, bound: (name: string) => boolean): void;
 }
@@ -154,8 +161,12 @@ function walkGxtScopes(template: any, visitor: GxtScopeVisitor): void {
     frames.pop();
   };
   const expression = (node: any): void => {
-    if (node.type === 'PathExpression') visitor.path?.(node, bound);
-    else if (node.type === 'SubExpression') call(node);
+    if (node.type === 'PathExpression') {
+      visitor.path?.(node, bound);
+    } else if (node.type === 'SubExpression') {
+      visitor.subexpression?.(node, bound);
+      call(node);
+    }
   };
   // A mustache, sub-expression, block statement or modifier: its path and arguments.
   const call = (node: any): void => {
@@ -163,11 +174,15 @@ function walkGxtScopes(template: any, visitor: GxtScopeVisitor): void {
     for (const param of node.params) expression(param);
     for (const pair of node.hash.pairs) expression(pair.value);
   };
+  const mustache = (node: any): void => {
+    visitor.mustache?.(node, bound);
+    call(node);
+  };
   const statements = (body: any[]): void => {
     for (const node of body) {
       switch (node.type) {
         case 'MustacheStatement':
-          call(node);
+          mustache(node);
           break;
         case 'BlockStatement':
           visitor.block?.(node, bound);
@@ -179,9 +194,9 @@ function walkGxtScopes(template: any, visitor: GxtScopeVisitor): void {
           visitor.element?.(node, bound);
           for (const attr of node.attributes) {
             const value = attr.value;
-            if (value.type === 'MustacheStatement') call(value);
+            if (value.type === 'MustacheStatement') mustache(value);
             if (value.type === 'ConcatStatement') {
-              for (const part of value.parts) if (part.type === 'MustacheStatement') call(part);
+              for (const part of value.parts) if (part.type === 'MustacheStatement') mustache(part);
             }
           }
           for (const modifier of node.modifiers) call(modifier);
@@ -239,7 +254,7 @@ const _GXT_RENAMED_BLOCK_PARAMS: ReadonlySet<string> = new Set([
  * (`input` → `__gxtBP_input`, `-in-element` → `__gxtBP_in_element`), or null
  * for a block param that keeps its name.
  */
-export function gxtBlockParamAlias(name: string): string | null {
+function gxtBlockParamAlias(name: string): string | null {
   const internal = name.startsWith('-');
   if (!internal && !_GXT_RENAMED_BLOCK_PARAMS.has(name)) return null;
   return `__gxtBP_${(internal ? name.slice(1) : name).split('-').join('_')}`;
@@ -255,8 +270,8 @@ export function gxtBlockParamAlias(name: string): string | null {
  * `{{#let … as |component|}}` block). Text is not touched.
  *
  * Runs first, before the user's AST plugins and the dialect transforms, as the
- * source rewrite it replaces ran before the template was parsed. compile.ts
- * maps the block-param names it gives those transforms the same way.
+ * source rewrite it replaces ran before the template was parsed. The later
+ * transforms read the renamed block params from the AST (`walkGxtScopes`).
  */
 function gxtBlockParamNamesTransform(_env: GxtAstEnv) {
   const rename = (name: string, bound: (name: string) => boolean): string | null =>
@@ -526,17 +541,15 @@ function gxtAngleBracketDynamicTransform(env: GxtAstEnv) {
  *
  * `(has-block "else")` and `(has-block-params "else")` need no rewrite: their
  * runtime lookup accepts either name (compile.ts `_lookupSlot`). A template
- * that shadows `component` (a scope value or a block param of that name) keeps
- * its `{{#component}}` blocks: the GXT compiler then invokes the binding as a
- * component, `{{else}}` block included.
+ * whose scope shadows `component` keeps its `{{#component}}` blocks: the GXT
+ * compiler then invokes the binding as a component, `{{else}}` block included.
+ * So does a block param named `component`, in its block: it is renamed before
+ * this transform runs (`gxtBlockParamNamesTransform`), so its blocks are not
+ * `{{#component}}` blocks here.
  */
-function gxtElseBlockTransform(
-  scopeValues: Record<string, unknown> | undefined,
-  blockParamNames: Set<string>
-) {
+function gxtElseBlockTransform(scopeValues: Record<string, unknown> | undefined) {
   const componentShadowed =
-    blockParamNames.has('component') ||
-    (scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, 'component'));
+    scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, 'component');
   return (env: GxtAstEnv) => {
     const b = env.syntax.builders;
     const isKeyword = (path: any, name: string): boolean =>
@@ -1737,6 +1750,9 @@ function _isDynamicKeywordArg(node: any): boolean {
  * original control flow (the assert's own throw, real compile abort) exactly.
  */
 export interface GxtAssertFindings {
+  // The first `<head.tail>` tag whose head is not in scope (see
+  // `gxtDottedTagAssert`), in document order.
+  dottedTag: { head: string; tail: string } | null;
   textArea: boolean;
   dynamicHelper: boolean;
   dynamicModifier: boolean;
@@ -1810,50 +1826,89 @@ const _DOTTED_MUSTACHE_TAIL_SEG_RE = /^[a-zA-Z0-9]+$/;
  * `[a-z][a-zA-Z0-9]*` `VarHead` with ≥1 alphanumeric, letter-initial tail
  * segment. `this.x` (`ThisHead`) and PascalCase heads are skipped, as the
  * scanner skipped them; the head/tail char-class guards keep parity with the
- * scanner on the `_`/`-`/leading-digit shapes it never matched. The block-param
- * / scope-binding sets are computed once by the caller (see `findBlockParamNames`)
- * and threaded in, matching the former call site. Records the FIRST offender
- * into `findings`; `precompileTemplate` throws the `not in scope` error.
+ * scanner on the `_`/`-`/leading-digit shapes it never matched. A block param
+ * is in scope inside its block only (`walkGxtScopes`): after the block, the
+ * name is free again. Records the FIRST offender into `findings`;
+ * `precompileTemplate` throws the `not in scope` error.
  */
-function gxtDottedMustacheAssert(
-  findings: GxtAssertFindings,
-  scopeValueNames: Set<string> | null,
-  blockParamNames: Set<string>
-) {
+function gxtDottedMustacheAssert(findings: GxtAssertFindings, scopeValueNames: Set<string> | null) {
   return function (_env: GxtAstEnv) {
     return {
       name: 'ember-gxt-assert-dotted-mustache',
       visitor: {
-        MustacheStatement(node: any): void {
-          if (findings.dottedMustache) return; // first offender only (scanner threw on first)
-          const path = node.path;
-          if (
-            !path ||
-            path.type !== 'PathExpression' ||
-            !path.head ||
-            path.head.type !== 'VarHead' ||
-            !Array.isArray(path.tail) ||
-            path.tail.length === 0 ||
-            node.params.length !== 0 ||
-            node.hash.pairs.length !== 0
-          )
-            return;
-          const head = String(path.head.name);
-          if (!_DOTTED_MUSTACHE_HEAD_RE.test(head)) return; // scanner head was [a-z][a-zA-Z0-9]*
-          const tailSegs = path.tail as string[];
-          // Scanner required the tail to start with a letter and every segment to
-          // be alphanumeric (its tail char-class was [a-zA-Z][a-zA-Z0-9.]*).
-          const first = tailSegs[0] || '';
-          const fc = first.charCodeAt(0);
-          if (!((fc >= 65 && fc <= 90) || (fc >= 97 && fc <= 122))) return;
-          for (const seg of tailSegs) {
-            if (!_DOTTED_MUSTACHE_TAIL_SEG_RE.test(seg)) return;
-          }
-          if (blockParamNames.has(head)) return;
-          if (scopeValueNames && scopeValueNames.has(head)) return;
-          // Record the path's loc so a loose-mode `{{attrs.x}}` can be reported
-          // with the same `(Lx:Cy)` source location as Ember's assert-against-attrs.
-          findings.dottedMustache = { head, tail: tailSegs.join('.'), loc: path.loc };
+        Template(template: any): void {
+          walkGxtScopes(template, {
+            mustache(node, bound) {
+              if (findings.dottedMustache) return; // first offender only (scanner threw on first)
+              const path = node.path;
+              if (
+                !path ||
+                path.type !== 'PathExpression' ||
+                !path.head ||
+                path.head.type !== 'VarHead' ||
+                !Array.isArray(path.tail) ||
+                path.tail.length === 0 ||
+                node.params.length !== 0 ||
+                node.hash.pairs.length !== 0
+              )
+                return;
+              const head = String(path.head.name);
+              if (!_DOTTED_MUSTACHE_HEAD_RE.test(head)) return; // scanner head was [a-z][a-zA-Z0-9]*
+              const tailSegs = path.tail as string[];
+              // Scanner required the tail to start with a letter and every segment to
+              // be alphanumeric (its tail char-class was [a-zA-Z][a-zA-Z0-9.]*).
+              const first = tailSegs[0] || '';
+              const fc = first.charCodeAt(0);
+              if (!((fc >= 65 && fc <= 90) || (fc >= 97 && fc <= 122))) return;
+              for (const seg of tailSegs) {
+                if (!_DOTTED_MUSTACHE_TAIL_SEG_RE.test(seg)) return;
+              }
+              if (bound(head)) return;
+              if (scopeValueNames && scopeValueNames.has(head)) return;
+              // Record the path's loc so a loose-mode `{{attrs.x}}` can be reported
+              // with the same `(Lx:Cy)` source location as Ember's assert-against-attrs.
+              findings.dottedMustache = { head, tail: tailSegs.join('.'), loc: path.loc };
+            },
+          });
+        },
+      },
+    };
+  };
+}
+
+/**
+ * `<foo.bar>`, a tag that reads a path, whose head `foo` is not in scope:
+ * Glimmer's "You used foo.bar as a tag name, but foo is not in scope" (the
+ * syntax error of `classifyTag`, @glimmer/syntax lib/v2/normalize.ts). The head
+ * is the name before the first `.`; it is in scope when it is `this`, an
+ * argument (`@foo`), a block param of an enclosing block or element (inside
+ * that block only), or a name of the scope. A head that starts with an
+ * uppercase letter is a component name, which Glimmer resolves instead.
+ * Glimmer raises the error in a loose-mode template; `precompileTemplate` does
+ * the same with the first such tag this read-only visitor records. A tag in an
+ * attribute value, a string or a comment is text, not an element.
+ */
+function gxtDottedTagAssert(findings: GxtAssertFindings, scopeValueNames: Set<string> | null) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-assert-dotted-tag',
+      visitor: {
+        Template(template: any): void {
+          walkGxtScopes(template, {
+            element(node, bound) {
+              if (findings.dottedTag) return;
+              const tag: string = node.tag;
+              const dot = tag.indexOf('.');
+              if (dot === -1) return;
+              const head = tag.slice(0, dot);
+              if (head === 'this' || head.startsWith('@') || bound(head)) return;
+              if (scopeValueNames && scopeValueNames.has(head)) return;
+              // Glimmer's `isUpperCase` (@glimmer/syntax lib/utils.ts).
+              const first = head.charAt(0);
+              if (first === first.toUpperCase() && first !== first.toLowerCase()) return;
+              findings.dottedTag = { head, tail: tag.slice(dot + 1) };
+            },
+          });
         },
       },
     };
@@ -1975,16 +2030,15 @@ const _GXT_HELPER_SITE_SKIP: ReadonlySet<string> = new Set([
  * — a SubExpression, or a MustacheStatement (content or attribute). A call
  * with only named arguments can compile as a component (`{{foo-bar a=1}}` is
  * `<FooBar @a={{1}} />`), and a zero-argument one keeps its exact emission
- * (the named-argument resolved-helper guard in compile.ts matches it). Runs
- * last, on the nodes the other transforms produced.
+ * (the named-argument resolved-helper guard in compile.ts matches it). A block
+ * param is in scope inside its block only (`walkGxtScopes`): after the block, a
+ * call of a helper with its name is marked. Runs last, on the nodes the other
+ * transforms produced.
  */
-function gxtHelperCallSiteTransform(
-  scopeValues: Record<string, unknown> | undefined,
-  blockParamNames: Set<string>
-) {
+function gxtHelperCallSiteTransform(scopeValues: Record<string, unknown> | undefined) {
   return (env: GxtAstEnv) => {
     const b = env.syntax.builders;
-    const mark = (node: any): void => {
+    const mark = (node: any, bound: (name: string) => boolean): void => {
       const p = node.path;
       if (!p || p.type !== 'PathExpression') return;
       if (!p.head || p.head.type !== 'VarHead' || p.tail.length !== 0) return;
@@ -1993,7 +2047,7 @@ function gxtHelperCallSiteTransform(
       if (_GXT_HELPER_SITE_SKIP.has(name) || name.startsWith('__') || name.startsWith('-')) {
         return;
       }
-      if (blockParamNames.has(name)) return;
+      if (bound(name)) return;
       if (scopeValues && Object.prototype.hasOwnProperty.call(scopeValues, name)) return;
       const pairs: any[] = node.hash.pairs;
       if (pairs.some((pair) => pair.key === GXT_HELPER_SITE_KEY)) return;
@@ -2002,8 +2056,9 @@ function gxtHelperCallSiteTransform(
     return {
       name: 'ember-gxt-helper-call-site',
       visitor: {
-        SubExpression: mark,
-        MustacheStatement: mark,
+        Template(template: any): void {
+          walkGxtScopes(template, { subexpression: mark, mustache: mark });
+        },
       },
     };
   };
@@ -2012,28 +2067,24 @@ function gxtHelperCallSiteTransform(
 export function buildGxtDialectTransforms(
   includeOnExt: boolean,
   scopeValues?: Record<string, unknown>,
-  blockParamNames?: Set<string>,
   assertFindings?: GxtAssertFindings
 ): readonly GxtAstTransform[] {
   // Read-only Ember-dialect ASSERT-DETECTION visitors, PREPENDED so they run on
   // the parsed AST in raw, pre-rewrite form — exactly the source text the former
   // string scanners ran on — and in their original relative priority order
-  // (textarea → dotted-mustache → dynamic-helper → dynamic-modifier). They only
-  // RECORD into `assertFindings`; `precompileTemplate` fires the asserts/throws
-  // AFTER the compile call (the GXT compiler catches transform-internal throws
-  // into errors[], keeping only a message — see GxtAssertFindings). These visitors never touch `env.syntax.builders`, so
-  // running before the tbody env-shape guard is safe; the guard still fires on
-  // the first builder-using transform (tbody) below.
+  // (dotted-tag → textarea → dotted-mustache → dynamic-helper →
+  // dynamic-modifier). They only RECORD into `assertFindings`;
+  // `precompileTemplate` fires the asserts/throws AFTER the compile call (the
+  // GXT compiler catches transform-internal throws into errors[], keeping only
+  // a message — see GxtAssertFindings). These visitors never touch
+  // `env.syntax.builders`, so running before the tbody env-shape guard is safe;
+  // the guard still fires on the first builder-using transform (tbody) below.
   //
-  // NOTE: `findDottedTags` (the `<foo.bar>` tag-not-in-scope assert) is
-  // intentionally NOT ported — its tested "requires whitespace after the tail"
-  // quirk can't be reproduced from the normalized AST without re-inspecting
-  // source, so it stays a pre-compile string assert in `precompileTemplate`.
   // `{{attrs.x}}` is caught by the dotted-mustache visitor (`attrs` is not in
   // scope); `{{this.attrs.x}}` is deprecated, in development builds.
   const scopeValueNames = scopeValues ? new Set(Object.keys(scopeValues)) : null;
-  const bpNames = blockParamNames || new Set<string>();
   const findings: GxtAssertFindings = assertFindings || {
+    dottedTag: null,
     textArea: false,
     dynamicHelper: false,
     dynamicModifier: false,
@@ -2042,8 +2093,9 @@ export function buildGxtDialectTransforms(
     thisAttrs: [],
   };
   const transforms: GxtAstTransform[] = [
+    gxtDottedTagAssert(findings, scopeValueNames) as unknown as GxtAstTransform,
     gxtTextAreaTypoAssert(findings) as unknown as GxtAstTransform,
-    gxtDottedMustacheAssert(findings, scopeValueNames, bpNames) as unknown as GxtAstTransform,
+    gxtDottedMustacheAssert(findings, scopeValueNames) as unknown as GxtAstTransform,
     gxtDynamicHelperAssert(findings) as unknown as GxtAstTransform,
     gxtDynamicModifierAssert(findings) as unknown as GxtAstTransform,
     ...(DEBUG ? [gxtThisAttrsDeprecation(findings) as unknown as GxtAstTransform] : []),
@@ -2061,7 +2113,7 @@ export function buildGxtDialectTransforms(
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
     gxtAngleBracketDynamicTransform as unknown as GxtAstTransform,
-    gxtElseBlockTransform(scopeValues, bpNames) as unknown as GxtAstTransform,
+    gxtElseBlockTransform(scopeValues) as unknown as GxtAstTransform,
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
     gxtEachInTransform as unknown as GxtAstTransform,
     gxtDynamicVarsTransform(findings) as unknown as GxtAstTransform,
@@ -2071,6 +2123,6 @@ export function buildGxtDialectTransforms(
   if (includeOnExt) {
     transforms.push(gxtOnModifierTransform as unknown as GxtAstTransform);
   }
-  transforms.push(gxtHelperCallSiteTransform(scopeValues, bpNames) as unknown as GxtAstTransform);
+  transforms.push(gxtHelperCallSiteTransform(scopeValues) as unknown as GxtAstTransform);
   return transforms;
 }
