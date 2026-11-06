@@ -110,6 +110,7 @@ interface GxtAstEnv {
       elementModifier(path: unknown, params?: unknown[], hash?: unknown, loc?: unknown): unknown;
       attr(name: string, value: unknown, loc?: unknown): unknown;
       text(chars?: string, loc?: unknown): unknown;
+      number(value: number): unknown;
     };
   };
 }
@@ -289,11 +290,85 @@ function gxtBlockParamNamesTransform(_env: GxtAstEnv) {
 }
 
 /**
- * The lexical-scope transforms, which run before the user's AST plugins and
- * the dialect transforms: block params named like keywords.
+ * The keywords a strict-mode scope can shadow in block position, each with the
+ * scope name compile.ts binds the scope's value to for
+ * `gxtShadowedKeywordTransform`.
  */
-export function buildGxtLexicalTransforms(): readonly GxtAstTransform[] {
-  return [gxtBlockParamNamesTransform as unknown as GxtAstTransform];
+export const GXT_SHADOWED_KEYWORD_ALIASES: Readonly<Record<string, string>> = {
+  if: 'GxtShadowedIfBinding',
+  unless: 'GxtShadowedUnlessBinding',
+  each: 'GxtShadowedEachBinding',
+  'each-in': 'GxtShadowedEachInBinding',
+  let: 'GxtShadowedLetBinding',
+  with: 'GxtShadowedWithBinding',
+  input: 'GxtShadowedInputBinding',
+  textarea: 'GxtShadowedTextareaBinding',
+};
+
+/**
+ * A block keyword that the scope shadows is an invocation of the scope's
+ * value, as in Glimmer (a lexical name wins over a keyword):
+ *
+ *   `{{#each items name="b"}}A{{else}}B{{/each}}` →
+ *   `{{#GxtShadowedEachBinding name="b" __pos0__=items __posCount__=1}}A{{else}}B{{/GxtShadowedEachBinding}}`
+ *
+ * The head becomes the keyword's alias (`GXT_SHADOWED_KEYWORD_ALIASES`), a
+ * plain identifier that compile.ts binds to the same value, which the GXT
+ * compiler invokes as a component with the block, the `{{else}}` block, the
+ * block params and the named arguments. The positional arguments become the
+ * `__pos<i>__` / `__posCount__` named arguments the GXT compiler passes for a
+ * curly component's positional params (the compat component manager maps them
+ * to `positionalParams`), since it drops a lexical block's positional params
+ * otherwise. Every argument stays one expression, evaluated once. A keyword
+ * that a block param in scope rebinds is the block param, and is left to the
+ * GXT compiler.
+ */
+function gxtShadowedKeywordTransform(shadowed: ReadonlySet<string>) {
+  return (env: GxtAstEnv) => {
+    assertGxtAstEnvShape(env);
+    const b = env.syntax.builders;
+    return {
+      name: 'ember-gxt-shadowed-keywords',
+      visitor: {
+        Template(template: any): void {
+          walkGxtScopes(template, {
+            block(node, bound) {
+              const path = node.path;
+              if (path.type !== 'PathExpression' || path.head.type !== 'VarHead') return;
+              const name: string = path.head.name;
+              if (path.tail.length !== 0 || !shadowed.has(name) || bound(name)) return;
+              path.head.name = GXT_SHADOWED_KEYWORD_ALIASES[name]!;
+              const params: unknown[] = node.params;
+              if (params.length === 0) return;
+              params.forEach((param, i) => node.hash.pairs.push(b.pair(`__pos${i}__`, param)));
+              node.hash.pairs.push(b.pair('__posCount__', b.number(params.length)));
+              node.params = [];
+            },
+          });
+        },
+      },
+    };
+  };
+}
+
+/**
+ * The lexical-scope transforms, which run before the user's AST plugins and
+ * the dialect transforms: block params named like keywords, and the block
+ * keywords that `scopeValues` shadows.
+ */
+export function buildGxtLexicalTransforms(
+  scopeValues: Record<string, unknown> | undefined
+): readonly GxtAstTransform[] {
+  const transforms = [gxtBlockParamNamesTransform as unknown as GxtAstTransform];
+  const shadowed = new Set(
+    Object.keys(GXT_SHADOWED_KEYWORD_ALIASES).filter(
+      (name) => scopeValues !== undefined && Object.prototype.hasOwnProperty.call(scopeValues, name)
+    )
+  );
+  if (shadowed.size > 0) {
+    transforms.push(gxtShadowedKeywordTransform(shadowed) as unknown as GxtAstTransform);
+  }
+  return transforms;
 }
 
 /**
@@ -1607,6 +1682,7 @@ const GXT_REQUIRED_BUILDERS = [
   'elementModifier',
   'attr',
   'text',
+  'number',
 ] as const;
 
 let _gxtAstEnvShapeChecked = false;
