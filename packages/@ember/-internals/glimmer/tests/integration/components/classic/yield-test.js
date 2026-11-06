@@ -1,34 +1,39 @@
-import { moduleFor } from 'internal-test-helpers';
+import { moduleFor, expectClassicComponentDeprecation } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { Component as EmberComponent } from '../../../utils/helpers';
 import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-moduleFor(
-  'Helpers test: {{yield}} helper (classic component)',
-  class extends ClassicRenderingTestCase {
-    // INUR not need with no data update
-    ['@test yield should not introduce a view'](assert) {
-      let ParentCompComponent = class extends EmberComponent {
-        isParentComponent = true;
-      };
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Helpers test: {{yield}} helper (classic component)',
+    class extends ClassicRenderingTestCase {
+      // INUR not need with no data update
+      ['@test yield should not introduce a view'](assert) {
+        expectClassicComponentDeprecation();
 
-      let ChildCompComponent = class extends EmberComponent {
-        didReceiveAttrs() {
-          super.didReceiveAttrs();
-          let parentView = this.get('parentView');
+        let ParentCompComponent = class extends EmberComponent {
+          isParentComponent = true;
+        };
 
-          assert.ok(parentView.get('isParentComponent'));
-        }
-      };
+        let ChildCompComponent = class extends EmberComponent {
+          didReceiveAttrs() {
+            super.didReceiveAttrs();
+            let parentView = this.get('parentView');
 
-      this.owner.register(
-        'component:parent-comp',
-        setComponentTemplate(precompileTemplate('{{yield}}'), ParentCompComponent)
-      );
-      this.owner.register('component:child-comp', ChildCompComponent);
+            assert.ok(parentView.get('isParentComponent'));
+          }
+        };
 
-      this.render('{{#parent-comp}}{{child-comp}}{{/parent-comp}}');
+        this.owner.register(
+          'component:parent-comp',
+          setComponentTemplate(precompileTemplate('{{yield}}'), ParentCompComponent)
+        );
+        this.owner.register('component:child-comp', ChildCompComponent);
+
+        this.render('{{#parent-comp}}{{child-comp}}{{/parent-comp}}');
+      }
     }
-  }
-);
+  );
+}
