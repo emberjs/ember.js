@@ -14,141 +14,45 @@ import type {
   BaseClassTemplateOptions,
   BaseTemplateOptions,
 } from '@ember/template-compiler/lib/template';
-import { type AstTransform } from '@lifeart/gxt/runtime-compiler';
+import {
+  compileTemplate as gxtCompileTemplate,
+  escapeBindingName,
+  type AstTransform,
+} from '@lifeart/gxt/runtime-compiler';
 import { getGxtRenderer, installCompilePipelinePart } from './gxt-bridge';
-import { gxtExplicitThisTransform } from './ast-transforms';
+import { gxtExplicitThisTransform, gxtTemplateLocals } from './ast-transforms';
 
 /**
- * Extract scope values from a template string using an eval function.
- * Used in GXT mode to resolve the implicit form's local variables.
+ * The scope of the implicit form, `template(source, { eval })`: every free
+ * variable of the template (`gxtTemplateLocals`: a path head or a component tag
+ * that no block param binds) that the caller's `eval` resolves to a value.
+ * Text, attribute names and comments name no variable.
  */
 function _extractScopeFromEval(
   templateString: string,
   evalFn: (v: string) => unknown
-): Record<string, unknown> {
+): Record<string, unknown> | undefined {
   const scope: Record<string, unknown> = {};
-
-  // Extract potential free variable names from the template:
-  // 1. Component invocations: <Foo />, <Foo>, </Foo>
-  // 2. Mustache expressions: {{foo}}, {{foo bar}}, (foo ...)
-  // 3. Helper/modifier invocations: {{on "click" ...}}, (fn ...)
-  // 4. Dotted paths: <state.component /> (head part only)
-  const identifiers = new Set<string>();
-
-  // Match PascalCase component names: <Foo, <FooBar
-  const componentPattern = /<([A-Z][a-zA-Z0-9]*)\b/g;
-  let m;
-  while ((m = componentPattern.exec(templateString)) !== null) {
-    identifiers.add(m[1]!);
-  }
-
-  // Match lowercase identifiers in mustache/subexpression position
-  // {{foo}}, {{foo bar}}, (foo ...), {{#foo}}, {{/foo}}
-  // Note: do NOT skip keywords — they can be shadowed in strict mode
-  const mustachePattern = /\{\{#?\/?([a-z][a-zA-Z0-9_]*)\b/g;
-  while ((m = mustachePattern.exec(templateString)) !== null) {
-    identifiers.add(m[1]!);
-  }
-
-  // Match subexpression helpers: (foo ...) but not (this.foo)
-  const subexprPattern = /\(([a-z][a-zA-Z0-9_]*)\b/g;
-  while ((m = subexprPattern.exec(templateString)) !== null) {
-    identifiers.add(m[1]!);
-  }
-
-  // Match dotted path heads: <state.component /> → state
-  const dottedPattern = /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z])/g;
-  while ((m = dottedPattern.exec(templateString)) !== null) {
-    const head = m[1]!;
-    if (head !== 'this') {
-      identifiers.add(head);
-    }
-  }
-
-  // Match dotted-path heads inside mustache/subexpression positions:
-  //   {{JSON.stringify ...}}        → JSON
-  //   {{state.value}}               → state (already covered by mustachePattern
-  //                                   if lowercase, but uppercase needs this)
-  //   (JSON.parse ...)              → JSON
-  // The head must be followed by a `.` and at least one identifier character.
-  // Both upper- and lower-case heads are captured; the existing keyword filter
-  // (`_GXT_KEYWORD_NAMES`) still applies in the resolution loop below.
-  const dottedExprPattern = /[{(]\s*[#/!]?\s*([a-zA-Z][a-zA-Z0-9_]*)\.([a-zA-Z])/g;
-  while ((m = dottedExprPattern.exec(templateString)) !== null) {
-    const head = m[1]!;
-    if (head !== 'this') {
-      identifiers.add(head);
-    }
-  }
-
-  // Match modifier names: <div {{foo}}>
-  const modifierPattern = /\{\{([a-z][a-zA-Z0-9_]*)\b/g;
-  while ((m = modifierPattern.exec(templateString)) !== null) {
-    identifiers.add(m[1]!);
-  }
-
-  // Catch-all: match any bare identifier that appears in expression context
-  // This catches variables used as arguments in subexpressions like (modifier foo ...)
-  // and {{helper foo ...}} etc.
-  //
-  // The `_HBS_SYNTAX_WORDS` filter excludes identifiers that collide with HTML
-  // tag names (e.g. `a`, `p`, `li`) BUT only when they appear in actual HTML
-  // element-name position (right after `<` or `</`). Inside `{{...}}` or
-  // `(...)` mustaches/subexpressions, the same identifier IS a real variable
-  // reference and must be resolved via eval (e.g. `a` in
-  // `{{if (and a b) "yes" "no"}}`).
-  const bareIdentPattern = /\b([a-z][a-zA-Z0-9_]*)\b/g;
-  while ((m = bareIdentPattern.exec(templateString)) !== null) {
-    const name = m[1]!;
-    const matchIdx = m.index;
-    // Determine context by scanning leftward past whitespace + identifier
-    // characters to find the nearest meaningful preceding character. If it is
-    // `<` or `</`, this is an HTML element-name and should be filtered against
-    // `_HBS_SYNTAX_WORDS`. Otherwise (mustache/subexpression position) the
-    // identifier is treated as a variable reference.
-    let isHtmlTagPos = false;
-    if (_HBS_SYNTAX_WORDS.has(name)) {
-      let k = matchIdx - 1;
-      while (k >= 0 && (templateString[k] === ' ' || templateString[k] === '\t')) k--;
-      if (
-        templateString[k] === '<' ||
-        (templateString[k] === '/' && templateString[k - 1] === '<')
-      ) {
-        isHtmlTagPos = true;
-      }
-    }
-    if (!isHtmlTagPos) {
-      identifiers.add(name);
-    }
-  }
-
-  // Try to resolve each identifier via eval
-  for (const name of identifiers) {
+  for (const name of gxtTemplateLocals(parseTemplate(templateString))) {
+    // A name that is not a plain JS identifier (`has-block`, `-in-element`,
+    // a reserved word such as `if`) is not a variable of the caller's scope.
+    if (escapeBindingName(name) !== name) continue;
     // Skip GXT/Ember built-in keywords. These are part of the template
     // language (resolved by the compiler/runtime), so the user must opt-in
     // to shadowing them via the explicit `scope` form. The implicit form
     // can accidentally pick them up via `eval()` when the surrounding
     // bundle exposes a same-named binding (e.g. an internal `let helper`
     // declared by a sibling Glimmer runtime module).
-    if (_GXT_KEYWORD_NAMES.has(name)) {
-      continue;
-    }
-    // JS literal keywords are NOT free variables — `{{if true "a" "b"}}`
-    // must not produce a scope entry `{ true: true }` (direct `eval('true')`
-    // happily returns the literal), which downstream becomes an invalid
-    // Function parameter name (`new Function('true', …)` → SyntaxError).
-    if (_JS_LITERAL_NAMES.has(name)) {
-      continue;
-    }
+    if (_GXT_KEYWORD_NAMES.has(name)) continue;
     try {
       const value = evalFn(name);
       if (value !== undefined) {
         scope[name] = value;
       }
     } catch (error) {
-      // The word is not a variable of the caller's scope (a ReferenceError),
-      // or a reserved word such as `if` or `else` (a SyntaxError): the scan
-      // also collects template keywords and text. Anything else, such as a
+      // The name is not a variable of the caller's scope (a ReferenceError),
+      // or a word that cannot name one there (a SyntaxError): the free
+      // variables include the template's keywords. Anything else, such as a
       // global's getter that throws, is the template's error.
       if (!(error instanceof ReferenceError) && !(error instanceof SyntaxError)) {
         throw error;
@@ -156,13 +60,8 @@ function _extractScopeFromEval(
     }
   }
 
-  return Object.keys(scope).length > 0 ? scope : (undefined as any);
+  return Object.keys(scope).length > 0 ? scope : undefined;
 }
-
-// JS literal keywords the free-variable extraction must never treat as scope
-// names (direct `eval('true')` returns the literal, so the try/catch filter
-// alone does not exclude them).
-const _JS_LITERAL_NAMES = new Set<string>(['true', 'false', 'null', 'undefined', 'this']);
 
 // Strict-mode keywords reserved for the curried helper / modifier forms
 // (`{{helper foo "x"}}`, `{{modifier foo "x"}}`). Direct `eval()` can resolve
@@ -171,65 +70,30 @@ const _JS_LITERAL_NAMES = new Set<string>(['true', 'false', 'null', 'undefined',
 // `scope: () => ({ helper: myHelper })` form instead.
 const _GXT_KEYWORD_NAMES = new Set<string>(['helper', 'modifier']);
 
-// HBS syntax words that should not be treated as variable references
-const _HBS_SYNTAX_WORDS = new Set([
-  'as',
-  'div',
-  'span',
-  'button',
-  'input',
-  'textarea',
-  'form',
-  'a',
-  'p',
-  'ul',
-  'li',
-  'ol',
-  'h1',
-  'h2',
-  'h3',
-  'h4',
-  'h5',
-  'h6',
-  'table',
-  'tr',
-  'td',
-  'th',
-  'thead',
-  'tbody',
-  'img',
-  'br',
-  'hr',
-  'nav',
-  'section',
-  'article',
-  'header',
-  'footer',
-  'main',
-  'aside',
-  'label',
-  'select',
-  'option',
-  'pre',
-  'code',
-  'em',
-  'strong',
-  'class',
-  'id',
-  'type',
-  'name',
-  'value',
-  'checked',
-  'disabled',
-  'href',
-  'src',
-  'click',
-  'true',
-  'false',
-  'null',
-  'undefined',
-  'this',
-]);
+/**
+ * Parses a template with the GXT compiler's parser (`@glimmer/syntax`'s
+ * `preprocess`, which `@lifeart/gxt/runtime-compiler` depends on). gxt exports
+ * no parser of its own; its compiler hands that one to AST transforms as
+ * `env.syntax.parse`, so it is taken from there once, from a compile of the
+ * empty template. A second parser in the compat build is avoided.
+ */
+function parseTemplate(source: string): unknown {
+  if (_gxtSyntax.parse === undefined) {
+    const capture = (env: { syntax: { parse(source: string): unknown } }) => {
+      _gxtSyntax.parse = env.syntax.parse;
+      return { name: 'ember-gxt-parser', visitor: {} };
+    };
+    gxtCompileTemplate('', { transforms: [capture as unknown as AstTransform] });
+  }
+  if (_gxtSyntax.parse === undefined) {
+    throw new Error(
+      '[gxt-backend] the @lifeart/gxt compiler ran no AST transform, so its template parser (`env.syntax.parse`) is not available'
+    );
+  }
+  return _gxtSyntax.parse(source);
+}
+
+const _gxtSyntax: { parse?: (source: string) => unknown } = {};
 
 /** `template()` (@ember/template-compiler's lib/template.ts) in GXT builds. */
 export function gxtTemplate(
