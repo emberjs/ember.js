@@ -1766,6 +1766,10 @@ export interface GxtAssertFindings {
   // Every `this.attrs.<name>` path, as written (development builds only): each
   // gets the `attrs-arg-access` deprecation.
   thisAttrs: string[];
+  // The literal destination id of each `{{#in-element}}` block, in template
+  // order (see `gxtInElementIds`). Not an assert: compile.ts gives the list to
+  // `$_inElement` as the fallback ids of the template's renders.
+  inElementIds: string[];
 }
 
 /**
@@ -1913,6 +1917,51 @@ function gxtDottedTagAssert(findings: GxtAssertFindings, scopeValueNames: Set<st
       },
     };
   };
+}
+
+/**
+ * The literal destination id of each `{{#in-element}}` block, in template
+ * order: the first string of its destination expression (`"modal"` in
+ * `{{#in-element (getElement "modal")}}`, either quote), or `''` when it has
+ * none (`{{#in-element this.element}}`). A block that a block param or a scope
+ * name named `in-element` heads invokes that value, not the keyword, and a
+ * comment or text holds no block. compile.ts gives `$_inElement` the list as
+ * the fallback ids of the template's renders (see `_inElementFallbackIds`).
+ */
+function gxtInElementIds(findings: GxtAssertFindings, scopeValueNames: Set<string> | null) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-in-element-ids',
+      visitor: {
+        Template(template: any): void {
+          walkGxtScopes(template, {
+            block(node, bound) {
+              const path = node.path;
+              if (path.type !== 'PathExpression' || path.head.type !== 'VarHead') return;
+              if (path.head.name !== 'in-element' || path.tail.length !== 0) return;
+              if (bound('in-element') || (scopeValueNames && scopeValueNames.has('in-element'))) {
+                return;
+              }
+              findings.inElementIds.push(_gxtFirstString(node.params[0]) ?? '');
+            },
+          });
+        },
+      },
+    };
+  };
+}
+
+/** The first non-empty string literal of an expression, in source order. */
+function _gxtFirstString(node: any): string | null {
+  if (!node) return null;
+  if (node.type === 'StringLiteral') return node.value === '' ? null : node.value;
+  if (node.type !== 'SubExpression') return null;
+  const parts = [node.path, ...node.params, ...node.hash.pairs.map((pair: any) => pair.value)];
+  for (const part of parts) {
+    const found = _gxtFirstString(part);
+    if (found !== null) return found;
+  }
+  return null;
 }
 
 /**
@@ -2073,7 +2122,8 @@ export function buildGxtDialectTransforms(
   // the parsed AST in raw, pre-rewrite form — exactly the source text the former
   // string scanners ran on — and in their original relative priority order
   // (dotted-tag → textarea → dotted-mustache → dynamic-helper →
-  // dynamic-modifier). They only RECORD into `assertFindings`;
+  // dynamic-modifier), with the in-element destination ids after the dotted
+  // tags. They only RECORD into `assertFindings`;
   // `precompileTemplate` fires the asserts/throws AFTER the compile call (the
   // GXT compiler catches transform-internal throws into errors[], keeping only
   // a message — see GxtAssertFindings). These visitors never touch
@@ -2091,9 +2141,11 @@ export function buildGxtDialectTransforms(
     dottedMustache: null,
     dynamicScope: null,
     thisAttrs: [],
+    inElementIds: [],
   };
   const transforms: GxtAstTransform[] = [
     gxtDottedTagAssert(findings, scopeValueNames) as unknown as GxtAstTransform,
+    gxtInElementIds(findings, scopeValueNames) as unknown as GxtAstTransform,
     gxtTextAreaTypoAssert(findings) as unknown as GxtAstTransform,
     gxtDottedMustacheAssert(findings, scopeValueNames) as unknown as GxtAstTransform,
     gxtDynamicHelperAssert(findings) as unknown as GxtAstTransform,
