@@ -12676,8 +12676,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
           // Read through the injected `__gxtGetScope` accessor parameter so
           // scope keys whose names collide with `globalThis` itself
           // (strict-mode allowed globals like `globalThis`, `Math`, `JSON`)
-          // don't TDZ-trap on the about-to-be-declared `const ${jsKey}`.
-          scopeInjections.push(`const ${jsKey} = __gxtGetScope("${scopeStoreKey}")["${key}"];`);
+          // don't TDZ-trap on the about-to-be-declared `const ${jsKey}`. The
+          // key is a string literal of the generated code: a scope may name a
+          // value with any string (`template()` passes every name of its scope).
+          scopeInjections.push(
+            `const ${jsKey} = __gxtGetScope(${JSON.stringify(scopeStoreKey)})[${JSON.stringify(key)}];`
+          );
         }
       }
 
