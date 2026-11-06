@@ -115,6 +115,28 @@ interface GxtAstEnv {
 }
 
 /**
+ * `template(…, { scope: () => ({ this: state }) })`: the template's `this` is
+ * `state`, which `template()` binds to `alias`. Every `this` path head (in any
+ * position: `{{this.x}}`, `{{foo this.x}}`, `(if this.a)`, `{{#let this.x as
+ * |y|}}`) and every `this`-headed tag (`<this.Foo>`) reads `alias` instead.
+ * Text is not touched.
+ */
+export function gxtExplicitThisTransform(alias: string): GxtAstTransform {
+  return ((_env: GxtAstEnv) => ({
+    name: 'ember-gxt-explicit-this',
+    visitor: {
+      PathExpression(node: any): void {
+        if (node.head.type === 'ThisHead') node.original = [alias, ...node.tail].join('.');
+      },
+      ElementNode(node: any): void {
+        const tag: string = node.tag;
+        if (tag === 'this' || tag.startsWith('this.')) node.tag = alias + tag.slice(4);
+      },
+    },
+  })) as unknown as GxtAstTransform;
+}
+
+/**
  * `{{outlet}}` → `<ember-outlet />`.
  *
  * Applied to templates compiled at runtime (via `compile()` /
