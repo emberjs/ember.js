@@ -500,14 +500,14 @@ export function capabilitiesErrorPrefix(kind: keyof typeof CAPABILITIES_VERSIONS
  * path, which reaches the wrappers as `this.…` / `:…` / `@…`): a lowercase
  * tag with a dash (`<x-foo>`) is a custom element, even when a component of
  * that name exists. The exceptions are the lowercase names gxt's compat
- * compiler gives component tags: `<LinkTo>` → `link-to`, `<Foo::Bar>` →
- * `foo--bar`, and the legacy `curly-c-` prefix.
+ * compiler gives component tags: `<LinkTo>` → `link-to` and `<Foo::Bar>` →
+ * `foo--bar`.
  */
 export function tagMayNameComponent(tag: string): boolean {
   const first = tag[0];
   if (first === undefined) return false;
   if (first === first.toUpperCase()) return true;
-  return tag === 'link-to' || tag.includes('--') || tag.startsWith('curly-c-');
+  return tag === 'link-to' || tag.includes('--');
 }
 
 const PLAIN_HTML_TAG_RE = /^[a-z][a-z0-9]*$/;

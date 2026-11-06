@@ -8476,12 +8476,10 @@ const $_MANAGERS = {
         if (komp === 'ember-html-raw') return true;
         const owner = getOwnerWithFallback();
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
-          // Strip curly-c- prefix added by Vite plugin's transformCurlyComponents
-          const strippedKomp = komp.startsWith('curly-c-') ? komp.slice(8) : komp;
-          const resolved = resolveComponent(strippedKomp, owner);
+          const resolved = resolveComponent(komp, owner);
           if (resolved !== null) return true;
           // Convert PascalCase to kebab-case for helper lookup
-          let kebab = pascalToKebab(strippedKomp);
+          let kebab = pascalToKebab(komp);
           // Also check for helpers — inline curlies like {{my-helper "foo"}} get
           // transformed to <MyHelper @__pos0__="foo" /> which GXT compiles as $_c.
           // A name with a `:` is no valid registry name (the DEBUG registry
@@ -8801,10 +8799,7 @@ const $_MANAGERS = {
 
       // Handle string-based component lookup
       if (typeof komp === 'string') {
-        // Strip curly-c- prefix added by Vite plugin's transformCurlyComponents
-        const isCurlyInvocation = komp.startsWith('curly-c-');
-        const resolvedKomp = isCurlyInvocation ? komp.slice(8) : komp;
-        const result = handleStringComponent(resolvedKomp, args, fw, ctx, owner);
+        const result = handleStringComponent(komp, args, fw, ctx, owner);
         if (result !== null) return result;
 
         // Helper fallback — inline curlies like {{my-helper "foo"}} get transformed
@@ -8856,7 +8851,7 @@ const $_MANAGERS = {
         // name with a `:` is no valid registry name (the DEBUG registry
         // asserts on it).
         if (hasBlockSlot && owner && !owner.isDestroyed && !owner.isDestroying) {
-          const helperName = pascalToKebab(resolvedKomp);
+          const helperName = pascalToKebab(komp);
           if (
             !helperName.includes(':') &&
             (owner.factoryFor?.(`helper:${helperName}`) || owner.lookup?.(`helper:${helperName}`))
@@ -8870,7 +8865,7 @@ const $_MANAGERS = {
         // owner resolves nothing (its container asserts), and a name with a
         // `:` is no valid registry name (the DEBUG registry asserts on it).
         // What the arguments and the helper throw propagates.
-        const helperName = pascalToKebab(resolvedKomp);
+        const helperName = pascalToKebab(komp);
         if (
           owner &&
           !owner.isDestroyed &&
@@ -8933,17 +8928,6 @@ const $_MANAGERS = {
 
         // Custom element fallback: names containing a dash that are not registered
         // as components or helpers should render as plain HTML custom elements.
-        // EXCEPT: explicit curly-block invocation `{{#name}}...{{/name}}` against
-        // an unresolved name must throw — classic Ember rejects this form because
-        // a block body is not meaningful for a raw custom element. Angle-bracket
-        // and inline-curly call sites still fall through to custom elements.
-        if (isCurlyInvocation && hasBlockSlot) {
-          const notFoundErr = new Error(
-            `Attempted to resolve \`${resolvedKomp}\`, which was expected to be a component, but nothing was found. ` +
-              `Could not find component named "${resolvedKomp}" (no component or template with that name was found)`
-          );
-          throw notFoundErr;
-        }
         const kebabKomp = pascalToKebab(komp);
         if (kebabKomp.includes('-')) {
           // The dash-name custom-element fallback is classic-only. In a native
