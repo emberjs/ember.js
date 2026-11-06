@@ -165,30 +165,6 @@ function doubleDashToSlash(str: string): string {
   return str.split('--').join('/');
 }
 
-/** Check if a string contains a word (surrounded by non-word-char boundaries) without regex */
-function containsWord(text: string, word: string): boolean {
-  let idx = 0;
-  while (idx <= text.length - word.length) {
-    const found = text.indexOf(word, idx);
-    if (found === -1) return false;
-    const before = found > 0 ? text[found - 1]! : ' ';
-    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore =
-      (before >= 'a' && before <= 'z') ||
-      (before >= 'A' && before <= 'Z') ||
-      (before >= '0' && before <= '9') ||
-      before === '_';
-    const isWordCharAfter =
-      (after >= 'a' && after <= 'z') ||
-      (after >= 'A' && after <= 'Z') ||
-      (after >= '0' && after <= '9') ||
-      after === '_';
-    if (!isWordCharBefore && !isWordCharAfter) return true;
-    idx = found + 1;
-  }
-  return false;
-}
-
 /** Generate a UUID string (starts with letter, valid CSS selector / HTML ID) without regex */
 function generateUUID(): string {
   const hex = '0123456789abcdef';
@@ -12164,9 +12140,6 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
   // `buildGxtDialectTransforms` in ast-transforms.ts). The asserts fire from
   // this function just after the compile call, from `_gxtDialectFindings`.
 
-  // Transform the template
-  let transformedTemplate = templateString;
-
   // {{on "evt" handler once=X capture=Y passive=Z}} — the `gxtOnModifierTransform`
   // AST visitor (wired below) renames the modifier to the `on-ext` alias so
   // GXT's `on`-only short-circuit does not drop the hash pairs. `on-ext`
@@ -12203,32 +12176,18 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     }
   }
 
-  // Add gxtEntriesOf to scope bindings whenever the source contains an
-  // `{{#each-in` block. The `gxtEachInTransform` AST visitor injects a
-  // `(gxtEntriesOf …)` SubExpression during compile, so the binding must be
-  // present up front for the compiler to emit a bare binding reference
-  // (`gxtEntriesOf`) instead of a string lookup (`"gxtEntriesOf"`). The check
-  // reads the original `templateString`: the name only appears after the AST
-  // rewrite.
-  if (templateString.indexOf('{{#each-in') !== -1) {
-    scopeBindings.add('gxtEntriesOf');
-  }
-
-  // Add gxtGetOutletState to scope bindings whenever the source contains a
-  // `-get-dynamic-var` call (either form). The `gxtDynamicVarsTransform` AST
-  // visitor injects a `(gxtGetOutletState)` SubExpression during compile for
-  // top-level / non-`outletState` gets, so the binding must be present up
-  // front for the compiler to emit a bare binding reference
-  // (`gxtGetOutletState`) rather than a string lookup (`"gxtGetOutletState"`).
-  // The check reads the original `templateString`: the name only appears after
-  // the AST rewrite. The second test covers a template that literally mentions
-  // `gxtGetOutletState`. An unused binding (all gets in-scope) is inert.
-  if (
-    templateString.indexOf('-get-dynamic-var') !== -1 ||
-    containsWord(transformedTemplate, 'gxtGetOutletState')
-  ) {
-    scopeBindings.add('gxtGetOutletState');
-  }
+  // `gxtEntriesOf` and `gxtGetOutletState` are names the dialect transforms put
+  // into the template: `gxtEachInTransform` lowers `{{#each-in}}` to an
+  // `(gxtEntriesOf …)` sub-expression, and `gxtDynamicVarsTransform` lowers a
+  // `-get-dynamic-var` outside a `-with-dynamic-vars` block to
+  // `(gxtGetOutletState)`. As bindings, the compiler emits a reference to them
+  // (the legacy template function declares the ones it references) instead of
+  // a lookup by name. A binding that a template does not use is inert: the
+  // compiler emits nothing for it, and only the bindings it references are in
+  // the emission report (`referencedBindings`), which routes the template. So
+  // both are bindings of every template.
+  scopeBindings.add('gxtEntriesOf');
+  scopeBindings.add('gxtGetOutletState');
 
   // NOTE: Input and Textarea are intentionally NOT added to scopeBindings.
   // Adding them causes the GXT compiler to emit $_c(Input, ...) with a variable
@@ -12255,9 +12214,9 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
   };
 
   // Compile using GXT runtime compiler
-  const compilationResult = gxtCompileTemplate(transformedTemplate, {
+  const compilationResult = gxtCompileTemplate(templateString, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
-    bindings: scopeBindings.size > 0 ? scopeBindings : undefined,
+    bindings: scopeBindings,
     // The emission flags are set in the `flags:` key below (after
     // `transforms:`). ⚠ Do not add a second `flags:` key to this object
     // literal: duplicate keys silently overwrite (the later one wins), so the
