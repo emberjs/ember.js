@@ -398,6 +398,8 @@ import {
 // reads the HTML-comment registry (owned there) via `lookupGxtComment`.
 import {
   buildGxtDialectTransforms,
+  buildGxtLexicalTransforms,
+  gxtBlockParamAlias,
   lookupGxtComment,
   GXT_BLOCK_SCOPE_KEY,
   _GXT_ON_EXT_ALIAS,
@@ -12543,9 +12545,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
 
   // Block-param names for the `gxtDottedMustacheAssert` visitor (it must not flag
   // a `{{foo.bar}}` whose `foo` is brought into scope by an `as |foo|` block
-  // param). Computed once on the post-transform source and threaded into the
-  // dialect transforms.
-  const _gxtDialectBlockParamNames = findBlockParamNames(transformedTemplate);
+  // param). Computed once on the source and threaded into the dialect
+  // transforms, under the names those transforms see: a block param named like a
+  // keyword is renamed before them (`gxtBlockParamNamesTransform`).
+  const _gxtDialectBlockParamNames = new Set(
+    [...findBlockParamNames(transformedTemplate)].map((name) => gxtBlockParamAlias(name) ?? name)
+  );
 
   // Ember-dialect assert findings, populated by the read-only assert-detection
   // visitors during the compile traverse and acted on immediately after the
@@ -12579,8 +12584,12 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     // Ember dialect AST transforms (public `transforms` hook). These run on the
     // parsed AST after preprocess / before codegen — see
     // `buildGxtDialectTransforms` (ast-transforms.ts). The `{{on}}`→`{{on-ext}}`
-    // rewrite is included only when the scope does not shadow `on`.
+    // rewrite is included only when the scope does not shadow `on`. The
+    // lexical-scope transforms (`buildGxtLexicalTransforms`: block params named
+    // like keywords) run before the user's AST plugins, as the source rewrite
+    // they replace did.
     transforms: [
+      ...buildGxtLexicalTransforms(),
       ...userAstPlugins,
       ...buildGxtDialectTransforms(
         _includeOnExtTransform,

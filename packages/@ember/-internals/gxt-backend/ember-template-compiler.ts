@@ -105,90 +105,6 @@ function teeLetBlockParam(template: string, name: string, alias: string): string
   });
 }
 
-/**
- * Names that the GXT compiler unconditionally refines away — `{{input}}`
- * becomes `$_tag('Input')`, `{{component}}` / `{{mount}}` collapse to
- * their built-in component helpers, `{{outlet}}` lowers to the outlet
- * keyword — regardless of any enclosing block-param shadow. When a
- * `{{#let ... as |NAME|}}` block declares one of these names as its
- * param, the inline `{{NAME}}` references need to be routed to the
- * block-param binding instead of the refined keyword.
- */
-const GXT_REFINED_KEYWORDS_NEEDING_SHADOW = new Set([
-  'input',
-  'textarea',
-  'component',
-  'mount',
-  'outlet',
-  'link-to',
-]);
-
-function _validBlockParamAlias(name: string): string {
-  const clean = (name.startsWith('-') ? name.slice(1) : name).replace(/-/g, '_');
-  return `__gxtBP_${clean}`;
-}
-
-/**
- * Rewrite block-param declarations whose names are not valid JavaScript
- * identifiers — names beginning with `-` like `-with-dynamic-vars` and
- * `-in-element` — or that clash with a GXT-refined keyword (see
- * GXT_REFINED_KEYWORDS_NEEDING_SHADOW). The GXT compiler emits block param
- * names verbatim into a JavaScript `let` binding (e.g.
- * `let -with-dynamic-vars = () => this.var`), which is a syntax error that
- * prevents the template module from loading.
- *
- * Each such param is renamed to a valid identifier (`__gxtBP_<name>`, see
- * `_validBlockParamAlias`) and bare `{{NAME}}` / `{{{NAME}}}` references are
- * rewritten to it. Block openers/closers (`{{#NAME` / `{{/NAME}}`) are left
- * alone since those are structural GXT keywords; the keyword invocation
- * `{{#-with-dynamic-vars outletState=...}}...{{/-with-dynamic-vars}}` is
- * handled elsewhere (compile.ts).
- *
- * This is a lightweight textual rewrite — it does not parse the whole
- * template, it just targets the specific GXT-incompatible identifier forms.
- */
-function _normalizeHyphenBlockParams(template: string): { source: string; changed: boolean } {
-  if (template.indexOf('as |') === -1) return { source: template, changed: false };
-  const asRe = /\sas\s*\|([^|]+)\|/g;
-  let changed = false;
-  let m: RegExpExecArray | null;
-  let out = template;
-  const renamings: Array<{ from: string; to: string }> = [];
-  while ((m = asRe.exec(template)) !== null) {
-    const group = m[1];
-    if (!group) continue;
-    const names = group.trim().split(/\s+/);
-    const newNames: string[] = [];
-    let groupChanged = false;
-    for (const name of names) {
-      // Rename when the identifier is either invalid JS (`-with-dynamic-vars`)
-      // or clashes with a GXT-refined keyword (`input`, `component`, ...).
-      if (name.startsWith('-') || GXT_REFINED_KEYWORDS_NEEDING_SHADOW.has(name)) {
-        const alias = _validBlockParamAlias(name);
-        newNames.push(alias);
-        renamings.push({ from: name, to: alias });
-        groupChanged = true;
-      } else {
-        newNames.push(name);
-      }
-    }
-    if (groupChanged) {
-      out = out.replace(` as |${group}|`, ` as |${newNames.join(' ')}|`);
-      changed = true;
-    }
-  }
-  if (!changed) return { source: template, changed: false };
-  // Replace bare `{{name}}` references, also matching the `{{{...}}}`
-  // triple-curly variant. Skip block openers `{{#name` and closers
-  // `{{/name}}` since those are still structural GXT keywords.
-  for (const { from, to } of renamings) {
-    const escaped = from.replace(/[-]/g, '\\-');
-    const bareRe = new RegExp(`(\\{\\{\\{?)(?!#|/)(\\s*)${escaped}(\\b)`, 'g');
-    out = out.replace(bareRe, `$1$2${to}$3`);
-  }
-  return { source: out, changed: true };
-}
-
 export function compile(templateString: string, options?: any) {
   const originalScopeValues: Record<string, unknown> | undefined =
     options?.scopeValues && typeof options.scopeValues === 'object'
@@ -226,16 +142,8 @@ export function compile(templateString: string, options?: any) {
     }
   }
 
-  // Pass 2: block-param shadow rewrite for inline `{{NAME}}` references
-  // whose name is either invalid JS (`-with-dynamic-vars`) or clashes
-  // with a GXT-refined keyword (`input`, `component`, `outlet`, ...).
-  // This runs after the legacy block-form rewrite so the `{{#NAME}}...`
-  // form has already been transformed (and therefore contains no more
-  // direct `NAME` references to rewrite).
-  const shadowFix = _normalizeHyphenBlockParams(rewritten);
-  if (shadowFix.changed) {
-    rewritten = shadowFix.source;
-  }
+  // Block params named like keywords are renamed on the template's AST, in
+  // compile.ts (`buildGxtLexicalTransforms` in ast-transforms.ts).
 
   if (rewritten === templateString) {
     return _instrumentFactory(compileTemplate(templateString, options), options);

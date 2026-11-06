@@ -219,6 +219,83 @@ export function gxtTemplateLocals(template: unknown): string[] {
   return [...names];
 }
 
+// The block-param names that `gxtBlockParamNamesTransform` renames, with the
+// names that start with `-` (`-with-dynamic-vars`, `-in-element`): keywords
+// that the compat backend lowers by name, here (`{{outlet}}` becomes
+// `<ember-outlet />`, `{{link-to}}` `<LinkTo />`) or in the GXT compiler's
+// compat lowering.
+const _GXT_RENAMED_BLOCK_PARAMS: ReadonlySet<string> = new Set([
+  'input',
+  'textarea',
+  'component',
+  'mount',
+  'outlet',
+  'link-to',
+]);
+
+/**
+ * The name `gxtBlockParamNamesTransform` gives a block param
+ * (`input` → `__gxtBP_input`, `-in-element` → `__gxtBP_in_element`), or null
+ * for a block param that keeps its name.
+ */
+export function gxtBlockParamAlias(name: string): string | null {
+  const internal = name.startsWith('-');
+  if (!internal && !_GXT_RENAMED_BLOCK_PARAMS.has(name)) return null;
+  return `__gxtBP_${(internal ? name.slice(1) : name).split('-').join('_')}`;
+}
+
+/**
+ * A block param named like a keyword (see `_GXT_RENAMED_BLOCK_PARAMS`) is
+ * renamed (`gxtBlockParamAlias`) with every read of it in its scope: a path
+ * head (`{{input}}`, `{{concat input}}`, `(input)`, `{{#input}}`) and a
+ * component tag (`<input>`, as Glimmer reads a tag that a block param binds).
+ * No keyword lowering then takes the block param for the keyword, and outside
+ * the block the name is the keyword again (`{{component "foo-bar"}}` after a
+ * `{{#let … as |component|}}` block). Text is not touched.
+ *
+ * Runs first, before the user's AST plugins and the dialect transforms, as the
+ * source rewrite it replaces ran before the template was parsed. compile.ts
+ * maps the block-param names it gives those transforms the same way.
+ */
+function gxtBlockParamNamesTransform(_env: GxtAstEnv) {
+  const rename = (name: string, bound: (name: string) => boolean): string | null =>
+    bound(name) ? gxtBlockParamAlias(name) : null;
+  return {
+    name: 'ember-gxt-block-param-names',
+    visitor: {
+      Template(template: any): void {
+        walkGxtScopes(template, {
+          binder(params) {
+            for (const param of params) {
+              const alias = gxtBlockParamAlias(param.name);
+              if (alias !== null) param.name = alias;
+            }
+          },
+          path(node, bound) {
+            if (node.head.type !== 'VarHead') return;
+            const alias = rename(node.head.name, bound);
+            if (alias !== null) node.head.name = alias;
+          },
+          element(node, bound) {
+            const tag: string = node.tag;
+            const dot = tag.indexOf('.');
+            const alias = rename(dot === -1 ? tag : tag.slice(0, dot), bound);
+            if (alias !== null) node.tag = dot === -1 ? alias : alias + tag.slice(dot);
+          },
+        });
+      },
+    },
+  };
+}
+
+/**
+ * The lexical-scope transforms, which run before the user's AST plugins and
+ * the dialect transforms: block params named like keywords.
+ */
+export function buildGxtLexicalTransforms(): readonly GxtAstTransform[] {
+  return [gxtBlockParamNamesTransform as unknown as GxtAstTransform];
+}
+
 /**
  * `template(…, { scope: () => ({ this: state }) })`: the template's `this` is
  * `state`, which `template()` binds to `alias`. Every `this` path head (in any
