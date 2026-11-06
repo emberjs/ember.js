@@ -190,6 +190,16 @@ moduleFor(
       assert.deepEqual(destroyed, [], 'nothing destroyed');
     }
 
+    ['@test outside the block of a block param with its name, a helper call has its own site'](
+      assert: QUnit['assert']
+    ) {
+      this.render(
+        '{{#let "p" as |counting|}}[{{counting}}]{{/let}}[{{counting "a"}}][{{counting "b"}}]'
+      );
+      this.assertText('[p][a1][b1]');
+      assert.strictEqual(instances.length, 2, 'one instance per call site');
+    }
+
     ['@test destroying one call site of a class-based helper leaves the other'](
       assert: QUnit['assert']
     ) {
