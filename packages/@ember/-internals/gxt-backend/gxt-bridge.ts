@@ -1250,6 +1250,26 @@ export function setClassicRouteWrapper(wrapper: object): void {
   _classicRouteWrapper = wrapper;
 }
 
+/**
+ * The built-in components whose elements manager.ts builds itself
+ * (`handleManagedComponent`): `<LinkTo>` and `<Textarea>`, each registered by
+ * its module (glimmer components/link-to.ts, components/textarea.ts) in GXT
+ * builds, so that manager.ts knows them by identity and not by the name a
+ * class's `toString()` gives.
+ */
+export type GxtBuiltinComponentName = 'LinkTo' | 'Textarea';
+
+const _builtinComponents = new WeakMap<object, GxtBuiltinComponentName>();
+
+export function setGxtBuiltinComponent(definition: object, name: GxtBuiltinComponentName): void {
+  _builtinComponents.set(definition, name);
+}
+
+/** The built-in component `definition` is, if it is one. */
+export function getGxtBuiltinComponent(definition: object): GxtBuiltinComponentName | undefined {
+  return _builtinComponents.get(definition);
+}
+
 export function getRouteOutletHooks(): GxtRouteOutletHooks | null {
   return _routeOutletHooks;
 }

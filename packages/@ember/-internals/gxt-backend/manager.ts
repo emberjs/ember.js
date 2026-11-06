@@ -12363,6 +12363,21 @@ const _INPUT_SYNC_KEYS: ReadonlySet<string> = new Set([
   ..._INPUT_HTML_ATTRS.flat(),
 ]);
 
+// The built-in component (`LinkTo`, `Textarea`) `komp` is: the definition its
+// module registered (gxt-bridge `setGxtBuiltinComponent`), or an object whose
+// prototype chain holds it, as the lookup of its internal manager walks the
+// chain.
+function _gxtBuiltinComponentOf(komp: unknown): GxtBuiltinComponentName | undefined {
+  if (typeof komp === 'function') return getGxtBuiltinComponent(komp);
+  let pointer: unknown = komp;
+  while (pointer !== null && typeof pointer === 'object' && pointer !== Object.prototype) {
+    const name = getGxtBuiltinComponent(pointer);
+    if (name !== undefined) return name;
+    pointer = Object.getPrototypeOf(pointer);
+  }
+  return undefined;
+}
+
 /**
  * Handle a component with an internal manager (Input, Textarea, LinkTo).
  * Instead of going through the full template render pipeline, we directly
@@ -12469,8 +12484,9 @@ function handleManagedComponent(
   };
 
   const renderFn = () => {
-    // Determine component type from the static toString() method
-    const componentType = komp?.toString?.();
+    // Which built-in the component is, by identity; any other component with
+    // an internal manager renders as an `<input>`.
+    const componentType = _gxtBuiltinComponentOf(komp);
 
     // LinkTo: render as <a> element with reactive bindings.
     // Read args/fw through slotRef so that each call (including cache-HIT
@@ -14478,6 +14494,8 @@ import {
   installCompilePipelinePart,
   setCreateCurriedComponent,
   renderRootLabel,
+  getGxtBuiltinComponent,
+  type GxtBuiltinComponentName,
 } from './gxt-bridge';
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts.
