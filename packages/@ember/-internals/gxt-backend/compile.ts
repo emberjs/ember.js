@@ -2959,7 +2959,14 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
     owners = new Set();
     _arrayOwnerMap.set(array, owners);
   }
-  owners.add({ obj: ownerObj, key: ownerKey });
+  // Each owner once: an `{{#each}}` source registers its owners on every read.
+  // (forEach, NOT for…of: gxt's reactive Set.prototype iterator patch would
+  // subscribe a reading formula to the Set.)
+  let registered = false;
+  owners.forEach((entry) => {
+    if (entry.obj === ownerObj && entry.key === ownerKey) registered = true;
+  });
+  if (!registered) owners.add({ obj: ownerObj, key: ownerKey });
 }
 // Exposed via the gxt-bridge as `compilePipeline.registerArrayOwner`. Closure
 // over `_arrayOwnerMap` is read below — relocation would fragment the map's
@@ -5969,9 +5976,60 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
 // GXT's SyncListComponent already handles empty arrays + inverseFn correctly
 // (after the GXT fix for first-render inverse). We just need to ensure
 // the value reaching GXT is always a proper array.
+
+// A cell that holds an `{{#each}}` list: the property `key` of `obj`.
+interface _GxtListOwner {
+  obj: object;
+  key: string;
+}
+
+// Reads an `{{#each}}` source (`() => this.list`, `() => $a.items`,
+// `() => $__cellFor(group, "items")`) under a tracking frame of its own, and
+// returns the list with its owners: the cells the read went through that hold
+// the list itself. A property's cell records its object and key
+// (`_relatedObj` / `_relatedKey`), so `this.model.items` is owned by the cell of
+// `items` of the model when there is one, never by `model`. The cells are
+// forwarded to the reading frame, so the source formula subscribes to all of
+// them. A list that no cell the read went through holds (a helper's result, a
+// block param itself) has no owner.
+function _gxtReadEachSource(getter: () => unknown): {
+  list: unknown;
+  owners: _GxtListOwner[];
+} {
+  const outer = _gxtGetTracker();
+  const frame: _GxtTrackerFrame = new Set();
+  _gxtSetTracker(frame);
+  let list: unknown;
+  try {
+    list = getter();
+  } finally {
+    _gxtSetTracker(outer);
+    // forEach, NOT for…of: gxt's reactive Set.prototype iterator patch would
+    // register the frame with the reading formula.
+    if (outer) frame.forEach((cell) => outer.add(cell));
+  }
+  const owners: _GxtListOwner[] = [];
+  if (list !== null && typeof list === 'object') {
+    frame.forEach((cell: any) => {
+      const obj = cell._relatedObj;
+      const key = cell._relatedKey;
+      if (
+        obj !== null &&
+        typeof obj === 'object' &&
+        typeof key === 'string' &&
+        cell._value === list
+      ) {
+        owners.push({ obj, key });
+      }
+    });
+  }
+  return { list, owners };
+}
+
 // Subscribe the active each-source formula to a collection's backing array `[]`
 // cell so in-place mutations re-fire the list opcode — covering block-param
-// sources (the inner each in `{{#each foo}}`) that have no parseable owner cell.
+// sources (the inner each in `{{#each foo}}`) that no cell holding the list
+// owns.
 // Reads `cellFor(array,'[]').value` to register with GXT's active tracker;
 // `notifyPropertyChange(array,'[]')` dirties the same cell. Walks a couple of
 // common backing-array fields for non-array wrappers (ArrayProxy.content,
@@ -6026,10 +6084,11 @@ function _gxtSubscribeBackingArray(raw: any): void {
   // (`arrangedContent` = `this.wrappedItems.slice()`): the in-place mutation
   // (`inner.delegate.replace(...)`, nested-each-over-array-proxy test) fires
   // `arrayContentDidChange(wrappedItems,'[]')` on the BACKING array, not the
-  // proxy. A block-param each-source (the inner `{{#each foo as |bar|}}`) has
-  // no parseable owner cell, so the `_registerIterableUnderlyingArray`
-  // array-owner fan-out can't reach it — reading the backing array's `[]` cell
-  // HERE is the only path that subscribes the source formula to that mutation.
+  // proxy. A block-param each-source (the inner `{{#each foo as |bar|}}`) is
+  // read through no cell that holds the list, so the
+  // `_registerIterableUnderlyingArray` array-owner fan-out can't reach it —
+  // reading the backing array's `[]` cell HERE is the only path that
+  // subscribes the source formula to that mutation.
   // (`arrangedContent` itself returns a fresh throwaway slice each read, so
   // subscribing to ITS `[]` cell is useless — must reach `wrappedItems`.)
   // Glimmer reads none of these fields: one whose getter throws is skipped,
@@ -7094,35 +7153,27 @@ function patchGlobalEachSync() {
     // CRITICAL: $_eachSync expects a Cell/MergedCell (with .id and .value),
     // NOT a plain getter function. Wrap in the module-local `gxtFormula`
     // binding (directly imported from @lifeart/gxt at the top of this file).
-    // Register the underlying array of an iterable wrapper as an "array owner"
-    // of (component, propertyName) so that '[]'/'length' KVO notifications on
-    // mutations (unshiftObject/pushObject) propagate to the component cell.
-    // Without this, mutating an Ember ArrayProxy/ArrayLike/Symbol.iterator/
-    // forEach collection would update the underlying array but never dirty
-    // the component cell — so the each's syncList listener would never fire,
-    // and only the destructive force-rerender would update the DOM, breaking
-    // DOM stability for keyed reuse (regression: "it maintains DOM stability
-    // for stable keys when list is updated" for non-Array iterables).
-    //
-    // The compiled template emits `() => this.list` (no metadata). We parse
-    // the single property name out of the function body to recover the cell
-    // identity (this.<name>), then register the iterable's backing array.
-    const _itemsPropName = (() => {
-      if (typeof items !== 'function') return null;
-      const src = items.toString();
-      const m = src.match(/this\.([A-Za-z_$][A-Za-z0-9_$]*)/);
-      return m ? m[1] : null;
-    })();
-    const _itemsOwner = ctx ? ctx.__gxtRawTarget || ctx : null;
-    const _registerIterableUnderlyingArray = (rawItems: any) => {
+    // Register the underlying array of an iterable wrapper with the cells that
+    // hold the list as its "array owners" (`_gxtReadEachSource`), so that
+    // '[]'/'length' KVO notifications on mutations (unshiftObject/pushObject)
+    // dirty those cells too. Without this, mutating an Ember ArrayProxy/
+    // ArrayLike/Symbol.iterator/forEach collection would update the underlying
+    // array but never dirty the cell that holds it, so what reads the list
+    // through that cell would not re-render (regression: "it maintains DOM
+    // stability for stable keys when list is updated" for non-Array
+    // iterables).
+    const _registerIterableUnderlyingArray = (rawItems: any, owners: readonly _GxtListOwner[]) => {
       if (!rawItems || typeof rawItems !== 'object') return;
-      if (!_itemsOwner || !_itemsPropName) return;
+      if (owners.length === 0) return;
+      const register = (list: object) => {
+        for (const owner of owners) registerArrayOwner(list, owner.obj, owner.key);
+      };
       // Register the WRAPPER itself first so that `arrayContentDidChange`
       // notifying '[]'/'length' on the wrapper finds the owner. ArrayProxy
       // emits notifications on itself; ArrayDelegate emits on `_target` which
       // defaults to the delegate instance. (`registerArrayOwner` is
       // bookkeeping in a WeakMap of Sets.)
-      registerArrayOwner(rawItems, _itemsOwner, _itemsPropName);
+      register(rawItems);
       // Also register backing arrays so direct array mutations propagate.
       // Walk own + inherited enumerable properties for any value that is an
       // array OR another iterable-like wrapper. This catches:
@@ -7157,9 +7208,9 @@ function patchGlobalEachSync() {
           if (val == null || visited.has(val)) continue;
           visited.add(val);
           if (Array.isArray(val)) {
-            registerArrayOwner(val, _itemsOwner, _itemsPropName);
+            register(val);
           } else if (typeof val === 'object') {
-            registerArrayOwner(val, _itemsOwner, _itemsPropName);
+            register(val);
             queue.push(val);
           }
         }
@@ -7169,21 +7220,21 @@ function patchGlobalEachSync() {
       const origGetter = items;
       // Wrap in formula → MergedCell so $_eachSync gets a proper reactive tag
       const wrappedCell = gxtFormula(() => {
-        const raw = origGetter();
+        const { list: raw, owners } = _gxtReadEachSource(origGetter);
         // Register array-owner mapping on every read so that newly-set
         // collection wrappers (post replaceList) hook their underlying
         // arrays into KVO mutation propagation too.
-        _registerIterableUnderlyingArray(raw);
+        _registerIterableUnderlyingArray(raw, owners);
         // Subscribe the source formula DIRECTLY to the backing array's `[]`
         // cell. `arrayContentDidChange` → `notifyPropertyChange(array,'[]')`
         // dirties `cellFor(array,'[]')` (SyncCore primary cell.update). The
-        // array-owner fan-out covers `this.<prop>` sources (parseable name),
-        // but NOT block-param sources like the INNER each in
-        // `{{#each foo as |bar|}}` where `foo` has no owner cell — its in-place
-        // mutation (`inner.replace(0,1,['lady'])`, nested-each test) would not
-        // re-fire the inner list. Reading the backing array's `[]` cell here
-        // makes the formula re-run on any in-place mutation regardless of
-        // source shape.
+        // array-owner fan-out covers sources read through a cell that holds
+        // the list, but NOT a source no such cell holds, like the INNER each
+        // in `{{#each foo as |bar|}}`, whose block param `foo` is no cell — its
+        // in-place mutation (`inner.replace(0,1,['lady'])`, nested-each test)
+        // would not re-fire the inner list. Reading the backing array's `[]`
+        // cell here makes the formula re-run on any in-place mutation
+        // regardless of source shape.
         {
           _gxtSubscribeBackingArray(raw);
         }
