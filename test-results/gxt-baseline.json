@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-11-06T04:16:11.786Z",
+    "capturedAt": "2026-11-06T06:00:22.778Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "e30f940",
-    "totalTests": 10453,
-    "totalModules": 1061,
+    "emberCommit": "f790883",
+    "totalTests": 10464,
+    "totalModules": 1065,
     "quarantinedTests": 0,
-    "totalAssertions": 62087,
-    "totalAssertionsPassing": 61793,
-    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42161395076, merged from 5 shards, on the code of 3a3295c58f, trigger e30f940). 10215/10453 green, 1061 modules, no timeouts, no harness errors. Against the previous baseline (10195/10433, 1053 modules): 8 new modules and 1 new test of 'GXT helper call sites: instances', 20 tests of the AST transforms that replaced the template-source scans (a template's scope, keyword shadowing, block params named like keywords, the head of a dotted path, in-element destinations, the names a strict-mode template reads from its scope, each-in with whitespace control), all green. 'Strict Mode - Runtime Template Compiler (implicit) - allowed globals from RFC#1070' keeps 28/28 green with 55 assertions (was 42): the implicit form takes the PascalCase allowed globals from eval. No other test changed status."
+    "totalAssertions": 62110,
+    "totalAssertionsPassing": 61816,
+    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42171628281, attempt 2, merged from 5 shards, trigger f790883; the code of this series, but for the place of one import in glimmer's components/textarea.ts). 10226/10464 green, 1065 modules, no timeouts, no harness errors. Against the previous baseline (10215/10453, 1061 modules): 4 new modules, 11 tests (an {{#each}} over a list that is no Array, by the path to the list; argument names; the built-in components known by identity; runtime-template scope names), all green. No other test changed status. Attempt 1 had one red, the timing test 'runloop `next` :: multiple calls to next share coalesce callbacks into same run loop' (a 20 ms setTimeout check), which was green when its shard ran again."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -1568,6 +1568,13 @@
       "assertionsPassing": 12,
       "failingTests": []
     },
+    "Components test: argument names": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 6,
+      "assertionsPassing": 6,
+      "failingTests": []
+    },
     "Components test: attrs lookup (classic component)": {
       "total": 6,
       "passing": 6,
@@ -2607,6 +2614,13 @@
       "assertionsPassing": 8,
       "failingTests": []
     },
+    "GXT built-in components: known by identity": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 3,
+      "assertionsPassing": 3,
+      "failingTests": []
+    },
     "GXT component and helper values in content position": {
       "total": 4,
       "passing": 4,
@@ -2934,6 +2948,13 @@
       "passing": 4,
       "assertionsTotal": 10,
       "assertionsPassing": 10,
+      "failingTests": []
+    },
+    "GXT runtime templates: scope names": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
       "failingTests": []
     },
     "GXT template text": {
@@ -4955,6 +4976,13 @@
           "category": "gxt:triage"
         }
       ]
+    },
+    "Syntax test: {{#each}} over a list that is no Array, by the path to the list": {
+      "total": 3,
+      "passing": 3,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
+      "failingTests": []
     },
     "Syntax test: {{#each}} with array proxies, arrangedContent depends on external content": {
       "total": 23,
