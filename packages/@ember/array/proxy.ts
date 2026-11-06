@@ -58,6 +58,16 @@ function customTagForArrayProxy(proxy: object, key: string) {
   return tagFor(proxy, key);
 }
 
+function gxtArrayLength(rawLength: unknown): number {
+  // GXT: Guard against invalid array lengths (NaN, negative, non-integer)
+  // which can occur when ArrayProxy is used with PromiseProxyMixin
+  // before the promise has resolved.
+  if (typeof rawLength !== 'number' || rawLength !== rawLength || rawLength < 0) {
+    return 0;
+  }
+  return rawLength;
+}
+
 /**
   An ArrayProxy wraps any other object that implements `Array` and/or
   `MutableArray,` forwarding all requests. This makes it very useful for
@@ -173,6 +183,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
 
   create(init: { content: Array<T> }): ArrayProxy<T>;
 }
+
 class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   /*
     `this._objectsDirtyIndex` determines which indexes in the `this._objects`
@@ -264,7 +275,9 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
     if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
       let arrangedContent = get(this, 'arrangedContent');
       if (arrangedContent) {
-        let length = (this._objects.length = get(arrangedContent, 'length'));
+        let length = (this._objects.length = __GXT_MODE__
+          ? gxtArrayLength(get(arrangedContent, 'length'))
+          : get(arrangedContent, 'length'));
 
         for (let i = this._objectsDirtyIndex; i < length; i++) {
           // SAFETY: This is expected to only ever return an instance of T. In other words, there should

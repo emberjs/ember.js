@@ -67,6 +67,13 @@ setInternalComponentManager(
   ElementComponentDefinition.prototype
 );
 
+// GXT: brand the prototype so gxt-backend's `$_c_ember` renders `(element "tag")`
+// results directly as `$_tag(tagName, ...)` instead of routing them through
+// `handleManagedComponent` (GXT runs no Glimmer VM to build them).
+if (__GXT_MODE__) {
+  (ElementComponentDefinition.prototype as any).__isElementHelperDefinition = true;
+}
+
 // Cache component definitions per tag name to avoid creating duplicate definitions
 const ELEMENT_DEFINITIONS = new Map<string, ElementComponentDefinition>();
 

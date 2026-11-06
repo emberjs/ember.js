@@ -1,7 +1,7 @@
 import type { ASTv1 } from '@glimmer/syntax';
 import { builders as b, preprocess as parse } from '@glimmer/syntax';
 
-import { element } from './parser-node-test';
+import { buildElement } from './parser-node-test';
 import { astEqual } from './support';
 
 const { module, test } = QUnit;
@@ -62,13 +62,16 @@ module('[glimmer-syntax] Parser - backslash escape sequences', function () {
   // Inside HTML elements
 
   test('\\{{ in element text content produces literal {{', () => {
-    astEqual('<div>\\{{foo}}</div>', b.template([element('div', ['body', b.text('{{foo}}')])]));
+    astEqual(
+      '<div>\\{{foo}}</div>',
+      b.template([buildElement('div', ['body', b.text('{{foo}}')])])
+    );
   });
 
   test('\\\\{{ in element text content produces one backslash + real mustache', () => {
     astEqual(
       '<div>\\\\{{foo}}</div>',
-      b.template([element('div', ['body', b.text('\\'), b.mustache(b.path('foo'))])])
+      b.template([buildElement('div', ['body', b.text('\\'), b.mustache(b.path('foo'))])])
     );
   });
 
@@ -93,13 +96,13 @@ module('[glimmer-syntax] Parser - backslash escape sequences', function () {
   });
 
   test('triple backslash not before {{ is preserved in text (backslashes.hbs)', () => {
-    astEqual('<p>\\\\\\</p>', b.template([element('p', ['body', b.text('\\\\\\')])]));
+    astEqual('<p>\\\\\\</p>', b.template([buildElement('p', ['body', b.text('\\\\\\')])]));
   });
 
   test('triple backslash + \\\\{{ in element text (backslashes.hbs)', () => {
     astEqual(
       '<p>\\\\\\ \\\\{{foo}}</p>',
-      b.template([element('p', ['body', b.text('\\\\\\ \\'), b.mustache(b.path('foo'))])])
+      b.template([buildElement('p', ['body', b.text('\\\\\\ \\'), b.mustache(b.path('foo'))])])
     );
   });
 
@@ -124,7 +127,7 @@ module('[glimmer-syntax] Parser - backslash escape sequences', function () {
   test('\\{{ without closing }} stops at < (HTML element boundary)', () => {
     astEqual(
       '<div>\\{{ unclosed</div>',
-      b.template([element('div', ['body', b.text('{{ unclosed')])])
+      b.template([buildElement('div', ['body', b.text('{{ unclosed')])])
     );
   });
 });
