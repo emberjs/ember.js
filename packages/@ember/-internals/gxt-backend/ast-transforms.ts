@@ -767,9 +767,9 @@ function gxtAttrQuotedHelperTransform(env: GxtAstEnv) {
  * the AST handles nesting and `{{else}}`-splitting for free (the string
  * version hand-rolled an innermost-first loop + same-depth `{{else}}` finder).
  *
- * NOTE: the `gxtEntriesOf` binding must be added to the compile `bindings` set
- * so the compiler emits a bare binding reference rather than a string lookup;
- * the call site does this whenever the source contains `{{#each-in`.
+ * NOTE: the `gxtEntriesOf` binding must be in the compile `bindings` set so
+ * the compiler emits a bare binding reference rather than a string lookup;
+ * compile.ts binds it for every template.
  */
 function gxtEachInTransform(env: GxtAstEnv) {
   const b = env.syntax.builders;
