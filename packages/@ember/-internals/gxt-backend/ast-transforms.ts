@@ -114,6 +114,111 @@ interface GxtAstEnv {
   };
 }
 
+// ── Lexical scope ──────────────────────────────────────────────────────────
+// A template's names are scoped as Glimmer scopes them: a block statement's
+// params cover its block (and its `{{else}}` block's params that block), an
+// element's params cover its children but not its attributes or modifiers,
+// and the nearest binder of a name wins. A path head or a component tag that
+// no block param in scope binds is a free variable: a lexical (strict mode)
+// value, a keyword, or a name the runtime resolves.
+
+/**
+ * What `walkGxtScopes` calls. `bound(name)` is whether a block param named
+ * `name` is in scope at the node.
+ */
+interface GxtScopeVisitor {
+  /**
+   * The params (the parsed `VarHead`s) of a block or element, once their names
+   * are in scope. A rename of a param here does not change what `bound` says:
+   * the scope keeps the names as written.
+   */
+  binder?(params: any[]): void;
+  /** A block statement, before its path and arguments are walked. */
+  block?(node: any, bound: (name: string) => boolean): void;
+  /** An element, before its attributes: its tag reads the enclosing scope. */
+  element?(node: any, bound: (name: string) => boolean): void;
+  /** A path expression: a path head, an argument, an attribute value. */
+  path?(node: any, bound: (name: string) => boolean): void;
+}
+
+/** Walks the statements of a parsed template, tracking its block params. */
+function walkGxtScopes(template: any, visitor: GxtScopeVisitor): void {
+  const frames: string[][] = [];
+  const bound = (name: string): boolean => frames.some((names) => names.includes(name));
+  const inScopeOf = (binder: any, walk: () => void): void => {
+    const params: any[] = binder.params ?? [];
+    frames.push(params.map((param) => param.name as string));
+    visitor.binder?.(params);
+    walk();
+    frames.pop();
+  };
+  const expression = (node: any): void => {
+    if (node.type === 'PathExpression') visitor.path?.(node, bound);
+    else if (node.type === 'SubExpression') call(node);
+  };
+  // A mustache, sub-expression, block statement or modifier: its path and arguments.
+  const call = (node: any): void => {
+    expression(node.path);
+    for (const param of node.params) expression(param);
+    for (const pair of node.hash.pairs) expression(pair.value);
+  };
+  const statements = (body: any[]): void => {
+    for (const node of body) {
+      switch (node.type) {
+        case 'MustacheStatement':
+          call(node);
+          break;
+        case 'BlockStatement':
+          visitor.block?.(node, bound);
+          call(node);
+          inScopeOf(node.program, () => statements(node.program.body));
+          if (node.inverse) inScopeOf(node.inverse, () => statements(node.inverse.body));
+          break;
+        case 'ElementNode':
+          visitor.element?.(node, bound);
+          for (const attr of node.attributes) {
+            const value = attr.value;
+            if (value.type === 'MustacheStatement') call(value);
+            if (value.type === 'ConcatStatement') {
+              for (const part of value.parts) if (part.type === 'MustacheStatement') call(part);
+            }
+          }
+          for (const modifier of node.modifiers) call(modifier);
+          inScopeOf(node, () => statements(node.children));
+          break;
+        // Text and comments name nothing.
+      }
+    }
+  };
+  statements(template.body);
+}
+
+/**
+ * The free variables of a parsed template, as `getTemplateLocals` of
+ * `@glimmer/syntax` (with keywords) finds them: the head of every path and of
+ * every component tag (`<Foo>`, `<foo.bar>`) that no block param in scope
+ * binds. `this`, `@` arguments, named blocks and HTML elements are not
+ * variables; text and comments hold none.
+ */
+export function gxtTemplateLocals(template: unknown): string[] {
+  const names = new Set<string>();
+  walkGxtScopes(template, {
+    path(node, bound) {
+      if (node.head.type === 'VarHead' && !bound(node.head.name)) names.add(node.head.name);
+    },
+    element(node, bound) {
+      const tag: string = node.tag;
+      if (tag.startsWith(':') || tag.startsWith('@')) return;
+      const dot = tag.indexOf('.');
+      // A dot-free lowercase tag is an HTML element (`<div>`, `<my-element>`).
+      if (dot === -1 && tag.toLowerCase() === tag) return;
+      const head = dot === -1 ? tag : tag.slice(0, dot);
+      if (head !== 'this' && !bound(head)) names.add(head);
+    },
+  });
+  return [...names];
+}
+
 /**
  * `template(…, { scope: () => ({ this: state }) })`: the template's `this` is
  * `state`, which `template()` binds to `alias`. Every `this` path head (in any
