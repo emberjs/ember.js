@@ -10212,13 +10212,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Also convert -- (namespace separator from ::) to /
         let kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
 
-        // Strip the curly-c- prefix added by the Vite plugin's transformCurlyComponents.
-        // The plugin converts {{foo-bar}} to <curly-c-foo-bar /> so GXT compiles it as
-        // a tag (not a variable), but the actual component/helper name is just "foo-bar".
-        if (kebabName.startsWith('curly-c-')) {
-          kebabName = kebabName.slice(8); // 8 = 'curly-c-'.length
-        }
-
         // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
         // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
         // handled as helpers, not components.
@@ -11091,24 +11084,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // an unknown <NoGood> tag and silently succeed).
       //
       // Detection signals, any of which indicate a curly-block invocation:
-      //   1. `curly-c-` prefix on the tag (legacy AST transform path)
-      //   2. `@__hasBlock__` marker in attrs (angle-bracket block form) —
+      //   1. `@__hasBlock__` marker in attrs (angle-bracket block form) —
       //      but ONLY on PascalCase tags. GXT sometimes attaches the marker
       //      to hyphenated lowercase tags (custom elements like
       //      `<use-the-platform></use-the-platform>`), where the author
       //      intends a plain HTML custom element, not a component.
-      //   3. PascalCase tag name with at least one child (curly-block body)
+      //   2. PascalCase tag name with at least one child (curly-block body)
       if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
         const firstChar = resolvedTag.charCodeAt(0);
         const isPascalCase = firstChar >= 65 && firstChar <= 90; // A-Z
-        let isCurlyBlockInvocation = resolvedTag.startsWith('curly-c-');
-        if (
-          !isCurlyBlockInvocation &&
-          isPascalCase &&
-          tagProps &&
-          tagProps !== g.$_edp &&
-          Array.isArray(tagProps[1])
-        ) {
+        let isCurlyBlockInvocation = false;
+        if (isPascalCase && tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
           for (const [key] of tagProps[1]) {
             if (key === '@__hasBlock__') {
               isCurlyBlockInvocation = true;
@@ -11120,10 +11106,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (isPascalCase) isCurlyBlockInvocation = true;
         }
         if (isCurlyBlockInvocation) {
-          // Compute the original dashed name (e.g. `no-good` from `NoGood` or
-          // `curly-c-no-good`). Strip the `curly-c-` prefix if present.
-          let rawName = doubleDashToSlash(pascalToKebab(resolvedTag));
-          if (rawName.startsWith('curly-c-')) rawName = rawName.slice(8);
+          // Compute the original dashed name (e.g. `no-good` from `NoGood`).
+          const rawName = doubleDashToSlash(pascalToKebab(resolvedTag));
           const notFoundErr = new Error(
             `Attempted to resolve \`${rawName}\`, which was expected to be a component, but nothing was found.`
           );
