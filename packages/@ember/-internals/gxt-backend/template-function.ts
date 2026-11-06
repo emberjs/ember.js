@@ -14,7 +14,9 @@ import type {
   BaseClassTemplateOptions,
   BaseTemplateOptions,
 } from '@ember/template-compiler/lib/template';
+import { type AstTransform } from '@lifeart/gxt/runtime-compiler';
 import { getGxtRenderer, installCompilePipelinePart } from './gxt-bridge';
+import { gxtExplicitThisTransform } from './ast-transforms';
 
 /**
  * Extract scope values from a template string using an eval function.
@@ -277,37 +279,29 @@ export function gxtTemplate(
     // Strict-mode `this` shadowing: when the user explicitly provides `this`
     // via `scope: () => ({ this: state })`, the GXT compiler would otherwise
     // emit a literal `this.X` reference for `{{this.X}}` — which picks up
-    // the rendering context, not the user's value. Rewrite the path head to
-    // a non-`this` alias and rebind it in scopeValues so the GXT compiler
-    // emits a normal binding-path lookup.
-    let processedTemplate = templateString;
+    // the rendering context, not the user's value. The template's `this`
+    // path heads read a non-`this` alias instead (`gxtExplicitThisTransform`,
+    // an AST plugin), which the scope binds to the user's value, so the GXT
+    // compiler emits a normal binding-path lookup.
+    let plugins: { ast: AstTransform[] } | undefined;
     if (explicitlyProvidedThis && scopeValues) {
       const explicitThisAlias = '__gxtExplicitThis';
       // Avoid clobbering an existing alias — extremely unlikely, but guard
       // against pathological user-supplied scopes.
       if (!Object.prototype.hasOwnProperty.call(scopeValues, explicitThisAlias)) {
-        // Replace path heads in the template:
-        //   {{this.X}}     → {{__gxtExplicitThis.X}}
-        //   {{this}}       → {{__gxtExplicitThis}}      (rare but safe)
-        //   (this.X        → (__gxtExplicitThis.X
-        //   <this.X        → <__gxtExplicitThis.X
-        // The substitution is purely textual but only inside expression
-        // positions: a leading `{{`, `(`, or `<` must precede the `this`.
-        processedTemplate = processedTemplate.replace(
-          /(\{\{[#/!]?\s*|\(\s*|<\s*)this\b/g,
-          (_full, prefix: string) => `${prefix}${explicitThisAlias}`
-        );
+        plugins = { ast: [gxtExplicitThisTransform(explicitThisAlias)] };
         scopeValues = { ...scopeValues, [explicitThisAlias]: scopeValues['this'] };
         delete (scopeValues as Record<string, unknown>)['this'];
       }
     }
 
-    const gxtTemplate = gxtCompile(processedTemplate, {
+    const gxtTemplate = gxtCompile(templateString, {
       moduleName: (gxtOptions as any).moduleName,
       // Strict by default; `strictMode: false` compiles a loose template, as
       // the Glimmer path below does.
       strictMode: gxtOptions.strictMode,
       scopeValues,
+      plugins,
     });
 
     setComponentTemplate(gxtTemplate as Parameters<typeof setComponentTemplate>[0], gxtComponent);
