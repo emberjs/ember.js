@@ -400,6 +400,7 @@ import {
   buildGxtDialectTransforms,
   buildGxtLexicalTransforms,
   gxtBlockParamAlias,
+  GXT_SHADOWED_KEYWORD_ALIASES,
   lookupGxtComment,
   GXT_BLOCK_SCOPE_KEY,
   _GXT_ON_EXT_ALIAS,
@@ -12011,56 +12012,6 @@ type _GxtTemplateFn = (this: any, ...args: any[]) => any;
 let _functionCodeCache: Map<string, _GxtTemplateFn> | null = null;
 
 /**
- * Map of GXT block-keyword names that must be rewritten to a PascalCase
- * alias when the user's strict-mode `scope` shadows them. GXT lowers the
- * block-form curly invocation `{{#NAME ...}}BODY{{/NAME}}` into either a
- * built-in keyword (e.g. `#each`, `#if`) or a raw HTML element tag for
- * lowercase names, which ignores any local binding by the same name.
- *
- * We rewrite `{{#NAME}}BODY{{/NAME}}` to `<Alias>BODY</Alias>` so GXT
- * treats it as a component invocation on the scope binding. The alias is
- * mirrored into scopeValues / scopeBindings so the binding resolves to
- * the original value.
- *
- * The `input` / `textarea` pair is handled by the upstream
- * ember-template-compiler wrapper (ember-template-compiler.ts) already;
- * we intentionally do not re-shadow them here.
- */
-const _GXT_SHADOWABLE_BLOCK_KEYWORDS: Record<string, string> = {
-  if: 'GxtShadowedIfBinding',
-  unless: 'GxtShadowedUnlessBinding',
-  each: 'GxtShadowedEachBinding',
-  'each-in': 'GxtShadowedEachInBinding',
-  let: 'GxtShadowedLetBinding',
-  with: 'GxtShadowedWithBinding',
-};
-
-function _rewriteShadowedBlockKeyword(
-  template: string,
-  name: string,
-  alias: string
-): { source: string; changed: boolean } {
-  // Only rewrite names that can appear as bare identifiers in a block tag.
-  // `each-in` has a hyphen; we escape carefully for use in a RegExp.
-  const escapedName = name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const open = new RegExp(`\\{\\{#(${escapedName})(\\s[^}]*)?\\}\\}`, 'g');
-  const close = new RegExp(`\\{\\{/${escapedName}\\}\\}`, 'g');
-  if (!open.test(template) || !close.test(template)) {
-    return { source: template, changed: false };
-  }
-  open.lastIndex = 0;
-  close.lastIndex = 0;
-  let out = template.replace(open, (_match, _n: string, extra?: string) => {
-    // `extra` captures any hash args / positional params after the name.
-    // Angle-bracket syntax uses them verbatim; GXT's attribute parser
-    // supports `key=value` and bare `{{value}}` in this context.
-    return `<${alias}${extra ?? ''}>`;
-  });
-  out = out.replace(close, `</${alias}>`);
-  return { source: out, changed: true };
-}
-
-/**
  * Quick gate that decides whether a template can possibly resolve any
  * names from a strict-mode `scope()` callback. Returns true if the
  * template has either a PascalCase angle-bracket invocation or any
@@ -12355,27 +12306,18 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     }
   }
 
-  // Pre-transform shadowed block keywords. When `scopeValues` provides a
-  // binding whose name collides with a GXT block keyword (e.g. `each`,
-  // `if`, `unless`, `let`, `with`, `each-in`), GXT's keyword path runs
-  // before scope resolution and the local binding is silently ignored.
-  // Rewrite `{{#NAME ...}}BODY{{/NAME}}` → `<Alias ...>BODY</Alias>` and
-  // mirror the alias into scopeValues so the component call resolves to
-  // the user-provided value. Skip when no scope is provided (non-strict
-  // templates cannot shadow keywords).
+  // A block keyword the scope shadows (`each`, `if`, `input`, …) is an
+  // invocation of the scope's value: `gxtShadowedKeywordTransform`
+  // (ast-transforms.ts) renames its head to the keyword's alias, which the
+  // scope binds to the same value here.
   if (options?.scopeValues) {
-    let rewritten = templateString;
     let patchedScope: Record<string, unknown> | undefined;
-    for (const [name, alias] of Object.entries(_GXT_SHADOWABLE_BLOCK_KEYWORDS)) {
+    for (const [name, alias] of Object.entries(GXT_SHADOWED_KEYWORD_ALIASES)) {
       if (!Object.prototype.hasOwnProperty.call(options.scopeValues, name)) continue;
-      const result = _rewriteShadowedBlockKeyword(rewritten, name, alias);
-      if (!result.changed) continue;
-      rewritten = result.source;
-      patchedScope = patchedScope || { ...options.scopeValues };
+      patchedScope ??= { ...options.scopeValues };
       patchedScope[alias] = options.scopeValues[name];
     }
-    if (rewritten !== templateString) {
-      templateString = rewritten;
+    if (patchedScope) {
       options = { ...options, scopeValues: patchedScope };
     }
   }
@@ -12586,10 +12528,10 @@ export function precompileTemplate(templateString: string, options?: GxtPrecompi
     // `buildGxtDialectTransforms` (ast-transforms.ts). The `{{on}}`→`{{on-ext}}`
     // rewrite is included only when the scope does not shadow `on`. The
     // lexical-scope transforms (`buildGxtLexicalTransforms`: block params named
-    // like keywords) run before the user's AST plugins, as the source rewrite
-    // they replace did.
+    // like keywords, keywords the scope shadows) run before the user's AST
+    // plugins, as the source rewrites they replace did.
     transforms: [
-      ...buildGxtLexicalTransforms(),
+      ...buildGxtLexicalTransforms(options?.scopeValues),
       ...userAstPlugins,
       ...buildGxtDialectTransforms(
         _includeOnExtTransform,
