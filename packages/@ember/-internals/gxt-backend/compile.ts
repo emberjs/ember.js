@@ -275,6 +275,7 @@ import {
   buildGxtDialectTransforms,
   buildGxtLexicalTransforms,
   GXT_SHADOWED_KEYWORD_ALIASES,
+  gxtTemplateLocals,
   lookupGxtComment,
   GXT_BLOCK_SCOPE_KEY,
   _GXT_ON_EXT_ALIAS,
@@ -546,8 +547,9 @@ import { defineEmberMountElement } from './mount-element';
 import { defineEmberOutletElement } from './outlet';
 // Installs the glimmer host that glimmer's renderer modules call (gxt-bridge).
 import './glimmer-host';
-// Installs the GXT `template()` of @ember/template-compiler (gxt-bridge).
-import './template-function';
+// Installs the GXT `template()` of @ember/template-compiler (gxt-bridge), and
+// gives the GXT compiler's template parser.
+import { parseGxtTemplate } from './template-function';
 // Installs the GXT re-render trigger of metal's `notifyPropertyChange` (gxt-bridge).
 import './property-events';
 
@@ -11885,75 +11887,6 @@ const templateCache = new Map<string, any>();
 type _GxtTemplateFn = (this: any, ...args: any[]) => any;
 let _functionCodeCache: Map<string, _GxtTemplateFn> | null = null;
 
-/**
- * Quick gate that decides whether a template can possibly resolve any
- * names from a strict-mode `scope()` callback. Returns true if the
- * template has either a PascalCase angle-bracket invocation or any
- * mustache whose head identifier is not `this`, `@`-prefixed, or `on`.
- *
- * For templates that fail this gate (e.g. the internal Input / Textarea
- * single-element template, with only `<input ...>` and `{{on "..."}}`
- * modifiers), the scope() resolution is skipped entirely.
- */
-function _templateMayNeedScopeThreading(template: string): boolean {
-  // PascalCase tag — `<Foo` or `<Foo.Bar` style. Skip closing `</…`.
-  if (/<[A-Z][A-Za-z0-9_:.-]*[\s/>]/.test(template)) return true;
-  // Free-identifier mustache that isn't `this`, `@arg`, `on`, or a
-  // GXT/Ember built-in we always want to suppress. We just need a single
-  // counter-example, so scan with a regex that captures the head and
-  // bail on the first hit.
-  const re = /\{\{(?:#|\/|!)?\s*([A-Za-z_][A-Za-z0-9_-]*)/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(template))) {
-    const head = m[1];
-    if (head === 'this' || head === 'on') continue;
-    return true;
-  }
-  // SubExpression `(ident ...)` syntax — e.g. `{{on "click" (fn handleClick 123)}}`.
-  // The mustache head may be `on` (skipped above) but the modifier args can
-  // reference a strict-mode scope binding via a SubExpression. Detect that
-  // pattern so the scope() callback is consulted for any free identifiers.
-  // Match `(ident` only when preceded by whitespace, `=`, `(`, `{` or `,`
-  // to avoid matching attribute literals like `style="(border)"`.
-  const subExprRe = /(?:^|[\s={(,])\(([A-Za-z_][A-Za-z0-9_-]*)/g;
-  while ((m = subExprRe.exec(template))) {
-    const head = m[1];
-    // `this` cannot appear as a SubExpression head; only `on` is worth
-    // skipping (a SubExpression `(on ...)` would reference the modifier
-    // helper, not a free user binding).
-    if (head === 'this' || head === 'on') continue;
-    return true;
-  }
-  return false;
-}
-
-/**
- * Returns true if `name` appears as a referenceable identifier in
- * `template`. Used to filter out scope() entries that the template
- * never references, so we don't bloat the binding set.
- *
- * The match is intentionally permissive — it accepts the name as:
- *   * a PascalCase or kebab-case angle-bracket tag (`<Foo`, `<my-foo`)
- *   * a path head inside a mustache (`{{name}}`, `{{name.x}}`,
- *     `{{#name ...}}`, `{{(name ...)}}`, `{{... name=...}}` — handled
- *     by a single word-boundary check)
- *   * a value inside a quoted attribute (`attr="{{name}}"`)
- *
- * False positives are acceptable here (a stray comment match would just
- * inject an unused binding); the only goal is to cheaply prune obvious
- * non-references.
- */
-function _scopeNameAppearsAsReference(template: string, name: string): boolean {
-  if (!name) return false;
-  const escaped = name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-  // Either `<Name` (component tag) or a word-boundary occurrence outside
-  // a closing `</...>`. The simple word-boundary regex below covers
-  // path heads, helper invocations, and attribute values — anything
-  // GXT could surface as a binding reference.
-  const re = new RegExp(`(<\\s*${escaped}[\\s/>])|\\b${escaped}\\b`, 'm');
-  return re.test(template);
-}
-
 // ── Native-templateFn dual path ─────────────────────────────────────────────
 // gxt's compileTemplate already builds a finished templateFn from the compiled
 // code (runtime-compiler.ts fnBody: `$_GET_ARGS(this, arguments)` + the
@@ -12134,48 +12067,47 @@ interface GxtPrecompileOptions {
  * A template the GXT compiler cannot compile throws the compiler's error.
  */
 export function precompileTemplate(templateString: string, options?: GxtPrecompileOptions) {
-  // Strict-mode `precompileTemplate(..., { scope: () => ({ Foo, bar }) })`
-  // threading: the test-only / RFC strict-mode form passes a `scope`
-  // callback that returns the locally-visible bindings. The downstream
-  // compile pipeline only consumes `scopeValues`, so when `scope` is
-  // present we invoke it and merge any names that are actually referenced
-  // by the template into `scopeValues`.
+  // `precompileTemplate(…, { scope: () => ({ Foo, bar }) })` (the form of a
+  // strict-mode template that babel-plugin-ember-template-compilation emits):
+  // the compile pipeline reads `scopeValues`, so the scope's values of the
+  // names the template uses are added to them. As Glimmer keeps only the scope
+  // names a template uses (`precompileJSON`'s used locals), those are its free
+  // variables (`gxtTemplateLocals`, ast-transforms.ts), on the template's AST:
+  // a path head, or a component tag, that no block param in scope binds,
+  // wherever it is (a modifier's argument too). A lowercase tag counts too: a
+  // tag named by the scope (`<div>` with `div` in scope) invokes its value.
+  // Text, attribute names, strings and comments name nothing. Names that are
+  // not used stay out of `scopeValues`, so a template that uses none keeps the
+  // template cache and the debug render tree names only the values it uses.
   //
-  // Filter rules (kept narrow on purpose to avoid touching textarea / input
-  // / classic templates that worked before the threading was added):
-  //   * Skip `on` — GXT's visitor short-circuits `{{on "evt" cb}}`
-  //     syntactically. Adding `on` as a binding causes the GXT compiler
-  //     to emit a variable reference and that breaks the textarea
-  //     `<input ... {{on "input" ...}} />` modifier path that the Ember
-  //     <Textarea> component generates internally.
-  //   * Skip names that don't actually appear as referenceable identifiers
-  //     in the template — keeps bookkeeping cheap and avoids churn for
-  //     large scope() payloads.
-  //   * Skip the whole pass for templates that have no PascalCase tags
-  //     and no non-`{this,@,on,!}` mustaches — the internal Input/Textarea
-  //     template is a single `<input ... />` with `{{on "..."}}` modifiers
-  //     and `@`-args, so `_templateMayNeedScopeThreading` returns false
-  //     for it and the pass is skipped.
+  // `on` stays GXT's built-in modifier: GXT's compiler lowers `{{on "evt" cb}}`
+  // itself, and a binding named `on` makes it emit a reference to the binding
+  // instead, which breaks the `<input … {{on "input" …}} />` modifiers of the
+  // Input and Textarea templates (their scope is `{ on }`).
   if (typeof options?.scope === 'function') {
-    let extra: Record<string, unknown> | undefined;
     // What the scope callback throws propagates, as from `template()`, which
     // calls it too.
     const scopeResult = options.scope();
     if (scopeResult && typeof scopeResult === 'object') {
-      extra = scopeResult as Record<string, unknown>;
-    }
-    if (extra && _templateMayNeedScopeThreading(templateString)) {
+      const extra = scopeResult as Record<string, unknown>;
       const existing = options.scopeValues || {};
-      let mergedScope: Record<string, unknown> | undefined;
-      for (const name of Object.keys(extra)) {
-        if (name === 'on') continue;
-        if (Object.prototype.hasOwnProperty.call(existing, name)) continue;
-        if (!_scopeNameAppearsAsReference(templateString, name)) continue;
-        if (!mergedScope) mergedScope = { ...existing };
-        mergedScope[name] = extra[name];
-      }
-      if (mergedScope) {
-        options = { ...options, scopeValues: mergedScope };
+      const names = Object.keys(extra).filter(
+        (name) => name !== 'on' && !Object.prototype.hasOwnProperty.call(existing, name)
+      );
+      if (names.length > 0) {
+        // A template that does not parse throws the parser's error here.
+        const used = new Set(
+          gxtTemplateLocals(parseGxtTemplate(templateString), { includeHtmlElements: true })
+        );
+        let mergedScope: Record<string, unknown> | undefined;
+        for (const name of names) {
+          if (!used.has(name)) continue;
+          mergedScope ??= { ...existing };
+          mergedScope[name] = extra[name];
+        }
+        if (mergedScope) {
+          options = { ...options, scopeValues: mergedScope };
+        }
       }
     }
   }

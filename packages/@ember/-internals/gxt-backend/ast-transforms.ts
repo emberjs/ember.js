@@ -215,8 +215,15 @@ function walkGxtScopes(template: any, visitor: GxtScopeVisitor): void {
  * every component tag (`<Foo>`, `<foo.bar>`) that no block param in scope
  * binds. `this`, `@` arguments, named blocks and HTML elements are not
  * variables; text and comments hold none.
+ *
+ * With `includeHtmlElements` (the option of `getTemplateLocals`), a dot-free
+ * lowercase tag (`<div>`) counts too: it is an HTML element unless the scope
+ * has its name, as Glimmer reads a tag whose name is in scope as a component.
  */
-export function gxtTemplateLocals(template: unknown): string[] {
+export function gxtTemplateLocals(
+  template: unknown,
+  options: { includeHtmlElements?: boolean } = {}
+): string[] {
   const names = new Set<string>();
   walkGxtScopes(template, {
     path(node, bound) {
@@ -227,7 +234,7 @@ export function gxtTemplateLocals(template: unknown): string[] {
       if (tag.startsWith(':') || tag.startsWith('@')) return;
       const dot = tag.indexOf('.');
       // A dot-free lowercase tag is an HTML element (`<div>`, `<my-element>`).
-      if (dot === -1 && tag.toLowerCase() === tag) return;
+      if (dot === -1 && tag.toLowerCase() === tag && !options.includeHtmlElements) return;
       const head = dot === -1 ? tag : tag.slice(0, dot);
       if (head !== 'this' && !bound(head)) names.add(head);
     },

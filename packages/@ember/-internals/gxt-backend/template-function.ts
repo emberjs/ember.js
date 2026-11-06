@@ -33,7 +33,7 @@ function _extractScopeFromEval(
   evalFn: (v: string) => unknown
 ): Record<string, unknown> | undefined {
   const scope: Record<string, unknown> = {};
-  for (const name of gxtTemplateLocals(parseTemplate(templateString))) {
+  for (const name of gxtTemplateLocals(parseGxtTemplate(templateString))) {
     // A name that is not a plain JS identifier (`has-block`, `-in-element`,
     // a reserved word such as `if`) is not a variable of the caller's scope.
     if (escapeBindingName(name) !== name) continue;
@@ -75,9 +75,11 @@ const _GXT_KEYWORD_NAMES = new Set<string>(['helper', 'modifier']);
  * `preprocess`, which `@lifeart/gxt/runtime-compiler` depends on). gxt exports
  * no parser of its own; its compiler hands that one to AST transforms as
  * `env.syntax.parse`, so it is taken from there once, from a compile of the
- * empty template. A second parser in the compat build is avoided.
+ * empty template. A second parser in the compat build is avoided. A template
+ * that does not parse throws the parser's error. compile.ts's
+ * `precompileTemplate` uses it too.
  */
-function parseTemplate(source: string): unknown {
+export function parseGxtTemplate(source: string): unknown {
   if (_gxtSyntax.parse === undefined) {
     const capture = (env: { syntax: { parse(source: string): unknown } }) => {
       _gxtSyntax.parse = env.syntax.parse;
