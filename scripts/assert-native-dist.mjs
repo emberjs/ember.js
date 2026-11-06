@@ -42,12 +42,10 @@
 // describes the files on disk (same chunk set, same static imports, parsed with
 // babel from the shipped code).
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { analyze } from './dist-ast.mjs';
 import { GXT_NATIVE_FORBIDDEN } from './gxt-alias-map.mjs';
-
-const babel = createRequire(import.meta.url)('@babel/core');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
@@ -149,47 +147,6 @@ function listJs(dir, base = dir) {
     else if (entry.name.endsWith('.js')) out.push(relative(base, full).split('\\').join('/'));
   }
   return out.sort();
-}
-
-// Parse one shipped file: its static / dynamic import specifiers (from the AST,
-// so doc-comment examples never count) and its code re-printed WITHOUT comments.
-// Rollup's residue of `__GXT_MODE__`-folded guards — `if (false && …) ;`, a dead
-// statement a minifier deletes — is removed from the grep text too.
-function analyze(code, filename) {
-  const result = babel.transformSync(code, {
-    filename,
-    configFile: false,
-    babelrc: false,
-    sourceType: 'module',
-    comments: false,
-    ast: true,
-    code: true,
-  });
-  const statics = new Set();
-  const dynamics = new Set();
-  for (const node of result.ast.program.body) {
-    if (
-      (node.type === 'ImportDeclaration' ||
-        node.type === 'ExportNamedDeclaration' ||
-        node.type === 'ExportAllDeclaration') &&
-      node.source
-    ) {
-      statics.add(node.source.value);
-    }
-  }
-  babel.traverse(result.ast, {
-    CallExpression(path) {
-      const arg = path.node.arguments[0];
-      if (path.node.callee.type === 'Import' && arg?.type === 'StringLiteral') {
-        dynamics.add(arg.value);
-      }
-    },
-    ImportExpression(path) {
-      if (path.node.source.type === 'StringLiteral') dynamics.add(path.node.source.value);
-    },
-  });
-  const text = result.code.replace(/if \(false && [^;{}]*\);?/g, '');
-  return { statics: [...statics], dynamics: [...dynamics], text };
 }
 
 const classify = (id) => GXT_NATIVE_FORBIDDEN.find(([re]) => re.test(id))?.[1] ?? null;

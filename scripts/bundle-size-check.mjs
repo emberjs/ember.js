@@ -18,7 +18,8 @@
 import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve, join } from 'node:path';
+import { dirname, resolve, join, relative } from 'node:path';
+import { liveGxtBridgeCalls } from './dist-ast.mjs';
 
 // Recursively collect every `*.js` file under `dir`, returned sorted so the
 // concatenation (and therefore the measured gzip/brotli sizes) is stable
@@ -94,45 +95,22 @@ function assertDistFlavor(entryPath) {
 // build-time gate re-inflates the classic bundle (the +19.7 kB brotli
 // regression this guard backstops) and reappears here as a LIVE gxt-bridge call
 // site. Size budgets can't catch it once re-baselined at the fixed floor, so
-// assert the live bridge call/publish patterns are absent.
+// assert the live bridge calls are absent.
 //
-// We match CALL/PUBLISH shapes — `getGxtRenderer()?.`, `getGxtRenderer().`, and
-// the bridge `install*Part(` / `set*( ` publishers — rather than the bare
-// `getGxtRenderer` identifier. ember-source ships UNMINIFIED ESM under dist/,
-// so two kinds of inert residue legitimately survive and must NOT trip the
-// guard: (1) doc-comments in retained shared modules that mention the bridge by
-// name, and (2) a tiny dead `function getGxtRenderer(){…}` / `setAmbientOwner`
-// accessor stub that rollup keeps merely because reachable modules still carry
-// the (now-unused) `import { … } from '…/gxt-bridge'` statement. Both are
-// stripped by consuming apps' minifiers and carry no live behavior; only a real
-// ungated CALL re-introduces the regression, which the patterns below catch.
-const CLASSIC_LIVE_GXT_PATTERNS = [
-  /getGxtRenderer\(\)\s*\??\./, // getGxtRenderer()?.x or getGxtRenderer().x — a live read
-  /\binstallCompilePipelinePart\s*\(/,
-  /\binstallRootComponentPart\s*\(/,
-  /\binstallViewUtilsPart\s*\(/,
-  /\binstallRuntimePart\s*\(/,
-  /\binstallRenderPassPart\s*\(/,
-  /\binstallBacktrackingPart\s*\(/,
-  /\bsetGxtRenderer\s*\(/,
-  /\bsetControllerOutletRerender\s*\(/,
-  // The glimmer host (gxt-bridge `getGxtGlimmerHost`): any call, as the
-  // glimmer call sites keep it in a local to assert it is installed.
-  /(?<!\bfunction\s+)\bgetGxtGlimmerHost\s*\(/,
-  /\bsetGxtGlimmerHost\s*\(/,
-];
-
-// Strip `//…` line comments and `/* … */` block comments so doc-prose that
-// merely names the bridge can't false-positive. Deliberately simple (no full
-// JS tokenizer): the dist is generated code, and the live patterns we match are
-// distinctive enough that the rare `//` inside a string literal is harmless.
-function stripComments(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
-}
-
-function assertNoGxtResidue(buf, label) {
-  const code = stripComments(buf.toString('utf-8'));
-  const hits = CLASSIC_LIVE_GXT_PATTERNS.filter((re) => re.test(code)).map((re) => re.source);
+// The calls are read from each file's AST (dist-ast.mjs `liveGxtBridgeCalls`):
+// a read of the renderer (`getGxtRenderer()?.x`), a bridge publisher
+// (`install*Part(…)`, `set*(…)`), a call of the glimmer host accessors. Text
+// that only names the bridge is no call (a doc-comment in a retained shared
+// module, a string, a dead `function getGxtRenderer(){…}` stub declaration),
+// and no comment or string hides a call.
+function assertNoGxtResidue(abs, label) {
+  const files = statSync(abs).isDirectory() ? collectJsFiles(abs) : [abs];
+  const hits = [];
+  for (const file of files) {
+    for (const call of liveGxtBridgeCalls(readFileSync(file, 'utf-8'), file)) {
+      hits.push(`${call} in ${relative(repoRoot, file)}`);
+    }
+  }
   if (hits.length > 0) {
     console.error(
       `  FAIL: classic ${label} contains LIVE gxt-bridge code [${hits.join(', ')}] — ` +
@@ -141,6 +119,7 @@ function assertNoGxtResidue(buf, label) {
     );
     return false;
   }
+  console.log(`  live gxt-bridge calls: none (${files.length} files)`);
   return true;
 }
 
@@ -195,7 +174,7 @@ for (const entry of budget.entries) {
 
   // Classic dist must stay free of LIVE gxt-bridge code (see the guard above).
   if (backend === 'classic') {
-    if (!assertNoGxtResidue(buf, entry.path)) {
+    if (!assertNoGxtResidue(abs, entry.path)) {
       failed = true;
     }
   }
