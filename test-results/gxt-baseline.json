@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-11-05T15:03:01.597Z",
+    "capturedAt": "2026-11-06T04:16:11.786Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "2d896c5",
-    "totalTests": 10433,
-    "totalModules": 1053,
+    "emberCommit": "e30f940",
+    "totalTests": 10453,
+    "totalModules": 1061,
     "quarantinedTests": 0,
-    "totalAssertions": 61999,
-    "totalAssertionsPassing": 61705,
-    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42050816110, merged from 5 shards, on the code of 2d896c5). 10195/10433 green, 1053 modules, no timeouts, no harness errors. Against the previous baseline of this rebase (10192/10433): the compat backtracking assertion for a member that a Glimmer component's template read turns 3 known reds green ('when a shared dependency is changed during children's rendering' and its '(tracked)' variant (Components test: curly components), 'asserts when a shared dependency is changed during rendering, and keeps original context' (Components test: template-only components (glimmer components))); no other test changed status. Against the baseline on main 21a5f6c228 (10141/10377, 1038 modules): main renders the template of a rendering test through a Glimmer root, which GXT renders as a component root of the test's renderer (BaseRenderer#render); main moved classic-component tests into components/classic/ (new module names, same results) and added tests, all green except 4 known reds: 'the render stack of a backtracking message starts with -top-level' (Errors thrown during render (classic component)), '{{outlet}} in a component asserts' (Route manager - {{outlet}} under a non-classic level) and the two loose raw-block tests of '[integration] jit :: Inherited from Handlebars (legacy behavior): raw blocks'. Main's two new rehydration-stats tests of a curly Glimmer component are skipped as unsupported, as their classic-component siblings are. No test that main left unchanged went from green to red."
+    "totalAssertions": 62087,
+    "totalAssertionsPassing": 61793,
+    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42161395076, merged from 5 shards, on the code of 3a3295c58f, trigger e30f940). 10215/10453 green, 1061 modules, no timeouts, no harness errors. Against the previous baseline (10195/10433, 1053 modules): 8 new modules and 1 new test of 'GXT helper call sites: instances', 20 tests of the AST transforms that replaced the template-source scans (a template's scope, keyword shadowing, block params named like keywords, the head of a dotted path, in-element destinations, the names a strict-mode template reads from its scope, each-in with whitespace control), all green. 'Strict Mode - Runtime Template Compiler (implicit) - allowed globals from RFC#1070' keeps 28/28 green with 55 assertions (was 42): the implicit form takes the PascalCase allowed globals from eval. No other test changed status."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -2818,10 +2818,10 @@
       "failingTests": []
     },
     "GXT helper call sites: instances": {
-      "total": 4,
-      "passing": 4,
-      "assertionsTotal": 26,
-      "assertionsPassing": 26,
+      "total": 5,
+      "passing": 5,
+      "assertionsTotal": 28,
+      "assertionsPassing": 28,
       "failingTests": []
     },
     "GXT helper call sites: named args": {
@@ -4686,6 +4686,13 @@
       "assertionsPassing": 15,
       "failingTests": []
     },
+    "Strict Mode - Runtime Template Compiler (explicit `this`)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 7,
+      "assertionsPassing": 7,
+      "failingTests": []
+    },
     "Strict Mode - Runtime Template Compiler (explicit)": {
       "total": 12,
       "passing": 12,
@@ -4707,6 +4714,13 @@
       "assertionsPassing": 44,
       "failingTests": []
     },
+    "Strict Mode - Runtime Template Compiler (implicit scope)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 5,
+      "assertionsPassing": 5,
+      "failingTests": []
+    },
     "Strict Mode - Runtime Template Compiler (implicit)": {
       "total": 12,
       "passing": 12,
@@ -4717,8 +4731,8 @@
     "Strict Mode - Runtime Template Compiler (implicit) - allowed globals from RFC#1070": {
       "total": 28,
       "passing": 28,
-      "assertionsTotal": 42,
-      "assertionsPassing": 42,
+      "assertionsTotal": 55,
+      "assertionsPassing": 55,
       "failingTests": []
     },
     "Strict Mode - Runtime Template Compiler (implicit) - built ins": {
@@ -4726,6 +4740,13 @@
       "passing": 9,
       "assertionsTotal": 44,
       "assertionsPassing": 44,
+      "failingTests": []
+    },
+    "Strict Mode - Runtime Template Compiler (shadowed keywords)": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 12,
+      "assertionsPassing": 12,
       "failingTests": []
     },
     "Strict Mode - built ins": {
@@ -4758,6 +4779,13 @@
       "passing": 9,
       "assertionsTotal": 50,
       "assertionsPassing": 50,
+      "failingTests": []
+    },
+    "Strict Mode - the names a template reads from its scope": {
+      "total": 1,
+      "passing": 1,
+      "assertionsTotal": 1,
+      "assertionsPassing": 1,
       "failingTests": []
     },
     "Strict Mode <-> Loose Mode - renderComponent": {
@@ -4809,6 +4837,20 @@
       "passing": 5,
       "assertionsTotal": 23,
       "assertionsPassing": 23,
+      "failingTests": []
+    },
+    "Syntax test: block params named like keywords": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 17,
+      "assertionsPassing": 17,
+      "failingTests": []
+    },
+    "Syntax test: the head of a dotted path": {
+      "total": 4,
+      "passing": 4,
+      "assertionsTotal": 9,
+      "assertionsPassing": 9,
       "failingTests": []
     },
     "Syntax test: toggling {{#each as}}": {
@@ -4893,6 +4935,13 @@
       "passing": 5,
       "assertionsTotal": 30,
       "assertionsPassing": 30,
+      "failingTests": []
+    },
+    "Syntax test: {{#each-in}} with whitespace control": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 8,
+      "assertionsPassing": 8,
       "failingTests": []
     },
     "Syntax test: {{#each}} keys and DOM identity": {
@@ -5003,6 +5052,13 @@
       "passing": 105,
       "assertionsTotal": 601,
       "assertionsPassing": 601,
+      "failingTests": []
+    },
+    "Syntax test: {{#in-element}} destinations in a component": {
+      "total": 2,
+      "passing": 2,
+      "assertionsTotal": 14,
+      "assertionsPassing": 14,
       "failingTests": []
     },
     "Syntax test: {{#let as}}": {
