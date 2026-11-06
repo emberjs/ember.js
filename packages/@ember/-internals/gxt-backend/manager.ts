@@ -2912,7 +2912,9 @@ function _argValueGetter(slot: ArgValueSlot, read: () => any): () => any {
 }
 
 /**
- * Extract keys from args object, excluding internal symbols.
+ * The argument names of an args object: its keys, without gxt's internal
+ * keys and the names a classic component reserves. (`Object.keys` gives no
+ * symbol keys.)
  */
 function extractArgKeys(args: any): string[] {
   if (!args || typeof args !== 'object') return [];
@@ -2923,8 +2925,7 @@ function extractArgKeys(args: any): string[] {
       key !== 'class' &&
       key !== 'classNames' && // Don't overwrite component's classNames property
       key !== 'attrs' && // Reserved: Ember classic-component internal — never install as arg-getter
-      key !== 'args' && // Reserved: Ember component internal (createRenderContext relies on it)
-      !key.startsWith('Symbol')
+      key !== 'args' // Reserved: Ember component internal (createRenderContext relies on it)
   );
 }
 
@@ -6370,7 +6371,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
   const triggerReRenderForAttrs = getGxtRenderer()?.compilePipeline.triggerReRender;
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
-      if (key.startsWith('Symbol') || _isGxtInternalArgKey(key)) continue;
+      if (_isGxtInternalArgKey(key)) continue;
 
       // Resolve the initial value, unwrapping mut/readonly cells for the args proxy
       const descriptor = Object.getOwnPropertyDescriptor(args, key);
@@ -6680,13 +6681,7 @@ function createRenderContext(instance: any, args: any, fw: any, _owner: any): an
   const allArgKeys = new Set<string>(Object.keys(argGetters));
   if (instance && args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
-      if (
-        key === 'class' ||
-        key === 'classNames' ||
-        key.startsWith('__') ||
-        key.startsWith('Symbol')
-      )
-        continue;
+      if (key === 'class' || key === 'classNames' || key.startsWith('__')) continue;
       allArgKeys.add(key);
     }
   }
