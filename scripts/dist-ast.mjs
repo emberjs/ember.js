@@ -87,6 +87,7 @@ const GXT_BRIDGE_PUBLISHERS = new Set([
   'installBacktrackingPart',
   'setGxtRenderer',
   'setControllerOutletRerender',
+  'setGxtBuiltinComponent',
   'getGxtGlimmerHost',
   'setGxtGlimmerHost',
 ]);

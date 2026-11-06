@@ -6,6 +6,7 @@ import { action } from '@ember/object';
 import TextareaTemplate from '../templates/textarea';
 import AbstractInput from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
+import { setGxtBuiltinComponent } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 /**
   The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
@@ -150,5 +151,10 @@ class _Textarea extends AbstractInput {
 }
 
 const Textarea = opaquify(_Textarea, TextareaTemplate) as Textarea;
+if (__GXT_MODE__) {
+  // GXT builds the element of this component itself (gxt-backend/manager.ts),
+  // and knows it by this registration.
+  setGxtBuiltinComponent(Textarea, 'Textarea');
+}
 interface Textarea extends Opaque<'component:textarea'>, OpaqueInternalComponentConstructor {}
 export default Textarea;
