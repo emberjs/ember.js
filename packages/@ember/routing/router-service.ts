@@ -5,6 +5,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { dependentKeyCompat } from '@ember/object/compat';
 import Service from '@ember/service';
+import EngineInstance from '@ember/engine/instance';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type { Transition } from 'router_js';
@@ -189,6 +190,31 @@ class RouterService extends Service {
     this[ROUTER] = undefined;
   }
 
+  /*
+    Returns a route name which is prefixed based on the mount point of the
+    owner, when the service is used within an Engine. This matches the
+    behavior of `Route#transitionTo` and `<LinkTo />`, so that all three
+    accept the same route path inside an engine.
+
+    @private
+  */
+  _prefixRouteName<T extends string | undefined>(routeName: T): T {
+    let owner = getOwner(this);
+
+    // only alter the routeName if it's actually referencing a route.
+    if (owner instanceof EngineInstance && owner.routable && typeof routeName === 'string') {
+      if (resemblesURL(routeName)) {
+        throw new Error(
+          'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
+        );
+      } else {
+        routeName = `${owner.mountPoint}.${routeName}` as T;
+      }
+    }
+
+    return routeName;
+  }
+
   /**
      Transition the application into another route. The route may
      be either a single route or route path:
@@ -235,13 +261,14 @@ class RouterService extends Service {
      @public
    */
   transitionTo(...args: RouteArgs): Transition {
-    if (resemblesURL(args[0])) {
-      // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
-      // in 3.6+, so it can be removed when TS is upgraded.
-      return this._router._doURLTransition('transitionTo', args[0]);
-    }
-
     let { routeName, models, queryParams } = extractRouteArgs(args);
+
+    routeName = this._prefixRouteName(routeName);
+
+    if (resemblesURL(routeName)) {
+      // NOTE: this `routeName` cast is safe: `resemblesURL` narrows it to a string.
+      return this._router._doURLTransition('transitionTo', routeName);
+    }
 
     let transition = this._router._doTransition(routeName, models, queryParams, true);
 
@@ -370,7 +397,7 @@ class RouterService extends Service {
     ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]
   ) {
     this._router.setupRouter();
-    return this._router.generate(routeName, ...args);
+    return this._router.generate(this._prefixRouteName(routeName), ...args);
   }
 
   /**
@@ -422,6 +449,7 @@ class RouterService extends Service {
    */
   isActive(...args: RouteArgs) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
+    routeName = this._prefixRouteName(routeName);
     this._router.setupRouter();
     let routerMicrolib = this._router._routerMicrolib;
 
@@ -693,10 +721,18 @@ class RouterService extends Service {
       return this._router._routerMicrolib.refresh();
     }
 
-    assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
+    // `isActive` namespaces the route name itself, so it receives the
+    // unprefixed name; `hasRoute` and the microlib refresh need the
+    // fully namespaced name.
+    let namespacedRouteName = this._prefixRouteName(pivotRouteName);
+
+    assert(
+      `The route "${pivotRouteName}" was not found`,
+      this._router.hasRoute(namespacedRouteName)
+    );
     assert(`The route "${pivotRouteName}" is currently not active`, this.isActive(pivotRouteName));
 
-    return this._router._routerMicrolib.refresh(pivotRouteName);
+    return this._router._routerMicrolib.refresh(namespacedRouteName);
   }
 
   /**
