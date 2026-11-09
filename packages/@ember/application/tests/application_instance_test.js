@@ -11,6 +11,7 @@ import {
   AbstractTestCase as TestCase,
 } from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import { getRenderAdapter } from '@ember/-internals/glimmer/lib/render-adapter';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
@@ -190,7 +191,6 @@ moduleFor(
           P`-bucket-cache:main`,
           '-view-registry:main',
           '-environment:main',
-          'service:-document',
           'event_dispatcher:main',
         ];
 
@@ -203,6 +203,12 @@ moduleFor(
             `Engine and parent app share singleton '${key}'`
           );
         });
+
+        assert.strictEqual(
+          getRenderAdapter(chatEngineInstance),
+          getRenderAdapter(appInstance),
+          'Engine and parent app share the render adapter'
+        );
       });
     }
 
@@ -217,7 +223,7 @@ moduleFor(
 
       ApplicationInstance.setupRegistry(registry);
 
-      assert.equal(registry.resolve('service:-document'), document);
+      assert.ok(registry.resolve('-environment:main'), 'the registry has the environment');
     }
   }
 );

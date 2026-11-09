@@ -18,6 +18,7 @@ import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { SimpleElement } from '@simple-dom/interface';
+import { getRenderAdapter, setRenderAdapter } from '@ember/-internals/glimmer/lib/render-adapter';
 
 export interface BootOptions {
   isBrowser?: boolean;
@@ -254,7 +255,6 @@ class EngineInstance extends EmberObject.extend(
       P`-bucket-cache:main`,
       '-view-registry:main',
       `renderer:-dom`,
-      'service:-document',
     ];
 
     if (env['isInteractive']) {
@@ -266,6 +266,8 @@ class EngineInstance extends EmberObject.extend(
       let singleton = parent.lookup(key) as object;
       this.register(key, singleton, { instantiate: false });
     });
+
+    setRenderAdapter(this, getRenderAdapter(parent));
   }
 }
 

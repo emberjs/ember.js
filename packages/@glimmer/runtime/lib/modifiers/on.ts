@@ -1,6 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
+  RenderAdapter,
+  Environment,
   InternalModifierManager,
   Owner,
   SimpleElement,
@@ -36,36 +38,43 @@ interface Listener {
 
 export class OnModifierState {
   public tag = createUpdatableTag();
-  public element: Element;
+  public element: SimpleElement;
   public args: CapturedArguments;
   public listener: Listener | null = null;
+  private adapter: RenderAdapter;
 
-  constructor(element: Element, args: CapturedArguments) {
+  constructor(adapter: RenderAdapter, element: SimpleElement, args: CapturedArguments) {
+    this.adapter = adapter;
     this.element = element;
     this.args = args;
 
     registerDestructor(this, () => {
-      let { element, listener } = this;
+      let { adapter, element, listener } = this;
       if (listener) {
         let { eventName, callback, options } = listener;
-        removeEventListener(element, eventName, callback, options);
+        removeEventListener(adapter, element, eventName, callback, options);
       }
     });
   }
 
   // Update this.listener if needed
   updateListener(): void {
-    let { element, args, listener } = this;
+    let { adapter, element, args, listener } = this;
 
     let selector: string | undefined;
     if (DEBUG) {
-      const el = this.element;
+      let id = adapter.getAttribute(element, 'id');
+      let classes = adapter.getAttribute(element, 'class')?.trim();
+
       selector =
-        el.tagName.toLowerCase() +
-        (el.id ? `#${el.id}` : '') +
-        Array.from(el.classList)
-          .map((c) => `.${c}`)
-          .join('');
+        adapter.tagName(element).toLowerCase() +
+        (id ? `#${id}` : '') +
+        (classes
+          ? classes
+              .split(/\s+/u)
+              .map((c) => `.${c}`)
+              .join('')
+          : '');
     }
 
     let arg0 = args.positional[0];
@@ -214,10 +223,16 @@ export class OnModifierState {
       };
 
       if (listener) {
-        removeEventListener(element, listener.eventName, listener.callback, listener.options);
+        removeEventListener(
+          adapter,
+          element,
+          listener.eventName,
+          listener.callback,
+          listener.options
+        );
       }
 
-      addEventListener(element, eventName, callback, options);
+      addEventListener(adapter, element, eventName, callback, options);
     }
   }
 }
@@ -226,24 +241,26 @@ let adds = 0;
 let removes = 0;
 
 function removeEventListener(
-  element: Element,
+  adapter: RenderAdapter,
+  element: SimpleElement,
   eventName: string,
   callback: EventListener,
   options?: AddEventListenerOptions
 ): void {
   removes++;
 
-  element.removeEventListener(eventName, callback, options);
+  adapter.removeEventListener(element, eventName, callback, options);
 }
 
 function addEventListener(
-  element: Element,
+  adapter: RenderAdapter,
+  element: SimpleElement,
   eventName: string,
   callback: EventListener,
   options?: AddEventListenerOptions
 ): void {
   adds++;
-  element.addEventListener(eventName, callback, options);
+  adapter.addEventListener(element, eventName, callback, options);
 }
 
 /**
@@ -401,11 +418,12 @@ class OnModifierManager implements InternalModifierManager<OnModifierState> {
 
   create(
     _owner: Owner,
-    element: SimpleElement | Element,
+    element: SimpleElement,
     _state: object,
-    args: CapturedArguments
+    args: CapturedArguments,
+    env: Environment
   ): OnModifierState {
-    return new OnModifierState(element as Element, args);
+    return new OnModifierState(env.adapter, element, args);
   }
 
   getTag({ tag }: OnModifierState): UpdatableTag {
