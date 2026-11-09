@@ -62,11 +62,10 @@
 export default interface Location {
   /**
    * If the location needs to redirect to a different URL, it can cancel routing
-   * by setting the `cancelRouterSetup` property on itself to false.
+   * by setting the `cancelRouterSetup` property on itself to `true`.
    * @property cancelRouterSetup
    * @type Boolean
    * @optional
-   * @default true
    * @public
    */
   cancelRouterSetup?: boolean;
