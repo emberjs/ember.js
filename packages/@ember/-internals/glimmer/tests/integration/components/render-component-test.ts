@@ -8,7 +8,6 @@ import {
   defineSimpleModifier,
   moduleFor,
   type ClassicComponentShape,
-  runDestroy,
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
@@ -17,16 +16,20 @@ import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
-import GlimmerishComponent from '../../utils/glimmerish-component';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
+import GlimmerComponent from '@glimmer/component';
 
-import { run } from '@ember/runloop';
 import { destroy, associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { renderComponent, type RenderResult } from '../../../lib/renderer';
+import { renderComponent, renderSettled, type RenderResult } from '../../../lib/renderer';
+import { renderers } from '../../../lib/renderers';
 import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
+import { ENV } from '@ember/-internals/environment';
+import { captureRenderTree } from '@ember/debug';
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
   declare component: (RenderResult & { rerender: () => void }) | undefined;
@@ -43,35 +46,34 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
     return document.querySelector('#qunit-fixture')!;
   }
 
-  assertChange({ change, expect }: { change: () => void; expect: string }) {
-    run(() => change());
+  async assertChange({ change, expect }: { change: () => void; expect: string }) {
+    change();
+    await renderSettled();
 
     assertHTML(expect);
 
-    this.assertStableRerender();
+    await this.assertStableRerender();
   }
 
-  renderComponent(
+  async renderComponent(
     component: object,
     options: { args?: Record<string, unknown>; expect: string } | { classic: ClassicComponentShape }
   ) {
     let { owner } = this;
 
-    run(() => {
-      const result = renderComponent(component, {
-        owner,
-        args: 'args' in options ? options.args : {},
-        env: { document: document, isInteractive: true, hasDOM: true },
-        into: this.element,
-      });
-      this.component = {
-        ...result,
-        rerender() {
-          // unused, but asserted against
-        },
-      };
-      registerDestructor(this, () => result.destroy());
+    const result = renderComponent(component, {
+      owner,
+      args: 'args' in options ? options.args : {},
+      env: { document: document, isInteractive: true, hasDOM: true },
+      into: this.element,
     });
+    this.component = {
+      ...result,
+      rerender() {
+        // unused, but asserted against
+      },
+    };
+    registerDestructor(this, () => result.destroy());
 
     if ('expect' in options) {
       assertHTML(options.expect);
@@ -79,48 +81,119 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
       assertClassicComponentElement(options.classic);
     }
 
-    this.assertStableRerender();
+    await this.assertStableRerender();
   }
 }
 
 moduleFor(
   'Strict Mode - RenderComponentTestCase',
   class extends RenderComponentTestCase {
-    afterEach() {
+    async afterEach() {
       if (this.component) {
-        runDestroy(this);
+        destroy(this);
+        await renderSettled();
       }
     }
 
-    '@test destroy cleans up dom via destrying the test context'() {
+    async '@test destroy cleans up dom via destrying the test context'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
 
-    '@test destroy of the owner cleans up dom via destrying the test context'() {
+    async '@test destroy of the owner cleans up dom via destrying the test context'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
 
-      run(() => destroy(this.owner));
+      destroy(this.owner);
+      await renderSettled();
 
       assertHTML('');
+    }
+
+    async '@test captureRenderTree includes the rendered components'(assert: QUnit['assert']) {
+      let HelloWorld = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<HelloWorld/>', { strictMode: true, scope: () => ({ HelloWorld }) }),
+        templateOnly()
+      );
+
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      if (!ENV._DEBUG_RENDER_TREE) return;
+
+      assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'HelloWorld']);
+    }
+
+    async '@test captureRenderTree includes components rendered with any owner'(
+      assert: QUnit['assert']
+    ) {
+      let Owned = setComponentTemplate(precompileTemplate('owned'), templateOnly());
+      let Ownerless = setComponentTemplate(precompileTemplate('ownerless'), templateOnly());
+      let OwnedRoot = setComponentTemplate(
+        precompileTemplate('<Owned/>', { strictMode: true, scope: () => ({ Owned }) }),
+        templateOnly()
+      );
+      let OwnerlessRoot = setComponentTemplate(
+        precompileTemplate('<Ownerless/>', { strictMode: true, scope: () => ({ Ownerless }) }),
+        templateOnly()
+      );
+
+      let ownedElement = document.createElement('div');
+      let ownerlessElement = document.createElement('div');
+      this.element.append(ownedElement, ownerlessElement);
+
+      let results = [
+        renderComponent(OwnedRoot, { owner: this.owner, into: ownedElement }),
+        renderComponent(OwnerlessRoot, { into: ownerlessElement }),
+      ];
+
+      assertHTML('<div>owned</div><div>ownerless</div>');
+
+      if (ENV._DEBUG_RENDER_TREE) {
+        assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'Owned', '{ROOT}', 'Ownerless']);
+      }
+
+      for (let result of results) {
+        result.destroy();
+      }
+      await renderSettled();
+
+      if (ENV._DEBUG_RENDER_TREE) {
+        assert.deepEqual(renderTreeNames(this.owner), [], 'destroyed renders are gone');
+      }
+
+      destroy(this);
+      await renderSettled();
     }
   }
 );
+
+function renderTreeNames(owner: Owner): string[] {
+  let names: string[] = [];
+  let collect = (nodes: CapturedRenderNode[]) => {
+    for (let node of nodes) {
+      names.push(node.name);
+      collect(node.children);
+    }
+  };
+  collect(captureRenderTree(owner));
+  return names;
+}
 
 moduleFor(
   'Strict Mode - renderComponent (direct)',
@@ -129,62 +202,59 @@ moduleFor(
       return document.querySelector('#qunit-fixture')!;
     }
 
-    '@test manually calling destroy cleans up the DOM'() {
+    async '@test manually calling destroy cleans up the DOM'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
 
       let owner = buildOwner({});
-      let manualDestroy: () => void;
 
-      run(() => {
-        let result = renderComponent(Foo, {
-          owner,
-          into: this.element,
-        });
-        manualDestroy = result.destroy;
-        this.component = {
-          ...result,
-          rerender() {
-            // unused, but asserted against
-          },
-        };
+      let result = renderComponent(Foo, {
+        owner,
+        into: this.element,
       });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
 
       assertHTML('Hello, world!');
-      this.assertStableRerender();
+      await this.assertStableRerender();
 
-      run(() => manualDestroy());
+      result.destroy();
+      await renderSettled();
 
       assertHTML('');
-      this.assertStableRerender();
+      await this.assertStableRerender();
 
-      run(() => destroy(owner));
+      destroy(owner);
+      await renderSettled();
     }
 
-    '@test destroying the owner cleans up the DOM'() {
+    async '@test destroying the owner cleans up the DOM'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
 
       let owner = buildOwner({});
 
-      run(() => {
-        let result = renderComponent(Foo, {
-          owner,
-          into: this.element,
-        });
-        this.component = {
-          ...result,
-          rerender() {
-            // unused, but asserted against
-          },
-        };
+      let result = renderComponent(Foo, {
+        owner,
+        into: this.element,
       });
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
 
       assertHTML('Hello, world!');
-      this.assertStableRerender();
+      await this.assertStableRerender();
 
-      run(() => destroy(owner));
+      destroy(owner);
+      await renderSettled();
 
       assertHTML('');
-      this.assertStableRerender();
+      await this.assertStableRerender();
     }
   }
 );
@@ -192,75 +262,77 @@ moduleFor(
 moduleFor(
   'Strict Mode - renderComponent',
   class extends RenderComponentTestCase {
-    afterEach() {
+    async afterEach() {
       if (this.component) {
-        runDestroy(this);
+        destroy(this);
+        await renderSettled();
       }
     }
 
-    '@test destroy cleans up dom via destroying the owner'() {
+    async '@test destroy cleans up dom via destroying the owner'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
 
-      run(() => destroy(this.owner));
+      destroy(this.owner);
+      await renderSettled();
 
       assertHTML('');
     }
 
-    '@test Can use a component in scope'() {
+    async '@test Can use a component in scope'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a custom helper in scope (in append position)'() {
+    async '@test Can use a custom helper in scope (in append position)'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let Root = setComponentTemplate(
         precompileTemplate('{{foo}}', { strictMode: true, scope: () => ({ foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a custom modifier in scope'() {
+    async '@test Can use a custom modifier in scope'() {
       let foo = defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'));
       let Root = setComponentTemplate(
         precompileTemplate('<div {{foo}}></div>', { strictMode: true, scope: () => ({ foo }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
+      await this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
     }
 
-    '@test Can shadow keywords (runtime)'() {
+    async '@test Can shadow keywords (runtime)'() {
       let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Bar = template('{{#each}}{{/each}}', {
         scope: () => ({ each }),
       });
 
-      this.renderComponent(Bar, { expect: 'Hello, world!' });
+      await this.renderComponent(Bar, { expect: 'Hello, world!' });
     }
 
-    '@test Can shadow keywords (compile-time)'() {
+    async '@test Can shadow keywords (compile-time)'() {
       let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Bar = compileTimeTemplate('{{#each}}{{/each}}', {
         scope: () => ({ each }),
       });
 
-      this.renderComponent(Bar, { expect: 'Hello, world!' });
+      await this.renderComponent(Bar, { expect: 'Hello, world!' });
     }
 
-    '@test Can use constant values in ambiguous helper/component position'() {
+    async '@test Can use constant values in ambiguous helper/component position'() {
       let value = 'Hello, world!';
 
       let Root = setComponentTemplate(
@@ -268,19 +340,19 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use inline if and unless in strict mode templates'() {
+    async '@test Can use inline if and unless in strict mode templates'() {
       let Root = setComponentTemplate(
         precompileTemplate('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}'),
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'foobar' });
+      await this.renderComponent(Root, { expect: 'foobar' });
     }
 
-    '@test multiple components have independent lifetimes'() {
+    async '@test multiple components have independent lifetimes'() {
       class State {
         @tracked showSecond = true;
       }
@@ -294,51 +366,51 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!Hello, world!' });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => (state.showSecond = false),
         expect: 'Hello, world!<!---->',
       });
     }
 
-    '@test Can use a dynamic component definition'() {
+    async '@test Can use a dynamic component definition'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('<this.Foo/>'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a dynamic component definition (curly)'() {
+    async '@test Can use a dynamic component definition (curly)'() {
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Root = setComponentTemplate(
         precompileTemplate('{{this.Foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a dynamic helper definition'() {
+    async '@test Can use a dynamic helper definition'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let Root = setComponentTemplate(
         precompileTemplate('{{this.foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           foo = foo;
         }
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a curried dynamic helper'() {
+    async '@test Can use a curried dynamic helper'() {
       let foo = defineSimpleHelper((value) => value);
       let Foo = setComponentTemplate(precompileTemplate('{{@value}}'), templateOnly());
       let Root = setComponentTemplate(
@@ -349,10 +421,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use a curried dynamic modifier'() {
+    async '@test Can use a curried dynamic modifier'() {
       let foo = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
       let Foo = setComponentTemplate(precompileTemplate('<div {{@value}}></div>'), templateOnly());
       let Root = setComponentTemplate(
@@ -363,22 +435,22 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
+      await this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
     }
 
-    '@test when args are trackedObject, the rendered component response appropriately'() {
+    async '@test when args are trackedObject, the rendered component response appropriately'() {
       let args = trackedObject({ foo: 2 });
       let Root = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
 
-      this.renderComponent(Root, { args, expect: '2' });
+      await this.renderComponent(Root, { args, expect: '2' });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => args.foo++,
         expect: '3',
       });
     }
 
-    '@skip when args are a custom tracked class, the rendered component response appropriately'() {
+    async '@skip when args are a custom tracked class, the rendered component response appropriately'() {
       class Args {
         @tracked foo = 2;
       }
@@ -386,15 +458,15 @@ moduleFor(
       let Root = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
 
       // @ts-expect-error SAFETY: custom class is not currently supported as args, but would be nice to support?
-      this.renderComponent(Root, { args, expect: '2' });
+      await this.renderComponent(Root, { args, expect: '2' });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => args.foo++,
         expect: '3',
       });
     }
 
-    '@test a modifier can call renderComponent'() {
+    async '@test a modifier can call renderComponent'() {
       let render = defineSimpleModifier((element, [comp]) => {
         let result = renderComponent(comp, { into: element });
 
@@ -410,15 +482,117 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: '<div>hi there</div>' });
+      await this.renderComponent(Root, { expect: '<div>hi there</div>' });
     }
 
-    '@test can render in to a detached element'() {
+    async '@test destroying the result releases its root and renderer'(assert: QUnit['assert']) {
+      let render = defineSimpleModifier((element, [comp]) => {
+        let result = renderComponent(comp, { into: element });
+
+        return () => result.destroy();
+      });
+
+      let Inner = setComponentTemplate(precompileTemplate('hi there'), templateOnly());
+
+      class State {
+        @tracked show = true;
+      }
+      let state = new State();
+
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{#if state.show}}<div {{render Inner}}></div>{{/if}}`, {
+          strictMode: true,
+          scope: () => ({ render, Inner, state }),
+        }),
+        templateOnly()
+      );
+
+      await this.renderComponent(Root, { expect: '<div>hi there</div>' });
+
+      let baseline = renderers.length;
+
+      for (let i = 0; i < 5; i++) {
+        state.show = false;
+        await renderSettled();
+        assertHTML('<!---->');
+        state.show = true;
+        await renderSettled();
+        assertHTML('<div>hi there</div>');
+      }
+
+      assert.strictEqual(
+        renderers.length,
+        baseline,
+        'renderers for destroyed renderComponent results are not retained'
+      );
+    }
+
+    async '@test destroying the owner releases a root whose first render threw'(
+      assert: QUnit['assert']
+    ) {
+      class Boom extends GlimmerComponent {
+        constructor(owner: Owner, args: object) {
+          super(owner, args);
+          throw new Error('boom');
+        }
+      }
+
+      let Thrower = setComponentTemplate(precompileTemplate(''), Boom);
+
+      let owner = buildOwner({});
+      let element = document.createElement('div');
+
+      assert.throws(() => renderComponent(Thrower, { owner, into: element }), /boom/);
+
+      let renderer = renderers[renderers.length - 1]!;
+
+      assert.strictEqual(renderer.state.roots.length, 1, 'the failed root stays in its renderer');
+
+      destroy(owner);
+      await renderSettled();
+
+      assert.false(renderers.includes(renderer), 'renderer of the failed root is deregistered');
+
+      destroy(this);
+      await renderSettled();
+    }
+
+    async '@test destroying the result removes its root from a shared renderer'(
+      assert: QUnit['assert']
+    ) {
+      let Inner = setComponentTemplate(precompileTemplate('hi there'), templateOnly());
+      let { owner } = this;
+      let element = document.createElement('div');
+
+      let first = renderComponent(Inner, { owner, into: element });
+      let renderer = renderers[renderers.length - 1]!;
+
+      assert.strictEqual(renderer.state.roots.length, 1);
+
+      for (let i = 0; i < 5; i++) {
+        let other = document.createElement('div');
+        let result = renderComponent(Inner, { owner, into: other });
+        result.destroy();
+        await renderSettled();
+      }
+
+      assert.strictEqual(renderer.state.roots.length, 1, 'destroyed roots are not retained');
+
+      first.destroy();
+      await renderSettled();
+
+      assert.false(renderers.includes(renderer), 'renderer with no roots is deregistered');
+
+      destroy(this);
+      await renderSettled();
+    }
+
+    async '@test can render in to a detached element'() {
       let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createElement('div');
       let attach: () => void;
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked attached: Element | undefined;
 
         constructor(owner: any, args: any) {
@@ -434,9 +608,9 @@ moduleFor(
 
       let Root = setComponentTemplate(precompileTemplate(`{{this.attached}}`), _Root);
 
-      this.renderComponent(Root, { expect: '' });
+      await this.renderComponent(Root, { expect: '' });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => attach(),
         expect: `<div>hello there</div>`,
       });
@@ -446,11 +620,11 @@ moduleFor(
      * Test skipped because when an error occurs,
      * we mess up the cache used by renderComponent.
      */
-    '@skip can *not* render in to a TextNode'(assert: Assert) {
+    async '@skip can *not* render in to a TextNode'(assert: Assert) {
       let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createTextNode('');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked attached: Element | undefined;
 
         constructor(owner: any, args: any) {
@@ -470,18 +644,18 @@ moduleFor(
 
       let Root = setComponentTemplate(precompileTemplate(``), _Root);
 
-      this.renderComponent(Root, { expect: '<!---->' });
+      await this.renderComponent(Root, { expect: '<!---->' });
       assert.verifySteps(['throw']);
     }
 
-    '@test replaces existing contents within the target element'() {
+    async '@test replaces existing contents within the target element'() {
       let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createElement('div');
       element.innerHTML = 'general kenobi';
 
       let render: () => void;
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, args: any) {
           super(owner, args);
 
@@ -498,15 +672,15 @@ moduleFor(
         _Root
       );
 
-      this.renderComponent(Root, { expect: '<div>general kenobi</div>' });
+      await this.renderComponent(Root, { expect: '<div>general kenobi</div>' });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => render(),
         expect: `<div>hello there</div>`,
       });
     }
 
-    [`@test renderComponent is eager, so it tracks with its parent`](assert: Assert) {
+    async [`@test renderComponent is eager, so it tracks with its parent`](assert: Assert) {
       let step = (...x: unknown[]) => assert.step(x.join(':'));
 
       let Inner = setComponentTemplate(
@@ -515,7 +689,7 @@ moduleFor(
       );
 
       let element = document.createElement('div');
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         @tracked foo = 2;
         increment = () => this.foo++;
 
@@ -547,10 +721,10 @@ moduleFor(
         _Root
       );
 
-      this.renderComponent(Root, { expect: '<div>2 <button>++</button></div>' });
+      await this.renderComponent(Root, { expect: '<div>2 <button>++</button></div>' });
       assert.verifySteps(['render:root', 'foo:2']);
 
-      this.assertChange({
+      await this.assertChange({
         change: () => {
           this.element.querySelector('button')?.click();
         },
@@ -572,14 +746,13 @@ moduleFor(
 
       assert.strictEqual(this.element.innerHTML, '<div>3 <button>++</button></div>');
 
-      run(() => {
-        destroy(this.owner);
-      });
+      destroy(this.owner);
+      await renderSettled();
 
       assert.strictEqual(this.element.innerHTML, '');
     }
 
-    '@test multiple renderComponents share reactivity'() {
+    async '@test multiple renderComponents share reactivity'() {
       let args = trackedObject({ foo: 2 });
 
       let InnerOne = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
@@ -591,7 +764,7 @@ moduleFor(
       element1.setAttribute('data-one', '');
       element2.setAttribute('data-two', '');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, _args: any) {
           super(owner, _args);
 
@@ -613,25 +786,27 @@ moduleFor(
         _Root
       );
 
-      this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
+      await this.renderComponent(Root, {
+        expect: '<div data-one="">2</div><div data-two="">2</div>',
+      });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => args.foo++,
         expect: '<div data-one="">3</div><div data-two="">3</div>',
       });
     }
 
-    '@test multiple renderComponents share service injection'() {
+    async '@test multiple renderComponents share service injection'() {
       class State extends Service {
         @tracked foo = 2;
       }
 
       this.owner.register('service:state', State);
 
-      class _One extends GlimmerishComponent {
+      class _One extends GlimmerComponent {
         @service state!: State;
       }
-      class _Two extends GlimmerishComponent {
+      class _Two extends GlimmerComponent {
         @service state!: State;
       }
       let InnerOne = setComponentTemplate(precompileTemplate('{{this.state.foo}}'), _One);
@@ -643,7 +818,7 @@ moduleFor(
       element1.setAttribute('data-one', '');
       element2.setAttribute('data-two', '');
 
-      class _Root extends GlimmerishComponent {
+      class _Root extends GlimmerComponent {
         constructor(owner: any, _args: any) {
           super(owner, _args);
 
@@ -665,17 +840,19 @@ moduleFor(
         _Root
       );
 
-      this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
+      await this.renderComponent(Root, {
+        expect: '<div data-one="">2</div><div data-two="">2</div>',
+      });
 
       let x = this.owner.lookup('service:state') as State;
 
-      this.assertChange({
+      await this.assertChange({
         change: () => x.foo++,
         expect: '<div data-one="">3</div><div data-two="">3</div>',
       });
     }
 
-    '@test rendering multiple times to adjacent elements'() {
+    async '@test rendering multiple times to adjacent elements'() {
       let aHelper = (str: string) => str.toUpperCase();
       let Child = setComponentTemplate(
         precompileTemplate(`Hi: {{aHelper "there"}}`, {
@@ -685,7 +862,7 @@ moduleFor(
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -708,18 +885,19 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: [`<div id="a">a:Hi: THERE</div><br>`, `<div id="b">b:Hi: THERE</div>`, ``, ``].join(
           '\n'
         ),
       });
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
 
-    '@test multiple calls to render in to the same element appear as siblings'() {
+    async '@test multiple calls to render in to the same element appear as siblings'() {
       let aHelper = (str: string) => str.toUpperCase();
       let Child = setComponentTemplate(
         precompileTemplate(`Hi: {{aHelper "there"}}`, {
@@ -729,7 +907,7 @@ moduleFor(
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -748,10 +926,11 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: `<div id="a">a:Hi: THEREa:Hi: THERE</div><br>\n\n`,
       });
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
@@ -759,7 +938,7 @@ moduleFor(
     /**
      * NOTE: subsequent renders to the same element are prepended to the element's children
      */
-    '@test multiple calls to render in to the same element appear as siblings and can be updated'() {
+    async '@test multiple calls to render in to the same element appear as siblings and can be updated'() {
       let aHelper = (str: string) => str.toUpperCase();
       let dataA = trackedObject({ count: 1 });
       let dataB = trackedObject({ count: -1 });
@@ -772,7 +951,7 @@ moduleFor(
       );
 
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -802,7 +981,7 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: [
           `<div id="a">`,
           `<output>b:Hi: THERE:-1</output>`,
@@ -813,7 +992,7 @@ moduleFor(
         ].join('\n'),
       });
 
-      this.assertChange({
+      await this.assertChange({
         change: () => dataA.count++,
         expect: [
           `<div id="a">`,
@@ -829,7 +1008,7 @@ moduleFor(
        * ERROR in conflict with the NOTE on this test.
        * the elementns flip locations... which is kinda bonkers
        */
-      this.assertChange({
+      await this.assertChange({
         change: () => dataB.count--,
         expect: [
           `<div id="a">`,
@@ -841,7 +1020,8 @@ moduleFor(
         ].join('\n'),
       });
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
@@ -851,7 +1031,7 @@ moduleFor(
       let get = (id: string) => this.element.querySelector(id);
       let promises: Promise<unknown>[] = [];
 
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         let promise = (async () => {
           await Promise.resolve();
           let element = get(`#${id}`);
@@ -883,7 +1063,7 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: [`<div id="a"></div><br>`, `<div id="b"></div>`, ``, ``].join('\n'),
       });
 
@@ -891,7 +1071,8 @@ moduleFor(
 
       assertHTML([`<div id="a">a:Hi</div><br>`, `<div id="b">b:Hi</div>`, ``, ``].join('\n'));
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
@@ -901,7 +1082,7 @@ moduleFor(
 moduleFor(
   'Strict Mode <-> Loose Mode - renderComponent',
   class extends RenderComponentTestCase {
-    '@test incidentally invoked loose-mode components can still resolve helpers'() {
+    async '@test incidentally invoked loose-mode components can still resolve helpers'() {
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
       let Loose = setComponentTemplate(
         precompileTemplate(`Hi: {{a-helper "there"}}`),
@@ -912,9 +1093,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hi: THERE' });
+      await this.renderComponent(Root, { expect: 'Hi: THERE' });
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
@@ -930,14 +1112,14 @@ moduleFor(
       }, /but that value was not in scope: a-helper/);
     }
 
-    '@test rendering multiple times to adjacent elements'() {
+    async '@test rendering multiple times to adjacent elements'() {
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
       let Loose = setComponentTemplate(
         precompileTemplate(`Hi: {{a-helper "there"}}`),
         templateOnly()
       );
       let get = (id: string) => this.element.querySelector(id);
-      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+      function render(Comp: GlimmerComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
           into: get(`#${id}`)!,
           owner,
@@ -960,13 +1142,14 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: [`<div id="a">a:Hi: THERE</div><br>`, `<div id="b">b:Hi: THERE</div>`, ``, ``].join(
           '\n'
         ),
       });
 
-      run(() => destroy(this));
+      destroy(this);
+      await renderSettled();
 
       assertHTML('');
     }
@@ -976,13 +1159,13 @@ moduleFor(
 moduleFor(
   'Strict Mode - renderComponent - built ins',
   class extends RenderComponentTestCase {
-    '@test Can use Input'() {
+    async '@test Can use Input'() {
       let Root = setComponentTemplate(
         precompileTemplate('<Input/>', { strictMode: true, scope: () => ({ Input }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         classic: {
           tagName: 'input',
           attrs: {
@@ -993,13 +1176,13 @@ moduleFor(
       });
     }
 
-    '@test Can use Textarea'() {
+    async '@test Can use Textarea'() {
       let Root = setComponentTemplate(
         precompileTemplate('<Textarea/>', { strictMode: true, scope: () => ({ Textarea }) }),
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         classic: {
           tagName: 'textarea',
           attrs: {
@@ -1009,7 +1192,7 @@ moduleFor(
       });
     }
 
-    '@test Can use hash'() {
+    async '@test Can use hash'() {
       let Root = setComponentTemplate(
         precompileTemplate(
           '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}',
@@ -1018,10 +1201,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use array'() {
+    async '@test Can use array'() {
       let Root = setComponentTemplate(
         precompileTemplate('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
           strictMode: true,
@@ -1030,10 +1213,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use concat'() {
+    async '@test Can use concat'() {
       let Root = setComponentTemplate(
         precompileTemplate('{{(concat "Hello" ", " "world!")}}', {
           strictMode: true,
@@ -1042,10 +1225,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use get'() {
+    async '@test Can use get'() {
       let Root = setComponentTemplate(
         precompileTemplate(
           '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}',
@@ -1054,10 +1237,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: 'Hello, world!' });
+      await this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
-    '@test Can use on and fn'(assert: Assert) {
+    async '@test Can use on and fn'(assert: Assert) {
       let handleClick = (value: unknown) => {
         assert.step('handleClick');
         assert.equal(value, 123);
@@ -1071,7 +1254,7 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: '<button>Click</button>' });
+      await this.renderComponent(Root, { expect: '<button>Click</button>' });
 
       clickElement('button');
 
@@ -1090,7 +1273,7 @@ moduleFor(
     // both strict and resolution modes, and these things would be implicitly
     // covered elsewhere, but until then, these coverage are essential.
 
-    '@test Can use each-in'() {
+    async '@test Can use each-in'() {
       let obj = {
         foo: 'FOO',
         bar: 'BAR',
@@ -1104,10 +1287,10 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, { expect: '[foo:FOO][bar:BAR]' });
+      await this.renderComponent(Root, { expect: '[foo:FOO][bar:BAR]' });
     }
 
-    '@test Can use in-element'() {
+    async '@test Can use in-element'() {
       let getElement = (id: string) => document.getElementById(id);
 
       let Foo = setComponentTemplate(
@@ -1125,7 +1308,7 @@ moduleFor(
         templateOnly()
       );
 
-      this.renderComponent(Root, {
+      await this.renderComponent(Root, {
         expect: '[<div id="in-element-test">before</div>][<!---->after]',
       });
     }

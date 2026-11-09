@@ -8,14 +8,15 @@ import { assert } from '@ember/debug';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import type ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
+import type RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import InternalContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy-internal';
+import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export interface BootOptions {
@@ -27,6 +28,13 @@ export interface BootOptions {
   // Private?
   isInteractive?: boolean;
   _renderMode?: string;
+}
+
+export interface BootEnvironment {
+  hasDOM: boolean;
+  isInteractive: boolean;
+  _renderMode?: string;
+  options: BootOptions;
 }
 
 export interface EngineInstanceOptions {
@@ -41,8 +49,7 @@ export interface EngineInstanceOptions {
   @public
   @class EngineInstance
   @extends EmberObject
-  @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
+  @uses RegistryProxy, ContainerProxy
 */
 
 // Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
@@ -53,7 +60,10 @@ export interface EngineInstanceOptions {
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+class EngineInstance extends EmberObject.extend(
+  InternalRegistryProxyMixin,
+  InternalContainerProxyMixin
+) {
   /**
    @private
    @method setupRegistry

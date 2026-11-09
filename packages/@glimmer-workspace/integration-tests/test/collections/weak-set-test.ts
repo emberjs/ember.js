@@ -1,11 +1,6 @@
-import { trackedWeakSet } from '@glimmer/validator';
-import {
-  defineComponent,
-  GlimmerishComponent as Component,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import Component from '@glimmer/component';
+import { trackedWeakSet } from '@ember/reactive/collections';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class TrackedWeakSetTest extends RenderTest {
   static suiteName = `trackedWeakSet() (rendering)`;

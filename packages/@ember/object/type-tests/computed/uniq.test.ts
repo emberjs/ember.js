@@ -1,7 +1,8 @@
 import { uniq } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(uniq('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(uniq('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @uniq('foo') declare uniq: unknown[];

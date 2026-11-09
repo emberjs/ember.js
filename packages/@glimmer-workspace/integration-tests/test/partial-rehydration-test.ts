@@ -58,7 +58,7 @@ export class PartialRehydrationTest extends RenderTest {
 
     replaceHTML(qunitFixture(), html);
     this.element = qunitFixture();
-    this.renderResult = this.delegate.renderComponentClientSide(
+    this.handle = this.delegate.renderComponentClientSide(
       'RehydratingComponent',
       args,
       castToSimple(document.getElementById('placeholder')!)
@@ -132,7 +132,7 @@ export class PartialRehydrationTest extends RenderTest {
     this.element = qunitFixture();
 
     // Rehydrate First Component
-    this.renderResult = this.delegate.renderComponentClientSide(
+    this.handle = this.delegate.renderComponentClientSide(
       'Nav',
       args.nav,
       castToSimple(document.querySelector('.nav-container')!)
@@ -164,7 +164,7 @@ export class PartialRehydrationTest extends RenderTest {
     this.assertStableRerender();
 
     // Rehydrate the second component
-    this.renderResult = this.delegate.renderComponentClientSide(
+    this.handle = this.delegate.renderComponentClientSide(
       'Carousel',
       args.carousel,
       castToSimple(document.querySelector('.carousel-container')!)

@@ -15,4 +15,17 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
   add(specifier: string, factory: InternalFactory<object> | object) {
     this.resolver!.add(specifier, factory);
   }
+
+  /**
+    Replaces a registration with a subclass of it.
+
+    The registry caches a class after the first lookup, so the old
+    registration must go before the resolver can supply the subclass.
+  */
+  subclass<T extends object>(specifier: `${string}:${string}`, build: (Base: T) => T) {
+    let Base = this.application.resolveRegistration(specifier) as T;
+
+    this.application.unregister(specifier);
+    this.add(specifier, build(Base));
+  }
 }

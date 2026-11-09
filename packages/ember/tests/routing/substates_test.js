@@ -89,6 +89,51 @@ moduleFor(
       return promise;
     }
 
+    ['@test Loading substate template can access its controller via {{this}}'](assert) {
+      // Regression test: substate routes enter via intermediate transitions
+      // that skip the manager's willEnter, so the controller must be read
+      // through the route rather than cached on the bucket at willEnter time.
+      let turtleDeferred = RSVP.defer();
+
+      this.router.map(function () {
+        this.route('turtle');
+      });
+
+      this.add(
+        'route:turtle',
+        class extends Route {
+          model() {
+            return turtleDeferred.promise;
+          }
+        }
+      );
+      this.add('template:turtle', precompileTemplate('TURTLE'));
+      this.add(
+        'controller:loading',
+        class extends Controller {
+          message = 'WAIT';
+        }
+      );
+      this.add('template:loading', precompileTemplate('{{this.message}}'));
+
+      let promise = this.visit('/turtle').then(() => {
+        assert.equal(
+          this.$('#app').text(),
+          'TURTLE',
+          'turtle template has loaded and replaced the loading template'
+        );
+      });
+
+      assert.equal(
+        this.$('#app').text(),
+        'WAIT',
+        'the loading template rendered with its controller as {{this}}'
+      );
+
+      turtleDeferred.resolve();
+      return promise;
+    }
+
     [`@test Slow promises returned from ApplicationRoute#model don't enter LoadingRoute`](assert) {
       let appDeferred = RSVP.defer();
 
@@ -777,17 +822,19 @@ moduleFor(
     }
 
     async [`@test Loading actions bubble to root but don't enter substates above pivot `](assert) {
-      await this.visit('/');
-
       let sallyDeferred = RSVP.defer();
       let puppiesDeferred = RSVP.defer();
+      let loadingActionCalls = 0;
 
+      // Registered before the initial visit: the application route is
+      // instantiated (and cached) during the first boot, so adding it later
+      // would leave the action-less default instance in place.
       this.add(
         'route:application',
         class extends Route {
           @action
           loading() {
-            assert.ok(true, 'loading action received on ApplicationRoute');
+            loadingActionCalls++;
           }
         }
       );
@@ -810,31 +857,39 @@ moduleFor(
         }
       );
 
-      let promise = this.visit('/grandma/mom/sally');
+      await this.visit('/');
+
+      // Drive the transition inside a run loop so resolution genuinely parks
+      // on sally's pending model; otherwise the deferred resolves before the
+      // waterfall reaches it and the transition is never actually slow.
+      let promise = runTask(() => this.visit('/grandma/mom/sally'));
       assert.equal(this.appRouter.currentPath, 'index', 'Initial route fully loaded');
+      assert.ok(
+        loadingActionCalls > 0,
+        'loading action bubbled to ApplicationRoute during the slow transition'
+      );
 
       sallyDeferred.resolve();
+      await promise;
 
-      promise
-        .then(() => {
-          assert.equal(this.appRouter.currentPath, 'grandma.mom.sally', 'transition completed');
+      assert.equal(this.appRouter.currentPath, 'grandma.mom.sally', 'transition completed');
 
-          let visit = this.visit('/grandma/puppies');
-          assert.equal(
-            this.appRouter.currentPath,
-            'grandma.mom.sally',
-            'still in initial state because the only loading state is above the pivot route'
-          );
+      let callsBeforeSecondTransition = loadingActionCalls;
+      let visit = runTask(() => this.visit('/grandma/puppies'));
+      assert.equal(
+        this.appRouter.currentPath,
+        'grandma.mom.sally',
+        'still in initial state because the only loading state is above the pivot route'
+      );
+      assert.ok(
+        loadingActionCalls > callsBeforeSecondTransition,
+        'loading action bubbled to ApplicationRoute for the transition above the pivot'
+      );
 
-          return visit;
-        })
-        .then(() => {
-          runTask(() => puppiesDeferred.resolve());
+      runTask(() => puppiesDeferred.resolve());
+      await visit;
 
-          assert.equal(this.appRouter.currentPath, 'grandma.puppies', 'Finished transition');
-        });
-
-      return promise;
+      assert.equal(this.appRouter.currentPath, 'grandma.puppies', 'Finished transition');
     }
 
     async ['@test Default error event moves into nested route'](assert) {

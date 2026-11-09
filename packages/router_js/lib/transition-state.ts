@@ -1,16 +1,18 @@
 import { Promise } from 'rsvp';
 import type { Dict } from './core';
-import type { Route, ResolvedRouteInfo } from './route-info';
+import type { ResolvedRouteInfo, RouteInfo } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
+import type { RouteStateBucket } from './route-manager';
+import { hasClassicInterop } from './route-manager';
 
 interface IParams {
   [key: string]: unknown;
 }
 
-function handleError<R extends Route>(
+function handleError<R>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   error: Error
@@ -25,13 +27,13 @@ function handleError<R extends Route>(
 
   throw new TransitionError(
     error,
-    currentState.routeInfos[errorHandlerIndex]!.route!,
+    currentState.routeInfos[errorHandlerIndex]!.bucket!,
     wasAborted,
     currentState
   );
 }
 
-function resolveOneRouteInfo<R extends Route>(
+function resolveOneRouteInfo<R>(
   currentState: TransitionState<R>,
   transition: Transition<R>
 ): void | Promise<void> {
@@ -43,20 +45,19 @@ function resolveOneRouteInfo<R extends Route>(
 
   let routeInfo = currentState.routeInfos[transition.resolveIndex]!;
 
-  let callback = proceed.bind(null, currentState, transition) as (
-    resolvedRouteInfo: ResolvedRouteInfo<R>
-  ) => void | Promise<void>;
+  let callback = (resolvedRouteInfo: ResolvedRouteInfo<R>) =>
+    proceed(currentState, transition, resolvedRouteInfo);
 
   return routeInfo.resolve(transition).then(callback, null, currentState.promiseLabel('Proceed'));
 }
 
-function proceed<R extends Route>(
+function proceed<R>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   resolvedRouteInfo: ResolvedRouteInfo<R>
 ): void | Promise<void> {
   let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex]!.isResolved;
-
+  const routeIndex = transition.resolveIndex;
   // Swap the previously unresolved routeInfo with
   // the resolved routeInfo
   currentState.routeInfos[transition.resolveIndex++] = resolvedRouteInfo;
@@ -66,13 +67,18 @@ function proceed<R extends Route>(
     // vs. afterModel is so that redirects into child
     // routes don't re-run the model hooks for this
     // already-resolved route.
-    let { route } = resolvedRouteInfo;
-    if (route !== undefined) {
-      if (route.redirect) {
-        route.redirect(resolvedRouteInfo.context, transition);
-      }
+    let { manager, bucket } = resolvedRouteInfo;
+    if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+      manager.redirect(
+        bucket,
+        resolvedRouteInfo as unknown as RouteInfo,
+        resolvedRouteInfo.context,
+        transition
+      );
     }
   }
+
+  transition.router?.onRouteResolved(resolvedRouteInfo, routeIndex);
 
   // Proceed after ensuring that the redirect hook
   // didn't abort this transition by transitioning elsewhere.
@@ -81,7 +87,7 @@ function proceed<R extends Route>(
   return resolveOneRouteInfo(currentState, transition);
 }
 
-export default class TransitionState<R extends Route> {
+export default class TransitionState<R = unknown> {
   routeInfos: InternalRouteInfo<R>[] = [];
   queryParams: Dict<unknown> = {};
   params: IParams = {};
@@ -104,13 +110,16 @@ export default class TransitionState<R extends Route> {
     let params = this.params;
     forEach(this.routeInfos, (routeInfo) => {
       params[routeInfo.name] = routeInfo.params || {};
+      routeInfo.beginEnter(transition, true).catch(() => {
+        // Surfaced by the sequential pass below.
+      });
       return true;
     });
 
     transition.resolveIndex = 0;
 
-    let callback = resolveOneRouteInfo.bind(null, this, transition);
-    let errorHandler = handleError.bind(null, this, transition);
+    let callback = () => resolveOneRouteInfo(this, transition);
+    let errorHandler = (error: Error) => handleError(this, transition, error);
 
     // The prelude RSVP.resolve() async moves us into the promise land.
     return Promise.resolve(null, this.promiseLabel('Start transition'))
@@ -123,7 +132,7 @@ export default class TransitionState<R extends Route> {
 export class TransitionError {
   constructor(
     public error: Error,
-    public route: Route,
+    public bucket: RouteStateBucket,
     public wasAborted: boolean,
     public state: TransitionState<any>
   ) {}

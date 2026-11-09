@@ -3,6 +3,7 @@ import type { FrameworkObject } from '@ember/object/-internals';
 import EmberObject from '@ember/object';
 import Service, { inject, service } from '@ember/service';
 import { expectTypeOf } from 'expect-type';
+import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
 // Good enough for tests
 let owner = {} as Owner;
@@ -18,8 +19,8 @@ expectTypeOf(mainService).toMatchTypeOf<FrameworkObject>();
 
 expectTypeOf(Service.isServiceFactory).toEqualTypeOf<boolean>();
 
-expectTypeOf(inject()).toEqualTypeOf<PropertyDecorator>();
-expectTypeOf(inject('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(inject()).toEqualTypeOf<InjectionDecorator>();
+expectTypeOf(inject('foo')).toEqualTypeOf<InjectionDecorator>();
 
 class Foo extends EmberObject {
   @inject('main') declare main: MainService;

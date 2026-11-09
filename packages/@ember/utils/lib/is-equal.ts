@@ -1,3 +1,5 @@
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+
 /**
  @module @ember/utils
 */
@@ -46,8 +48,14 @@
   @param {Object} b second object to compare
   @return {Boolean}
   @public
+  @deprecated Use native JavaScript instead.
 */
 export default function isEqual(a: unknown, b: unknown): boolean {
+  deprecateUntil(
+    '`isEqual` from `@ember/utils` is deprecated. Use native JavaScript instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
+  );
+
   if (a && typeof (a as IsEqual).isEqual === 'function') {
     return (a as IsEqual).isEqual(b);
   }

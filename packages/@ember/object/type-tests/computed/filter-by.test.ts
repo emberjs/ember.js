@@ -1,7 +1,8 @@
 import { filterBy } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(filterBy('foo', 'key')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(filterBy('foo', 'key')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @filterBy('foo', 'key', 'value')

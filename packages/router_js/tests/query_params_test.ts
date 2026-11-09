@@ -1,24 +1,32 @@
 /* eslint-disable qunit/no-conditional-assertions */
 import type { MatchCallback } from 'route-recognizer';
-import type { Route, Transition } from '../index';
+import type { Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type RouteInfo from '../lib/route-info';
 import { Promise } from 'rsvp';
-import { createHandler, TestRouter, trigger, ignoreTransitionError } from './test_helpers';
+import {
+  createHandler,
+  managementFor,
+  TestRouter,
+  trigger,
+  ignoreTransitionError,
+} from './test_helpers';
 
-let router: Router<Route>, handlers: Dict<Route>, expectedUrl: Maybe<string>;
+let router: Router, handlers: Dict<object>, expectedUrl: Maybe<string>;
 let scenarios = [
   {
     name: 'Sync Get Handler',
     getHandler: function (name: string) {
-      return handlers[name] || (handlers[name] = createHandler('empty'));
+      return managementFor(handlers[name] || (handlers[name] = createHandler('empty')));
     },
   },
   {
     name: 'Async Get Handler',
     getHandler: function (name: string) {
-      return Promise.resolve(handlers[name] || (handlers[name] = createHandler('empty')));
+      return Promise.resolve(
+        managementFor(handlers[name] || (handlers[name] = createHandler('empty')))
+      );
     },
   },
 ];
@@ -45,12 +53,7 @@ scenarios.forEach(function (scenario) {
       routeWillChange() {}
       didTransition() {}
       willTransition() {}
-      triggerEvent(
-        handlerInfos: RouteInfo<Route>[],
-        ignoreFailure: boolean,
-        name: string,
-        args: any[]
-      ) {
+      triggerEvent(handlerInfos: RouteInfo[], ignoreFailure: boolean, name: string, args: any[]) {
         trigger(handlerInfos, ignoreFailure, name, ...args);
       }
       replaceURL(name: string) {
@@ -319,7 +322,7 @@ scenarios.forEach(function (scenario) {
             if (count === 0) {
               assert.ok(false, "shouldn't fire on first trans");
             } else {
-              router.refresh(this as Route);
+              router.refresh('index');
             }
           },
           finalizeQueryParamChange: consumeAllFinalQueryParams,
@@ -492,7 +495,7 @@ scenarios.forEach(function (scenario) {
         },
         events: {
           queryParamsDidChange: function () {
-            router.refresh(this as Route);
+            router.refresh('index');
           },
         },
       });
@@ -531,7 +534,7 @@ scenarios.forEach(function (scenario) {
         queryParamsDidChange: function () {
           assert.ok(true, 'index#queryParamsDidChange');
           redirect = causeRedirect;
-          router.refresh(this as Route);
+          router.refresh('index');
         },
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
           (finalParams as any).foo = params['foo']; // TODO wat

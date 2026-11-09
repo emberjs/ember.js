@@ -1,10 +1,5 @@
-import {
-  defineComponent,
-  jitSuite,
-  RenderTest,
-  test,
-  tracked,
-} from '@glimmer-workspace/integration-tests';
+import { tracked } from '@glimmer/tracking';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class Each extends RenderTest {
   static suiteName = '{{#each}} keyword';

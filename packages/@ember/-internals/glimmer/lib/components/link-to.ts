@@ -39,9 +39,13 @@ interface QueryParams {
   values: Nullable<{}>;
 }
 
+// Models can throw on unknown properties, so check with `in` before the read.
 function isQueryParams(value: unknown): value is QueryParams {
   return (
-    typeof value === 'object' && value !== null && (value as QueryParams)['isQueryParams'] === true
+    typeof value === 'object' &&
+    value !== null &&
+    'isQueryParams' in value &&
+    value.isQueryParams === true
   );
 }
 
@@ -267,7 +271,7 @@ class _LinkTo extends InternalComponent {
     return 'LinkTo';
   }
 
-  @service('-routing') declare private routing: RoutingService<Route>;
+  @service('-routing') private routing!: RoutingService<Route>;
 
   validateArguments(): void {
     assert(
@@ -328,7 +332,7 @@ class _LinkTo extends InternalComponent {
 
     // consume the current router state so we invalidate when QP changes
     // TODO: can we narrow this down to QP changes only?
-    consumeTag(tagFor(routing, 'currentState'));
+    consumeTag(tagFor(routing.router, 'currentState'));
 
     if (DEBUG) {
       try {
@@ -417,7 +421,7 @@ class _LinkTo extends InternalComponent {
 
   // GH #17963
   private currentRouteCache = createCache<Maybe<string>>(() => {
-    consumeTag(tagFor(this.routing, 'currentState'));
+    consumeTag(tagFor(this.routing.router, 'currentState'));
     return untrack(() => this.routing.currentRouteName);
   });
 

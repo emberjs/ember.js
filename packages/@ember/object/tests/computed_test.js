@@ -1,8 +1,11 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
-import { A as emberA, isArray } from '@ember/array';
+import { isArray, A as emberA } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 function K() {
   return this;
@@ -201,7 +204,14 @@ moduleFor(
       );
     }
 
-    ['@test can iterate over a list of computed properties for a class'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test can iterate over a list of computed properties for a class`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let MyClass = EmberObject.extend({
         foo: computed(function () {}),
 
@@ -304,56 +314,63 @@ moduleFor(
     }
 
     ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+      let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
+          macroCalls++;
           return callback.call(this);
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
-      assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
     ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+      let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
+          macroCalls++;
           return callback.apply(this);
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
-      assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
-    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test observing prop installed with computed macro reads and overriding it in create() works`](
       assert
     ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let Obj = EmberObject.extend({
         name: reads('model.name'),
         nameDidChange: observer('name', function () {}),
@@ -390,7 +407,9 @@ moduleFor(
       assert.equal(instance.bar, 456, 'setters work');
     }
 
-    ['@test @each on maybe array'](assert) {
+    [`${testUnless(EMBER_A.isRemoved)} @test @each on maybe array`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let Normalizer = EmberObject.extend({
         options: null, // null | undefined | { value: any } | Array<{ value: any }>
 
@@ -509,7 +528,14 @@ moduleFor(
       assert.deepEqual(n.normalized, ['bar']);
     }
 
-    ['@test lazy computation cannot cause infinite cycles'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lazy computation cannot cause infinite cycles`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       // This is based off a real world bug found in ember-cp-validations:
       // https://github.com/offirgolan/ember-cp-validations/issues/659
       let CycleObject = class extends EmberObject {

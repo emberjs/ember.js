@@ -38,11 +38,6 @@ const OBJECT_GUIDS = new WeakMap();
 const NON_OBJECT_GUIDS = new Map();
 /**
   A unique key used to assign guids and other private metadata to objects.
-  If you inspect an object in your browser debugger you will often see these.
-  They can be safely ignored.
-
-  On browsers that support it, these properties are added with enumeration
-  disabled so they won't show up when you iterate over your properties.
 
   @private
   @property GUID_KEY

@@ -2,10 +2,15 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
-import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  defineSimpleModifier,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
+import { setComponentTemplate } from '@glimmer/manager';
 import { service } from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -179,7 +184,7 @@ moduleFor(
         'route:application',
         class extends Route {
           model() {
-            return emberA();
+            return [];
           }
         }
       );
@@ -236,11 +241,15 @@ moduleFor(
       let insertionCount = 0;
       this.add(
         'component:foo-bar',
-        class extends Component {
-          didInsertElement() {
-            insertionCount += 1;
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends Component {
+            constructor(owner, args) {
+              super(owner, args);
+              insertionCount += 1;
+            }
           }
-        }
+        )
       );
 
       this.add('template:page', precompileTemplate('<p>{{@model.name}}{{foo-bar}}</p>'));
@@ -296,7 +305,7 @@ moduleFor(
         });
     }
 
-    ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](
+    ['@test Components inside an outlet have their modifiers installed when the route is displayed'](
       assert
     ) {
       this.add(
@@ -332,32 +341,34 @@ moduleFor(
 
       this.add(
         'component:my-component',
-        class extends Component {
-          didInsertElement() {
-            myComponentCounter++;
+        setComponentTemplate(
+          precompileTemplate('<div {{this.inserted}}></div>'),
+          class extends Component {
+            inserted = defineSimpleModifier(() => {
+              myComponentCounter++;
+            });
           }
-        }
+        )
       );
 
       this.add(
         'component:other-component',
-        class extends Component {
-          didInsertElement() {
-            otherComponentCounter++;
+        setComponentTemplate(
+          precompileTemplate('<div {{this.inserted}}></div>'),
+          class extends Component {
+            inserted = defineSimpleModifier(() => {
+              otherComponentCounter++;
+            });
           }
-        }
+        )
       );
 
       return this.visit('/').then(() => {
-        assert.strictEqual(
-          myComponentCounter,
-          1,
-          'didInsertElement invoked on displayed component'
-        );
+        assert.strictEqual(myComponentCounter, 1, 'the displayed component installs its modifier');
         assert.strictEqual(
           otherComponentCounter,
           0,
-          'didInsertElement not invoked on displayed component'
+          'the other component does not install its modifier'
         );
 
         run(() => indexController.set('showFirst', false));
@@ -365,12 +376,12 @@ moduleFor(
         assert.strictEqual(
           myComponentCounter,
           1,
-          'didInsertElement not invoked on displayed component'
+          'the removed component does not install its modifier again'
         );
         assert.strictEqual(
           otherComponentCounter,
           1,
-          'didInsertElement invoked on displayed component'
+          'the newly displayed component installs its modifier'
         );
       });
     }

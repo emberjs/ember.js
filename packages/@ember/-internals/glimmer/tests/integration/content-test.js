@@ -1,6 +1,16 @@
 import { DEBUG } from '@glimmer/env';
 
-import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  moduleFor,
+  applyMixins,
+  classes,
+  runTask,
+  expectDeprecation,
+  testUnless,
+  defineSimpleModifier,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -10,7 +20,8 @@ import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
-import { Component, SafeString, htmlSafe } from '../utils/helpers';
+import Component from '@glimmer/component';
+import { SafeString, htmlSafe } from '../utils/helpers';
 
 const EMPTY = Object.freeze({});
 
@@ -346,7 +357,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a proxy object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a proxy object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxy.name', {
       proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
     });
@@ -382,7 +397,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a nested path in a proxy object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a nested path in a proxy object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxy.name.last', {
       proxy: ObjectProxy.create({
         content: { name: { first: 'Tom', last: 'Dale' } },
@@ -439,7 +458,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a path flipping between a proxy and a real object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a path flipping between a proxy and a real object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxyOrObject.name.last', {
       proxyOrObject: ObjectProxy.create({
         content: { name: { first: 'Tom', last: 'Dale' } },
@@ -517,7 +540,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a path flipping between a real object and a proxy']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a path flipping between a real object and a proxy`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.objectOrProxy.name.last', {
       objectOrProxy: { name: { first: 'Tom', last: 'Dale' } },
     });
@@ -613,7 +640,12 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can render a readOnly property of a path']() {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test it can render a readOnly property of a path`]() {
+    expectDeprecation(
+      /from `@ember\/object\/computed` is deprecated/,
+      DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+    );
+
     let Messenger = class extends EmberObject {
       @readOnly('a.b.c')
       message;
@@ -1709,17 +1741,16 @@ if (DEBUG) {
         this.assertStyleWarning(userValue);
       }
 
-      ['@test specifying `attributeBindings: ["style"]` generates a warning']() {
-        let FooBarComponent = class extends Component {
-          attributeBindings = ['style'];
-        };
-
+      ['@test specifying `style` on a component with `...attributes` generates a warning']() {
         this.owner.register(
           'component:foo-bar',
-          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+          setComponentTemplate(
+            precompileTemplate('<div ...attributes>hello</div>'),
+            class extends Component {}
+          )
         );
         let userValue = 'width: 42px';
-        this.render('{{foo-bar style=this.userValue}}', {
+        this.render('<FooBar style={{this.userValue}} />', {
           userValue,
         });
 
@@ -1802,3 +1833,58 @@ if (DEBUG) {
     }
   );
 }
+
+moduleFor(
+  'Inline style tests - warnings (static styles, namespaced elements and element modifiers)',
+  class extends RenderingTestCase {
+    ['@test a static style and an element modifier do not warn']() {
+      this.registerModifier(
+        'foo',
+        defineSimpleModifier(() => {})
+      );
+
+      expectNoWarning(() => {
+        this.render('<button style="display: flex" {{foo}}>click me</button>');
+      });
+
+      this.assertHTML('<button style="display: flex">click me</button>');
+    }
+
+    ['@test a dynamic style and an element modifier warn once'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      this.registerModifier(
+        'foo',
+        defineSimpleModifier(() => {})
+      );
+
+      expectWarning(() => {
+        this.render('<button style={{this.dynAttr}} {{foo}}>click me</button>', {
+          dynAttr: 'display:flex',
+        });
+      }, constructStyleDeprecationMessage('display:flex'));
+
+      this.assertHTML('<button style="display:flex">click me</button>');
+    }
+
+    ['@test a static style on an element does not warn']() {
+      expectNoWarning(() => {
+        this.render('<div style="background: red">Thing</div>');
+      });
+
+      this.assertHTML('<div style="background: red">Thing</div>');
+      this.assertStableRerender();
+    }
+
+    ['@test a static style on a namespaced element does not warn']() {
+      expectNoWarning(() => {
+        this.render('<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />');
+      });
+
+      this.assertHTML('<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>');
+    }
+  }
+);

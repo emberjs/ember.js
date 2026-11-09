@@ -22,9 +22,7 @@ export class YieldSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({
-    skip: 'glimmer',
-  })
+  @test
   'yield to "inverse"'() {
     this.render(
       {
@@ -42,9 +40,7 @@ export class YieldSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({
-    skip: 'glimmer',
-  })
+  @test
   'yield to "else"'() {
     this.render(
       {
@@ -83,12 +79,10 @@ export class YieldSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({
-    skip: 'glimmer',
-  })
+  @test
   'use a non-existent block param'() {
     this.render({
-      layout: '{{yield this.someValue}}',
+      layout: '{{yield @someValue}}',
       args: { someValue: '42' },
       blockParams: ['val1', 'val2'],
       template: '{{val1}} - {{val2}}',

@@ -1,7 +1,8 @@
 import { readOnly } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(readOnly('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(readOnly('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @readOnly('foo') readOnly: unknown;

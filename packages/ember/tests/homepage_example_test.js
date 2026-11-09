@@ -1,6 +1,5 @@
 import Route from '@ember/routing/route';
 import EmberObject, { computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -30,10 +29,10 @@ moduleFor(
         'route:index',
         class extends Route {
           model() {
-            return emberA([
+            return [
               Person.create({ firstName: 'Tom', lastName: 'Dale' }),
               Person.create({ firstName: 'Yehuda', lastName: 'Katz' }),
-            ]);
+            ];
           }
         }
       );

@@ -87,11 +87,7 @@ moduleFor(
         this.route('blork');
       });
 
-      this.routerInstance.reopen({
-        _hasModuleBasedResolver() {
-          return true;
-        },
-      });
+      this.routerInstance._hasModuleBasedResolver = () => true;
 
       let router = this.routerInstance;
       router._initRouterJs();
@@ -133,11 +129,7 @@ moduleFor(
         });
       });
 
-      this.routerInstance.reopen({
-        _hasModuleBasedResolver() {
-          return true;
-        },
-      });
+      this.routerInstance._hasModuleBasedResolver = () => true;
 
       let router = this.routerInstance;
       router._initRouterJs();
@@ -285,11 +277,7 @@ moduleFor(
         this.mount('chat');
       });
 
-      this.routerInstance.reopen({
-        _hasModuleBasedResolver() {
-          return true;
-        },
-      });
+      this.routerInstance._hasModuleBasedResolver = () => true;
       this.routerInstance._initRouterJs();
       let router = this.routerInstance;
       assert.ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
@@ -304,11 +292,7 @@ moduleFor(
         this.mount('chat', { as: 'shoutbox' });
       });
 
-      this.routerInstance.reopen({
-        _hasModuleBasedResolver() {
-          return true;
-        },
-      });
+      this.routerInstance._hasModuleBasedResolver = () => true;
       this.routerInstance._initRouterJs();
       let router = this.routerInstance;
 
@@ -351,11 +335,7 @@ moduleFor(
         });
       });
 
-      this.routerInstance.reopen({
-        _hasModuleBasedResolver() {
-          return true;
-        },
-      });
+      this.routerInstance._hasModuleBasedResolver = () => true;
       this.routerInstance._initRouterJs();
       let router = this.routerInstance;
 

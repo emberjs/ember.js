@@ -7,11 +7,11 @@ const BrowserStackLaunchers = {
       '--os',
       'OS X',
       '--osv',
-      'Monterey',
+      'Ventura',
       '--b',
       'safari',
       '--bv',
-      'latest', // Will always be 15.x on Monterey
+      'latest', // Will always be 16.x on Ventura
       '-t',
       '1200',
       '--u',
@@ -29,7 +29,7 @@ const BrowserStackLaunchers = {
       '--b',
       'edge',
       '--bv',
-      '128',
+      '149',
       '-t',
       '1200',
       '--u',

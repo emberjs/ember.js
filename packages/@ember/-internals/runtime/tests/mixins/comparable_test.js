@@ -19,6 +19,8 @@ class Rectangle extends EmberObject.extend(Comparable) {
 
 let r1, r2;
 
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
+
 moduleFor(
   'Comparable',
   class extends AbstractTestCase {
@@ -31,9 +33,11 @@ moduleFor(
       r2 = Rectangle.create({ length: 6, width: 13 });
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN.isRemoved
-    )} @test should be comparable and return the correct result`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN.isRemoved || UTILS.isRemoved)} @test should be comparable and return the correct result`](
+      assert
+    ) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       assert.equal(Comparable.detect(r1), true);
       assert.equal(compare(r1, r1), 0);
       assert.equal(compare(r1, r2), -1);

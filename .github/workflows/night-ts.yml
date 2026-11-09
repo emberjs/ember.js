@@ -19,6 +19,7 @@ jobs:
         #       our internal types are not relevant for floating TS versions
         #       (until we bump our dev-time TS)
       - run: pnpm type-check:types
+      - run: pnpm type-check:types-stable-decorators
   notify:
     name: Notify Discord
     runs-on: ubuntu-latest

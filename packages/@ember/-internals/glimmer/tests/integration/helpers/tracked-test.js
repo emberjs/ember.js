@@ -1,17 +1,22 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
-import {
-  tracked,
-  nativeDescDecorator as descriptor,
-  notifyPropertyChange,
-} from '@ember/-internals/metal';
+import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
+
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 moduleFor(
   'Helper Tracked Properties',
@@ -144,7 +149,9 @@ moduleFor(
       assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
     }
 
-    '@test array properties rerender when updated'() {
+    [`${testUnless(EMBER_A.isRemoved)} @test array properties rerender when updated`]() {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       class NumListComponent extends Component {
         @tracked numbers = A([1, 2, 3]);
 
@@ -176,7 +183,14 @@ moduleFor(
       this.assertText('1, 2, 3, 4');
     }
 
-    '@test custom ember array properties rerender when updated'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isRemoved
+    )} @test custom ember array properties rerender when updated`]() {
+      expectDeprecation(
+        /The `MutableArray` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_MUTABLE_ARRAY_MIXIN.isEnabled
+      );
+
       let CustomArray = class extends EmberObject.extend(MutableArray) {
         init() {
           super.init(...arguments);
@@ -241,7 +255,6 @@ moduleFor(
         @tracked
         last = 'Jackson';
 
-        @descriptor
         get full() {
           return `${this.first} ${this.last}`;
         }
@@ -393,7 +406,9 @@ moduleFor(
       this.assertText('sal-value');
     }
 
-    '@test each-in autotracks arrays acorrectly'() {
+    [`${testUnless(EMBER_A.isRemoved)} @test each-in autotracks arrays acorrectly`]() {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let obj = EmberObject.create({ arr: A([1]) });
 
       this.owner.register(

@@ -1,0 +1,12 @@
+{
+  // Type checks the packages with standard (stage 3) decorators instead of
+  // `experimentalDecorators`. The per-package type-tests exercise the legacy
+  // decorator signatures (including decorators on `declare` fields, which
+  // standard decorators don't allow), so they're only checked by the main
+  // tsconfig.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": false
+  },
+  "exclude": ["dist", "node_modules", "tmp", "types", "packages/**/type-tests/**"]
+}

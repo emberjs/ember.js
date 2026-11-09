@@ -13,6 +13,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import EmberObject, { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
+import templateOnly from '@ember/component/template-only';
+import { ENV } from '@ember/-internals/environment';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'(assert) {
@@ -64,7 +66,6 @@ class ModifierManagerTest extends RenderingTestCase {
   }
 
   '@test custom lifecycle hooks'(assert) {
-    assert.expect(9);
     let ModifierClass = setModifierManager(
       (owner) => {
         return new this.CustomModifierManager(owner);
@@ -80,15 +81,15 @@ class ModifierManagerTest extends RenderingTestCase {
       'foo-bar',
       class extends ModifierClass {
         didUpdate([truthy]) {
-          assert.ok(true, 'Called didUpdate');
+          assert.step('didUpdate');
           assert.equal(truthy, 'true', 'gets updated args');
         }
         didInsertElement([truthy]) {
-          assert.ok(true, 'Called didInsertElement');
+          assert.step('didInsertElement');
           assert.equal(truthy, true, 'gets initial args');
         }
         willDestroyElement() {
-          assert.ok(true, 'Called willDestroyElement');
+          assert.step('willDestroyElement');
         }
       }
     );
@@ -97,12 +98,48 @@ class ModifierManagerTest extends RenderingTestCase {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
+    assert.verifySteps(['didInsertElement']);
 
     runTask(() => set(this.context, 'truthy', 'true'));
+    assert.verifySteps(['didUpdate']);
 
     runTask(() => set(this.context, 'truthy', false));
+    assert.verifySteps(['willDestroyElement']);
 
     runTask(() => set(this.context, 'truthy', true));
+    assert.verifySteps(['didInsertElement']);
+
+    runTask(() => set(this.context, 'truthy', false));
+    assert.verifySteps(['willDestroyElement']);
+  }
+
+  '@test destroys a dynamic modifier that was set after the initial render'(assert) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        didInsertElement() {
+          assert.step('didInsertElement');
+        }
+        didUpdate() {}
+        willDestroyElement() {
+          assert.step('willDestroyElement');
+        }
+      }
+    );
+
+    this.render('{{#if this.show}}<div {{this.dyn}}></div>{{/if}}', {
+      show: true,
+      dyn: undefined,
+    });
+    assert.verifySteps([]);
+
+    runTask(() => set(this.context, 'dyn', ModifierClass));
+    assert.verifySteps(['didInsertElement']);
+
+    runTask(() => set(this.context, 'show', false));
+    assert.verifySteps(['willDestroyElement']);
   }
 
   '@test associates manager even through an inheritance structure'(assert) {
@@ -321,6 +358,95 @@ class ModifierManagerTest extends RenderingTestCase {
     }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
 
     assert.verifySteps([]);
+  }
+
+  '@test provides a helpful assertion when mutating a tracked value that was consumed already within the constructor'() {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        static create() {
+          return new this();
+        }
+
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
+    );
+
+    class Foo extends ModifierClass {
+      @tracked foo = 123;
+
+      constructor() {
+        super(...arguments);
+
+        this.foo;
+        this.foo = 456;
+      }
+    }
+
+    this.registerModifier('foo-bar', Foo);
+
+    let expectedMessage = backtrackingMessageFor('foo', '<Foo:ember\\d+>', {
+      renderTree: [],
+      includeTopLevel: false,
+    });
+
+    expectAssertion(() => {
+      this.render('<h1 {{foo-bar}}>hello world</h1>');
+    }, expectedMessage);
+  }
+
+  '@test does not eagerly access arguments during destruction'(assert) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
+    );
+
+    this.registerModifier('foo-bar', class extends ModifierClass {});
+
+    let barCount = 0;
+    let bazCount = 0;
+
+    class State {
+      @tracked show = true;
+
+      get bar() {
+        if (!this.show) {
+          barCount++;
+        }
+
+        return undefined;
+      }
+
+      get baz() {
+        if (!this.show) {
+          bazCount++;
+        }
+
+        return undefined;
+      }
+    }
+
+    let state = new State();
+
+    this.render(
+      '{{#if this.state.show}}<h1 {{foo-bar this.state.bar baz=this.state.baz}}>hello world</h1>{{/if}}',
+      { state }
+    );
+
+    runTask(() => (state.show = false));
+
+    assert.strictEqual(barCount, 0, 'bar was not accessed during destruction');
+    assert.strictEqual(bazCount, 0, 'baz was not accessed during destruction');
   }
 }
 
@@ -607,6 +733,62 @@ moduleFor(
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
+    }
+  }
+);
+
+class ModifierDestructionOrderTest extends RenderingTestCase {
+  '@test modifiers are destroyed child-first, after the modifiers inside their element'(assert) {
+    let destroyed = [];
+
+    this.registerModifier(
+      'record-destroy',
+      setModifierManager(
+        () => ({
+          capabilities: modifierCapabilities('3.22'),
+          createModifier(_factory, args) {
+            return { name: args.positional[0] };
+          },
+          installModifier() {},
+          updateModifier() {},
+          destroyModifier(state) {
+            destroyed.push(state.name);
+          },
+        }),
+        {}
+      )
+    );
+
+    this.owner.register(
+      'component:child-with-modifier',
+      setComponentTemplate(precompileTemplate('<b {{record-destroy "child"}}></b>'), templateOnly())
+    );
+
+    this.render(
+      '{{#if this.show}}<div {{record-destroy "outer"}}><span {{record-destroy "inner"}}></span><ChildWithModifier /></div>{{/if}}',
+      { show: true }
+    );
+
+    runTask(() => set(this.context, 'show', false));
+
+    assert.deepEqual(destroyed, ['inner', 'child', 'outer']);
+  }
+}
+
+moduleFor('Custom modifier manager: destruction order', ModifierDestructionOrderTest);
+
+// The debug render tree is on by default in development builds, and must not change the order.
+moduleFor(
+  'Custom modifier manager: destruction order without the debug render tree',
+  class extends ModifierDestructionOrderTest {
+    constructor() {
+      let original = ENV._DEBUG_RENDER_TREE;
+      ENV._DEBUG_RENDER_TREE = false;
+      try {
+        super(...arguments);
+      } finally {
+        ENV._DEBUG_RENDER_TREE = original;
+      }
     }
   }
 );

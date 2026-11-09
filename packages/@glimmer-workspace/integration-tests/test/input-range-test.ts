@@ -1,5 +1,4 @@
-import type { EmberishCurlyComponentFactory } from '@glimmer-workspace/integration-tests';
-import { EmberishCurlyComponent, jitSuite, test } from '@glimmer-workspace/integration-tests';
+import { jitSuite, test } from '@glimmer-workspace/integration-tests';
 
 import { AttributesTests } from './attributes-test';
 
@@ -68,39 +67,6 @@ jitSuite(
     static override suiteName = `[emberjs/ember.js#15675] Template <input type="range" value={{this.value}} min={{this.min}} max={{this.max}} />`;
 
     attrs = 'type="range" value={{this.value}} min={{this.min}} max={{this.max}}';
-  }
-);
-
-// Ember Components attributeBindings
-
-class EmberInputRangeComponent extends EmberishCurlyComponent {
-  override tagName = 'input';
-  type = 'range';
-}
-
-jitSuite(
-  class EmberComponentRangeTests extends RangeTests {
-    static override suiteName = `Components - [emberjs/ember.js#15675] - type value min max`;
-
-    component(): EmberishCurlyComponentFactory {
-      return class extends EmberInputRangeComponent {
-        override attributeBindings = ['type', 'value', 'min', 'max'];
-      } as any;
-    }
-
-    renderRange(value: number): void {
-      this.registerComponent('Curly', 'range-input', '', this.component());
-      this.render(`{{range-input max=this.max min=this.min value=this.value}}`, {
-        max: this.max,
-        min: this.min,
-        value,
-      });
-    }
-
-    assertRangeValue(value: number): void {
-      let attr = (this.element.firstChild as any)['value'];
-      this.assert.strictEqual(attr, value.toString());
-    }
   }
 );
 

@@ -27,6 +27,7 @@ export interface NodeMap {
   NumberLiteral: { input: NumberLiteral; output: ASTv1.NumberLiteral };
   UndefinedLiteral: { input: UndefinedLiteral; output: ASTv1.UndefinedLiteral };
   NullLiteral: { input: NullLiteral; output: ASTv1.NullLiteral };
+  HashLiteral: { input: HashLiteral; output: never };
 }
 
 /**
@@ -152,7 +153,7 @@ export interface CommentStatement extends CommonNode {
   strip: StripFlags;
 }
 
-export type Expression = SubExpression | PathExpression | Literal;
+export type Expression = SubExpression | PathExpression | Literal | HashLiteral;
 
 export interface SubExpression extends CommonNode {
   type: 'SubExpression';
@@ -167,6 +168,20 @@ export interface PathExpression extends CommonNode {
   depth: number;
   parts: string[];
   original: string;
+  /**
+   * The upstream parser sets this to a `SubExpression` for sub-expression-rooted
+   * paths such as `(foo).bar`, which Glimmer does not support.
+   */
+  head?: string | SubExpression;
+}
+
+/**
+ * A `key=value` list outside of a mustache's named-argument position, e.g. `(foo=bar)`. The
+ * upstream parser accepts it, but Glimmer does not support it.
+ */
+export interface HashLiteral extends CommonNode {
+  type: 'HashLiteral';
+  pairs: HashPair[];
 }
 
 export type Literal =

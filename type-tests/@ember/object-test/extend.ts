@@ -37,3 +37,10 @@ expectTypeOf(PersonWithStatics.isPerson).toBeBoolean();
 expectTypeOf(PersonWithStatics2.isPerson).toBeBoolean();
 expectTypeOf(PersonWithStatics3.isPerson).toBeBoolean();
 expectTypeOf(PersonWithStatics4.isPerson).toBeBoolean();
+
+class Box<T> extends EmberObject {
+  declare value: T;
+}
+const BoxExtended = Box.extend({});
+class StringBox extends BoxExtended<string> {}
+expectTypeOf(StringBox.create().value).toBeString();

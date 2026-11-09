@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
-import { action, set } from '@ember/object';
+import { set } from '@ember/object';
 import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -125,11 +125,11 @@ moduleFor(
       let input = this.$input()[0];
 
       // See https://ember-twiddle.com/33e506329f8176ae874422644d4cc08c?openFiles=components.input-component.js%2Ctemplates.components.input-component.hbs
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => this.rerender());
 
-      // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
+      this.assertSelectionRange(8, 8);
 
       runTask(() => {
         input.selectionStart = 2;
@@ -142,23 +142,23 @@ moduleFor(
 
       this.assertSelectionRange(2, 4);
 
-      // runTask(() => set(this.context, 'value', 'updated'));
-      //
-      // this.assertSelectionRange(7, 7); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
-      //
-      // runTask(() => set(this.context, 'value', 'original'));
-      //
-      // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
+      runTask(() => set(this.context, 'value', 'updated'));
+
+      this.assertSelectionRange(7, 7);
+
+      runTask(() => set(this.context, 'value', 'original'));
+
+      this.assertSelectionRange(8, 8);
     }
 
     ['@test sends an action with `{{input enter=this.foo}}` when <enter> is pressed'](assert) {
       assert.expect(2);
 
       this.render(`{{input enter=this.foo}}`, {
-        foo: action(function (value, event) {
+        foo: (value, event) => {
           assert.ok(true, 'action was triggered');
           assert.ok(event instanceof Event, 'Native event was passed');
-        }),
+        },
       });
 
       this.triggerEvent('keyup', {

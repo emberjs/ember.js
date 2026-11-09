@@ -3,10 +3,9 @@ import { getOwner } from '@ember/-internals/owner';
 import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { dasherize } from '@ember/-internals/string';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import Namespace from '@ember/application/namespace';
-import type { NativeArray } from '@ember/array';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import type { Cache } from '@glimmer/validator/lib/tracking';
 import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -34,7 +33,7 @@ type WrappedType<N extends string = string> = {
 type WrappedRecord<T> = {
   object: T;
   columnValues: object;
-  searchKeywords: NativeArray<unknown>;
+  searchKeywords: unknown[];
   filterValues: object;
   color: RecordColor | null;
 };
@@ -96,7 +95,7 @@ class RecordsWatcher<T> {
   }
 
   constructor(
-    records: NativeArray<T>,
+    records: T[],
     recordsAdded: RecordCallback<T>,
     recordsUpdated: RecordCallback<T>,
     recordsRemoved: RecordCallback<T>,
@@ -180,6 +179,54 @@ class TypeWatcher {
   }
 }
 
+function reportReleaseMethodsEmberArrayUse(name: string) {
+  deprecateUntil(
+    `\`releaseMethods.${name}\` was used on a \`DataAdapter\`. \`releaseMethods\` is a native array. Use native array methods, or upgrade the library that gives your data adapter (for example, WarpDrive or ember-m3).`,
+    DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A
+  );
+}
+
+/*
+  `releaseMethods` was an Ember array. Subclasses in published versions of
+  WarpDrive (ember-data) and ember-m3 call `pushObject` and `removeObject` on it.
+  RFC 1114 deprecates Ember arrays, so `releaseMethods` is a native array that
+  has only these two Ember array methods. They report the deprecation, and
+  they go away in 8.0.0 with `A()`.
+*/
+function makeReleaseMethods(): Array<() => void> {
+  let releaseMethods: Array<() => void> = [];
+
+  if (DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved) {
+    return releaseMethods;
+  }
+
+  Object.defineProperties(releaseMethods, {
+    pushObject: {
+      configurable: true,
+      writable: true,
+      value(fn: () => void) {
+        reportReleaseMethodsEmberArrayUse('pushObject');
+        releaseMethods.push(fn);
+        return fn;
+      },
+    },
+    removeObject: {
+      configurable: true,
+      writable: true,
+      value(fn: () => void) {
+        reportReleaseMethodsEmberArrayUse('removeObject');
+        let index = releaseMethods.indexOf(fn);
+        if (index !== -1) {
+          releaseMethods.splice(index, 1);
+        }
+        return releaseMethods;
+      },
+    },
+  });
+
+  return releaseMethods;
+}
+
 /**
   The `DataAdapter` helps a data persistence library
   interface with tools that debug Ember such
@@ -221,7 +268,7 @@ class TypeWatcher {
   @public
 */
 export default class DataAdapter<T> extends EmberObject {
-  releaseMethods = emberA<() => void>();
+  releaseMethods: Array<() => void> = makeReleaseMethods();
   recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   flushWatchers: (() => void) | null = null;
@@ -321,7 +368,7 @@ export default class DataAdapter<T> extends EmberObject {
     name: string;
     desc: string;
   }> {
-    return emberA();
+    return [];
   }
 
   /**
@@ -343,7 +390,7 @@ export default class DataAdapter<T> extends EmberObject {
     typesUpdated: (types: WrappedType[]) => void
   ) {
     let modelTypes = this.getModelTypes();
-    let releaseMethods = emberA<() => void>();
+    let releaseMethods: Array<() => void> = [];
     let typesToSend;
 
     typesToSend = modelTypes.map((type) => {
@@ -357,9 +404,12 @@ export default class DataAdapter<T> extends EmberObject {
 
     let release = () => {
       releaseMethods.forEach((fn) => fn());
-      this.releaseMethods.removeObject(release);
+      let index = this.releaseMethods.indexOf(release);
+      if (index !== -1) {
+        this.releaseMethods.splice(index, 1);
+      }
     };
-    this.releaseMethods.pushObject(release);
+    this.releaseMethods.push(release);
     return release;
   }
 
@@ -486,7 +536,7 @@ export default class DataAdapter<T> extends EmberObject {
      desc: {String} Humanized description (what would show in a table column name).
   */
   columnsForType(_klass: unknown): Column[] {
-    return emberA();
+    return [];
   }
 
   /**
@@ -613,8 +663,8 @@ export default class DataAdapter<T> extends EmberObject {
      This array will be observed for changes,
      so it should update when new records are added/removed.
   */
-  getRecords(_klass: unknown, _name: string): NativeArray<T> {
-    return emberA();
+  getRecords(_klass: unknown, _name: string): T[] {
+    return [];
   }
 
   /**
@@ -656,8 +706,8 @@ export default class DataAdapter<T> extends EmberObject {
     @method getRecordKeywords
     @return {Array} Relevant keywords for search.
   */
-  getRecordKeywords(_record: T) {
-    return emberA();
+  getRecordKeywords(_record: T): unknown[] {
+    return [];
   }
 
   /**

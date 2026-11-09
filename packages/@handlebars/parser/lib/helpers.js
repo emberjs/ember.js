@@ -95,7 +95,6 @@ export function preparePath(data, sexpr, parts, loc) {
 }
 
 export function prepareMustache(path, params, hash, open, strip, locInfo) {
-  // Must use charAt to support IE pre-10
   let escapeFlag = open.charAt(3) || open.charAt(2),
     escaped = escapeFlag !== '{' && escapeFlag !== '&';
 

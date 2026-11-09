@@ -177,6 +177,10 @@ async function bootAndRun({ headless = true } = {}) {
       // as the contradictory flags cause use-after-free crashes on macOS
       '--disable-gpu',
       '--disable-gpu-compositing',
+      // Exposes gc(), which the benchmark app calls between phases (see
+      // waitForIdle in smoke-tests/benchmark-app/app/run-benchmark.js), so
+      // the garbage of one phase is not collected inside a later one.
+      '--js-flags=--expose-gc',
     ].join(','),
   ];
 

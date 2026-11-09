@@ -1,4 +1,4 @@
-import type { Renderer } from '@ember/-internals/glimmer/lib/renderer';
+import { renderers } from '@ember/-internals/glimmer/lib/renderers';
 import type Owner from '@ember/owner';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 
@@ -8,6 +8,9 @@ import type { CapturedRenderNode } from '@glimmer/interfaces';
 /**
   Ember Inspector calls this function to capture the current render tree.
 
+  The result has the tree of every renderer with live roots:
+  each application, and each `renderComponent` call, whatever its owner.
+
   In production mode, this requires turning on `ENV._DEBUG_RENDER_TREE`
   before loading Ember.
 
@@ -15,18 +18,17 @@ import type { CapturedRenderNode } from '@glimmer/interfaces';
   @static
   @method captureRenderTree
   @for @ember/debug
-  @param app {ApplicationInstance} An `ApplicationInstance`.
+  @param app {ApplicationInstance} Unused. Ember Inspector still passes it.
   @since 3.14.0
 */
-export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
-  let domRenderer = app.lookup('renderer:-dom') as Renderer;
+export default function captureRenderTree(_app: Owner): CapturedRenderNode[] {
+  let nodes: CapturedRenderNode[] = [];
 
-  if (!domRenderer) {
-    throw new Error(`BUG: owner is missing renderer`);
+  for (let renderer of renderers) {
+    for (let node of renderer.debugRenderTree.capture()) {
+      nodes.push(node);
+    }
   }
-  // SAFETY: Ideally we'd assert here but that causes awkward circular requires since this is also in @ember/debug.
-  // This is only for debug stuff so not very risky.
-  let renderer = domRenderer;
 
-  return renderer.debugRenderTree.capture();
+  return nodes;
 }

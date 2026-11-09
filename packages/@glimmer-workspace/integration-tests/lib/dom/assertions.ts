@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Dict, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { isSimpleElement } from '@glimmer/debug-util';
-import { assign, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
+
+import { shiftBlockIds } from '../markers';
 
 export interface DebugElement {
   element: SimpleElement | null | undefined;
@@ -155,34 +157,13 @@ export function equalsAttr(expected: any): Matcher {
   };
 }
 
-export function assertEmberishElement(
-  element: SimpleElement,
-  tagName: string,
-  attrs: object,
-  contents: string
-): void;
-export function assertEmberishElement(element: SimpleElement, tagName: string, attrs: object): void;
-export function assertEmberishElement(
-  element: SimpleElement,
-  tagName: string,
-  contents: string
-): void;
-export function assertEmberishElement(element: SimpleElement, tagName: string): void;
-export function assertEmberishElement(...args: any[]): void {
-  let [element, tagName, attrs, contents] = processAssertComponentArgs(args);
-
-  let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/u) }, attrs);
-
-  equalsElement(element, tagName, fullAttrs, contents);
-}
-
 export function assertSerializedInElement(result: string, expected: string, message?: string) {
   let matched = /<script glmr="%cursor:\d*.%"><\/script>/u.exec(result);
 
   if (matched) {
     QUnit.assert.ok(true, `has cursor ${matched[0]}`);
     let [, trimmed] = result.split(matched[0]);
-    QUnit.assert.strictEqual(trimmed, expected, message);
+    QUnit.assert.strictEqual(trimmed, shiftBlockIds(expected), message);
   } else {
     QUnit.assert.ok(false, `does not have a cursor`);
   }
@@ -233,7 +214,7 @@ export function isMatcher(input: unknown): input is Matcher {
 }
 
 /**
-  Accomodates the various signatures of `assertEmberishElement` and `assertElement`, which can be any of:
+  Accomodates the various signatures of `assertElementShape`, which can be any of:
 
   - element, tagName, attrs, contents
   - element, tagName, contents

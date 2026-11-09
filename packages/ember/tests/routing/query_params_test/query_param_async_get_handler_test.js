@@ -1,4 +1,3 @@
-import { get } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 
@@ -50,9 +49,9 @@ moduleFor(
         },
 
         _getQPMeta(routeInfo) {
-          let handler = this._seenHandlers[routeInfo.name];
-          if (handler) {
-            return get(handler, '_qp');
+          let managed = this._seenHandlers[routeInfo.name];
+          if (managed) {
+            return managed.manager.qp(managed.bucket);
           }
         },
       };

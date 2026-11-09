@@ -525,7 +525,7 @@ moduleFor(
 
       this.render(`{{some-helper}}`);
 
-      runDestroy(this.component);
+      runDestroy(this.root);
 
       assert.strictEqual(destroyCalled, 1, 'destroy called once');
     }
@@ -663,7 +663,7 @@ moduleFor(
                    (join-words "his" (join-words "foe"))}}`
       );
 
-      runDestroy(this.component);
+      runDestroy(this.root);
 
       assert.equal(destroyCount, 1, 'destroy is called after a view is destroyed');
     }

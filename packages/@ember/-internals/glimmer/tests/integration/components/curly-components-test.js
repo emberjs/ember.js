@@ -2,27 +2,24 @@ import {
   moduleFor,
   RenderingTestCase,
   strip,
-  classes,
   equalTokens,
   equalsElement,
   runTask,
-  runLoopSettled,
+  defineSimpleModifier,
   expectDeprecation,
   testUnless,
 } from 'internal-test-helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-import { action } from '@ember/object';
-import { run } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
-import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, get, computed, observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import EmberObject, { set, computed } from '@ember/object';
+import { trackedArray } from '@ember/reactive/collections';
 
-import { Component, htmlSafe } from '../../utils/helpers';
+import { htmlSafe } from '../../utils/helpers';
+import { PositionalComponent } from '../../utils/positional-component';
+import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
@@ -35,721 +32,22 @@ moduleFor(
     ['@test it can render a basic component']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), templateOnly())
       );
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-    }
-
-    ['@test it can have a custom id and it is not bound']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.id}} {{this.elementId}}'),
-          class extends Component {}
-        )
-      );
-
-      this.render('{{foo-bar id=this.customId}}', {
-        customId: 'bizz',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
-
-      runTask(() => set(this.context, 'customId', 'bar'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bar bizz',
-      });
-
-      runTask(() => set(this.context, 'customId', 'bizz'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
-    }
-
-    ['@test elementId cannot change'](assert) {
-      let component;
-      let FooBarComponent = class extends Component {
-        elementId = 'blahzorz';
-        init() {
-          super.init(...arguments);
-          component = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.elementId}}'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'blahzorz' },
-        content: 'blahzorz',
-      });
-
-      if (DEBUG) {
-        let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
-
-        assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
-
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'div',
-          attrs: { id: 'blahzorz' },
-          content: 'blahzorz',
-        });
-      }
-    }
-
-    ['@test elementId is stable when other values change']() {
-      let changingArg = 'arbitrary value';
-      let parentInstance;
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{quux-baz elementId="stable-id" changingArg=this.changingArg}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              parentInstance = this;
-            }
-            changingArg = changingArg;
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:quux-baz',
-        setComponentTemplate(precompileTemplate('{{this.changingArg}}'), class extends Component {})
-      );
-
-      this.render('{{foo-bar}}');
-      this.assertComponentElement(this.firstChild.firstChild, {
-        attrs: { id: 'stable-id' },
-        content: 'arbitrary value',
-      });
-
-      changingArg = 'a different value';
-      runTask(() => set(parentInstance, 'changingArg', changingArg));
-      this.assertComponentElement(this.firstChild.firstChild, {
-        attrs: { id: 'stable-id' },
-        content: changingArg,
-      });
-    }
-
-    ['@test can specify template with `layoutName` property']() {
-      let FooBarComponent = class extends Component {
-        elementId = 'blahzorz';
-        layoutName = 'fizz-bar';
-        init() {
-          super.init(...arguments);
-          this.local = 'hey';
-        }
-      };
-
-      this.registerTemplate('fizz-bar', `FIZZ BAR {{this.local}}`);
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar}}');
-
-      this.assertText('FIZZ BAR hey');
-    }
-
-    ['@test layout supports computed property']() {
-      let FooBarComponent = class extends Component {
-        elementId = 'blahzorz';
-        @computed
-        get layout() {
-          return precompileTemplate('so much layout wat {{this.lulz}}');
-        }
-        init() {
-          super.init(...arguments);
-          this.lulz = 'heyo';
-        }
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar}}');
-
-      this.assertText('so much layout wat heyo');
-    }
-
-    ['@test passing undefined elementId results in a default elementId'](assert) {
-      let FooBarComponent = class extends Component {
-        tagName = 'h1';
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('something'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar id=this.somethingUndefined}}');
-
-      let foundId = this.$('h1').attr('id');
-      assert.ok(
-        /^ember/.test(foundId),
-        'Has a reasonable id attribute (found id=' + foundId + ').'
-      );
-
-      runTask(() => this.rerender());
-
-      let newFoundId = this.$('h1').attr('id');
-      assert.ok(
-        /^ember/.test(newFoundId),
-        'Has a reasonable id attribute (found id=' + newFoundId + ').'
-      );
-
-      assert.equal(foundId, newFoundId);
-    }
-
-    ['@test id is an alias for elementId'](assert) {
-      let FooBarComponent = class extends Component {
-        tagName = 'h1';
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('something'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar id="custom-id"}}');
-
-      let foundId = this.$('h1').attr('id');
-      assert.equal(foundId, 'custom-id');
-
-      runTask(() => this.rerender());
-
-      let newFoundId = this.$('h1').attr('id');
-      assert.equal(newFoundId, 'custom-id');
-
-      assert.equal(foundId, newFoundId);
-    }
-
-    ['@test cannot pass both id and elementId at the same time']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate(''), class extends Component {})
-      );
-
-      expectAssertion(() => {
-        this.render('{{foo-bar id="zomg" elementId="lol"}}');
-      }, /You cannot invoke a component with both 'id' and 'elementId' at the same time./);
-    }
-
-    ['@test it can have a custom tagName']() {
-      let FooBarComponent = class extends Component {
-        tagName = 'foo-bar';
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-    }
-
-    ['@test it can have a custom tagName set in the constructor']() {
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          this.tagName = 'foo-bar';
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-    }
-
-    ['@test it can have a custom tagName from the invocation']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar tagName="foo-bar"}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-    }
-
-    ['@test tagName can not be a computed property']() {
-      let FooBarComponent = class extends Component {
-        @computed
-        get tagName() {
-          return 'foo-bar';
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      expectAssertion(() => {
-        this.render('{{foo-bar}}');
-      }, /You cannot use a computed property for the component's `tagName` \(<.+?>\)\./);
-    }
-
-    ['@test class is applied before didInsertElement'](assert) {
-      let componentClass;
-      let FooBarComponent = class extends Component {
-        didInsertElement() {
-          componentClass = this.element.className;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar class="foo-bar"}}');
-
-      assert.equal(componentClass, 'foo-bar ember-view');
-    }
-
-    ['@test it can have custom classNames']() {
-      let FooBarComponent = class extends Component {
-        classNames = ['foo', 'bar'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar') },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar') },
-        content: 'hello',
-      });
-    }
-
-    ['@test should not apply falsy class name']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar class=this.somethingFalsy}}', {
-        somethingFalsy: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: 'ember-view' },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: 'ember-view' },
-        content: 'hello',
-      });
-    }
-
-    ['@test should update class using inline if, initially false, no alternate']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar class=(if this.predicate "thing") }}', {
-        predicate: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: 'ember-view' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'predicate', true));
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view thing') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'predicate', false));
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: 'ember-view' },
-        content: 'hello',
-      });
-    }
-
-    ['@test should update class using inline if, initially true, no alternate']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar class=(if this.predicate "thing") }}', {
-        predicate: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view thing') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'predicate', false));
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: 'ember-view' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'predicate', true));
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view thing') },
-        content: 'hello',
-      });
-    }
-
-    ['@test class property on components can be dynamic']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar class=(if this.fooBar "foo-bar")}}', {
-        fooBar: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
-
-      runTask(() => set(this.context, 'fooBar', false));
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
-
-      runTask(() => set(this.context, 'fooBar', true));
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
-    }
-
-    ['@test it can have custom classNames from constructor']() {
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          this.classNames = this.classNames.slice();
-          this.classNames.push('foo', 'bar', `outside-${this.get('extraClass')}`);
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar extraClass="baz"}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar outside-baz') },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar outside-baz') },
-        content: 'hello',
-      });
-    }
-
-    ['@test it can set custom classNames from the invocation']() {
-      let FooBarComponent = class extends Component {
-        classNames = ['foo'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render(strip`
-      {{foo-bar class="bar baz"}}
-      {{foo-bar classNames="bar baz"}}
-      {{foo-bar}}
-    `);
-
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo') },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo') },
-        content: 'hello',
-      });
-    }
-
-    ['@test it has an element']() {
-      let instance;
-
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          instance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      let element1 = instance.element;
-
-      this.assertComponentElement(element1, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      let element2 = instance.element;
-
-      this.assertComponentElement(element2, { content: 'hello' });
-
-      this.assertSameNode(element2, element1);
-    }
-
-    ['@test an empty component does not have childNodes'](assert) {
-      let fooBarInstance;
-      let FooBarComponent = class extends Component {
-        tagName = 'input';
-        init() {
-          super.init(...arguments);
-          fooBarInstance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate(''), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, { tagName: 'input' });
-
-      assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { tagName: 'input' });
-
-      assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
-    }
-
-    ['@test it has the right parentView and childViews'](assert) {
-      let fooBarInstance, fooBarBazInstance;
-
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          fooBarInstance = this;
-        }
-      };
-
-      let FooBarBazComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          fooBarBazInstance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
-      );
-      this.owner.register(
-        'component:foo-bar-baz',
-        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
-      );
-
-      this.render('{{foo-bar}}');
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-
-      runTask(() => this.rerender());
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+      this.assertHTML('hello');
     }
 
     ['@test it renders passed named arguments']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{@foo}}'), class extends Component {})
-      );
-
-      this.render('{{foo-bar foo=this.model.bar}}', {
-        model: {
-          bar: 'Hola',
-        },
-      });
-
-      this.assertText('Hola');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hola');
-
-      runTask(() => this.context.set('model.bar', 'Hello'));
-
-      this.assertText('Hello');
-
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
-
-      this.assertText('Hola');
-    }
-
-    ['@test it reflects named arguments as properties']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly())
       );
 
       this.render('{{foo-bar foo=this.model.bar}}', {
@@ -776,33 +74,27 @@ moduleFor(
     ['@test it can render a basic component with a block']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{yield}} - In component'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('{{yield}} - In component'), templateOnly())
       );
 
       this.render('{{#foo-bar}}hello{{/foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertHTML('hello - In component');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertHTML('hello - In component');
     }
 
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        @tracked message = 'hello';
+
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
-          this.set('message', 'hello');
         }
       };
 
@@ -813,54 +105,54 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => set(instance, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertHTML('goodbye');
 
       runTask(() => set(instance, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test it preserves the outer context when yielding']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{yield}}'), templateOnly())
       );
 
       this.render('{{#foo-bar}}{{this.message}}{{/foo-bar}}', { message: 'hello' });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => set(this.context, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertHTML('goodbye');
 
       runTask(() => set(this.context, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test it can yield a block param named for reserved words [GH#14096]']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        name = 'foo-bar';
+        @tracked name = 'foo-bar';
       };
 
       this.owner.register(
@@ -870,35 +162,35 @@ moduleFor(
 
       this.render('{{#foo-bar as |component|}}{{component.name}}{{/foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+      this.assertHTML('foo-bar');
 
       this.assertStableRerender();
 
       runTask(() => set(instance, 'name', 'derp-qux'));
 
-      this.assertComponentElement(this.firstChild, { content: 'derp-qux' });
+      this.assertHTML('derp-qux');
 
       runTask(() => set(instance, 'name', 'foo-bar'));
 
-      this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+      this.assertHTML('foo-bar');
     }
 
     ['@test it can yield internal and external properties positionally']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        greeting = 'hello';
+        @tracked greeting = 'hello';
       };
 
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{yield this.greeting this.greetee.firstName}}'),
+          precompileTemplate('{{yield this.greeting @greetee.firstName}}'),
           FooBarComponent
         )
       );
@@ -913,15 +205,11 @@ moduleFor(
         }
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
 
       runTask(() =>
         set(this.context, 'person', {
@@ -930,15 +218,11 @@ moduleFor(
         })
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hello',
-      });
+      this.assertHTML('Dora the Explorer, hello');
 
       runTask(() => set(instance, 'greeting', 'hola'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hola',
-      });
+      this.assertHTML('Dora the Explorer, hola');
 
       runTask(() => {
         set(instance, 'greeting', 'hello');
@@ -948,20 +232,18 @@ moduleFor(
         });
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
     }
 
     ['@test #11519 - block param infinite loop']() {
       let instance;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        danger = 0;
+        @tracked danger = 0;
       };
 
       this.owner.register(
@@ -1003,11 +285,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{this.id}} {{yield}}'),
-          class extends Component {
+          precompileTemplate('{{@id}} {{yield}}'),
+          class extends GlimmerComponent {
             willDestroy() {
               super.willDestroy();
-              destroyed[this.id]++;
+              destroyed[this.args.id]++;
             }
           }
         )
@@ -1111,13 +393,13 @@ moduleFor(
 
     ['@test should escape HTML in normal mustaches']() {
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = 'you need to be more <b>bold</b>';
+        @tracked output = 'you need to be more <b>bold</b>';
       };
 
       this.owner.register(
@@ -1144,13 +426,13 @@ moduleFor(
       let expectedHtmlBold = 'you need to be more <b>bold</b>';
       let expectedHtmlItalic = 'you are so <i>super</i>';
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = expectedHtmlBold;
+        @tracked output = expectedHtmlBold;
       };
 
       this.owner.register(
@@ -1160,32 +442,32 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => this.rerender());
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => set(component, 'output', expectedHtmlItalic));
 
-      equalTokens(this.firstChild, expectedHtmlItalic);
+      equalTokens(this.element, expectedHtmlItalic);
 
       runTask(() => set(component, 'output', expectedHtmlBold));
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
     }
 
     ['@test should not escape HTML if string is a htmlSafe']() {
       let expectedHtmlBold = 'you need to be more <b>bold</b>';
       let expectedHtmlItalic = 'you are so <i>super</i>';
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = htmlSafe(expectedHtmlBold);
+        @tracked output = htmlSafe(expectedHtmlBold);
       };
 
       this.owner.register(
@@ -1195,62 +477,28 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => this.rerender());
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
 
-      equalTokens(this.firstChild, expectedHtmlItalic);
+      equalTokens(this.element, expectedHtmlItalic);
 
       runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
 
-      equalTokens(this.firstChild, expectedHtmlBold);
-    }
-
-    ['@test late bound layouts return the same definition'](assert) {
-      let templateIds = [];
-
-      // This is testing the scenario where you import a template and
-      // set it to the layout property:
-      //
-      // import Component from '@ember/component';
-      // import layout from './template';
-      //
-      // export default Component.extend({
-      //   layout
-      // });
-      let hello = precompileTemplate('Hello');
-      let bye = precompileTemplate('Bye');
-
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          this.layout = this.cond ? hello : bye;
-          templateIds.push(this.layout.id);
-        }
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render(
-        '{{foo-bar cond=true}}{{foo-bar cond=false}}{{foo-bar cond=true}}{{foo-bar cond=false}}'
-      );
-
-      let [t1, t2, t3, t4] = templateIds;
-      assert.equal(t1, t3);
-      assert.equal(t2, t4);
+      equalTokens(this.element, expectedHtmlBold);
     }
 
     ['@test can use isStream property without conflict (#13271)']() {
       let component;
-      let FooBarComponent = class extends Component {
-        isStream = true;
+      let FooBarComponent = class extends GlimmerComponent {
+        @tracked isStream = true;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
       };
@@ -1271,24 +519,24 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
 
       runTask(() => set(component, 'isStream', false));
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
+      this.assertHTML('false');
 
       runTask(() => set(component, 'isStream', true));
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
     }
     ['@test lookup of component takes priority over property']() {
       this.owner.register(
         'component:some-component',
-        setComponentTemplate(precompileTemplate('some-component'), class extends Component {})
+        setComponentTemplate(precompileTemplate('some-component'), templateOnly())
       );
 
       this.render('{{this.some-prop}} {{some-component}}', {
@@ -1306,7 +554,7 @@ moduleFor(
     ['@test component without dash is looked up']() {
       this.owner.register(
         'component:somecomponent',
-        setComponentTemplate(precompileTemplate('somecomponent'), class extends Component {})
+        setComponentTemplate(precompileTemplate('somecomponent'), templateOnly())
       );
 
       this.render('{{somecomponent}}', {
@@ -1331,42 +579,11 @@ moduleFor(
         this.owner.register(
           'component:non-block',
           template('In layout - someProp: {{attrs.someProp}}', {
-            component: class extends Component {},
+            component: templateOnly(),
             strictMode: false,
           })
         );
       }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
-    }
-
-    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
-    ['@test non-block with properties on this.attrs']() {
-      expectDeprecation(() => {
-        this.owner.register(
-          'component:non-block',
-          template('In layout - someProp: {{this.attrs.someProp}}', {
-            component: class extends Component {},
-            strictMode: false,
-          })
-        );
-      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
-
-      this.render('{{non-block someProp=this.prop}}', {
-        prop: 'something here',
-      });
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.context.set('prop', 'other thing there'));
-
-      this.assertText('In layout - someProp: other thing there');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here');
     }
 
     ['@test non-block with named argument']() {
@@ -1374,7 +591,7 @@ moduleFor(
         'component:non-block',
         setComponentTemplate(
           precompileTemplate('In layout - someProp: {{@someProp}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -1397,326 +614,16 @@ moduleFor(
       this.assertText('In layout - someProp: something here');
     }
 
-    ['@test non-block with properties overridden in init']() {
-      let instance;
-      this.owner.register(
-        'component:non-block',
-        setComponentTemplate(
-          precompileTemplate('In layout - someProp: {{this.someProp}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              instance = this;
-              this.someProp = 'value set in instance';
-            }
-          }
-        )
-      );
-
-      this.render('{{non-block someProp=this.prop}}', {
-        prop: 'something passed when invoked',
-      });
-
-      this.assertText('In layout - someProp: value set in instance');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: value set in instance');
-
-      runTask(() => this.context.set('prop', 'updated something passed when invoked'));
-
-      this.assertText('In layout - someProp: updated something passed when invoked');
-
-      runTask(() => instance.set('someProp', 'update value set in instance'));
-
-      this.assertText('In layout - someProp: update value set in instance');
-
-      runTask(() => this.context.set('prop', 'something passed when invoked'));
-      runTask(() => instance.set('someProp', 'value set in instance'));
-
-      this.assertText('In layout - someProp: value set in instance');
-    }
-
-    ['@test rerendering component with attrs from parent'](assert) {
-      let willUpdateCount = 0;
-      let didReceiveAttrsCount = 0;
-
-      function expectHooks({ willUpdate, didReceiveAttrs }, callback) {
-        willUpdateCount = 0;
-        didReceiveAttrsCount = 0;
-
-        callback();
-
-        if (willUpdate) {
-          assert.strictEqual(willUpdateCount, 1, 'The willUpdate hook was fired');
-        } else {
-          assert.strictEqual(willUpdateCount, 0, 'The willUpdate hook was not fired');
-        }
-
-        if (didReceiveAttrs) {
-          assert.strictEqual(didReceiveAttrsCount, 1, 'The didReceiveAttrs hook was fired');
-        } else {
-          assert.strictEqual(didReceiveAttrsCount, 0, 'The didReceiveAttrs hook was not fired');
-        }
-      }
-
-      this.owner.register(
-        'component:non-block',
-        setComponentTemplate(
-          precompileTemplate('In layout - someProp: {{this.someProp}}'),
-          class extends Component {
-            didReceiveAttrs() {
-              didReceiveAttrsCount++;
-            }
-
-            willUpdate() {
-              willUpdateCount++;
-            }
-          }
-        )
-      );
-
-      expectHooks({ willUpdate: false, didReceiveAttrs: true }, () => {
-        this.render('{{non-block someProp=this.someProp}}', {
-          someProp: 'wycats',
-        });
-      });
-
-      this.assertText('In layout - someProp: wycats');
-
-      // Note: Hooks are not fired in Glimmer for idempotent re-renders
-      expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
-        runTask(() => this.rerender());
-      });
-
-      this.assertText('In layout - someProp: wycats');
-
-      expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        runTask(() => this.context.set('someProp', 'tomdale'));
-      });
-
-      this.assertText('In layout - someProp: tomdale');
-
-      // Note: Hooks are not fired in Glimmer for idempotent re-renders
-      expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
-        runTask(() => this.rerender());
-      });
-
-      this.assertText('In layout - someProp: tomdale');
-
-      expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        runTask(() => this.context.set('someProp', 'wycats'));
-      });
-
-      this.assertText('In layout - someProp: wycats');
-    }
-
-    ['@test setting a value for a computed property then later getting the value for that property works'](
-      assert
-    ) {
-      let componentInstance = null;
-
-      this.owner.register(
-        'component:non-block',
-        setComponentTemplate(
-          precompileTemplate('<button {{on "click" this.myClick}}>foobar</button>'),
-          class extends Component {
-            counter = computed({
-              set(key, value) {
-                return value;
-              },
-            });
-
-            init() {
-              super.init(...arguments);
-              componentInstance = this;
-            }
-
-            @action
-            myClick() {
-              let currentCounter = this.get('counter');
-
-              assert.equal(currentCounter, 0, 'the current `counter` value is correct');
-
-              let newCounter = currentCounter + 1;
-              this.set('counter', newCounter);
-
-              assert.equal(
-                this.get('counter'),
-                newCounter,
-                "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
-              );
-            }
-          }
-        )
-      );
-
-      this.render(`{{non-block counter=this.counter}}`, {
-        counter: 0,
-      });
-
-      runTask(() => this.$('button').click());
-
-      assert.equal(
-        componentInstance.get('counter'),
-        1,
-        '`counter` incremented on click on the component and is not `undefined`'
-      );
-    }
-
-    // Perhaps change this test to `{{this.attrs.foo.value}}` when removing the deprecation?
-    ['@test this.attrs.foo === @foo === foo']() {
-      expectDeprecation(() => {
-        this.owner.register(
-          'component:foo-bar',
-          template(
-            strip`
-              Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-              {{#each this.attrs.items as |item|}}
-                {{item}}
-              {{/each}}
-              {{#each @items as |item|}}
-                {{item}}
-              {{/each}}
-              {{#each this.items as |item|}}
-                {{item}}
-              {{/each}}
-            `,
-            { component: class extends Component {}, strictMode: false }
-          )
-        );
-      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs..+}} should be updated to {{@.+}}./);
-
-      this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
-        model: {
-          value: 'wat',
-          items: [1, 2, 3],
-        },
-      });
-
-      this.assertStableRerender();
-
-      runTask(() => {
-        this.context.set('model.value', 'lul');
-        this.context.set('model.items', [1]);
-      });
-
-      this.assertText(strip`Args: lul | lul | lul111`);
-
-      runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
-
-      this.assertText('Args: wat | wat | wat123123123');
-    }
-
-    ['@test non-block with properties on self']() {
-      this.owner.register(
-        'component:non-block',
-        setComponentTemplate(
-          precompileTemplate('In layout - someProp: {{this.someProp}}'),
-          class extends Component {}
-        )
-      );
-
-      this.render('{{non-block someProp=this.prop}}', {
-        prop: 'something here',
-      });
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here');
-    }
-
-    ['@test block with properties on self']() {
-      this.owner.register(
-        'component:with-block',
-        setComponentTemplate(
-          precompileTemplate('In layout - someProp: {{this.someProp}} - {{yield}}'),
-          class extends Component {}
-        )
-      );
-
-      this.render(
-        strip`
-      {{#with-block someProp=this.prop}}
-        In template
-      {{/with-block}}`,
-        {
-          prop: 'something here',
-        }
-      );
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else - In template');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here - In template');
-    }
-
     ['@test block with properties on attrs is asserted against']() {
       expectAssertion(() => {
         this.owner.register(
           'component:with-block',
           template('In layout - someProp: {{attrs.someProp}} - {{yield}}', {
-            component: class extends Component {},
+            component: templateOnly(),
             strictMode: false,
           })
         );
       }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
-    }
-
-    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
-    ['@test block with properties on this.attrs']() {
-      expectDeprecation(() => {
-        this.owner.register(
-          'component:with-block',
-          template('In layout - someProp: {{this.attrs.someProp}} - {{yield}}', {
-            component: class extends Component {},
-            strictMode: false,
-          })
-        );
-      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
-
-      this.render(
-        strip`
-      {{#with-block someProp=this.prop}}
-        In template
-      {{/with-block}}`,
-        {
-          prop: 'something here',
-        }
-      );
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else - In template');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here - In template');
     }
 
     ['@test block with named argument']() {
@@ -1724,7 +631,7 @@ moduleFor(
         'component:with-block',
         setComponentTemplate(
           precompileTemplate('In layout - someProp: {{@someProp}} - {{yield}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -1751,307 +658,6 @@ moduleFor(
       runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
-    }
-
-    ['@test static arbitrary number of positional parameters'](assert) {
-      this.owner.register(
-        'component:sample-component',
-        template(
-          strip`
-            {{#each this.names as |name|}}
-              {{name}}
-            {{/each}}
-          `,
-          {
-            component: class extends Component {
-              static positionalParams = 'names';
-            },
-            strictMode: false,
-          }
-        )
-      );
-
-      this.render(strip`
-      {{sample-component "Foo" 4 "Bar" elementId="args-3"}}
-      {{sample-component "Foo" 4 "Bar" 5 "Baz" elementId="args-5"}}`);
-
-      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
-      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
-      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
-    }
-
-    ['@test arbitrary positional parameter conflict with hash parameter is reported']() {
-      this.owner.register(
-        'component:sample-component',
-        template(
-          strip`
-            {{#each this.names as |name|}}
-              {{name}}
-            {{/each}}
-          `,
-          {
-            component: class extends Component {
-              static positionalParams = 'names';
-            },
-            strictMode: false,
-          }
-        )
-      );
-
-      expectAssertion(() => {
-        this.render(`{{sample-component "Foo" 4 "Bar" names=this.numbers id="args-3"}}`, {
-          numbers: [1, 2, 3],
-        });
-      }, 'You cannot specify positional parameters and the hash argument `names`.');
-    }
-
-    ['@test can use hash parameter instead of arbitrary positional param [GH #12444]']() {
-      this.owner.register(
-        'component:sample-component',
-        template(
-          strip`
-            {{#each this.names as |name|}}
-              {{name}}
-            {{/each}}
-          `,
-          {
-            component: class extends Component {
-              static positionalParams = 'names';
-            },
-            strictMode: false,
-          }
-        )
-      );
-
-      this.render('{{sample-component names=this.things}}', {
-        things: emberA(['Foo', 4, 'Bar']),
-      });
-
-      this.assertText('Foo4Bar');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Foo4Bar');
-
-      runTask(() => this.context.get('things').pushObject(5));
-
-      this.assertText('Foo4Bar5');
-
-      runTask(() => this.context.get('things').shiftObject());
-
-      this.assertText('4Bar5');
-
-      runTask(() => this.context.get('things').clear());
-
-      this.assertText('');
-
-      runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
-
-      this.assertText('Foo4Bar');
-    }
-
-    ['@test can use hash parameter instead of positional param'](assert) {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{this.first}} - {{this.second}}'),
-          class extends Component {
-            static positionalParams = ['first', 'second'];
-          }
-        )
-      );
-
-      // TODO: Fix when id is implemented
-      this.render(strip`
-      {{sample-component "one" "two" elementId="two-positional"}}
-      {{sample-component "one" second="two" elementId="one-positional"}}
-      {{sample-component first="one" second="two" elementId="no-positional"}}`);
-
-      assert.equal(this.$('#two-positional').text(), 'one - two');
-      assert.equal(this.$('#one-positional').text(), 'one - two');
-      assert.equal(this.$('#no-positional').text(), 'one - two');
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$('#two-positional').text(), 'one - two');
-      assert.equal(this.$('#one-positional').text(), 'one - two');
-      assert.equal(this.$('#no-positional').text(), 'one - two');
-    }
-
-    ['@test dynamic arbitrary number of positional parameters']() {
-      this.owner.register(
-        'component:sample-component',
-        template(
-          strip`
-            {{#each this.n as |name|}}
-              {{name}}
-            {{/each}}
-          `,
-          {
-            component: class extends Component {
-              static positionalParams = 'n';
-            },
-            strictMode: false,
-          }
-        )
-      );
-
-      this.render(`{{sample-component this.user1 this.user2}}`, {
-        user1: 'Foo',
-        user2: 4,
-      });
-
-      this.assertText('Foo4');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Foo4');
-
-      runTask(() => this.context.set('user1', 'Bar'));
-
-      this.assertText('Bar4');
-
-      runTask(() => this.context.set('user2', '5'));
-
-      this.assertText('Bar5');
-
-      runTask(() => {
-        this.context.set('user1', 'Foo');
-        this.context.set('user2', 4);
-      });
-
-      this.assertText('Foo4');
-    }
-
-    ['@test with ariaRole specified']() {
-      this.owner.register(
-        'component:aria-test',
-        setComponentTemplate(precompileTemplate('Here!'), class extends Component {})
-      );
-
-      this.render('{{aria-test ariaRole=this.role}}', {
-        role: 'main',
-      });
-
-      this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
-
-      runTask(() => this.context.set('role', 'input'));
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: { role: 'input' },
-      });
-
-      runTask(() => this.context.set('role', 'main'));
-
-      this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
-    }
-
-    ['@test with ariaRole defined but initially falsey GH#16379']() {
-      this.owner.register(
-        'component:aria-test',
-        setComponentTemplate(precompileTemplate('Here!'), class extends Component {})
-      );
-
-      this.render('{{aria-test ariaRole=this.role}}', {
-        role: undefined,
-      });
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-
-      runTask(() => this.context.set('role', 'input'));
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: { role: 'input' },
-      });
-
-      runTask(() => this.context.set('role', undefined));
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-    }
-
-    ['@test without ariaRole defined initially']() {
-      // we are using the ability to lazily add a role as a sign that we are
-      // doing extra work
-      let instance;
-      this.owner.register(
-        'component:aria-test',
-        setComponentTemplate(
-          precompileTemplate('Here!'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              instance = this;
-            }
-          }
-        )
-      );
-
-      this.render('{{aria-test}}');
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-
-      runTask(() => instance.set('ariaRole', 'input'));
-
-      this.assertComponentElement(this.firstChild, { attrs: {} });
-    }
-
-    ['@test `template` specified in component is overridden by block']() {
-      this.owner.register(
-        'component:with-template',
-        setComponentTemplate(
-          precompileTemplate('[In layout - {{this.name}}] {{yield}}'),
-          class extends Component {
-            template = 'Should not be used';
-          }
-        )
-      );
-
-      this.render(
-        strip`
-      {{#with-template name="with-block"}}
-        [In block - {{this.name}}]
-      {{/with-template}}
-      {{with-template name="without-block"}}`,
-        {
-          name: 'Whoop, whoop!',
-        }
-      );
-
-      this.assertText(
-        '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
-      );
-
-      runTask(() => this.rerender());
-
-      this.assertText(
-        '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
-      );
-
-      runTask(() => this.context.set('name', 'Ole, ole'));
-
-      this.assertText('[In layout - with-block] [In block - Ole, ole][In layout - without-block] ');
-
-      runTask(() => this.context.set('name', 'Whoop, whoop!'));
-
-      this.assertText(
-        '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
-      );
     }
 
     ['@test (has-block) is true when block supplied']() {
@@ -2065,7 +671,7 @@ moduleFor(
               No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2092,7 +698,7 @@ moduleFor(
               No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2116,7 +722,7 @@ moduleFor(
               {{yield}} No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: class extends GlimmerComponent {}, strictMode: false }
         )
       );
 
@@ -2143,7 +749,7 @@ moduleFor(
               {{yield}} No Block Param!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: class extends GlimmerComponent {}, strictMode: false }
         )
       );
 
@@ -2159,95 +765,60 @@ moduleFor(
       this.assertText('In block No Block Param!');
     }
 
-    ['@test static named positional parameters']() {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends Component {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render('{{sample-component "Quint" 4}}');
-
-      this.assertText('Quint4');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Quint4');
-    }
-
-    ['@test dynamic named positional parameters']() {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends Component {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render('{{sample-component this.myName this.myAge}}', {
-        myName: 'Quint',
-        myAge: 4,
-      });
-
-      this.assertText('Quint4');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Quint4');
-
-      runTask(() => this.context.set('myName', 'Sergio'));
-
-      this.assertText('Sergio4');
-
-      runTask(() => this.context.set('myAge', 2));
-
-      this.assertText('Sergio2');
-
-      runTask(() => {
-        this.context.set('myName', 'Quint');
-        this.context.set('myAge', 4);
-      });
-
-      this.assertText('Quint4');
-    }
-
-    ['@test if a value is passed as a non-positional parameter, it raises an assertion']() {
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}}'),
-          class extends Component {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      expectAssertion(() => {
-        this.render('{{sample-component this.notMyName name=this.myName}}', {
-          myName: 'Quint',
-          notMyName: 'Sergio',
-        });
-      }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
-    }
-
     ['@test yield to inverse']() {
       this.owner.register(
         'component:my-if',
         template(
           strip`
-            {{#if this.predicate}}
-              Yes:{{yield this.someValue}}
+            {{#if @predicate}}
+              Yes:{{yield @someValue}}
             {{else}}
               No:{{yield to="inverse"}}
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#my-if predicate=this.activated someValue=42 as |result|}}
+        Hello{{result}}
+      {{else}}
+        Goodbye
+      {{/my-if}}`,
+        {
+          activated: true,
+        }
+      );
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Yes:Hello42');
+
+      runTask(() => this.context.set('activated', false));
+
+      this.assertText('No:Goodbye');
+
+      runTask(() => this.context.set('activated', true));
+
+      this.assertText('Yes:Hello42');
+    }
+
+    ['@test yield to else']() {
+      this.owner.register(
+        'component:my-if',
+        template(
+          strip`
+            {{#if @predicate}}
+              Yes:{{yield @someValue}}
+            {{else}}
+              No:{{yield to="else"}}
+            {{/if}}
+          `,
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2289,7 +860,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2297,8 +868,25 @@ moduleFor(
       {{#check-inverse}}{{/check-inverse}}
       {{#check-inverse}}{{else}}{{/check-inverse}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
+
+      this.assertStableRerender();
+    }
+
+    ['@test (has-block "inverse") in content position']() {
+      this.owner.register(
+        'component:check-inverse',
+        template('[{{has-block "inverse"}}]', {
+          component: templateOnly(),
+          strictMode: false,
+        })
+      );
+
+      this.render(strip`
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse}}{{else}}{{/check-inverse}}`);
+
+      this.assertHTML('[false][true]');
 
       this.assertStableRerender();
     }
@@ -2314,7 +902,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2322,8 +910,7 @@ moduleFor(
       {{check-block}}
       {{#check-block}}{{/check-block}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
 
       this.assertStableRerender();
     }
@@ -2339,7 +926,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2347,8 +934,7 @@ moduleFor(
       {{#check-inverse}}{{/check-inverse}}
       {{#check-inverse as |something|}}{{/check-inverse}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'No' });
+      this.assertHTML('NoNo');
 
       this.assertStableRerender();
     }
@@ -2364,7 +950,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2372,8 +958,7 @@ moduleFor(
       {{#check-block}}{{/check-block}}
       {{#check-block as |something|}}{{/check-block}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
 
       this.assertStableRerender();
     }
@@ -2383,7 +968,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block)}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2402,7 +987,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block "inverse")}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2421,7 +1006,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block-params)}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2440,7 +1025,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block-params "inverse")}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2459,7 +1044,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block) "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2467,8 +1052,7 @@ moduleFor(
       {{check-helper}}
       {{#check-helper}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2478,7 +1062,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block "inverse") "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2486,8 +1070,7 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper}}{{else}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2497,7 +1080,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block-params) "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2505,8 +1088,7 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper as |something|}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2516,7 +1098,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block-params "inverse") "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2524,156 +1106,9 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper as |something|}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'false' });
+      this.assertHTML('falsefalse');
 
       this.assertStableRerender();
-    }
-
-    ['@test component in template of a yielding component should have the proper parentView'](
-      assert
-    ) {
-      let outer, innerTemplate, innerLayout;
-
-      this.owner.register(
-        'component:x-outer',
-        setComponentTemplate(
-          precompileTemplate('{{x-inner-in-layout}}{{yield}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              outer = this;
-            }
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:x-inner-in-template',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            innerTemplate = this;
-          }
-        }
-      );
-
-      this.owner.register(
-        'component:x-inner-in-layout',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            innerLayout = this;
-          }
-        }
-      );
-
-      this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}');
-
-      assert.equal(
-        innerTemplate.parentView,
-        outer,
-        'receives the wrapping component as its parentView in template blocks'
-      );
-      assert.equal(
-        innerLayout.parentView,
-        outer,
-        'receives the wrapping component as its parentView in layout'
-      );
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
-
-      runTask(() => this.rerender());
-
-      assert.equal(
-        innerTemplate.parentView,
-        outer,
-        'receives the wrapping component as its parentView in template blocks'
-      );
-      assert.equal(
-        innerLayout.parentView,
-        outer,
-        'receives the wrapping component as its parentView in layout'
-      );
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
-    }
-
-    ['@test newly-added sub-components get correct parentView'](assert) {
-      let outer, inner;
-
-      this.owner.register(
-        'component:x-outer',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            outer = this;
-          }
-        }
-      );
-
-      this.owner.register(
-        'component:x-inner',
-        class extends Component {
-          init() {
-            super.init(...arguments);
-            inner = this;
-          }
-        }
-      );
-
-      this.render(
-        strip`
-      {{#x-outer}}
-        {{#if this.showInner}}
-          {{x-inner}}
-        {{/if}}
-      {{/x-outer}}`,
-        {
-          showInner: false,
-        }
-      );
-
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
-
-      runTask(() => this.rerender());
-
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView (after rerender)'
-      );
-
-      runTask(() => this.context.set('showInner', true));
-
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
-      assert.equal(
-        inner.parentView,
-        outer,
-        'receives the wrapping component as its parentView in template blocks'
-      );
-
-      runTask(() => this.context.set('showInner', false));
-
-      assert.equal(
-        outer.parentView,
-        this.context,
-        'x-outer receives the ambient scope as its parentView'
-      );
     }
 
     ["@test when a property is changed during children's rendering"]() {
@@ -2683,40 +1118,42 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate('{{#x-middle}}{{x-inner value=this.value}}{{/x-middle}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
           }
         )
       );
 
+      class MiddleComponent extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
+          middle = this;
+        }
+        @tracked value = null;
+      }
+
       this.owner.register(
         'component:x-middle',
         setComponentTemplate(
           precompileTemplate('<div id="middle-value">{{this.value}}</div>{{yield}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              middle = this;
-            }
-            value = null;
-          }
+          MiddleComponent
         )
       );
 
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{value}}</div>'),
-          class extends Component {
-            value = null;
-            didReceiveAttrs() {
-              middle.set('value', this.get('value'));
+          precompileTemplate('<div id="inner-value">{{@value}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              middle.value = this.args.value;
             }
           }
         )
       );
 
-      let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
+      let expectedBacktrackingMessage = backtrackingMessageFor('value', MiddleComponent.name, {
         renderTree: ['x-outer', 'x-middle', 'this.value'],
       });
 
@@ -2732,7 +1169,7 @@ moduleFor(
           precompileTemplate(
             '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}'
           ),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
             wrapper = EmberObject.create({ content: null });
           }
@@ -2742,12 +1179,12 @@ moduleFor(
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
-          class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').set('content', this.get('value'));
+          precompileTemplate('<div id="inner-value">{{@wrapper.content}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.set('content', this.args.value);
             }
-            value = null;
           }
         )
       );
@@ -2772,7 +1209,7 @@ moduleFor(
           precompileTemplate(
             '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}'
           ),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
             wrapper = new Wrapper();
           }
@@ -2782,12 +1219,12 @@ moduleFor(
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
-          class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').content = this.get('value');
+          precompileTemplate('<div id="inner-value">{{@wrapper.content}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.content = this.args.value;
             }
-            value = null;
           }
         )
       );
@@ -2806,23 +1243,20 @@ moduleFor(
         'component:non-block',
         template(
           strip`
-            In layout. {{#each this.items as |item|}}
+            In layout. {{#each @items as |item|}}
               [{{child-non-block item=item}}]
             {{/each}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
       this.owner.register(
         'component:child-non-block',
-        setComponentTemplate(
-          precompileTemplate('Child: {{this.item}}.'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('Child: {{@item}}.'), templateOnly())
       );
 
-      let items = emberA(['Tom', 'Dick', 'Harry']);
+      let items = trackedArray(['Tom', 'Dick', 'Harry']);
 
       this.render('{{non-block items=this.items}}', { items });
 
@@ -2832,306 +1266,17 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').pushObject('Sergio'));
+      runTask(() => this.context.get('items').push('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shiftObject());
+      runTask(() => this.context.get('items').shift());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+      runTask(() => this.context.set('items', ['Tom', 'Dick', 'Harry']));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
-    }
-
-    ['@test specifying classNames results in correct class'](assert) {
-      this.owner.register(
-        'component:some-clicky-thing',
-        class extends Component {
-          tagName = 'button';
-          classNames = ['foo', 'bar'];
-        }
-      );
-
-      this.render(strip`
-      {{#some-clicky-thing classNames="baz"}}
-        Click Me
-      {{/some-clicky-thing}}`);
-
-      // TODO: ember-view is no longer viewable in the classNames array. Bug or
-      // feature?
-      let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
-
-      assert.ok(
-        this.$('button').is('.foo.bar.baz.ember-view'),
-        `the element has the correct classes: ${this.$('button').attr('class')}`
-      );
-      // `ember-view` is no longer in classNames.
-      // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined');
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'button',
-        attrs: { class: classes(expectedClassNames.join(' ')) },
-      });
-
-      runTask(() => this.rerender());
-
-      assert.ok(
-        this.$('button').is('.foo.bar.baz.ember-view'),
-        `the element has the correct classes: ${this.$('button').attr('class')} (rerender)`
-      );
-      // `ember-view` is no longer in classNames.
-      // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'button',
-        attrs: { class: classes(expectedClassNames.join(' ')) },
-      });
-    }
-
-    ['@test specifying custom concatenatedProperties avoids clobbering']() {
-      this.owner.register(
-        'component:some-clicky-thing',
-        template(
-          strip`
-            {{#each this.blahzz as |p|}}
-              {{p}}
-            {{/each}}
-            - {{yield}}
-          `,
-          {
-            component: class extends Component {
-              concatenatedProperties = ['blahzz'];
-              blahzz = ['blark', 'pory'];
-            },
-            strictMode: false,
-          }
-        )
-      );
-
-      this.render(strip`
-      {{#some-clicky-thing blahzz="baz"}}
-        Click Me
-      {{/some-clicky-thing}}`);
-
-      this.assertText('blarkporybaz- Click Me');
-
-      runTask(() => this.rerender());
-
-      this.assertText('blarkporybaz- Click Me');
-    }
-
-    ['@test a two way binding flows upstream when consumed in the template']() {
-      let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          component = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.bar}}'), FooBarComponent)
-      );
-
-      this.render('{{this.localBar}} - {{foo-bar bar=this.localBar}}', {
-        localBar: 'initial value',
-      });
-
-      this.assertText('initial value - initial value');
-
-      runTask(() => this.rerender());
-
-      this.assertText('initial value - initial value');
-
-      runTask(() => {
-        component.set('bar', 'updated value');
-      });
-
-      this.assertText('updated value - updated value');
-
-      runTask(() => {
-        component.set('bar', undefined);
-      });
-
-      this.assertText(' - ');
-
-      runTask(() => {
-        this.component.set('localBar', 'initial value');
-      });
-
-      this.assertText('initial value - initial value');
-    }
-
-    ['@test a two way binding flows upstream through a CP when consumed in the template']() {
-      let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          component = this;
-        }
-
-        @computed
-        get bar() {
-          return this._bar;
-        }
-        set bar(value) {
-          this._bar = value;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.bar}}'), FooBarComponent)
-      );
-
-      this.render('{{this.localBar}} - {{foo-bar bar=this.localBar}}', {
-        localBar: 'initial value',
-      });
-
-      this.assertText('initial value - initial value');
-
-      runTask(() => this.rerender());
-
-      this.assertText('initial value - initial value');
-
-      runTask(() => {
-        component.set('bar', 'updated value');
-      });
-
-      this.assertText('updated value - updated value');
-
-      runTask(() => {
-        this.component.set('localBar', 'initial value');
-      });
-
-      this.assertText('initial value - initial value');
-    }
-
-    ['@test a two way binding flows upstream through a CP without template consumption']() {
-      let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          component = this;
-        }
-
-        @computed
-        get bar() {
-          return this._bar;
-        }
-
-        set bar(value) {
-          this._bar = value;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate(''), FooBarComponent)
-      );
-
-      this.render('{{this.localBar}}{{foo-bar bar=this.localBar}}', {
-        localBar: 'initial value',
-      });
-
-      this.assertText('initial value');
-
-      runTask(() => this.rerender());
-
-      this.assertText('initial value');
-
-      runTask(() => {
-        component.set('bar', 'updated value');
-      });
-
-      this.assertText('updated value');
-
-      runTask(() => {
-        this.component.set('localBar', 'initial value');
-      });
-
-      this.assertText('initial value');
-    }
-
-    ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
-      let parent, child;
-      let ParentComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          parent = this;
-        }
-
-        @tracked string = 'Hello|World';
-      };
-
-      this.owner.register(
-        'component:parent',
-        setComponentTemplate(
-          precompileTemplate(
-            '{{child value=this.string}}Parent String=<span data-test-parent-value>{{this.string}}</span>'
-          ),
-          ParentComponent
-        )
-      );
-
-      let ChildComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          child = this;
-        }
-
-        a = null; // computed based on passed in value of `string`
-        b = null; // computed based on passed in value of `string`
-
-        @computed('a', 'b')
-        get value() {
-          return this.a + '|' + this.b;
-        }
-
-        set value(value) {
-          let vals = value.split('|');
-          this.set('a', vals[0]);
-          this.set('b', vals[1]);
-        }
-      };
-
-      this.owner.register(
-        'component:child',
-        setComponentTemplate(precompileTemplate('{{this.value}}'), ChildComponent)
-      );
-
-      this.render('{{parent}}');
-
-      this.assert.equal(parent.string, 'Hello|World', 'precond - parent value');
-      this.assert.equal(
-        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
-        'Hello|World',
-        'precond - parent rendered value'
-      );
-
-      runTask(() => {
-        child.set('a', 'Foo');
-      });
-
-      this.assert.equal(parent.string, 'Foo|World', 'parent value updated');
-
-      this.assert.equal(
-        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
-        'Foo|World',
-        'parent updated value rendered'
-      );
-
-      runTask(() => {
-        child.set('a', 'Hello');
-      });
-
-      this.assert.equal(parent.string, 'Hello|World', 'parent value reset');
-      this.assert.equal(
-        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
-        'Hello|World',
-        'parent template reset'
-      );
     }
 
     ['@test services can be injected into components']() {
@@ -3151,7 +1296,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.name.last}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             @service
             name;
           }
@@ -3179,335 +1324,12 @@ moduleFor(
       this.assertText('Jackson');
     }
 
-    ['@test injecting an unknown service raises an exception']() {
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          @service
-          missingService;
-        }
-      );
-
-      expectAssertion(() => {
-        this.render('{{foo-bar}}');
-      }, "Attempting to inject an unknown injection: 'service:missingService'");
-    }
-
-    ['@test throws if `super.init` is not called from `init`']() {
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          init() {}
-        }
-      );
-
-      expectAssertion(() => {
-        this.render('{{foo-bar}}');
-      }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
-    }
-
-    ['@test it can use readDOMAttr to read input value']() {
-      let component;
-      let assertElement = (expectedValue) => {
-        // value is a property, not an attribute
-        this.assertHTML(`<input class="ember-view" id="${component.elementId}">`);
-        this.assert.equal(this.firstChild.value, expectedValue, 'value property is correct');
-        this.assert.equal(
-          get(component, 'value'),
-          expectedValue,
-          'component.get("value") is correct'
-        );
-      };
-
-      this.owner.register(
-        'component:one-way-input',
-        class extends Component {
-          tagName = 'input';
-          attributeBindings = ['value'];
-
-          init() {
-            super.init(...arguments);
-            component = this;
-          }
-
-          change() {
-            let value = this.readDOMAttr('value');
-            this.set('value', value);
-          }
-        }
-      );
-
-      this.render('{{one-way-input value=this.value}}', {
-        value: 'foo',
-      });
-
-      assertElement('foo');
-
-      this.assertStableRerender();
-
-      runTask(() => {
-        this.firstChild.value = 'bar';
-        this.$('input').trigger('change');
-      });
-
-      assertElement('bar');
-
-      runTask(() => {
-        this.firstChild.value = 'foo';
-        this.$('input').trigger('change');
-      });
-
-      assertElement('foo');
-
-      runTask(() => {
-        set(component, 'value', 'bar');
-      });
-
-      assertElement('bar');
-
-      runTask(() => {
-        this.firstChild.value = 'foo';
-        this.$('input').trigger('change');
-      });
-
-      assertElement('foo');
-    }
-
-    ['@test child triggers revalidate during parent destruction (GH#13846)']() {
-      this.owner.register(
-        'component:x-select',
-        setComponentTemplate(
-          precompileTemplate('{{yield this}}'),
-          class extends Component {
-            tagName = 'select';
-
-            init() {
-              super.init(...arguments);
-              this.options = emberA([]);
-              this.value = null;
-            }
-
-            updateValue() {
-              let newValue = this.get('options.lastObject.value');
-
-              this.set('value', newValue);
-            }
-
-            registerOption(option) {
-              this.get('options').addObject(option);
-            }
-
-            unregisterOption(option) {
-              this.get('options').removeObject(option);
-
-              this.updateValue();
-            }
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:x-option',
-        class extends Component {
-          tagName = 'option';
-          attributeBindings = ['selected'];
-
-          didInsertElement() {
-            super.didInsertElement(...arguments);
-
-            this.get('select').registerOption(this);
-          }
-
-          @computed('select.value')
-          get selected() {
-            return this.get('value') === this.get('select.value');
-          }
-
-          willDestroyElement() {
-            super.willDestroyElement(...arguments);
-            this.get('select').unregisterOption(this);
-          }
-        }
-      );
-
-      this.render(strip`
-      {{#x-select value=this.value as |select|}}
-        {{#x-option value="1" select=select}}1{{/x-option}}
-        {{#x-option value="2" select=select}}2{{/x-option}}
-      {{/x-select}}
-    `);
-
-      this.teardown();
-
-      this.assert.ok(true, 'no errors during teardown');
-    }
-
-    ['@test setting a property in willDestroyElement does not assert (GH#14273)'](assert) {
-      assert.expect(2);
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(`{{#if this.showFoo}}things{{/if}}`),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              this.showFoo = true;
-            }
-
-            willDestroyElement() {
-              this.set('showFoo', false);
-              assert.ok(true, 'willDestroyElement was fired');
-              super.willDestroyElement(...arguments);
-            }
-          }
-        )
-      );
-
-      this.render(`{{foo-bar}}`);
-
-      this.assertText('things');
-    }
-
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
-      let barCopyDidChangeCount = 0;
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.bar}}-{{this.barCopy}}'),
-          Component.extend({
-            init() {
-              this._super(...arguments);
-              this.didInit = true;
-            },
-
-            didReceiveAttrs() {
-              assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-              this.set('barCopy', this.attrs.bar.value + 1);
-            },
-
-            barCopyDidChange: observer('barCopy', () => {
-              barCopyDidChangeCount++;
-            }),
-          })
-        )
-      );
-
-      await this.render(`{{foo-bar bar=this.bar}}`, { bar: 3 });
-
-      this.assertText('3-4');
-
-      assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
-
-      set(this.context, 'bar', 7);
-
-      await runLoopSettled();
-
-      this.assertText('7-8');
-
-      assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
-    }
-
-    ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.foo}}-{{this.fooCopy}}-{{this.bar}}-{{this.barCopy}}'),
-          class extends Component {
-            didReceiveAttrs() {
-              assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
-            }
-          }
-        )
-      );
-
-      this.render(`{{foo-bar foo=this.foo bar=this.bar}}`, { foo: 1, bar: 3 });
-    }
-
-    ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.foo}}-{{this.fooCopy}}-{{this.bar}}-{{this.barCopy}}'),
-          class extends Component {
-            didUpdateAttrs() {
-              assert.equal(5, this.get('foo'), 'expected newAttrs to have new value');
-            }
-          }
-        )
-      );
-
-      this.render(`{{foo-bar foo=this.foo bar=this.bar}}`, { foo: 1, bar: 3 });
-
-      runTask(() => set(this.context, 'foo', 5));
-    }
-
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)`](
-      assert
-    ) {
-      assert.expect(5);
-
-      let payload = ['arbitrary', 'event', 'data'];
-
-      expectDeprecation(
-        () => {
-          this.owner.register(
-            'component:evented-component',
-            Component.extend({
-              someTruthyProperty: true,
-
-              init() {
-                this._super(...arguments);
-                expectDeprecation(
-                  () => {
-                    this.trigger('someMethod', ...payload);
-                    this.trigger('someTruthyProperty', ...payload);
-                  },
-                  /Evented#trigger` is deprecated/,
-                  DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
-                );
-              },
-
-              someMethod(...data) {
-                assert.deepEqual(
-                  data,
-                  payload,
-                  'the method `someMethod` should be called, when `someMethod` is triggered'
-                );
-              },
-
-              listenerForSomeMethod: on('someMethod', function (...data) {
-                assert.deepEqual(
-                  data,
-                  payload,
-                  'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered'
-                );
-              }),
-
-              listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
-                assert.deepEqual(
-                  data,
-                  payload,
-                  'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
-                );
-              }),
-            })
-          );
-        },
-        /`on\(\)` event decorator is deprecated/,
-        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
-      );
-
-      this.render(`{{evented-component}}`);
-    }
-
     ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {
       this.owner.register(
         'component:list-items',
         setComponentTemplate(
-          precompileTemplate(`{{#each this.items as |item|}}{{yield item}}{{/each}}`),
-          class extends Component {}
+          precompileTemplate(`{{#each @items as |item|}}{{yield item}}{{/each}}`),
+          templateOnly()
         )
       );
 
@@ -3540,81 +1362,12 @@ moduleFor(
       this.assertText('|foo||bar||qux||baz|');
     }
 
-    ['@test unimplimented positionalParams do not cause an error GH#14416']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
-      );
-
-      this.render('{{foo-bar this.wat}}');
-      this.assertText('hello');
-    }
-
-    ['@test using attrs for positional params is asserted against']() {
-      let MyComponent = class extends Component {};
-
-      expectAssertion(() => {
-        this.owner.register(
-          'component:foo-bar',
-          template(
-            'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
-            {
-              component: MyComponent.reopenClass({ positionalParams: ['myVar'] }),
-              strictMode: false,
-            }
-          )
-        );
-      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. (L1:C10) ');
-    }
-
-    // Perhaps change this test to `{{this.attrs.myVar.value}}` when removing the deprecation?
-    ['@test using this.attrs for positional params']() {
-      let MyComponent = class extends Component {};
-
-      expectDeprecation(() => {
-        this.owner.register(
-          'component:foo-bar',
-          template(
-            'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
-            {
-              component: MyComponent.reopenClass({ positionalParams: ['myVar'] }),
-              strictMode: false,
-            }
-          )
-        );
-      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.myVar2?}} should be updated to {{@myVar2?}}./);
-
-      this.render('{{foo-bar 1 myVar2=2}}');
-
-      this.assertText('MyVar1: 1 1 MyVar2: 2 2');
-    }
-
-    ['@test using named arguments for positional params']() {
-      let MyComponent = class extends Component {};
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(
-            'MyVar1: {{@myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{@myVar2}}'
-          ),
-          MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          })
-        )
-      );
-
-      this.render('{{foo-bar 1 myVar2=2}}');
-
-      this.assertText('MyVar1: 1 1 MyVar2: 2 2');
-    }
-
     ["@test can use `{{this}}` to emit the component's toString value [GH#14581]"]() {
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             toString() {
               return 'special sauce goes here!';
             }
@@ -3633,9 +1386,9 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.foo.bar.baz}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
 
               instance = this;
             }
@@ -3667,10 +1420,7 @@ moduleFor(
     ['@test can use custom element in component layout']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('<blah-zorz>Hi!</blah-zorz>'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('<blah-zorz>Hi!</blah-zorz>'), templateOnly())
       );
 
       this.render('{{foo-bar}}');
@@ -3683,7 +1433,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -3692,51 +1442,22 @@ moduleFor(
       this.assertText('Hi!');
     }
 
-    ['@test can access properties off of rest style positionalParams array']() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(`{{@things.length}}`),
-          class extends Component {
-            static positionalParams = 'things';
-          }
-        )
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test ensure aliases are watched properly [GH#17243]`]() {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
       );
 
-      this.render('{{foo-bar "foo" "bar" "baz"}}');
-
-      this.assertText('3');
-    }
-
-    ['@test has attrs by didReceiveAttrs with native classes'](assert) {
-      class FooBarComponent extends Component {
-        constructor(injections) {
-          super(injections);
-          // analogous to class field defaults
-          this.foo = 'bar';
-        }
-
-        didReceiveAttrs() {
-          assert.equal(this.foo, 'bar', 'received default attrs correctly');
-        }
-      }
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar}}');
-    }
-
-    ['@test ensure aliases are watched properly [GH#17243]']() {
       let fooInstance, barInstance;
 
-      let FooComponent = class extends Component {
+      let FooComponent = class extends GlimmerComponent {
         source = 'first';
 
         @alias('source')
         foo;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooInstance = this;
         }
       };
@@ -3746,11 +1467,11 @@ moduleFor(
         setComponentTemplate(precompileTemplate('{{this.foo}}'), FooComponent)
       );
 
-      let BarComponent = class extends Component {
+      let BarComponent = class extends GlimmerComponent {
         target = null;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           barInstance = this;
         }
 
@@ -3797,9 +1518,9 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello'),
-          class extends Component {
-            constructor(owner) {
-              super(owner);
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
 
               assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
             }
@@ -3809,129 +1530,26 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test can use `{{@component.foo}}` in a template GH#19313']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{@component.foo}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@component.foo}}'), templateOnly())
       );
 
       this.render('{{foo-bar component=(hash foo="bar")}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
+      this.assertHTML('bar');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
-    }
-
-    '@test lifecycle hooks are not tracked'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.baz}}'),
-          class extends Component {
-            @tracked foo;
-
-            willInsertElement() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            willRender() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didRender() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didReceiveAttrs() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didUpdate() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didUpdateAttrs() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didInsertElement() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            willClearRender() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            willDestroyElement() {
-              this.foo;
-              this.foo = 123;
-            }
-
-            didDestroyElement() {
-              this.foo;
-              this.foo = 123;
-            }
-          }
-        )
-      );
-
-      this.render('{{#if this.cond}}{{foo-bar baz=this.value}}{{/if}}', {
-        cond: true,
-        value: 'hello',
-      });
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-      runTask(() => set(this.context, 'value', 'world'));
-
-      this.assertComponentElement(this.firstChild, { content: 'world' });
-
-      runTask(() => set(this.context, 'cond', false));
-    }
-
-    '@test tracked property mutation in init does not error'() {
-      // TODO: this should issue a deprecation, but since the curly manager
-      // uses an untracked frame for construction we don't (yet)
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(`{{this.itemCount}}`),
-          class extends Component {
-            @tracked itemCount = 0;
-
-            init() {
-              super.init(...arguments);
-
-              // first read the tracked property
-              let { itemCount } = this;
-
-              // then attempt to update the tracked property
-              this.itemCount = itemCount + 1;
-            }
-          }
-        )
-      );
-
-      this.render('<FooBar />');
-
-      this.assertComponentElement(this.firstChild, { content: '1' });
+      this.assertHTML('bar');
     }
 
     '@test `{{#let blah as |foo|}}` does not affect `<Foo />` resolution'() {
@@ -3947,6 +1565,183 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText('foo component');
+    }
+
+    ['@test class is applied before modifiers are installed'](assert) {
+      assert.expect(1);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class={{@class}} {{this.inserted}}></div>'),
+          class extends GlimmerComponent {
+            inserted = defineSimpleModifier((element) => {
+              assert.ok(element.classList.contains('foo-bar'), 'the class is on the element');
+            });
+          }
+        )
+      );
+
+      this.render('{{foo-bar class="foo-bar"}}');
+    }
+
+    ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+      this.owner.register(
+        'component:x-select',
+        setComponentTemplate(
+          precompileTemplate('<select>{{yield this}}</select>'),
+          class extends GlimmerComponent {
+            @tracked value = null;
+
+            options = [];
+
+            updateValue() {
+              let last = this.options[this.options.length - 1];
+
+              this.value = last ? last.args.value : null;
+            }
+
+            registerOption(option) {
+              this.options.push(option);
+            }
+
+            unregisterOption(option) {
+              this.options.splice(this.options.indexOf(option), 1);
+
+              this.updateValue();
+            }
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:x-option',
+        setComponentTemplate(
+          precompileTemplate('<option selected={{this.selected}}>{{yield}}</option>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+
+              this.args.select.registerOption(this);
+            }
+
+            get selected() {
+              return this.args.value === this.args.select.value;
+            }
+
+            willDestroy() {
+              super.willDestroy();
+
+              this.args.select.unregisterOption(this);
+            }
+          }
+        )
+      );
+
+      this.render(strip`
+      {{#x-select as |select|}}
+        {{#x-option value="1" select=select}}1{{/x-option}}
+        {{#x-option value="2" select=select}}2{{/x-option}}
+      {{/x-select}}
+    `);
+
+      this.teardown();
+
+      this.assert.ok(true, 'no errors during teardown');
+    }
+
+    ['@test setting a tracked property in willDestroy does not assert (GH#14273)'](assert) {
+      assert.expect(2);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{#if this.showFoo}}things{{/if}}`),
+          class extends GlimmerComponent {
+            @tracked showFoo = true;
+
+            willDestroy() {
+              super.willDestroy();
+
+              this.showFoo = false;
+              assert.ok(true, 'willDestroy was fired');
+            }
+          }
+        )
+      );
+
+      this.render(`{{foo-bar}}`);
+
+      this.assertText('things');
+    }
+
+    ['@test static arbitrary number of positional parameters'](assert) {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      <div id="args-3">{{sample-component "Foo" 4 "Bar"}}</div>
+      <div id="args-5">{{sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+    }
+
+    ['@test dynamic arbitrary number of positional parameters']() {
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional key="@index" as |name|}}{{name}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{sample-component this.user1 this.user2}}', { user1: 'Foo', user2: 4 });
+
+      this.assertText('Foo4');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Foo4');
+
+      runTask(() => set(this.context, 'user1', 'Bar'));
+
+      this.assertText('Bar4');
+
+      runTask(() => set(this.context, 'user2', '5'));
+
+      this.assertText('Bar5');
+
+      runTask(() => {
+        set(this.context, 'user1', 'Foo');
+        set(this.context, 'user2', 4);
+      });
+
+      this.assertText('Foo4');
+    }
+
+    ['@test can access properties off of the positional arguments array']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.positional.length}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+      this.assertText('3');
     }
   }
 );

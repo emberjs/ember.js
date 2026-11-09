@@ -1,3 +1,5 @@
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+
 /**
  @module @ember/utils
 */
@@ -20,7 +22,13 @@
   @param {Object} obj Value to test
   @return {Boolean}
   @public
+  @deprecated Use native JavaScript instead.
 */
 export default function isNone(obj: any): obj is null | undefined {
+  deprecateUntil(
+    '`isNone` from `@ember/utils` is deprecated. Use native JavaScript instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
+  );
+
   return obj === null || obj === undefined;
 }

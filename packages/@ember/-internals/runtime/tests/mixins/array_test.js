@@ -8,7 +8,21 @@ import {
 } from '@ember/-internals/metal';
 import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
 import EmberArray, { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../deprecations';
+
+const MIXIN = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_MIXIN;
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
+
+function expectMixinDeprecation() {
+  expectDeprecation(/The `EmberArray` mixin is deprecated/, MIXIN.isEnabled);
+}
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -18,6 +32,7 @@ const TestArray = class extends EmberObject.extend(EmberArray) {
   _content = null;
 
   init() {
+    super.init(...arguments);
     this._content = this._content || [];
   }
 
@@ -49,7 +64,11 @@ const TestArray = class extends EmberObject.extend(EmberArray) {
 moduleFor(
   'Ember.Array',
   class extends AbstractTestCase {
-    ['@test the return value of slice has Ember.Array applied'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test the return value of slice has Ember.Array applied`](
+      assert
+    ) {
+      expectMixinDeprecation();
+
       let x = EmberObject.extend(EmberArray).create({
         length: 0,
       });
@@ -57,7 +76,9 @@ moduleFor(
       assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
     }
 
-    ['@test slice supports negative index arguments'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test slice supports negative index arguments`](assert) {
+      expectMixinDeprecation();
+
       let testArray = TestArray.create({ _content: [1, 2, 3, 4] });
 
       assert.deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
@@ -96,7 +117,9 @@ let obj, observer;
 moduleFor(
   'mixins/array/arrayContent[Will|Did]Change',
   class extends AbstractTestCase {
-    async ['@test should notify observers of []'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test should notify observers of []`](assert) {
+      expectMixinDeprecation();
+
       obj = DummyArray.extend({
         enumerablePropertyDidChange: emberObserver('[]', function () {
           this._count++;
@@ -129,6 +152,8 @@ moduleFor(
   'notify observers of length',
   class extends AbstractTestCase {
     beforeEach(assert) {
+      expectMixinDeprecation();
+
       obj = DummyArray.extend({
         lengthDidChange: emberObserver('length', function () {
           this._after++;
@@ -145,7 +170,9 @@ moduleFor(
       obj = undefined;
     }
 
-    async ['@test should notify observers when call with no params'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test should notify observers when call with no params`](
+      assert
+    ) {
       arrayContentWillChange(obj);
       await runLoopSettled();
 
@@ -158,7 +185,9 @@ moduleFor(
     }
 
     // API variation that included items only
-    async ['@test should not notify when passed lengths are same'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test should not notify when passed lengths are same`](
+      assert
+    ) {
       arrayContentWillChange(obj, 0, 1, 1);
       await runLoopSettled();
 
@@ -170,7 +199,9 @@ moduleFor(
       assert.equal(obj._after, 0);
     }
 
-    async ['@test should notify when passed lengths are different'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test should notify when passed lengths are different`](
+      assert
+    ) {
       arrayContentWillChange(obj, 0, 1, 2);
       await runLoopSettled();
 
@@ -192,6 +223,8 @@ moduleFor(
   'notify array observers (internal)',
   class extends AbstractTestCase {
     beforeEach(assert) {
+      expectMixinDeprecation();
+
       obj = DummyArray.create();
 
       observer = class extends EmberObject {
@@ -219,7 +252,9 @@ moduleFor(
       obj = observer = null;
     }
 
-    ['@test should notify array observers when called with no params'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test should notify array observers when called with no params`](
+      assert
+    ) {
       arrayContentWillChange(obj);
       assert.deepEqual(observer._before, [obj, 0, -1, -1]);
 
@@ -228,7 +263,9 @@ moduleFor(
     }
 
     // API variation that included items only
-    ['@test should notify when called with same length items'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test should notify when called with same length items`](
+      assert
+    ) {
       arrayContentWillChange(obj, 0, 1, 1);
       assert.deepEqual(observer._before, [obj, 0, 1, 1]);
 
@@ -236,7 +273,9 @@ moduleFor(
       assert.deepEqual(observer._after, [obj, 0, 1, 1]);
     }
 
-    ['@test should notify when called with diff length items'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test should notify when called with diff length items`](
+      assert
+    ) {
       arrayContentWillChange(obj, 0, 2, 1);
       assert.deepEqual(observer._before, [obj, 0, 2, 1]);
 
@@ -244,7 +283,7 @@ moduleFor(
       assert.deepEqual(observer._after, [obj, 0, 2, 1]);
     }
 
-    ['@test removing array observer should disable'](assert) {
+    [`${testUnless(MIXIN.isRemoved)} @test removing array observer should disable`](assert) {
       removeArrayObserver(obj, observer, {
         willChange: 'arrayWillChange',
         didChange: 'arrayDidChange',
@@ -268,6 +307,8 @@ moduleFor(
   'EmberArray.@each support',
   class extends AbstractTestCase {
     beforeEach() {
+      expectMixinDeprecation();
+
       ary = TestArray.create({
         _content: [
           { isDone: true, desc: 'Todo 1' },
@@ -283,7 +324,9 @@ moduleFor(
       ary = null;
     }
 
-    async ['@test adding an object should notify (@each.isDone)'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test adding an object should notify (@each.isDone)`](
+      assert
+    ) {
       let called = 0;
 
       let observerObject = EmberObject.create({
@@ -305,7 +348,9 @@ moduleFor(
       assert.equal(called, 1, 'calls observer when object is pushed');
     }
 
-    async ['@test using @each to observe arrays that does not return objects raise error'](assert) {
+    async [`${testUnless(MIXIN.isRemoved)} @test using @each to observe arrays that does not return objects raise error`](
+      assert
+    ) {
       let called = 0;
 
       let observerObject = EmberObject.create({
@@ -332,16 +377,25 @@ moduleFor(
       await runLoopSettled();
       assert.equal(called, 0, 'not calls observer when object is pushed');
     }
+  }
+);
 
+moduleFor(
+  '@each support',
+  class extends AbstractTestCase {
     ['@test `objectAt` returns correct object'](assert) {
       let arr = ['first', 'second', 'third', 'fourth'];
       assert.equal(objectAt(arr, 2), 'third');
       assert.equal(objectAt(arr, 4), undefined);
     }
 
-    ['@test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization'](
+    [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization`](
       assert
     ) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let obj = class extends EmberObject {
         init() {
           super.init(...arguments);
@@ -361,9 +415,13 @@ moduleFor(
       assert.equal('BYE!', get(obj, 'common'));
     }
 
-    async ['@test observers that contain @each in the path should fire only once the first time they are accessed'](
+    async [`${testUnless(
+      EMBER_A.isRemoved
+    )} @test observers that contain @each in the path should fire only once the first time they are accessed`](
       assert
     ) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+
       let count = 0;
 
       let obj = EmberObject.extend({

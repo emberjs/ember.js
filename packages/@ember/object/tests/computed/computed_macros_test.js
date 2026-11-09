@@ -2,6 +2,7 @@ import {
   alias,
   empty,
   notEmpty,
+  none,
   not,
   bool,
   match,
@@ -18,12 +19,20 @@ import {
 } from '@ember/object/computed';
 import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+
+const { isEnabled, isRemoved } = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
+const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    ['@test empty part 1/2'](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test empty part 1/2`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+      expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = class extends EmberObject {
         bestLannister = null;
         lannisters = null;
@@ -44,7 +53,11 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    ['@test notEmpty part 1/2'](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test notEmpty part 1/2`](assert) {
+      expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
+      expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = class extends EmberObject {
         bestLannister = null;
         lannisters = null;
@@ -65,7 +78,12 @@ moduleFor(
       assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
     }
 
-    ['@test not'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test not`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { foo: true };
       defineProperty(obj, 'notFoo', not('foo'));
       assert.equal(get(obj, 'notFoo'), false);
@@ -75,7 +93,10 @@ moduleFor(
       assert.equal(get(obj, 'notFoo'), false);
     }
 
-    ['@test empty part 2/2'](assert) {
+    [`${testUnless(isRemoved)} @test empty part 2/2`](assert) {
+      expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = { foo: [], bar: undefined, baz: null, quz: '' };
       defineProperty(obj, 'fooEmpty', empty('foo'));
       defineProperty(obj, 'barEmpty', empty('bar'));
@@ -92,7 +113,12 @@ moduleFor(
       assert.equal(get(obj, 'quzEmpty'), false);
     }
 
-    ['@test bool'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test bool`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { foo() {}, bar: 'asdf', baz: null, quz: false };
       defineProperty(obj, 'fooBool', bool('foo'));
       defineProperty(obj, 'barBool', bool('bar'));
@@ -104,7 +130,12 @@ moduleFor(
       assert.equal(get(obj, 'quzBool'), false);
     }
 
-    ['@test alias'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test alias`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { bar: 'asdf', baz: null, quz: false };
       defineProperty(
         obj,
@@ -137,7 +168,12 @@ moduleFor(
       assert.equal(get(obj, 'quz'), null);
     }
 
-    ['@test alias set'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test alias set`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = {};
       let constantValue = 'always `a`';
 
@@ -164,7 +200,12 @@ moduleFor(
       assert.equal(get(obj, 'aliased'), constantValue);
     }
 
-    ['@test match'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test match`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', match('name', /Paul/));
 
@@ -175,7 +216,10 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    ['@test notEmpty part 2/2'](assert) {
+    [`${testUnless(isRemoved)} @test notEmpty part 2/2`](assert) {
+      expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = { items: [1] };
       defineProperty(obj, 'hasItems', notEmpty('items'));
 
@@ -186,7 +230,30 @@ moduleFor(
       assert.equal(get(obj, 'hasItems'), false, 'is empty');
     }
 
-    ['@test equal'](assert) {
+    [`${testUnless(isRemoved)} @test none`](assert) {
+      expectDeprecation(/`none` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isNone` from `@ember\/utils` is deprecated/, isEnabled);
+
+      let obj = { food: null };
+      defineProperty(obj, 'isHungry', none('food'));
+
+      assert.true(get(obj, 'isHungry'), 'null is none');
+
+      set(obj, 'food', 'Banana');
+
+      assert.false(get(obj, 'isHungry'), 'a string is not none');
+
+      set(obj, 'food', undefined);
+
+      assert.true(get(obj, 'isHungry'), 'undefined is none');
+    }
+
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test equal`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', computedEqual('name', 'Paul'));
 
@@ -197,7 +264,12 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    ['@test gt'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test gt`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterThenOne', gt('number', 1));
 
@@ -212,7 +284,12 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
     }
 
-    ['@test gte'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test gte`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterOrEqualThenOne', gte('number', 1));
 
@@ -227,7 +304,12 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
     }
 
-    ['@test lt'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lt`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserThenOne', lt('number', 1));
 
@@ -242,7 +324,12 @@ moduleFor(
       assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
     }
 
-    ['@test lte'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lte`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserOrEqualThenOne', lte('number', 1));
 
@@ -257,7 +344,14 @@ moduleFor(
       assert.equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
     }
 
-    ['@test and, with two properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with two properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneAndTwo', and('one', 'two'));
 
@@ -278,7 +372,14 @@ moduleFor(
       assert.equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
     }
 
-    ['@test and, with three properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with three properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
 
@@ -295,7 +396,14 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    ['@test and, with expand properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with expand properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('{one,two,three}'));
 
@@ -312,7 +420,14 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    ['@test or, with two properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with two properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneOrTwo', or('one', 'two'));
 
@@ -339,7 +454,14 @@ moduleFor(
       assert.equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test or, with three properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with three properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('one', 'two', 'three'));
 
@@ -370,7 +492,14 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test or, with expand properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with expand properties`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('{one,two,three}'));
 
@@ -401,7 +530,12 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test or and and, warn about dependent keys with spaces']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or and and, warn about dependent keys with spaces`]() {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { one: true, two: true };
       expectAssertion(function () {
         defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
@@ -412,7 +546,12 @@ moduleFor(
       }, /Dependent keys passed to `and` computed macro can't have spaces\./);
     }
 
-    ['@test oneWay'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test oneWay`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = {
         firstName: 'Teddy',
         lastName: 'Zeenny',
@@ -436,7 +575,12 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TeddyBear');
     }
 
-    ['@test readOnly'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test readOnly`](assert) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = {
         firstName: 'Teddy',
         lastName: 'Zeenny',
@@ -462,7 +606,14 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
     }
 
-    ['@test deprecatingAlias'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test deprecatingAlias`](
+      assert
+    ) {
+      expectDeprecation(
+        /from `@ember\/object\/computed` is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
+      );
+
       let obj = { bar: 'asdf', baz: null, quz: false };
       defineProperty(
         obj,

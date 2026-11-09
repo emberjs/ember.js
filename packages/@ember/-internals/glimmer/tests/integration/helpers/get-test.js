@@ -6,7 +6,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Helpers test: {{get}}',
@@ -624,7 +623,7 @@ moduleFor(
     }
 
     '@test should be able to get an object value with a path from this.args in a glimmer component'() {
-      class PersonComponent extends GlimmerishComponent {
+      class PersonComponent extends Component {
         options = ['first', 'last', 'age'];
       }
 
@@ -650,6 +649,46 @@ moduleFor(
       runTask(() => set(this.context, 'age', 30));
 
       this.assertText('miguelandrade30');
+    }
+
+    '@test should be able to get string length with a static key'() {
+      this.render(`[{{get this.name 'length'}}] [{{if true (get this.name 'length')}}]`, {
+        name: 'Tomster',
+      });
+
+      this.assertText('[7] [7]');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'name', 'Zoey'));
+
+      this.assertText('[4] [4]');
+
+      runTask(() => set(this.context, 'name', 'Tomster'));
+
+      this.assertText('[7] [7]');
+    }
+
+    '@test should be able to get string length with a bound/dynamic key'() {
+      this.render(`[{{get this.name this.key}}] [{{if true (get this.name this.key)}}]`, {
+        name: 'Tomster',
+        key: 'length',
+      });
+
+      this.assertText('[7] [7]');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'key', 'foo'));
+
+      this.assertText('[] []');
+
+      runTask(() => {
+        set(this.context, 'name', 'Zoey');
+        set(this.context, 'key', 'length');
+      });
+
+      this.assertText('[4] [4]');
     }
   }
 );

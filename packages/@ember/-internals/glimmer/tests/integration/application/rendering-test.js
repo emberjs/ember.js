@@ -494,12 +494,11 @@ moduleFor(
       );
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        includeTopLevel: 'outlet',
         renderTree: [
           '{{outlet}} for application',
-          'application',
+          '@Component',
           '{{outlet}} for routeWithError',
-          'routeWithError',
+          '@Component',
           '@model.name',
         ],
       });

@@ -1,12 +1,16 @@
 import { typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
-import { window } from '@ember/-internals/browser-environment';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 
 moduleFor(
   'Ember Type Checking',
   class extends AbstractTestCase {
-    ['@test Ember.typeOf'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test Ember.typeOf`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let MockedDate = function () {};
       MockedDate.prototype = new Date();
 
@@ -41,18 +45,17 @@ moduleFor(
       assert.equal(typeOf(instance.method), 'function', 'item of type function');
       assert.equal(typeOf(instance.asyncMethod), 'function', 'item of type async function');
       assert.equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
+      assert.equal(typeOf(class extends EmberObject {}), 'class', 'item of type native class');
       assert.equal(typeOf(new Error()), 'error', 'item of type error');
     }
 
-    ['@test Ember.typeOf(fileList)'](assert) {
-      if (window && typeof window.FileList === 'function') {
-        let fileListElement = document.createElement('input');
-        fileListElement.type = 'file';
-        let fileList = fileListElement.files;
-        assert.equal(typeOf(fileList), 'filelist', 'item of type filelist');
-      } else {
-        assert.ok(true, 'FileList is not present on window');
-      }
+    [`${testUnless(UTILS.isRemoved)} @test Ember.typeOf(fileList)`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
+      let fileListElement = document.createElement('input');
+      fileListElement.type = 'file';
+      let fileList = fileListElement.files;
+      assert.equal(typeOf(fileList), 'filelist', 'item of type filelist');
     }
   }
 );

@@ -5,7 +5,7 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from '@ember/array';
+import { trackedArray } from '@ember/reactive/collections';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
@@ -1523,7 +1523,7 @@ moduleFor(
             controller = this;
           }
 
-          routeNames = emberA(['foo', 'bar', 'rar']);
+          routeNames = trackedArray(['foo', 'bar', 'rar']);
           route1 = 'bar';
           route2 = 'foo';
         }
@@ -1567,7 +1567,7 @@ moduleFor(
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-      runTask(() => controller.routeNames.shiftObject());
+      runTask(() => controller.routeNames.shift());
 
       linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
     }

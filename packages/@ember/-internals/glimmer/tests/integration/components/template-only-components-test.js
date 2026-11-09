@@ -1,10 +1,10 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
-import EmberObject from '@ember/object';
-import { Component } from '../../utils/helpers';
+import EmberObject, { setProperties } from '@ember/object';
+import Component from '@glimmer/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 class TemplateOnlyComponentsTest extends RenderingTestCase {}
@@ -48,7 +48,7 @@ moduleFor(
 
       this.assertInnerHTML('|FOO|BAR|');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => setProperties(this.context, { foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|foo|bar|');
     }
@@ -76,7 +76,7 @@ moduleFor(
 
       this.assertInnerHTML('|||');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => setProperties(this.context, { foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|||');
     }
@@ -154,10 +154,10 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
           class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').set('content', this.get('value'));
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.set('content', this.args.value);
             }
-            value = null;
           }
         )
       );

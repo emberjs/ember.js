@@ -11,6 +11,7 @@ import {
   type HashHelper,
   createContext,
   type Context,
+  setHelperManager,
   uniqueId,
   type UniqueIdHelper,
 } from '@ember/helper';
@@ -22,6 +23,10 @@ expectTypeOf(fn).toEqualTypeOf<FnHelper>();
 expectTypeOf(get).toEqualTypeOf<GetHelper>();
 expectTypeOf(hash).toEqualTypeOf<HashHelper>();
 expectTypeOf(uniqueId).toEqualTypeOf<UniqueIdHelper>();
+
+type HelperManager = ReturnType<Parameters<typeof setHelperManager>[0]>;
+expectTypeOf<HelperManager['capabilities']>().not.toBeAny();
+expectTypeOf<Parameters<HelperManager['createHelper']>[1]>().not.toBeAny();
 
 // createContext takes a type parameter, not a value -- the value is supplied
 // at render time via `<Provide @value>`.

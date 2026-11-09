@@ -1,7 +1,8 @@
 import { computed } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(computed('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(computed('foo')).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   declare firstName: string;

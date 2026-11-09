@@ -1,4 +1,12 @@
-import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import {
+  applyMixins,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  strip,
+  ignoreDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
@@ -36,6 +44,14 @@ class BasicSyntaxTest extends BasicEachInTest {
 
 class EachInProxyTest extends TogglingEachInTest {}
 
+// `ObjectProxy` is deprecated; the deprecation itself is asserted by the
+// dedicated `ObjectProxy` tests, so it is silenced in these rendering fixtures.
+const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
+
+function objectProxy(props) {
+  return ignoreDeprecation(() => ObjectProxy.create(props));
+}
+
 applyMixins(
   BasicEachInTest,
   new TruthyGenerator([
@@ -63,35 +79,37 @@ applyMixins(
   ])
 );
 
-applyMixins(
-  EachInProxyTest,
+if (!OBJECT_PROXY_REMOVED) {
+  applyMixins(
+    EachInProxyTest,
 
-  new TruthyGenerator([ObjectProxy.create({ content: { 'Not empty': 1 } })]),
+    new TruthyGenerator([objectProxy({ content: { 'Not empty': 1 } })]),
 
-  new FalsyGenerator([
-    ObjectProxy.create(),
-    ObjectProxy.create({ content: null }),
-    ObjectProxy.create({ content: {} }),
-    ObjectProxy.create({ content: Object.create(null) }),
-    ObjectProxy.create({ content: Object.create({}) }),
-    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
-    ObjectProxy.create({ content: EmberObject.create() }),
-  ])
-);
+    new FalsyGenerator([
+      objectProxy(),
+      objectProxy({ content: null }),
+      objectProxy({ content: {} }),
+      objectProxy({ content: Object.create(null) }),
+      objectProxy({ content: Object.create({}) }),
+      objectProxy({ content: Object.create({ 'Not Empty': 1 }) }),
+      objectProxy({ content: EmberObject.create() }),
+    ])
+  );
 
-// Truthy/Falsy tests
-moduleFor(
-  'Syntax test: {{#each-in}} with `ObjectProxy`',
-  class extends EachInProxyTest {
-    get truthyValue() {
-      return ObjectProxy.create({ content: { 'Not Empty': 1 } });
+  // Truthy/Falsy tests
+  moduleFor(
+    'Syntax test: {{#each-in}} with `ObjectProxy`',
+    class extends EachInProxyTest {
+      get truthyValue() {
+        return objectProxy({ content: { 'Not Empty': 1 } });
+      }
+
+      get falsyValue() {
+        return objectProxy({ content: null });
+      }
     }
-
-    get falsyValue() {
-      return ObjectProxy.create({ content: null });
-    }
-  }
-);
+  );
+}
 
 moduleFor('Syntax test: {{#each-in}}', BasicSyntaxTest);
 
@@ -515,109 +533,111 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each-in}} with object proxies',
-  class extends EachInTest {
-    constructor() {
-      super(...arguments);
-      this.allowsSetProp = true;
-    }
-    createHash(pojo) {
-      let hash = ObjectProxy.create({ content: pojo });
-      return {
-        hash,
-        delegate: {
-          setProp(context, key, value) {
-            set(context, `hash.${key}`, value);
-          },
-          updateNestedValue(context, key, innerKey, value) {
-            let target = get(context.hash, key);
-            set(target, innerKey, value);
-          },
-        },
-      };
-    }
-
-    ['@test it iterates over the content, not the proxy']() {
-      let content = {
-        Smartphones: 8203,
-        'JavaScript Frameworks': Infinity,
-      };
-
-      let proxy = ObjectProxy.create({
-        content,
-        foo: 'bar',
-      });
-
-      this.render(
-        strip`
-      <ul>
-        {{#each-in this.categories as |category count|}}
-          <li>{{category}}: {{count}}</li>
-        {{/each-in}}
-      </ul>
-    `,
-        { categories: proxy }
-      );
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 8203</li>
-        <li>JavaScript Frameworks: Infinity</li>
-      </ul>
-    `);
-
-      this.assertStableRerender();
-
-      runTask(() => {
-        set(proxy, 'content.Smartphones', 100);
-        set(proxy, 'content.Tweets', 443115);
-      });
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 100</li>
-        <li>JavaScript Frameworks: Infinity</li>
-        <li>Tweets: 443115</li>
-      </ul>
-    `);
-
-      runTask(() => {
-        set(proxy, 'content', {
-          Smartphones: 100,
-          Tablets: 20,
-        });
-      });
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 100</li>
-        <li>Tablets: 20</li>
-      </ul>
-    `);
-
-      runTask(() =>
-        set(
-          this.context,
-          'categories',
-          ObjectProxy.create({
-            content: {
-              Smartphones: 8203,
-              'JavaScript Frameworks': Infinity,
+if (!OBJECT_PROXY_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each-in}} with object proxies',
+    class extends EachInTest {
+      constructor() {
+        super(...arguments);
+        this.allowsSetProp = true;
+      }
+      createHash(pojo) {
+        let hash = objectProxy({ content: pojo });
+        return {
+          hash,
+          delegate: {
+            setProp(context, key, value) {
+              set(context, `hash.${key}`, value);
             },
-          })
-        )
-      );
+            updateNestedValue(context, key, innerKey, value) {
+              let target = get(context.hash, key);
+              set(target, innerKey, value);
+            },
+          },
+        };
+      }
 
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 8203</li>
-        <li>JavaScript Frameworks: Infinity</li>
-      </ul>
-    `);
+      ['@test it iterates over the content, not the proxy']() {
+        let content = {
+          Smartphones: 8203,
+          'JavaScript Frameworks': Infinity,
+        };
+
+        let proxy = objectProxy({
+          content,
+          foo: 'bar',
+        });
+
+        this.render(
+          strip`
+        <ul>
+          {{#each-in this.categories as |category count|}}
+            <li>{{category}}: {{count}}</li>
+          {{/each-in}}
+        </ul>
+      `,
+          { categories: proxy }
+        );
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 8203</li>
+          <li>JavaScript Frameworks: Infinity</li>
+        </ul>
+      `);
+
+        this.assertStableRerender();
+
+        runTask(() => {
+          set(proxy, 'content.Smartphones', 100);
+          set(proxy, 'content.Tweets', 443115);
+        });
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 100</li>
+          <li>JavaScript Frameworks: Infinity</li>
+          <li>Tweets: 443115</li>
+        </ul>
+      `);
+
+        runTask(() => {
+          set(proxy, 'content', {
+            Smartphones: 100,
+            Tablets: 20,
+          });
+        });
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 100</li>
+          <li>Tablets: 20</li>
+        </ul>
+      `);
+
+        runTask(() =>
+          set(
+            this.context,
+            'categories',
+            objectProxy({
+              content: {
+                Smartphones: 8203,
+                'JavaScript Frameworks': Infinity,
+              },
+            })
+          )
+        );
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 8203</li>
+          <li>JavaScript Frameworks: Infinity</li>
+        </ul>
+      `);
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each-in}} with ES6 Maps',
