@@ -1,7 +1,8 @@
 import { reads } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(reads('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(reads('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @reads('foo') reads: unknown;

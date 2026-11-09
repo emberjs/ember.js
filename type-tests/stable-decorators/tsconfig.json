@@ -1,0 +1,11 @@
+{
+  // Type checks Ember's public decorators with standard (stage 3) decorators,
+  // i.e. without `experimentalDecorators`. The rest of type-tests covers the
+  // legacy decorator signatures.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": false
+  },
+  "include": ["**/*.ts", "../index.d.ts"],
+  "exclude": []
+}

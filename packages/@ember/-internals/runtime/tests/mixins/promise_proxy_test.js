@@ -5,7 +5,14 @@ import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import EmberRSVP from '../../lib/ext/rsvp';
 import { onerrorDefault } from '../../lib/ext/rsvp';
 import * as RSVP from 'rsvp';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  ignoreDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let ObjectPromiseProxy, proxy;
 
@@ -16,17 +23,34 @@ moduleFor(
       ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
     }
 
+    expectProxyDeprecations() {
+      expectDeprecation(
+        /`ObjectProxy` is deprecated/,
+        DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled
+      );
+      expectDeprecation(
+        /`PromiseProxyMixin` is deprecated/,
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isEnabled
+      );
+    }
+
     afterEach() {
       RSVP.on('error', onerrorDefault);
       if (proxy) proxy.destroy();
       proxy = undefined;
     }
 
-    ['@test present on ember namespace'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test present on ember namespace`](
+      assert
+    ) {
       assert.ok(PromiseProxyMixin, 'expected PromiseProxyMixin to exist');
     }
 
-    ['@test no promise, invoking then should raise'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test no promise, invoking then should raise`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       proxy = ObjectPromiseProxy.create();
 
       assert.throws(function () {
@@ -41,7 +65,11 @@ moduleFor(
       }, new RegExp("PromiseProxy's promise must be set"));
     }
 
-    ['@test fulfillment'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test fulfillment`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let value = {
         firstName: 'stef',
         lastName: 'penner',
@@ -155,7 +183,11 @@ moduleFor(
       // rest of the promise semantics are tested in directly in RSVP
     }
 
-    ['@test rejection'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test rejection`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let reason = new Error('failure');
       let deferred = RSVP.defer();
       proxy = ObjectPromiseProxy.create({
@@ -259,7 +291,11 @@ moduleFor(
     }
 
     // https://github.com/emberjs/ember.js/issues/15694
-    ['@test rejection without specifying reason'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test rejection without specifying reason`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let deferred = RSVP.defer();
       proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
@@ -328,7 +364,9 @@ moduleFor(
       );
     }
 
-    ["@test unhandled rejects still propagate to RSVP.on('error', ...) "](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test unhandled rejects still propagate to RSVP.on('error', ...) `](
+      assert
+    ) {
       assert.expect(1);
 
       RSVP.on('error', onerror);
@@ -337,9 +375,14 @@ moduleFor(
       let expectedReason = new Error('failure');
       let deferred = RSVP.defer();
 
-      proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise,
-      });
+      // This test asserts an exact assertion count, so the proxy deprecations
+      // are silenced here rather than expected; they are covered by the other
+      // tests in this module.
+      proxy = ignoreDeprecation(() =>
+        ObjectPromiseProxy.create({
+          promise: deferred.promise,
+        })
+      );
 
       proxy.get('promise');
 
@@ -361,7 +404,11 @@ moduleFor(
       RSVP.off('error', onerror);
     }
 
-    ['@test should work with promise inheritance'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should work with promise inheritance`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       class PromiseSubclass extends RSVP.Promise {}
 
       proxy = ObjectPromiseProxy.create({
@@ -371,7 +418,11 @@ moduleFor(
       assert.ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
     }
 
-    ['@test should reset isFulfilled and isRejected when promise is reset'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should reset isFulfilled and isRejected when promise is reset`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
 
       proxy = ObjectPromiseProxy.create({
@@ -470,7 +521,11 @@ moduleFor(
       );
     }
 
-    ['@test should have content when isFulfilled is set'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should have content when isFulfilled is set`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
 
       proxy = ObjectPromiseProxy.create({
@@ -482,7 +537,11 @@ moduleFor(
       run(deferred, 'resolve', true);
     }
 
-    ['@test should have reason when isRejected is set'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should have reason when isRejected is set`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let error = new Error('Y U REJECT?!?');
       let deferred = EmberRSVP.defer();
 
@@ -499,7 +558,11 @@ moduleFor(
       }
     }
 
-    ['@test should not error if promise is resolved after proxy has been destroyed'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should not error if promise is resolved after proxy has been destroyed`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
 
       proxy = ObjectPromiseProxy.create({
@@ -521,7 +584,11 @@ moduleFor(
       );
     }
 
-    ['@test should not error if promise is rejected after proxy has been destroyed'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test should not error if promise is rejected after proxy has been destroyed`](
+      assert
+    ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
 
       proxy = ObjectPromiseProxy.create({
@@ -543,9 +610,11 @@ moduleFor(
       );
     }
 
-    ['@test promise chain is not broken if promised is resolved after proxy has been destroyed'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test promise chain is not broken if promised is resolved after proxy has been destroyed`](
       assert
     ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
       let expectedValue = {};
       let receivedValue;
@@ -575,9 +644,11 @@ moduleFor(
       );
     }
 
-    ['@test promise chain is not broken if promised is rejected after proxy has been destroyed'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved)} @test promise chain is not broken if promised is rejected after proxy has been destroyed`](
       assert
     ) {
+      this.expectProxyDeprecations();
+
       let deferred = EmberRSVP.defer();
       let expectedReason = 'some reason';
       let receivedReason;

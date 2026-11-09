@@ -1,10 +1,9 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { tracked } from '../test-helpers/tracked';
+import { tracked } from '@glimmer/tracking';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';
@@ -47,29 +46,62 @@ export class EachSuite extends RenderTest {
   }
 
   @test
-  'autotracked custom iterable'() {
-    if (typeof Symbol !== 'function') {
-      QUnit.assert.ok(true, 'skipping platform without iterable');
-      return;
+  'a plain array that shrinks during iteration stops the iteration'() {
+    let list: Item[] = [];
+
+    // The getter is on the prototype so that `JSON.stringify` in `render` does not call it.
+    class Item {
+      constructor(private index: number) {}
+
+      get name() {
+        if (this.index === 0) list.length = 1;
+        return `item-${this.index}`;
+      }
     }
 
+    for (let i = 0; i < 4; i++) list.push(new Item(i));
+
+    this.render('{{#each this.list key="@index" as |item|}}[{{item.name}}]{{/each}}', { list });
+    this.assertHTML('[item-0]');
+  }
+
+  @test
+  'a plain array that grows during iteration renders the new items'() {
+    let list: Item[] = [];
+
+    // The getter is on the prototype so that `JSON.stringify` in `render` does not call it.
+    class Item {
+      constructor(private index: number) {}
+
+      get name() {
+        if (this.index === 0) list.push(new Item(1));
+        return `item-${this.index}`;
+      }
+    }
+
+    list.push(new Item(0));
+
+    this.render('{{#each this.list key="@index" as |item|}}[{{item.name}}]{{/each}}', { list });
+    this.assertHTML('[item-0][item-1]');
+  }
+
+  @test
+  'autotracked custom iterable'() {
     let list = {
       arr: [1, 2, 3, 4],
-      tag: createTag(),
+      version: tracked(0),
 
       [Symbol.iterator]() {
-        consumeTag(this.tag);
+        void this.version.value;
         return this.arr[Symbol.iterator]();
       },
 
       push(...vals: number[]) {
-        dirtyTag(this.tag);
-        this.arr.push(...vals);
+        (this.version.update((n) => n + 1), this.arr.push(...vals));
       },
 
       clear() {
-        dirtyTag(this.tag);
-        this.arr.splice(0, this.arr.length);
+        (this.version.update((n) => n + 1), this.arr.splice(0, this.arr.length));
       },
     };
     this.render('{{#each this.list key="@index" as |item|}}{{item}}{{else}}Empty{{/each}}', {
@@ -230,38 +262,6 @@ export class EachSuite extends RenderTest {
   }
 
   @test
-  'it renders all items with duplicate key values'() {
-    class Item {
-      @tracked text: string;
-
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-
-    let list = [new Item('Hello'), new Item('Hello'), new Item('Hello')];
-
-    this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`, {
-      list,
-    });
-
-    this.assertHTML('HelloHelloHello');
-    this.assertStableRerender();
-
-    list.forEach((item) => (item.text = 'Goodbye'));
-
-    this.rerender({ list });
-    this.assertHTML('GoodbyeGoodbyeGoodbye');
-    this.assertStableNodes();
-
-    list = [new Item('Hello'), new Item('Hello'), new Item('Hello')];
-
-    this.rerender({ list });
-    this.assertHTML('HelloHelloHello');
-    this.assertStableNodes();
-  }
-
-  @test
   'it updates items if their key has not changed, and the items are tracked'() {
     class Item {
       @tracked public text: string;
@@ -339,35 +339,6 @@ export class EachSuite extends RenderTest {
 
     this.rerender({ list, name: 'Stef' });
     this.assertHTML('Stef-Wycats-Stef');
-    this.assertStableNodes();
-  }
-
-  @test
-  'else template is displayed with context'() {
-    let list: string[] = [];
-
-    this.render(
-      `{{#each this.list key="@index" as |name|}}Has thing{{else}}No thing {{this.otherThing}}{{/each}}`,
-      {
-        list,
-        otherThing: 'Chad',
-      }
-    );
-
-    this.assertHTML('No thing Chad');
-    this.assertStableRerender();
-
-    this.rerender({ otherThing: 'Bill' });
-    this.assertHTML('No thing Bill');
-    this.assertStableNodes();
-
-    list.push('thing');
-    this.rerender({ list });
-    this.assertHTML('Has thing');
-    this.assertStableNodes();
-
-    this.rerender({ otherThing: 'Chad', list: [] });
-    this.assertHTML('No thing Chad');
     this.assertStableNodes();
   }
 

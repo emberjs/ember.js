@@ -1,7 +1,8 @@
 /* eslint-disable qunit/no-conditional-assertions, qunit/no-assert-logical-expression, qunit/no-early-return, no-console, no-throw-literal */
 import type { MatchCallback } from 'route-recognizer';
-import type { Route, Transition } from '../index';
+import type { Transition } from '../index';
 import type Router from '../index';
+
 import type { Dict, Maybe } from '../lib/core';
 import type {
   IModel,
@@ -15,22 +16,31 @@ import type { TransitionError } from '../lib/transition-state';
 import { Promise, reject } from 'rsvp';
 import {
   assertAbort,
+  associateManagement,
   createHandler,
   isExiting,
+  managementFor,
   replaceWith,
+  routeOf,
   shouldNotHappen,
   TestRouter,
   transitionToWithAbort,
   trigger,
   ignoreTransitionError,
 } from './test_helpers';
+import type { ClassicRoute } from './test_helpers';
 
-let router: Router<Route>;
+let router: Router;
 let url: string | undefined;
-let routes: Dict<Route>;
+let routes: Dict<ClassicRoute>;
 
 function isPresent(maybe: Maybe<PublicRouteInfo>): maybe is PublicRouteInfo {
   return maybe !== undefined && maybe !== null;
+}
+
+function currentLeafName(activeRouter: Router): string | undefined {
+  let routeInfos = activeRouter.state?.routeInfos ?? [];
+  return routeInfos[routeInfos.length - 1]?.name;
 }
 
 let serializers: Dict<SerializerFunc<unknown>>, expectedUrl: Maybe<string>;
@@ -39,7 +49,7 @@ let scenarios = [
     name: 'Sync Get Handler',
     async: false,
     getRoute: function (name: string) {
-      return routes[name] || (routes[name] = createHandler('empty'));
+      return managementFor(routes[name] || (routes[name] = createHandler('empty')));
     },
     getSerializer: function (_name: string) {
       return undefined;
@@ -50,8 +60,8 @@ let scenarios = [
     async: true,
     getRoute: function (name: string) {
       // Treat 'loading' route transitions are synchronous
-      let handler = routes[name] || (routes[name] = createHandler('empty'));
-      return name === 'loading' ? handler : Promise.resolve(handler);
+      let management = managementFor(routes[name] || (routes[name] = createHandler('empty')));
+      return name === 'loading' ? management : Promise.resolve(management);
     },
     getSerializer: function (name: string) {
       return serializers && serializers[name];
@@ -103,17 +113,16 @@ scenarios.forEach(function (scenario) {
       replaceURL(name: string) {
         this.updateURL(name);
       }
-      triggerEvent(
-        handlerInfos: RouteInfo<Route>[],
-        ignoreFailure: boolean,
-        name: string,
-        args: any[]
-      ) {
+      triggerEvent(handlerInfos: RouteInfo[], ignoreFailure: boolean, name: string, args: any[]) {
         trigger(handlerInfos, ignoreFailure, name, ...args);
       }
 
       getRoute(name: string) {
         return scenario.getRoute(name);
+      }
+
+      isRouteInaccessibleByURL(name: string) {
+        return Boolean(routes[name]?.inaccessibleByURL);
       }
 
       getSerializer(name: string) {
@@ -157,7 +166,7 @@ scenarios.forEach(function (scenario) {
     });
   });
 
-  function routePath(infos: RouteInfo<Route>[]) {
+  function routePath(infos: RouteInfo[]) {
     let path = [];
 
     for (let i = 0, l = infos.length; i < l; i++) {
@@ -1673,7 +1682,7 @@ scenarios.forEach(function (scenario) {
       if (error.wasAborted || transition.isAborted) {
         return logAbort(transition);
       } else {
-        transition.trigger(false, 'error', error.error, transition, error.route);
+        transition.trigger(false, 'error', error.error, transition, error.bucket);
         if (errorHandled) {
           transition.rollback();
           router.routeDidChange(transition);
@@ -1789,7 +1798,7 @@ scenarios.forEach(function (scenario) {
       if (error.wasAborted || transition.isAborted) {
         return logAbort(transition);
       } else {
-        transition.trigger(false, 'error', error.error, transition, error.route);
+        transition.trigger(false, 'error', error.error, transition, error.bucket);
         if (errorHandled) {
           transition.rollback();
           router.toInfos(transition, router.state!.routeInfos, true);
@@ -2313,7 +2322,7 @@ scenarios.forEach(function (scenario) {
         },
 
         setup: function (posts: Dict<unknown>, transition: Transition) {
-          assert.notOk(isExiting(this as unknown as Route, transition.routeInfos));
+          assert.notOk(isExiting(this as unknown as ClassicRoute, transition.routeInfos));
           assert.equal(
             posts,
             allPosts,
@@ -2323,7 +2332,7 @@ scenarios.forEach(function (scenario) {
         },
 
         exit: function (transition: Transition) {
-          assert.ok(isExiting(this as unknown as Route, transition.routeInfos));
+          assert.ok(isExiting(this as unknown as ClassicRoute, transition.routeInfos));
         },
       }),
 
@@ -2356,22 +2365,22 @@ scenarios.forEach(function (scenario) {
       }, shouldNotHappen(assert));
   });
 
-  QUnit.test('pivotHandler is exposed on Transition object', function (assert) {
+  QUnit.test('pivotBucket is exposed on Transition object', function (assert) {
     assert.expect(3);
 
     routes = {
       showAllPosts: createHandler('showAllPosts', {
         beforeModel: function (transition: Transition) {
-          assert.notOk(transition.pivotHandler, 'First route transition has no pivot route');
+          assert.notOk(transition.pivotBucket, 'First route transition has no pivot route');
         },
       }),
 
       showPopularPosts: createHandler('showPopularPosts', {
         beforeModel: function (transition: Transition) {
           assert.equal(
-            transition.pivotHandler,
-            routes['postIndex'],
-            'showAllPosts -> showPopularPosts pivotHandler is postIndex'
+            transition.pivotBucket,
+            managementFor(routes['postIndex']!).bucket,
+            'showAllPosts -> showPopularPosts pivotBucket is postIndex'
           );
         },
       }),
@@ -2380,7 +2389,7 @@ scenarios.forEach(function (scenario) {
 
       about: createHandler('about', {
         beforeModel: function (transition: Transition) {
-          assert.notOk(transition.pivotHandler, 'top-level transition has no pivotHandler');
+          assert.notOk(transition.pivotBucket, 'top-level transition has no pivotBucket');
         },
       }),
     };
@@ -2749,7 +2758,7 @@ scenarios.forEach(function (scenario) {
       }),
     };
     router.triggerEvent = function (
-      handlerInfos: RouteInfo<Route>[],
+      handlerInfos: RouteInfo[],
       ignoreFailure: boolean,
       name: string,
       args: any[]
@@ -2763,7 +2772,7 @@ scenarios.forEach(function (scenario) {
 
       for (let i = handlerInfos.length - 1; i >= 0; i--) {
         let handlerInfo = handlerInfos[i],
-          handler = handlerInfo!.route as any;
+          handler = routeOf(handlerInfo!) as any;
 
         if (handler.actions && handler.actions[name]) {
           if (handler.actions[name].apply(handler, args) !== true) {
@@ -3420,6 +3429,44 @@ scenarios.forEach(function (scenario) {
       );
     }
   );
+
+  QUnit.test('getInvokable rejection aborts the transition', async function (assert) {
+    assert.expect(4);
+
+    map(assert, function (match) {
+      match('/broken-invokable').to('brokenInvokable');
+    });
+
+    let error = new Error('invokable failed');
+    let route = createHandler('brokenInvokable', {
+      events: {
+        error(reason: Error) {
+          assert.strictEqual(reason, error, 'the error event receives the original rejection');
+        },
+      },
+    });
+    let manager = {
+      capabilities: { classicInterop: false },
+      willEnter() {},
+      enter() {
+        return Promise.resolve(undefined);
+      },
+      getInvokable() {
+        return reject(error);
+      },
+    };
+
+    associateManagement(route, manager as never, { route, invokable: undefined });
+    routes = { brokenInvokable: route };
+
+    let transition = router.handleURL('/broken-invokable');
+    assert.false(transition.isAborted, 'the transition starts active');
+
+    let rejection = await transition.catch((reason) => reason);
+
+    assert.strictEqual(rejection, error, 'the original rejection propagates');
+    assert.true(transition.isAborted, 'the failed transition is aborted');
+  });
 
   QUnit.test('error handler gets called for errors in validation hooks', function (assert) {
     assert.expect(25);
@@ -4432,25 +4479,22 @@ scenarios.forEach(function (scenario) {
       });
   });
 
-  QUnit.test('a successful transition resolves with the target handler', function (assert) {
+  QUnit.test('a successful transition enters the target handler', function (assert) {
     assert.expect(2);
 
-    // Note: this is extra convenient for Ember where you can all
-    // .transitionTo right on the route.
-
     routes = {
-      index: createHandler('index', { borfIndex: true }),
-      about: createHandler('about', { borfAbout: true }),
+      index: createHandler('index'),
+      about: createHandler('about'),
     };
 
-    router
+    return router
       .handleURL('/index')
-      .then(function (route: Route) {
-        assert.ok((route as any)['borfIndex'], 'resolved to index handler');
+      .then(function () {
+        assert.equal(currentLeafName(router), 'index', 'entered the index handler');
         return router.transitionTo('about');
       }, shouldNotHappen(assert))
-      .then(function (result: Dict<unknown>) {
-        assert.ok(result['borfAbout'], 'resolved to about handler');
+      .then(function () {
+        assert.equal(currentLeafName(router), 'about', 'entered the about handler');
       });
   });
 
@@ -4830,23 +4874,23 @@ scenarios.forEach(function (scenario) {
       router
         .transitionTo('/index')
         .followRedirects()
-        .then(function (handler: Route) {
+        .then(function () {
           assert.equal(
-            handler,
-            routes['index'],
+            currentLeafName(router),
+            'index',
             'followRedirects works with non-redirecting transitions'
           );
 
           return router.transitionTo('about').followRedirects();
         })
-        .then(function (handler: Route) {
+        .then(function () {
           assert.equal(
-            handler,
-            routes['faq'],
-            'followRedirects promise resolved with redirected faq handler'
+            currentLeafName(router),
+            'faq',
+            'followRedirects settled on the redirected faq route'
           );
 
-          (routes['about'] as Route).beforeModel = function (transition: Transition) {
+          (routes['about'] as ClassicRoute).beforeModel = function (transition: Transition) {
             transition.abort();
             return undefined;
           };
@@ -4882,10 +4926,10 @@ scenarios.forEach(function (scenario) {
       router
         .transitionTo('/index')
         .followRedirects()
-        .then(function (handler: Route) {
+        .then(function () {
           assert.equal(
-            handler,
-            routes['about'],
+            currentLeafName(router),
+            'about',
             'followRedirects works with redirect from async hook transitions'
           );
         });
@@ -4932,7 +4976,7 @@ scenarios.forEach(function (scenario) {
       let originalGetHandler = router.getRoute;
       router.getRoute = function () {
         assert.ok(false, 'getHandler should not be called');
-        return createHandler('empty');
+        return managementFor(createHandler('empty'));
       };
 
       assert.equal(router.generate('index'), '/index', 'just index');
@@ -5183,9 +5227,9 @@ scenarios.forEach(function (scenario) {
       router.getRoute = function (name) {
         count++;
 
-        return Promise.resolve(scenario.getRoute.call(null, name)).then(function (handler: Route) {
+        return Promise.resolve(scenario.getRoute.call(null, name)).then(function (management) {
           assert.equal(count, handlerCount);
-          return handler;
+          return management;
         });
       };
 
@@ -5728,7 +5772,7 @@ scenarios.forEach(function (scenario) {
       assert.expect(11);
 
       let counter = 1,
-        willResolves: Route[],
+        willResolves: ClassicRoute[],
         appModel = {},
         fooModel = {};
 
@@ -5747,7 +5791,7 @@ scenarios.forEach(function (scenario) {
             assert.equal(obj, appModel, 'application#setup is passed the return value from model');
           },
           events: {
-            willResolveModel: function (_transition: Transition, handler: Route) {
+            willResolveModel: function (_transition: Transition, handler: ClassicRoute) {
               assert.equal(
                 willResolves.shift(),
                 handler,

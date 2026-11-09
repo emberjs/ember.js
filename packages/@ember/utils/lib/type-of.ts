@@ -1,4 +1,5 @@
 import CoreObject from '@ember/object/core';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 export type TypeName =
   | 'undefined'
@@ -96,9 +97,15 @@ const { toString } = Object.prototype;
   @param item the item to check
   @return {String} the type
   @public
+  @deprecated Use native JavaScript instead.
   @static
 */
 export default function typeOf(item: unknown): TypeName {
+  deprecateUntil(
+    '`typeOf` from `@ember/utils` is deprecated. Use native JavaScript instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
+  );
+
   if (item === null) {
     return 'null';
   }

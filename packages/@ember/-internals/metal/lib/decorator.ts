@@ -2,6 +2,15 @@ import type { Meta } from '@ember/-internals/meta/lib/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  onClassFinalized,
+  type StandardGetterDecorator,
+  type StandardMethodDecorator,
+  type StandardSetterDecorator,
+} from './decorator-util';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -36,14 +45,30 @@ export function isElementDescriptor(args: unknown[]): args is ElementDescriptor 
   );
 }
 
-export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
-  let decorator = function () {
+export function isDecoratorCall(
+  args: unknown[]
+): args is ElementDescriptor | Parameters<Decorator> {
+  return isElementDescriptor(args) || isModernDecoratorArgs(args);
+}
+
+export function nativeDescDecorator(
+  propertyDesc: PropertyDescriptor
+): ExtendedMethodDecorator &
+  StandardGetterDecorator &
+  StandardSetterDecorator &
+  StandardMethodDecorator {
+  let decorator = function (...args: unknown[]): DecoratorPropertyDescriptor {
+    if (isModernDecoratorArgs(args)) {
+      nativeDescDecorator2023(args, propertyDesc);
+      return undefined;
+    }
     return propertyDesc;
   };
 
   setClassicDecorator(decorator);
 
-  return decorator;
+  // SAFETY: the implementation handles both legacy and standard decorator args.
+  return decorator as unknown as ReturnType<typeof nativeDescDecorator>;
 }
 
 /**
@@ -113,32 +138,23 @@ export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
 ): ExtendedMethodDecorator {
-  let decorator = function COMPUTED_DECORATOR(
-    target: object,
-    key: string,
-    propertyDesc?: DecoratorPropertyDescriptor,
-    maybeMeta?: Meta,
-    isClassicDecorator?: boolean
-  ): DecoratorPropertyDescriptor {
-    assert(
-      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
-      isClassicDecorator ||
-        !propertyDesc ||
-        !propertyDesc.get ||
-        !COMPUTED_GETTERS.has(propertyDesc.get)
-    );
+  let decorator = function COMPUTED_DECORATOR(...args: unknown[]): DecoratorPropertyDescriptor {
+    if (isModernDecoratorArgs(args)) {
+      return computedDecorator2023(args, desc) as unknown as DecoratorPropertyDescriptor;
+    }
 
-    let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
+    let [target, key, propertyDesc, maybeMeta, isClassicDecorator] = args as [
+      object,
+      string,
+      DecoratorPropertyDescriptor | undefined,
+      Meta | undefined,
+      boolean | undefined,
+    ];
+
+    let meta = args.length < 4 ? metaFor(target) : maybeMeta;
     desc.setup(target, key, propertyDesc, meta!);
 
-    let computedDesc: PropertyDescriptor = {
-      enumerable: desc.enumerable,
-      configurable: desc.configurable,
-      get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
-      set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
-    };
-
-    return computedDesc;
+    return makeDescriptor(desc, key, propertyDesc, isClassicDecorator);
   };
 
   setClassicDecorator(decorator, desc);
@@ -146,6 +162,85 @@ export function makeComputedDecorator(
   Object.setPrototypeOf(decorator, DecoratorClass.prototype);
 
   return decorator;
+}
+
+function makeDescriptor(
+  desc: ComputedDescriptor,
+  key: string,
+  propertyDesc?: DecoratorPropertyDescriptor,
+  isClassicDecorator?: boolean
+): PropertyDescriptor {
+  assert(
+    `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
+    isClassicDecorator ||
+      !propertyDesc ||
+      !propertyDesc.get ||
+      !COMPUTED_GETTERS.has(propertyDesc.get)
+  );
+
+  let computedDesc: PropertyDescriptor = {
+    enumerable: desc.enumerable,
+    configurable: desc.configurable,
+    get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
+    set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
+  };
+  return computedDesc;
+}
+
+function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
+  const dec = identifyModernDecoratorArgs(args);
+
+  switch (dec.kind) {
+    case 'field': {
+      let key = dec.context.name as string;
+      onClassFinalized(dec.context, (proto) => {
+        desc.setup(proto, key, undefined, metaFor(proto));
+        Object.defineProperty(proto, key, makeDescriptor(desc, key));
+      });
+      // The class field itself would otherwise shadow the prototype's accessor.
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(this, key, makeDescriptor(desc, key));
+      });
+      return undefined;
+    }
+    case 'setter':
+    case 'getter': {
+      let key = dec.context.name as string;
+      onClassFinalized(dec.context, (proto) => {
+        let propertyDesc = Object.getOwnPropertyDescriptor(proto, key);
+        desc.setup(proto, key, propertyDesc, metaFor(proto));
+        Object.defineProperty(proto, key, makeDescriptor(desc, key, propertyDesc));
+      });
+      return undefined;
+    }
+    case 'method':
+      assert(
+        `@computed can only be used on accessors or fields, attempted to use it with ${dec.context.name.toString()} but that was a method. Try converting it to a getter (e.g. \`get ${dec.context.name.toString()}() {}\`)`,
+        false
+      );
+    // TS knows "assert()" is terminal and will complain about unreachable code if
+    // I use a break here. ESLint complains if I *don't* use a break here.
+    // eslint-disable-next-line no-fallthrough
+    default:
+      throw new Error(
+        `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
+      );
+  }
+}
+
+// Under legacy decorators, the descriptor returned by `nativeDescDecorator` gets
+// passed to `Object.defineProperty` on the prototype, which merges it into the
+// existing descriptor (e.g. keeping a getter while making it non-enumerable).
+// Stage 3 decorators can't return descriptors, so we apply it ourselves.
+function nativeDescDecorator2023(args: Parameters<Decorator>, propertyDesc: PropertyDescriptor) {
+  const dec = identifyModernDecoratorArgs(args);
+  assert(
+    `nativeDescDecorator can only be used on methods and accessors, attempted to use it with ${dec.context.name?.toString()} which is a ${dec.kind}`,
+    dec.kind === 'method' || dec.kind === 'getter' || dec.kind === 'setter'
+  );
+  onClassFinalized(dec.context, (proto) => {
+    Object.defineProperty(proto, dec.context.name, propertyDesc);
+  });
 }
 
 /////////////

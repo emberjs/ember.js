@@ -58,6 +58,167 @@ moduleFor(
       assert.equal(tom.fullName, 'Thomas Dale');
     }
 
+    '@test a read of the getter does not hide a change from a computed property'(assert) {
+      class Person {
+        @tracked firstName = 'Tom';
+        @tracked lastName = 'Dale';
+
+        @dependentKeyCompat
+        get givenName() {
+          return this.firstName;
+        }
+
+        @computed('givenName', 'lastName')
+        get fullName() {
+          return `${this.givenName} ${this.lastName}`;
+        }
+      }
+
+      let tom = new Person();
+
+      assert.strictEqual(tom.fullName, 'Tom Dale');
+
+      tom.firstName = 'Thomas';
+
+      assert.strictEqual(
+        tom.givenName,
+        'Thomas',
+        'the getter is read before the computed property'
+      );
+      assert.strictEqual(tom.fullName, 'Thomas Dale');
+
+      tom.firstName = 'Tomster';
+
+      assert.strictEqual(tom.givenName, 'Tomster');
+      assert.strictEqual(tom.givenName, 'Tomster', 'the getter is read two times');
+      assert.strictEqual(tom.fullName, 'Tomster Dale');
+    }
+
+    '@test a read of the getter does not hide a change from a computed property on another object'(
+      assert
+    ) {
+      class Person {
+        @tracked firstName = 'Tom';
+
+        @dependentKeyCompat
+        get givenName() {
+          return this.firstName;
+        }
+      }
+
+      class Badge {
+        person = new Person();
+
+        @computed('person.givenName')
+        get label() {
+          return `Hello, ${this.person.givenName}`;
+        }
+      }
+
+      let badge = new Badge();
+
+      assert.strictEqual(badge.label, 'Hello, Tom');
+
+      badge.person.firstName = 'Thomas';
+
+      assert.strictEqual(badge.person.givenName, 'Thomas');
+      assert.strictEqual(badge.label, 'Hello, Thomas');
+    }
+
+    '@test a read of the getter does not hide a change in classic classes'(assert) {
+      let Person = class extends EmberObject {
+        @tracked
+        firstName = 'Tom';
+        @tracked
+        lastName = 'Dale';
+
+        @dependentKeyCompat
+        get givenName() {
+          return this.firstName;
+        }
+
+        @computed('givenName', 'lastName')
+        get fullName() {
+          return `${this.givenName} ${this.lastName}`;
+        }
+      };
+
+      let tom = Person.create();
+
+      assert.strictEqual(tom.fullName, 'Tom Dale');
+
+      tom.firstName = 'Thomas';
+
+      assert.strictEqual(tom.givenName, 'Thomas');
+      assert.strictEqual(tom.fullName, 'Thomas Dale');
+    }
+
+    '@test a computed property follows the properties that the getter reads now'(assert) {
+      class Person {
+        @tracked firstName = 'Tom';
+        @tracked nickname = 'Tomster';
+        @tracked useNickname = false;
+
+        @dependentKeyCompat
+        get givenName() {
+          return this.useNickname ? this.nickname : this.firstName;
+        }
+
+        @computed('givenName')
+        get greeting() {
+          return `Hello, ${this.givenName}`;
+        }
+      }
+
+      let tom = new Person();
+
+      assert.strictEqual(tom.greeting, 'Hello, Tom');
+
+      tom.useNickname = true;
+
+      assert.strictEqual(tom.givenName, 'Tomster');
+      assert.strictEqual(tom.greeting, 'Hello, Tomster');
+
+      tom.nickname = 'Zoey';
+
+      assert.strictEqual(tom.givenName, 'Zoey');
+      assert.strictEqual(tom.greeting, 'Hello, Zoey');
+    }
+
+    async '@test a read of the getter does not hide a change from an async observer'(assert) {
+      let Person = EmberObject.extend({
+        firstName: tracked({ value: 'Tom' }),
+
+        givenName: dependentKeyCompat({
+          get() {
+            return this.firstName;
+          },
+        }),
+
+        givenNameObserver: observer({
+          dependentKeys: ['givenName'],
+          fn() {
+            assert.step(`givenName changed to ${this.givenName}`);
+          },
+          sync: false,
+        }),
+      });
+
+      let tom = Person.create();
+
+      assert.strictEqual(tom.givenName, 'Tom');
+
+      tom.firstName = 'Thomas';
+
+      assert.strictEqual(tom.givenName, 'Thomas', 'the getter is read before the observer runs');
+
+      await runLoopSettled();
+
+      assert.verifySteps(['givenName changed to Thomas']);
+
+      tom.destroy();
+    }
+
     async '@test it works with async observers'(assert) {
       let count = 0;
 

@@ -1,6 +1,5 @@
-import { A as emberA } from '@ember/array';
 import { AbstractTestCase } from 'internal-test-helpers';
-import { runArrayTests } from '../helpers/array';
+import { runArrayTests, emberA } from '../helpers/array';
 
 class AnyTests extends AbstractTestCase {
   '@test any should should invoke callback on each item as long as you return false'() {

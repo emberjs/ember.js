@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { setComponentManager } from '@ember/component';
-import GlimmerComponentManager from './-private/ember-component-manager';
-import _GlimmerComponent, { type Args } from './-private/component';
+import GlimmerComponentManager from './-private/ember-component-manager.js';
+import _GlimmerComponent, { type Args } from './-private/component.js';
 import { setOwner, type default as Owner } from '@ember/owner';
 
 /**

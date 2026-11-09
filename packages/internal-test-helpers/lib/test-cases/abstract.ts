@@ -5,10 +5,11 @@ import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import { assertInvariants, getElement, takeSnapshot } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
-import { runDestroy, runLoopSettled, runTask } from '../run';
+import { runLoopSettled } from '../run';
 import { assert } from '@ember/debug';
 import { rerenderComponent } from '../component-helper';
-import { _resetRenderers } from '@ember/-internals/glimmer';
+import { _resetRenderers, renderSettled } from '@ember/-internals/glimmer';
+import { destroy } from '@glimmer/destroyable';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -44,9 +45,10 @@ export abstract class AbstractStrictTestCase {
     this.assert = assert;
   }
 
-  afterEach() {
+  async afterEach() {
     try {
-      runDestroy(this);
+      destroy(this);
+      await renderSettled();
     } finally {
       _resetRenderers();
     }
@@ -56,9 +58,10 @@ export abstract class AbstractStrictTestCase {
     this.snapshot = takeSnapshot();
   }
 
-  assertStableRerender() {
+  async assertStableRerender() {
     this.takeSnapshot();
-    runTask(() => rerenderComponent());
+    rerenderComponent();
+    await renderSettled();
     this.assertInvariants();
   }
 

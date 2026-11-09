@@ -1,14 +1,14 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import Component from '@glimmer/component';
-import { Component as EmberComponent } from '../../utils/helpers';
+import { tracked } from '@glimmer/tracking';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+
+import { PositionalComponent } from '../../utils/positional-component';
 
 moduleFor(
   'Components test: contextual components',
@@ -28,207 +28,6 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText(expectedText);
-    }
-
-    ['@test renders with component helper with invocation params, hash']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      this.render(strip`
-      {{component (component "-looked-up") "Hodari" greeting="Hodi"}}`);
-
-      this.assertText('Hodi Hodari');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hodi Hodari');
-    }
-
-    ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
-        model: {
-          greeting: 'Gabon ',
-          name: 'Zack',
-        },
-      });
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack');
-
-      runTask(() => this.context.set('model.name', 'Matthew'));
-
-      this.assertText('Good morning Matthew');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
-
-      this.assertText('Gabon Zack');
-    }
-
-    // Take a look at this one. Seems to pass even when currying isn't implemented.
-    ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack ',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack Zack Good morning ');
-
-      runTask(() => this.context.set('model.name', 'Matthew '));
-
-      this.assertText('Good morning Matthew Matthew Good morning ');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
-
-      this.assertText('Gabon Zack Zack Gabon ');
-    }
-
-    ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack');
-
-      runTask(() => this.context.set('model.name', 'Matthew'));
-
-      this.assertText('Good morning Matthew');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
-
-      this.assertText('Gabon Zack');
-    }
-
-    ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack ',
-          },
-        }
-      );
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Gabon Zack Zack Gabon ');
-
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
-
-      this.assertText('Good morning Zack Zack Good morning ');
-
-      runTask(() => this.context.set('model.name', 'Matthew '));
-
-      this.assertText('Good morning Matthew Matthew Good morning ');
-
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
-
-      this.assertText('Gabon Zack Zack Gabon ');
-    }
-
-    ['@test renders with component helper with curried params, hash']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      this.render(strip`
-      {{component (component "-looked-up" "Hodari" greeting="Hodi")
-                  greeting="Hola"}}`);
-
-      this.assertText('Hola Hodari');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hola Hodari');
     }
 
     ['@test updates when component path is bound']() {
@@ -323,48 +122,6 @@ moduleFor(
       this.assertText('Hodi');
     }
 
-    ['@test nested components do not overwrite positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render(
-        '{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}'
-      );
-
-      this.assertText('Sergio 29');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Sergio 29');
-    }
-
-    ['@test positional parameters are combined not clobbered']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends EmberComponent {
-            static positionalParams = ['greeting', 'name', 'age'];
-          }
-        )
-      );
-
-      this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
-
-      this.assertText('Hi Max 9');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hi Max 9');
-    }
-
     ['@test nested components overwrite hash parameters']() {
       this.owner.register(
         'component:-looked-up',
@@ -403,69 +160,12 @@ moduleFor(
       this.assertText('Hodi Sigmundur 33');
     }
 
-    ['@test bound outer named parameters get updated in the right scope']() {
-      this.owner.register(
-        'component:-inner-component',
-        setComponentTemplate(
-          precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends EmberComponent {
-            static positionalParams = ['comp'];
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
-            static positionalParams = ['name', 'age'];
-          }
-        )
-      );
-
-      this.render(
-        '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
-        {
-          model: {
-            outerName: 'Outer',
-            outerAge: 28,
-          },
-        }
-      );
-
-      this.assertText('Outer 28');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Outer 28');
-
-      runTask(() => this.context.set('model.outerAge', 29));
-
-      this.assertText('Outer 29');
-
-      runTask(() => this.context.set('model.outerName', 'Not outer'));
-
-      this.assertText('Not outer 29');
-
-      runTask(() => {
-        this.context.set('model', {
-          outerName: 'Outer',
-          outerAge: 28,
-        });
-      });
-
-      this.assertText('Outer 28');
-    }
-
     ['@test bound outer hash parameters get updated in the right scope']() {
       this.owner.register(
         'component:-inner-component',
         setComponentTemplate(
-          precompileTemplate('{{component this.comp name="Inner"}}'),
-          class extends EmberComponent {
-            static positionalParams = ['comp'];
-          }
+          precompileTemplate('{{component @comp name="Inner"}}'),
+          class extends Component {}
         )
       );
 
@@ -475,7 +175,7 @@ moduleFor(
       );
 
       this.render(
-        '{{component "-inner-component" (component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
+        '{{component "-inner-component" comp=(component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
         {
           model: {
             outerName: 'Outer',
@@ -506,40 +206,6 @@ moduleFor(
       });
 
       this.assertText('Inner 28');
-    }
-
-    ['@test conflicting positional and hash parameters does not raise an assertion if rerendered']() {
-      // In some cases, rerendering with a positional param used to cause an
-      // assertion. This test checks it does not.
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
-            static positionalParams = ['name'];
-          }
-        )
-      );
-
-      this.render('{{component (component "-looked-up" this.model.name greeting="Hodi")}}', {
-        model: {
-          name: 'Hodari',
-        },
-      });
-
-      this.assertText('Hodi Hodari');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hodi Hodari');
-
-      runTask(() => this.context.set('model.name', 'Sergio'));
-
-      this.assertText('Hodi Sergio');
-
-      runTask(() => this.context.set('model', { name: 'Hodari' }));
-
-      this.assertText('Hodi Hodari');
     }
 
     ['@test component with dynamic component name resolving to undefined, then an existing component']() {
@@ -757,86 +423,12 @@ moduleFor(
       this.assertText(expectedText);
     }
 
-    ['@test renders with dot path and with rest positional parameters']() {
-      this.owner.register(
-        'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.params}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      let expectedText = 'Hodi';
-
-      this.render(
-        strip`
-      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
-        {{object.lookedup this.model.expectedText "Hola"}}
-      {{/let}}`,
-        {
-          model: {
-            expectedText,
-          },
-        }
-      );
-
-      this.assertText(`${expectedText},Hola`);
-
-      runTask(() => this.rerender());
-
-      this.assertText(`${expectedText},Hola`);
-
-      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
-
-      this.assertText('Kaixo,Hola');
-
-      runTask(() => this.context.set('model', { expectedText }));
-
-      this.assertText(`${expectedText},Hola`);
-    }
-
-    ['@test renders with dot path and rest parameter does not leak'](assert) {
-      // In the original implementation, positional parameters were not handled
-      // correctly causing the first positional parameter to be the contextual
-      // component itself.
-      let value = false;
-
-      this.owner.register(
-        'component:my-component',
-        class extends EmberComponent {
-          static positionalParams = ['value'];
-
-          didReceiveAttrs() {
-            value = this.getAttr('value');
-          }
-        }
-      );
-
-      this.render(
-        strip`
-      {{#let (hash my-component=(component 'my-component' this.first)) as |c|}}
-        {{c.my-component}}
-      {{/let}}`,
-        { first: 'first' }
-      );
-
-      assert.equal(value, 'first', 'value is the expected parameter');
-    }
-
     ['@test renders with dot path and updates attributes'](assert) {
       this.owner.register(
         'component:my-nested-component',
         setComponentTemplate(
-          precompileTemplate('<span id="nested-prop">{{this.myProp}}</span>'),
-          class extends EmberComponent {
-            static positionalParams = ['my-parent-attr'];
-
-            didReceiveAttrs() {
-              this.set('myProp', this.getAttr('my-parent-attr'));
-            }
-          }
+          precompileTemplate('<span id="nested-prop">{{@my-parent-attr}}</span>'),
+          class extends Component {}
         )
       );
 
@@ -854,21 +446,17 @@ moduleFor(
         'component:my-action-component',
         setComponentTemplate(
           precompileTemplate(
-            '{{#my-component my-attr=this.myProp as |api|}}{{api.my-nested-component}}{{/my-component}}<br><button onclick={{this.changeValue}}>Change value</button>'
+            '{{#my-component my-attr=@myProp as |api|}}{{api.my-nested-component}}{{/my-component}}<br><button onclick={{@changeValue}}>Change value</button>'
           ),
-          class extends EmberComponent {
-            @action
-            changeValue() {
-              this.incrementProperty('myProp');
-            }
-          }
+          class extends Component {}
         )
       );
 
-      this.render('{{my-action-component myProp=this.model.myProp}}', {
+      this.render('{{my-action-component myProp=this.model.myProp changeValue=this.changeValue}}', {
         model: {
           myProp: 1,
         },
+        changeValue: () => this.context.set('model.myProp', this.context.model.myProp + 1),
       });
 
       assert.equal(this.$('#nested-prop').text(), '1');
@@ -919,103 +507,6 @@ moduleFor(
       this.assertText('Foo');
     }
 
-    ['@test parameters in a contextual component are mutable when value is a param'](assert) {
-      // This checks that a `(mut)` is added to parameters and attributes to
-      // contextual components when it is a param.
-      this.owner.register(
-        'component:change-button',
-        setComponentTemplate(
-          precompileTemplate(
-            '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
-          ),
-          class extends EmberComponent {
-            static positionalParams = ['val'];
-          }
-        )
-      );
-
-      this.render(
-        strip`
-      {{component (component "change-button" this.model.val2)}}
-      <span class="value">{{this.model.val2}}</span>`,
-        {
-          model: {
-            val2: 8,
-          },
-        }
-      );
-
-      assert.equal(this.$('.value').text(), '8');
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$('.value').text(), '8');
-
-      runTask(() => this.$('.my-button').click());
-
-      assert.equal(this.$('.value').text(), '10');
-
-      runTask(() => this.context.set('model', { val2: 8 }));
-
-      assert.equal(this.$('.value').text(), '8');
-    }
-
-    ['@test tagless blockless components render'](assert) {
-      this.owner.register(
-        'component:my-comp',
-        class extends EmberComponent {
-          tagName = '';
-        }
-      );
-
-      this.render(`{{my-comp}}`);
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$().text(), '');
-    }
-
-    ['@test GH#13494 tagless blockless component with property binding'](assert) {
-      this.owner.register(
-        'component:outer-component',
-        setComponentTemplate(
-          precompileTemplate(
-            'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
-          ),
-          class extends EmberComponent {
-            message = 'hello';
-            @action
-            change() {
-              this.set('message', 'goodbye');
-            }
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:inner-component',
-        class extends EmberComponent {
-          tagName = '';
-        }
-      );
-
-      this.render(`{{outer-component}}`);
-
-      assert.equal(this.$().text(), 'message: hello');
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$().text(), 'message: hello');
-
-      runTask(() => this.$('button').click());
-
-      assert.equal(this.$().text(), 'message: goodbye');
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$().text(), 'message: goodbye');
-    }
-
     ['@test GH#13982 contextual component ref is stable even when bound params change'](assert) {
       let instance, previousInstance;
       let initCount = 0;
@@ -1046,35 +537,35 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'a instance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
@@ -1113,35 +604,35 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'a instance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
@@ -1195,22 +686,22 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'a instance was created');
       assert.equal(previousInstance, undefined, 'there is no previous instance');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'a instance exists after rerender');
+      assert.ok(instance, 'a instance exists after rerender');
       assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       runTask(() => this.context.set('compName', 'your-comp'));
 
-      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
-      assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
+      assert.ok(instance, 'an instance was created after component name changed');
+      assert.ok(previousInstance, 'a previous instance now exists');
       assert.notEqual(
         instance,
         previousInstance,
@@ -1221,11 +712,8 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.ok(
-        !isEmpty(instance),
-        'an instance was created after component name changed (rerender)'
-      );
-      assert.ok(!isEmpty(previousInstance), 'a previous instance now exists (rerender)');
+      assert.ok(instance, 'an instance was created after component name changed (rerender)');
+      assert.ok(previousInstance, 'a previous instance now exists (rerender)');
       assert.notEqual(
         instance,
         previousInstance,
@@ -1236,8 +724,8 @@ moduleFor(
 
       runTask(() => this.context.set('compName', 'my-comp'));
 
-      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
-      assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
+      assert.ok(instance, 'an instance was created after component name changed');
+      assert.ok(previousInstance, 'a previous instance still exists');
       assert.notEqual(
         instance,
         previousInstance,
@@ -1245,93 +733,6 @@ moduleFor(
       );
       assert.equal(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
       assert.equal(this.$().text(), 'my-comp: open');
-    }
-
-    ['@test GH#14508 rest positional params are received when passed as named parameter']() {
-      this.owner.register(
-        'component:my-link',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render('{{component (component "my-link") params=this.allParams}}', {
-        allParams: emberA(['a', 'b']),
-      });
-
-      this.assertText('ab');
-
-      runTask(() => this.rerender());
-
-      this.assertText('ab');
-
-      runTask(() => this.context.get('allParams').pushObject('c'));
-
-      this.assertText('abc');
-
-      runTask(() => this.context.get('allParams').popObject());
-
-      this.assertText('ab');
-
-      runTask(() => this.context.get('allParams').clear());
-
-      this.assertText('');
-
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
-
-      this.assertText('12');
-
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
-
-      this.assertText('ab');
-    }
-
-    ['@test GH#14508 rest positional params are received when passed as named parameter with dot notation']() {
-      this.owner.register(
-        'component:my-link',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
-            positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(
-        '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=this.allParams}}{{/let}}',
-        {
-          allParams: emberA(['a', 'b']),
-        }
-      );
-
-      this.assertText('ab');
-
-      runTask(() => this.rerender());
-
-      this.assertText('ab');
-
-      runTask(() => this.context.get('allParams').pushObject('c'));
-
-      this.assertText('abc');
-
-      runTask(() => this.context.get('allParams').popObject());
-
-      this.assertText('ab');
-
-      runTask(() => this.context.get('allParams').clear());
-
-      this.assertText('');
-
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
-
-      this.assertText('12');
-
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
-
-      this.assertText('ab');
     }
 
     ['@test it can invoke input component']() {
@@ -1385,6 +786,45 @@ moduleFor(
       this.assert.strictEqual('foo', this.firstChild.value);
     }
 
+    ['@test GH#13494 component without content with an argument binding'](assert) {
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate(
+            'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
+          ),
+          class extends Component {
+            @tracked message = 'hello';
+            @action
+            change() {
+              this.message = 'goodbye';
+            }
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:inner-component',
+        setComponentTemplate(precompileTemplate(''), class extends Component {})
+      );
+
+      this.render(`{{outer-component}}`);
+
+      assert.equal(this.$().text(), 'message: hello');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$().text(), 'message: hello');
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(this.$().text(), 'message: goodbye');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$().text(), 'message: goodbye');
+    }
+
     ['@test GH#17121 local variable should win over helper (without arguments)']() {
       this.registerHelper('foo', () => 'foo helper');
 
@@ -1404,32 +844,6 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#17121 local variable should win over helper (with arguments)']() {
-      this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate(
-            'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
-          ),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render(strip`
-        {{#let (component 'foo-bar') as |foo|}}
-          {{foo 1 2 3}}
-        {{/let}}
-      `);
-
-      this.assertText('foo-bar component: 1 2 3');
-
-      this.assertStableRerender();
-    }
-
     ['@test RFC#311 invoking named args (without arguments)']() {
       this.owner.register(
         'component:x-outer',
@@ -1443,29 +857,6 @@ moduleFor(
       this.render('{{x-outer inner=(component "x-inner")}}');
 
       this.assertText('inner');
-
-      this.assertStableRerender();
-    }
-
-    ['@test RFC#311 invoking named args (with arguments)']() {
-      this.owner.register(
-        'component:x-outer',
-        setComponentTemplate(precompileTemplate('{{@inner 1 2 3}}'), class extends Component {})
-      );
-
-      this.owner.register(
-        'component:x-inner',
-        setComponentTemplate(
-          precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends EmberComponent {
-            static positionalParams = 'params';
-          }
-        )
-      );
-
-      this.render('{{x-outer inner=(component "x-inner")}}');
-
-      this.assertText('inner: 1 2 3');
 
       this.assertStableRerender();
     }
@@ -1585,6 +976,393 @@ moduleFor(
 
       this.assertText('true');
     }
+
+    ['@test renders with component helper with invocation params, hash']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{@greeting}} {{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      {{component (component "-looked-up") "Hodari" greeting="Hodi"}}`);
+
+      this.assertText('Hodi Hodari');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Hodi Hodari');
+    }
+
+    ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
+        model: {
+          greeting: 'Gabon ',
+          name: 'Zack',
+        },
+      });
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack');
+
+      runTask(() => this.context.set('model.name', 'Matthew'));
+
+      this.assertText('Good morning Matthew');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+
+      this.assertText('Gabon Zack');
+    }
+
+    ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack ',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack Zack Good morning ');
+
+      runTask(() => this.context.set('model.name', 'Matthew '));
+
+      this.assertText('Good morning Matthew Matthew Good morning ');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+
+      this.assertText('Gabon Zack Zack Gabon ');
+    }
+
+    ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack');
+
+      runTask(() => this.context.set('model.name', 'Matthew'));
+
+      this.assertText('Good morning Matthew');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+
+      this.assertText('Gabon Zack');
+    }
+
+    ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack ',
+          },
+        }
+      );
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Gabon Zack Zack Gabon ');
+
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+      this.assertText('Good morning Zack Zack Good morning ');
+
+      runTask(() => this.context.set('model.name', 'Matthew '));
+
+      this.assertText('Good morning Matthew Matthew Good morning ');
+
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+
+      this.assertText('Gabon Zack Zack Gabon ');
+    }
+
+    ['@test renders with component helper with curried params, hash']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{@greeting}} {{#each this.positional as |p|}}{{p}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+      {{component (component "-looked-up" "Hodari" greeting="Hodi")
+                  greeting="Hola"}}`);
+
+      this.assertText('Hola Hodari');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Hola Hodari');
+    }
+
+    ['@test nested components do not overwrite positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}'
+      );
+
+      this.assertText('[Sergio][29][Marvin][21][Hodari]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Sergio][29][Marvin][21][Hodari]');
+    }
+
+    ['@test positional parameters are combined not clobbered']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
+
+      this.assertText('[Hi][Max][9]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Hi][Max][9]');
+    }
+
+    ['@test bound outer named parameters get updated in the right scope']() {
+      this.owner.register(
+        'component:-inner-component',
+        setComponentTemplate(
+          precompileTemplate('{{component (get this.positional 0) "Inner"}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(
+        '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
+        {
+          model: {
+            outerName: 'Outer',
+            outerAge: 28,
+          },
+        }
+      );
+
+      this.assertText('[Outer][28][Inner]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[Outer][28][Inner]');
+
+      runTask(() => this.context.set('model.outerAge', 29));
+
+      this.assertText('[Outer][29][Inner]');
+
+      runTask(() => this.context.set('model.outerName', 'Not outer'));
+
+      this.assertText('[Not outer][29][Inner]');
+
+      runTask(() => {
+        this.context.set('model', {
+          outerName: 'Outer',
+          outerAge: 28,
+        });
+      });
+
+      this.assertText('[Outer][28][Inner]');
+    }
+
+    ['@test renders with dot path and with rest positional parameters']() {
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.positional as |p|}}[{{p}}]{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      let expectedText = 'Hodi';
+
+      this.render(
+        strip`
+      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
+        {{object.lookedup this.model.expectedText "Hola"}}
+      {{/let}}`,
+        {
+          model: {
+            expectedText,
+          },
+        }
+      );
+
+      this.assertText(`[${expectedText}][Hola]`);
+
+      runTask(() => this.rerender());
+
+      this.assertText(`[${expectedText}][Hola]`);
+
+      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
+
+      this.assertText('[Kaixo][Hola]');
+
+      runTask(() => this.context.set('model', { expectedText }));
+
+      this.assertText(`[${expectedText}][Hola]`);
+    }
+
+    ['@test renders with dot path and rest parameter does not leak'](assert) {
+      let value = false;
+
+      this.owner.register(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends PositionalComponent {
+            constructor(args) {
+              super(args);
+              value = this.positional[0];
+            }
+          }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#let (hash my-component=(component 'my-component' this.first)) as |c|}}
+        {{c.my-component}}
+      {{/let}}`,
+        { first: 'first' }
+      );
+
+      assert.equal(value, 'first', 'value is the expected parameter');
+    }
+
+    ['@test GH#17121 local variable should win over helper (with arguments)']() {
+      this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            'foo-bar component:{{#each this.positional as |param|}} {{param}}{{/each}}'
+          ),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render(strip`
+        {{#let (component 'foo-bar') as |foo|}}
+          {{foo 1 2 3}}
+        {{/let}}
+      `);
+
+      this.assertText('foo-bar component: 1 2 3');
+
+      this.assertStableRerender();
+    }
+
+    ['@test RFC#311 invoking named args (with arguments)']() {
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(precompileTemplate('{{@inner 1 2 3}}'), class extends Component {})
+      );
+
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('inner:{{#each this.positional as |param|}} {{param}}{{/each}}'),
+          class extends PositionalComponent {}
+        )
+      );
+
+      this.render('{{x-outer inner=(component "x-inner")}}');
+
+      this.assertText('inner: 1 2 3');
+
+      this.assertStableRerender();
+    }
   }
 );
 
@@ -1609,11 +1387,9 @@ class MutableParamTestGenerator {
           'component:change-button',
           setComponentTemplate(
             precompileTemplate(
-              '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+              '<button {{on "click" (fn (mut @val) 10)}} class="my-button">Change to 10</button>'
             ),
-            class extends EmberComponent {
-              static positionalParams = ['val'];
-            }
+            class extends Component {}
           )
         );
 
@@ -1640,30 +1416,6 @@ class MutableParamTestGenerator {
 applyMixins(
   ContextualComponentMutableParamsTest,
   new MutableParamTestGenerator([
-    {
-      title: 'param',
-      setup() {
-        this.render('{{component (component "change-button" this.model.val2)}}');
-      },
-    },
-
-    {
-      title: 'nested param',
-      setup() {
-        this.owner.register(
-          'component:my-comp',
-          setComponentTemplate(
-            precompileTemplate('{{component this.components.comp}}'),
-            class extends EmberComponent {
-              static positionalParams = ['components'];
-            }
-          )
-        );
-
-        this.render('{{my-comp (hash comp=(component "change-button" this.model.val2))}}');
-      },
-    },
-
     {
       title: 'hash value',
       setup() {

@@ -11,6 +11,13 @@ import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  type StandardAccessorDecorator,
+  type StandardFieldDecorator,
+} from './decorator-util';
 
 /**
   @decorator
@@ -121,11 +128,20 @@ interface TrackedDecoratorOptions {
   description?: string;
 }
 
+// `PropertyDecorator` covers the `(target, key)` call TypeScript emits for
+// native class fields with legacy decorators; `ExtendedMethodDecorator` covers
+// the classic-class call; the standard decorator types cover fields and
+// auto-accessors with standard (stage 3) decorators.
+export type TrackedDecorator = ExtendedMethodDecorator &
+  PropertyDecorator &
+  StandardFieldDecorator &
+  StandardAccessorDecorator;
+
 /**
  * `tracked` as a decorator factory: `@tracked({ equals })`, or on classic
  * classes `tracked({ value })` / `tracked({ initializer })`.
  */
-export function tracked(propertyDesc: TrackedDecoratorOptions): ExtendedMethodDecorator;
+export function tracked(propertyDesc: TrackedDecoratorOptions): TrackedDecorator;
 /**
  * `tracked` as a bare decorator: `@tracked foo = 1`.
  */
@@ -136,6 +152,15 @@ export function tracked(
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
 /**
+ * `tracked` as a bare standard (stage 3) decorator: `@tracked foo = 1` or
+ * `@tracked accessor foo = 1`.
+ */
+export function tracked(value: undefined, context: ClassFieldDecoratorContext): void;
+export function tracked<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): void;
+/**
  * `tracked` as a standalone reactive value, usable outside of classes:
  * `const count = tracked(0)`.
  */
@@ -145,7 +170,12 @@ export function tracked<Value>(
 ): TrackedValue<Value>;
 export function tracked(
   ...args: any[]
-): ExtendedMethodDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
+): TrackedDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
+  if (isModernDecoratorArgs(args)) {
+    // TODO: cast is a lie, keeping the public types unchanged for now
+    return tracked2023(args) as unknown as DecoratorPropertyDescriptor;
+  }
+
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
@@ -225,7 +255,7 @@ function isDecoratorOptions(value: unknown): value is TrackedDecoratorOptions {
   return Object.keys(value).every((key) => DECORATOR_OPTION_KEYS.includes(key));
 }
 
-function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedMethodDecorator {
+function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): TrackedDecorator {
   if (DEBUG && propertyDesc) {
     assert(
       `The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [${Object.keys(
@@ -263,6 +293,16 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedM
     _meta?: any,
     isClassicDecorator?: boolean
   ): DecoratorPropertyDescriptor {
+    let decoratorArgs = Array.from(arguments);
+    if (isModernDecoratorArgs(decoratorArgs)) {
+      assert(
+        `You attempted to set a default value for ${decoratorArgs[1].name?.toString()} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+        !hasInitialValue
+      );
+      // TODO: cast is a lie, keeping the public types unchanged for now
+      return tracked2023(decoratorArgs, options) as unknown as DecoratorPropertyDescriptor;
+    }
+
     assert(
       `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
       isClassicDecorator || !hasInitialValue
@@ -275,7 +315,7 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedM
 
   setClassicDecorator(decorator);
 
-  return decorator;
+  return decorator as TrackedDecorator;
 }
 
 if (DEBUG) {
@@ -353,5 +393,56 @@ export class TrackedDescriptor {
 
   set(obj: object, _key: string, value: unknown): void {
     this._set.call(obj, value);
+  }
+}
+
+function tracked2023(
+  args: Parameters<Decorator>,
+  options?: { equals?: (a: any, b: any) => boolean; description?: string }
+) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        let initial = this[dec.context.name];
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          descriptorForField(
+            [this, dec.context.name as string, { initializer: () => initial }],
+            options
+          ) as any
+        );
+      });
+      return;
+    case 'accessor': {
+      let equals = options?.equals;
+      return {
+        get(this: object) {
+          consumeTag(tagFor(this, dec.context.name));
+          let value = dec.value.get.call(this);
+          if (Array.isArray(value) || isEmberArray(value)) {
+            consumeTag(tagFor(value, '[]'));
+          }
+          return value;
+        },
+        set(this: object, value: unknown) {
+          if (
+            equals !== undefined &&
+            equals(
+              untrack(() => dec.value.get.call(this)),
+              value
+            )
+          ) {
+            return;
+          }
+          dirtyTagFor(this, dec.context.name);
+          dirtyTagFor(this, SELF_TAG);
+          return dec.value.set.call(this, value);
+        },
+      };
+    }
+    default:
+      throw new Error(`unimplemented: tracked on ${dec.kind} ${dec.context.name?.toString()}`);
   }
 }

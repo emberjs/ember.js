@@ -1,8 +1,9 @@
 import type EmberArray from '@ember/array';
 import { filter } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(filter('foo', (item: unknown) => Boolean(item))).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(filter('foo', (item: unknown) => Boolean(item))).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @filter('foo', (item: unknown) => Boolean(item))

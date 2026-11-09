@@ -1,3 +1,4 @@
+import { tracked } from '@glimmer/tracking';
 import type { SimpleElement } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser, expect } from '@glimmer/debug-util';
@@ -8,7 +9,6 @@ import {
   jitSuite,
   RenderTest,
   test,
-  tracked,
 } from '@glimmer-workspace/integration-tests';
 
 export class AttributesTests extends RenderTest {
@@ -346,13 +346,13 @@ export class AttributesTests extends RenderTest {
     this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
-    // Note: In IE and Edge will insert a TextNode,
-    //       thus the nodes are going to be unstable
     this.rerender({ name: 'Alex' });
     this.assert.strictEqual(this.readDOMAttr('value'), 'Alex');
+    this.assertStableNodes();
 
     this.rerender({ name: '' });
     this.assert.strictEqual(this.readDOMAttr('value'), '');
+    this.assertStableNodes();
   }
 
   @test

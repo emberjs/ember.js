@@ -2,7 +2,6 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
@@ -731,7 +730,7 @@ moduleFor(
 
     ['@test Parent route context change'](assert) {
       let editCount = 0;
-      let editedPostIds = emberA();
+      let editedPostIds = [];
 
       this.add('template:application', precompileTemplate('{{outlet}}'));
       this.add('template:posts', precompileTemplate('{{outlet}}'));
@@ -930,6 +929,41 @@ moduleFor(
           assert.equal(parentcount, 2);
           assert.equal(childcount, 2);
         });
+    }
+  }
+);
+
+moduleFor(
+  'Route - model loading (afterModel model swapping)',
+  class extends ApplicationTestCase {
+    ['@test afterModel can swap the resolved model via transition.resolvedModels'](assert) {
+      assert.expect(2);
+      let swapped = { name: 'swapped' };
+
+      this.router.map(function () {
+        this.route('post');
+      });
+
+      this.add(
+        'route:post',
+        class extends Route {
+          model() {
+            return { name: 'original' };
+          }
+          afterModel(resolvedModel, transition) {
+            assert.equal(resolvedModel.name, 'original', 'afterModel received the resolved model');
+            // Classic router.js contract: `model()`'s result is stashed in
+            // `transition.resolvedModels` before afterModel runs, and re-read
+            // afterwards — so afterModel may swap the model out.
+            transition.resolvedModels['post'] = swapped;
+          }
+          setupController(controller, model) {
+            assert.strictEqual(model, swapped, 'setupController received the swapped model');
+          }
+        }
+      );
+
+      return this.visit('/post');
     }
   }
 );

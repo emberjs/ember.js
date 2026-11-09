@@ -1,7 +1,8 @@
 import { notEmpty } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(notEmpty('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(notEmpty('foo')).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @notEmpty('foo') notEmpty: unknown;

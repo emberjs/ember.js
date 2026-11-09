@@ -14,7 +14,7 @@ import { next } from '@ember/runloop';
 
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 
 moduleFor(
   'Application test: engine rendering',

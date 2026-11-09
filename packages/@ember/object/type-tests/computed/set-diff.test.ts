@@ -1,7 +1,8 @@
 import { setDiff } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(setDiff('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(setDiff('foo', 'bar')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @setDiff('foo', 'bar') declare setDiff: boolean;

@@ -15,24 +15,6 @@ export const ENV = {
   ENABLE_OPTIONAL_FEATURES: false,
 
   /**
-    Determines whether Ember should add to `Array`
-    native object prototypes, a few extra methods in order to provide a more
-    friendly API.
-
-    The behavior from setting this option to `true` was deprecated in Ember 5.10.
-
-    @property EXTEND_PROTOTYPES
-    @type Boolean
-    @default true
-    @for EmberENV
-    @private
-    @deprecated in v5.10
-  */
-  EXTEND_PROTOTYPES: {
-    Array: false,
-  },
-
-  /**
     The `LOG_STACKTRACE_ON_DEPRECATION` property, when true, tells Ember to log
     a full stack trace during deprecation warnings.
 
@@ -162,8 +144,6 @@ export const ENV = {
 };
 
 interface EmberENVConfig extends Record<string, unknown> {
-  EXTEND_PROTOTYPES?: boolean;
-  EMBER_LOAD_HOOKS?: Record<string, unknown>;
   FEATURES?: Record<string, unknown>;
 }
 
@@ -171,12 +151,7 @@ const EmberENV = (globalThis as { EmberENV?: EmberENVConfig }).EmberENV;
 
 if (typeof EmberENV === 'object' && EmberENV !== null) {
   for (let flag in EmberENV) {
-    if (
-      !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
-      flag === 'EXTEND_PROTOTYPES' ||
-      flag === 'EMBER_LOAD_HOOKS'
-    )
-      continue;
+    if (!Object.prototype.hasOwnProperty.call(EmberENV, flag)) continue;
     let defaultValue = (ENV as Record<string, unknown>)[flag];
     if (defaultValue === true) {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;

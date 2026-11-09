@@ -4,9 +4,9 @@ import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 let QUNIT_ON_UNCAUGHT_EXCEPTION = QUnit.onUncaughtException;
 let WINDOW_ONERROR;
+let WINDOW_ONUNHANDLEDREJECTION;
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
   return run(() => {
@@ -21,11 +21,13 @@ moduleFor(
       // capturing this outside of module scope to ensure we grab
       // the test frameworks own window.onerror to reset it
       WINDOW_ONERROR = window.onerror;
+      WINDOW_ONUNHANDLEDREJECTION = window.onunhandledrejection;
     }
 
     afterEach() {
       setTesting(isTesting);
       window.onerror = WINDOW_ONERROR;
+      window.onunhandledrejection = WINDOW_ONUNHANDLEDREJECTION;
 
       setOnerror(undefined);
       QUnit.onUncaughtException = QUNIT_ON_UNCAUGHT_EXCEPTION;
@@ -241,11 +243,6 @@ moduleFor(
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -307,11 +304,6 @@ moduleFor(
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(2);
 
       setTesting(false);
@@ -373,11 +365,6 @@ moduleFor(
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -439,11 +426,6 @@ moduleFor(
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(2);
 
       setTesting(false);
@@ -505,11 +487,6 @@ moduleFor(
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
-
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -571,10 +548,6 @@ moduleFor(
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
-      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
-        assert.expect(0);
-        return;
-      }
       assert.expect(2);
 
       setTesting(false);

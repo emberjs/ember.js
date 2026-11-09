@@ -10,16 +10,16 @@ export interface DebugEnv {
 
 function noop() {}
 
-export function callWithStub(
+export function callWithStub<T>(
   env: DebugEnv,
   name: string,
-  func: () => void,
+  func: () => T,
   debugStub: DebugFunction = noop
-) {
+): T {
   let originalFunc = env.getDebugFunction(name);
   try {
     env.setDebugFunction(name, debugStub);
-    func();
+    return func();
   } finally {
     env.setDebugFunction(name, originalFunc);
   }

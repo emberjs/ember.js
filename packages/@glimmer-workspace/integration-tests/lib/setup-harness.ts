@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import type { Expand } from '@glimmer/interfaces';
 import type { Runner } from 'js-reporters';
-import { debug } from '@glimmer/validator';
+
+import { resetTrackingTransaction } from './modes/env';
 
 export async function runTests(packages: Record<string, () => Promise<void>>) {
   const { smokeTest } = await setupQunit();
@@ -57,7 +58,7 @@ export async function setupQunit() {
   console.log(`[HARNESS] ci=${hasFlag('ci')}`);
 
   testing.testStart(() => {
-    debug.resetTrackingTransaction?.();
+    resetTrackingTransaction();
   });
 
   if (!hasFlag('ci')) {

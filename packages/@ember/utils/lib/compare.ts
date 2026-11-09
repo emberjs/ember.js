@@ -1,6 +1,7 @@
 import type { TypeName } from './type-of';
 import typeOf from './type-of';
 import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 const TYPE_ORDER: Record<TypeName, number> = {
   undefined: 0,
@@ -94,8 +95,14 @@ function spaceship(a: number, b: number): Compare {
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
+ @deprecated Use native JavaScript instead.
 */
 export default function compare<T>(v: T, w: T): Compare {
+  deprecateUntil(
+    '`compare` from `@ember/utils` is deprecated. Use native JavaScript instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
+  );
+
   if (v === w) {
     return 0;
   }

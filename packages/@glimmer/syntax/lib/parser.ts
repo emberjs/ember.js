@@ -108,6 +108,7 @@ export abstract class Parser {
   abstract NumberLiteral(node: HBS.NumberLiteral): HBS.Output<'NumberLiteral'>;
   abstract UndefinedLiteral(node: HBS.UndefinedLiteral): HBS.Output<'UndefinedLiteral'>;
   abstract NullLiteral(node: HBS.NullLiteral): HBS.Output<'NullLiteral'>;
+  abstract HashLiteral(node: HBS.HashLiteral): HBS.Output<'HashLiteral'>;
 
   abstract reset(): void;
   abstract finishData(): void;

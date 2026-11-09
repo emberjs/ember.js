@@ -1,7 +1,8 @@
 import { uniqBy } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(uniqBy('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(uniqBy('foo', 'bar')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @uniqBy('foo', 'key')

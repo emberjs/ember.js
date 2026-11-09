@@ -37,10 +37,14 @@ jobs:
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
+      - name: Check internal types with stable decorators
+        run: pnpm type-check:internals-stable-decorators
       - name: Check @handlebars/parser types
         run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   types-range:
     name: Type Checking (other supported versions)
@@ -61,6 +65,8 @@ jobs:
         run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   build-test:
     name: package preparation test
@@ -75,6 +81,8 @@ jobs:
       - name: build
         run: pnpm build
       - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
+      - name: check published packages (publint, arethetypeswrong)
+        run: pnpm check:packages
 
   basic-test:
     name: Basic Test
@@ -114,6 +122,10 @@ jobs:
           - name: "Production build, with optional features"
             BUILD: "production"
             ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Stable decorators"
+            VITE_STABLE_DECORATORS: "true"
+          - name: "Stable decorators (TypeScript emit)"
+            VITE_STABLE_DECORATORS: "typescript"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -124,13 +136,18 @@ jobs:
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
         env:
           NODE_ENV: ${{ matrix.BUILD || 'development' }}
+          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
+          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
-
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
         run: pnpm test
 
   browserstack-test:
@@ -154,12 +171,12 @@ jobs:
           BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
 
+      - id: bs-setup
+        uses: ./.github/actions/browserstack-setup
       - name: test:browserstack
         env:
-          BROWSERSTACK_USERNAME: emberjscoreteam_A3VLS
-          # This is in plaintext on purpose. It has no privileged access to anything (this is a free
-          # account) and it allows us to run browserstack tests against PRs.
-          BROWSERSTACK_ACCESS_KEY: ZDM256rfimuXwkpamsUe
+          BROWSERSTACK_USERNAME: ${{ steps.bs-setup.outputs.username }}
+          BROWSERSTACK_ACCESS_KEY: ${{ steps.bs-setup.outputs.access-key }}
         run: pnpm test:browserstack
 
   smoke-test:
@@ -252,7 +269,7 @@ jobs:
       - name: Setup firefox
         uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
         with:
-          firefox-version: 115.9.1esr
+          firefox-version: "121.0"
       - run: firefox --version
       - name: test
         run: pnpm ember test --path dist -c testem.ci-browsers.cjs

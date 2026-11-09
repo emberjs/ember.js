@@ -5,37 +5,184 @@ import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
+import {
+  combine,
+  CONSTANT_TAG,
+  isCombinationOf,
+  isConstTag,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
- * An object that that tracks @tracked properties that were consumed.
+ * A tag with the `slot` field that `Tracker#add` reads and writes.
+ *
+ * Each tag class of this package declares the field,
+ * so a tag has it from its construction.
+ */
+interface ConsumedTag extends Tag {
+  slot: number;
+}
+
+/**
+ * Makes the tag of a frame that consumed two or more tags.
+ *
+ * `previous` is the tag that the frame produced the last time it ran.
+ * If the frame consumed the same tags again, in the same order,
+ * the result is `previous`.
+ * That tag keeps its memoized revision, and nothing is allocated.
+ *
+ *   1. last run:  consumed [ a, b, c ]    result: tag X.
+ *   2. this run:  consumed [ a, b, c ]    result: tag X again.
+ *   3. or:        consumed [ a, c ]       result: a new tag.
+ *
+ * This code is not in `Tracker#combineForCache`, to keep that method small.
+ * V8 puts a small method inline into the end of the frame.
+ * With this code in it, a frame that consumed one tag was 6% slower.
+ */
+function combineOrReuse(previous: Tag | undefined, tags: (Tag | null)[], size: number): Tag {
+  if (previous !== undefined && isCombinationOf(previous, tags, size)) {
+    return previous;
+  }
+
+  return combine(tags.slice(0, size) as Tag[]);
+}
+
+/**
+ * An object that tracks @tracked properties that were consumed.
+ *
+ * A tracker collects the tags that one tracking frame consumes.
+ * When the frame ends, `combine()` makes one tag from them.
+ *
+ * A tracker is not made for each frame.
+ * `beginTrackFrame` takes it from `TRACKER_POOL`, so the next frame
+ * at the same depth uses the same tracker again.
  */
 class Tracker {
-  private tags = new Set<Tag>();
-  private last: Tag | null = null;
+  /**
+   * The tags that the current frame consumed.
+   * Each tag is at the position of its first consumption.
+   * `size` is the number of tags.
+   *
+   *   tags:  [ a, b, c, null, null ]
+   *   size:  3
+   *
+   * The entries from `size` up are `null`.
+   * They are left from an earlier frame that consumed more tags.
+   *
+   * The array never shrinks.
+   * A write to `length` is a slow path in V8, and this code runs for every frame.
+   */
+  private tags: (Tag | null)[] = [];
+  private size = 0;
 
+  /**
+   * Adds a tag to the frame, one time.
+   *
+   * A frame can consume one tag many times,
+   * so the tracker must find out if it has the tag already.
+   * It does that with no `Set`: the tag keeps the index
+   * at which a tracker put it last, in `tag.slot`.
+   *
+   *   consume a    tags: [ a ]       a.slot = 0
+   *   consume b    tags: [ a, b ]    b.slot = 1
+   *   consume a    tags[a.slot] is a, so the frame has it. No change.
+   *
+   * The check is `tags[tag.slot] === tag`.
+   * It compares the entry with the tag, so a `slot` that is out of date
+   * cannot hide a tag. The worst case is a tag that is in the array two times.
+   *
+   * That case needs a nested frame.
+   * The nested frame has its own tracker, and that tracker also writes `slot`:
+   *
+   *   1. outer frame consumes a, b    outer tags: [ a, b ]       b.slot = 1
+   *   2. inner frame consumes b       inner tags: [ b ]          b.slot = 0
+   *   3. outer frame consumes b       outer tags[0] is a, not b.
+   *                                   outer tags: [ a, b, b ]    b.slot = 2
+   *
+   * The duplicate does no harm.
+   * The revision of a combined tag is the highest revision of its tags,
+   * and a tag that is there two times does not change the highest.
+   *
+   * If the inner frame puts the tag at the index that the outer frame used,
+   * the check of the outer frame still passes, and there is no duplicate.
+   */
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    this.last = tag;
+    let { tags, size } = this;
+
+    if (tags[(tag as ConsumedTag).slot] === tag) return;
+
+    (tag as ConsumedTag).slot = size;
+    tags[size] = tag;
+    this.size = size + 1;
   }
 
   combine(): Tag {
-    let { tags } = this;
+    let { tags, size } = this;
+    let result: Tag;
 
-    if (tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (tags.size === 1) {
-      return this.last as Tag;
+    if (size === 0) {
+      result = CONSTANT_TAG;
+    } else if (size === 1) {
+      result = tags[0] as Tag;
     } else {
-      return combine(Array.from(this.tags));
+      result = combine(tags.slice(0, size) as Tag[]);
     }
+
+    this.clear();
+
+    return result;
+  }
+
+  /**
+   * `combine()` for the frame of a cache.
+   *
+   * `previous` is the tag that the cache has from its last run.
+   * See `combineOrReuse`.
+   */
+  combineForCache(previous: Tag | undefined): Tag {
+    let { tags, size } = this;
+    let result: Tag;
+
+    if (size === 0) {
+      result = CONSTANT_TAG;
+    } else if (size === 1) {
+      result = tags[0] as Tag;
+    } else {
+      result = combineOrReuse(previous, tags, size);
+    }
+
+    this.clear();
+
+    return result;
+  }
+
+  /**
+   * Empties the tracker for the next frame at the same depth.
+   *
+   *   before:  tags: [ a, b, c ]             size: 3
+   *   after:   tags: [ null, null, null ]    size: 0
+   *
+   * The entries must be `null`, and not only ignored:
+   *
+   * - an entry that stays is a match for `tags[tag.slot] === tag`,
+   *   so the next frame would not add that tag
+   * - an entry that stays keeps its tag alive after the frame
+   */
+  clear(): void {
+    let { tags, size } = this;
+
+    for (let i = 0; i < size; i++) {
+      tags[i] = null;
+    }
+
+    this.size = 0;
   }
 }
 
@@ -56,10 +203,43 @@ let CURRENT_TRACKER: Tracker | null = null;
 
 const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
+/**
+ * The trackers, by the depth of the frame that uses them.
+ * The depth of a frame is the number of frames that are open around it.
+ *
+ * Frames are strictly nested: a frame ends before the frame around it ends.
+ * So two frames at the same depth are never open at the same time,
+ * and one tracker for each depth is enough.
+ *
+ *   frame A              depth 0    TRACKER_POOL[0]
+ *   |- frame B           depth 1    TRACKER_POOL[1]
+ *   |  `- frame C        depth 2    TRACKER_POOL[2]
+ *   `- frame D           depth 1    TRACKER_POOL[1], which B used before
+ *
+ * A tracker is made the first time that a frame opens at its depth.
+ * After that, a frame at that depth allocates no tracker.
+ *
+ * An untrack frame takes a depth but no tracker, so the pool can have holes:
+ *
+ *   untrack frame        depth 0    no tracker
+ *   `- frame E           depth 1    TRACKER_POOL[1]
+ *
+ *   TRACKER_POOL:  [ <empty>, tracker ]
+ */
+const TRACKER_POOL: (Tracker | undefined)[] = [];
+
 export function beginTrackFrame(debuggingContext?: string | false): void {
+  let depth = OPEN_TRACK_FRAMES.length;
+
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  let tracker = TRACKER_POOL[depth];
+
+  if (tracker === undefined) {
+    tracker = TRACKER_POOL[depth] = new Tracker();
+  }
+
+  CURRENT_TRACKER = tracker;
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
@@ -82,6 +262,32 @@ export function endTrackFrame(): Tag {
   return unwrap(current).combine();
 }
 
+/**
+ * `endTrackFrame()` for the frame of a cache.
+ *
+ * `previous` is the tag that the cache has from its last run.
+ * If the cache consumed the same tags again, that tag is the result.
+ *
+ * Only `getValue` calls this.
+ * The frames of the render VM end in `endTrackFrame`,
+ * which has no code for the reuse.
+ */
+function endCacheFrame(previous: Tag | undefined): Tag {
+  let current = CURRENT_TRACKER;
+
+  if (DEBUG) {
+    if (OPEN_TRACK_FRAMES.length === 0) {
+      throw new Error('attempted to close a tracking frame, but one was not open');
+    }
+
+    unwrap(debug.endTrackingTransaction)();
+  }
+
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
+
+  return unwrap(current).combineForCache(previous);
+}
+
 export function beginUntrackFrame(): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
   CURRENT_TRACKER = null;
@@ -99,6 +305,18 @@ export function endUntrackFrame(): void {
 export function resetTracking(): string | void {
   while (OPEN_TRACK_FRAMES.length > 0) {
     OPEN_TRACK_FRAMES.pop();
+  }
+
+  /**
+   * A frame that did not end left its tags in its tracker.
+   * The next frame at that depth must start with no tag.
+   *
+   * The pool can have holes, see `TRACKER_POOL`.
+   */
+  for (let tracker of TRACKER_POOL) {
+    if (tracker !== undefined) {
+      tracker.clear();
+    }
   }
 
   CURRENT_TRACKER = null;
@@ -175,7 +393,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame();
+      tag = endCacheFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);

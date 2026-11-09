@@ -6,8 +6,7 @@ import {
 } from '@ember/instrumentation';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
-
-import { Component } from '../../utils/helpers';
+import templateOnly from '@ember/component/template-only';
 
 moduleFor(
   'Components compile instrumentation',
@@ -51,24 +50,13 @@ moduleFor(
     }
 
     ['@test it should only receive an instrumentation event for initial render']() {
-      let testCase = this;
-
-      let BaseClass = class extends Component {
-        tagName = '';
-
-        willRender() {
-          testCase.expected.before.push(this);
-          testCase.expected.after.unshift(this);
-        }
-      };
-
       this.owner.register(
         'component:x-bar',
-        setComponentTemplate(
-          precompileTemplate('[x-bar: {{this.bar}}]'),
-          class extends BaseClass {}
-        )
+        setComponentTemplate(precompileTemplate('[x-bar: {{@bar}}]'), templateOnly())
       );
+
+      this.expected.before.push('component:x-bar');
+      this.expected.after.unshift('component:x-bar');
 
       this.render(`[-top-level: {{this.foo}}] {{x-bar bar=this.bar}}`, {
         foo: 'foo',
@@ -108,8 +96,8 @@ moduleFor(
       actual.forEach((payload, i) => this.assertPayload(payload, expected[i]));
     }
 
-    assertPayload(payload, component) {
-      this.assert.equal(payload.object, component._debugContainerKey, 'payload.object');
+    assertPayload(payload, containerKey) {
+      this.assert.equal(payload.object, containerKey, 'payload.object');
     }
   }
 );

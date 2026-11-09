@@ -313,6 +313,49 @@ function addEventListener(
   In this case, the `saveLike` function will receive two arguments: the click event
   and the value of `@post`.
 
+  ### Listener Order
+
+  Listeners added with `{{on}}` are regular DOM event listeners, so they run in
+  the order they were added to an element, and an event reaches listeners on the
+  target element before it bubbles up to listeners on its ancestors.
+
+  When a component forwards modifiers to an element with `...attributes`, the
+  `{{on}}` listeners passed in by the caller run before the listeners that the
+  component puts on that element itself. This is true wherever `...attributes`
+  appears in the element's attribute list:
+
+  ```gjs {data-filename="app/components/my-button.gjs"}
+  <template>
+    <button {{on 'click' @onInnerClick}} ...attributes>
+      {{yield}}
+    </button>
+  </template>
+  ```
+
+  ```gjs
+  <template>
+    {{! When clicked, onOuterClick runs first, then onInnerClick }}
+    <MyButton {{on 'click' onOuterClick}} @onInnerClick={{onInnerClick}}>
+      Click me
+    </MyButton>
+  </template>
+  ```
+
+  This order is set when the listeners are first added. When the arguments to an
+  `{{on}}` change, for example because a different callback is passed in, that
+  listener is removed and added again, so it moves after the other listeners on
+  the element.
+
+  If a component needs its own handler to run first, for example to decide
+  whether the caller's handler should run, have the caller pass the handler as
+  an argument and call it from the component's handler instead of passing it
+  with `{{on}}`.
+
+  Calling `event.stopPropagation()` in any of these listeners stops the event
+  from reaching listeners on ancestor elements, including ones the component
+  put on a wrapping element in its own template. It does not stop the other
+  listeners on the same element.
+
   ### Function Context
 
   In the example above, we used `@action` to ensure that `likePost` is

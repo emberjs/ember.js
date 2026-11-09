@@ -5,7 +5,7 @@ import RegistryProxyMixin from 'ember-source/@ember/-internals/runtime/lib/mixin
 import ContainerProxyMixin from 'ember-source/@ember/-internals/runtime/lib/mixins/container_proxy.js';
 import { Registry } from 'ember-source/@ember/-internals/container/index.js';
 
-export default function buildOwner(resolver) {
+export default function buildOwner(resolver, bootOptions = {}) {
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
   let namespace = EmberObject.create({
@@ -21,7 +21,7 @@ export default function buildOwner(resolver) {
     fallback: fallbackRegistry,
   });
 
-  ApplicationInstance.setupRegistry(registry);
+  ApplicationInstance.setupRegistry(registry, bootOptions);
 
   let owner = Owner.create({
     __registry__: registry,

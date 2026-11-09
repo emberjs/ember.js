@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import { set } from '@ember/object';
 import Route from '@ember/routing/route';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 
@@ -37,14 +38,14 @@ moduleFor(
       await this.setAndFlush(parentChildController, 'page', 1);
       this.assertCurrentPath('/parent/child');
 
-      parentController.set('page', 2);
-      parentChildController.set('page', 2);
+      set(parentController, 'page', 2);
+      set(parentChildController, 'page', 2);
       await runLoopSettled();
 
       this.assertCurrentPath('/parent/child?childPage=2&parentPage=2');
 
-      parentController.set('page', 1);
-      parentChildController.set('page', 1);
+      set(parentController, 'page', 1);
+      set(parentChildController, 'page', 1);
       await runLoopSettled();
 
       this.assertCurrentPath('/parent/child');
@@ -115,9 +116,9 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      let parentController = Controller.extend({
-        queryParams: { page: 'page' },
-      });
+      let parentController = class extends Controller {
+        queryParams = [{ page: 'page' }];
+      };
       this.add('controller:parent', parentController);
       this.add(
         'route:parent.child',
@@ -149,19 +150,21 @@ moduleFor(
     async ['@test Support shared but overridable query param defaults'](assert) {
       assert.expect(7);
 
-      let hasPage = {
-        queryParams: 'page',
-        page: 1,
-      };
-
       this.add(
         'controller:parent',
-        Controller.extend(hasPage, {
-          queryParams: { page: 'yespage' },
-        })
+        class extends Controller {
+          queryParams = ['page', { page: 'yespage' }];
+          page = 1;
+        }
       );
 
-      this.add('controller:parent.child', Controller.extend(hasPage));
+      this.add(
+        'controller:parent.child',
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
+      );
 
       await this.setupBase();
       this.assertCurrentPath('/parent/child');
@@ -171,13 +174,13 @@ moduleFor(
 
       await this.setAndFlush(parentChildController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2');
-      assert.equal(parentController.get('page'), 1);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.equal(parentController.page, 1);
+      assert.equal(parentChildController.page, 2);
 
       await this.setAndFlush(parentController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2&yespage=2');
-      assert.equal(parentController.get('page'), 2);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.equal(parentController.page, 2);
+      assert.equal(parentChildController.page, 2);
     }
   }
 );

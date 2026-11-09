@@ -1,7 +1,8 @@
 import { sort } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(sort('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(sort('foo', 'bar')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   // With sortKey

@@ -8,8 +8,7 @@
   "exports": {
     ".": "./index.ts"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/env": "workspace:*"
   },

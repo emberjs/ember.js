@@ -1,9 +1,10 @@
 import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'internal-test-helpers';
 
-import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+
+import Component from '@glimmer/component';
 
 moduleFor(
   '{{in-element}}',
@@ -165,14 +166,16 @@ moduleFor(
       this.owner.register(
         'component:modal-display',
         setComponentTemplate(
-          precompileTemplate(`{{this.text}}`),
+          precompileTemplate(`{{@text}}`),
           class extends Component {
-            didInsertElement() {
-              hooks.push('didInsertElement');
+            constructor(owner, args) {
+              super(owner, args);
+              hooks.push('constructor');
             }
 
-            willDestroyElement() {
-              hooks.push('willDestroyElement');
+            willDestroy() {
+              super.willDestroy();
+              hooks.push('willDestroy');
             }
           }
         )
@@ -201,30 +204,24 @@ moduleFor(
       runTask(() => set(this.context, 'showModal', true));
 
       equalTokens(this.element, '<!---->');
-      this.assertComponentElement(someElement.firstChild, {
-        content: 'Whoop!',
-      });
+      equalTokens(someElement, 'Whoop!');
 
       runTask(() => set(this.context, 'text', 'Huzzah!'));
 
       equalTokens(this.element, '<!---->');
-      this.assertComponentElement(someElement.firstChild, {
-        content: 'Huzzah!',
-      });
+      equalTokens(someElement, 'Huzzah!');
 
       runTask(() => set(this.context, 'text', 'Whoop!'));
 
       equalTokens(this.element, '<!---->');
-      this.assertComponentElement(someElement.firstChild, {
-        content: 'Whoop!',
-      });
+      equalTokens(someElement, 'Whoop!');
 
       runTask(() => set(this.context, 'showModal', false));
 
       equalTokens(this.element, '<!---->');
       equalTokens(someElement, '');
 
-      assert.deepEqual(hooks, ['didInsertElement', 'willDestroyElement']);
+      assert.deepEqual(hooks, ['constructor', 'willDestroy']);
     }
 
     ['@test appending to the root element should not cause double clearing']() {

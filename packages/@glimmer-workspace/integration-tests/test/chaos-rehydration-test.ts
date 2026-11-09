@@ -2,6 +2,7 @@ import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
+import { run } from '@ember/runloop';
 import {
   blockStack,
   CLOSE,
@@ -15,6 +16,8 @@ import {
   replaceHTML,
   suite,
   test,
+  trackedContext,
+  withRoot,
 } from '@glimmer-workspace/integration-tests';
 
 abstract class AbstractChaosMonkeyTest extends RenderTest {
@@ -151,6 +154,11 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
           throw error;
         } finally {
+          // destroy this iteration's render before its DOM is replaced
+          let handle = this.handle;
+          this.handle = null;
+          if (handle) run(() => handle.destroy());
+
           // reset the HTML
           element.innerHTML = elementResetValue;
         }
@@ -186,7 +194,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
-      context,
+      trackedContext(context),
       () => this.takeSnapshot(),
       element
     );
@@ -194,8 +202,10 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   }
 
   renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
-    this.context = context;
-    this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
+    // the same tracked object the server render got (see `trackedContext`), so that writes through
+    // `this.context` are tracked
+    this.context = trackedContext(context);
+    this.handle = this.delegate.renderClientSide(template as string, this.context, this.element);
   }
 
   assertExactServerOutput(_expected: string) {
@@ -203,7 +213,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
       this.serverOutput,
       'must renderServerSide before calling assertServerOutput'
     );
-    equalTokens(output, _expected);
+    equalTokens(output, withRoot(_expected));
   }
 
   assertServerOutput(..._expected: Content[]) {
@@ -244,7 +254,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
   declare protected delegate: PartialRehydrationDelegate;
 
   renderClientSide(componentName: string, args: Dict): void {
-    this.renderResult = this.delegate.renderComponentClientSide(componentName, args, this.element);
+    this.handle = this.delegate.renderComponentClientSide(componentName, args, this.element);
   }
 
   @test

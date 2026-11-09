@@ -31,6 +31,7 @@ test/version_tmp
 test_*.html
 /tests/ember-tests.js
 /smoke-tests/scenarios/output/
+/smoke-tests/scenarios/output-*/
 tmp
 tmp*.gem
 tmp.bpm

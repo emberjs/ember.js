@@ -29,7 +29,7 @@ module('strict-resolver | Application with modules', function (hooks) {
 
     app = Application.create({
       modules: {},
-      rootElement: '#qunit-fixture',
+      rootElement: document.querySelector('#qunit-fixture')!,
       autoboot: false,
     });
 
@@ -51,7 +51,7 @@ module('strict-resolver | Application with modules', function (hooks) {
       modules: {
         './services/my-thing': { default: MyService },
       },
-      rootElement: '#qunit-fixture',
+      rootElement: document.querySelector('#qunit-fixture')!,
       autoboot: false,
     });
 

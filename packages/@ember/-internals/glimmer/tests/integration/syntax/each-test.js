@@ -1,15 +1,26 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  ignoreDeprecation,
+  defineSimpleModifier,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import { Component as EmberComponent, htmlSafe } from '../../utils/helpers';
+import { tracked } from '@glimmer/tracking';
+import { htmlSafe } from '../../utils/helpers';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
@@ -143,13 +154,27 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 class BasicEachTest extends TogglingEachTest {}
 
+// `ArrayProxy` is deprecated; the deprecation itself is asserted by the
+// dedicated `ArrayProxy` tests, so it is silenced in these rendering fixtures.
+const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+const EMBER_A_REMOVED = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A.isRemoved;
+
+// The tests of `A` cover its deprecation.
+function emberA(items) {
+  return ignoreDeprecation(() => A(items));
+}
+
+function arrayProxy(props) {
+  return ignoreDeprecation(() => ArrayProxy.create(props));
+}
+
 const TRUTHY_CASES = [
   ['hello'],
-  emberA(['hello']),
+  ...(EMBER_A_REMOVED ? [] : [emberA(['hello'])]),
   new Set(['hello']),
   new ForEachable(['hello']),
-  ArrayProxy.create({ content: ['hello'] }),
-  ArrayProxy.create({ content: emberA(['hello']) }),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: ['hello'] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA(['hello']) })]),
   new ArrayIterable(['hello']),
 ];
 
@@ -160,11 +185,11 @@ const FALSY_CASES = [
   '',
   0,
   [],
-  emberA([]),
+  ...(EMBER_A_REMOVED ? [] : [emberA([])]),
   new Set([]),
   new ForEachable([]),
-  ArrayProxy.create({ content: [] }),
-  ArrayProxy.create({ content: emberA([]) }),
+  ...(ARRAY_PROXY_REMOVED ? [] : [arrayProxy({ content: [] })]),
+  ...(ARRAY_PROXY_REMOVED || EMBER_A_REMOVED ? [] : [arrayProxy({ content: emberA([]) })]),
   new ArrayIterable([]),
 ];
 
@@ -507,26 +532,27 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = class extends EmberComponent {
-      init() {
-        super.init(...arguments);
-        this.isEven = true;
-        this.tagName = 'li';
-      }
+    let FooBarComponent = class extends Component {
+      @tracked isEven = true;
 
-      _isEven() {
-        this.set('isEven', this.get('item.value') % 2 === 0);
-      }
+      isInstalled = false;
 
-      didUpdate() {
-        this._isEven();
-      }
+      // Like the classic `didUpdate` hook, this sets state only after an update.
+      updateIsEven = defineSimpleModifier((element, [value]) => {
+        if (this.isInstalled) {
+          this.isEven = value % 2 === 0;
+        }
+
+        this.isInstalled = true;
+      });
     };
 
     this.owner.register(
       'component:foo-bar',
       setComponentTemplate(
-        precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
+        precompileTemplate(
+          '<li {{this.updateIsEven @item.value}}>{{#if this.isEven}}{{@item.value}}{{/if}}</li>'
+        ),
         FooBarComponent
       )
     );
@@ -638,6 +664,8 @@ class EachTest extends AbstractEachTest {
     this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('HelloHelloHello');
+
+    this.assertStableRerender();
 
     runTask(() => {
       this.forEach((hash) => set(hash, 'text', 'Goodbye'));
@@ -755,9 +783,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('No Thing bar');
 
-    runTask(() => this.rerender());
-
-    this.assertText('No Thing bar');
+    this.assertStableRerender();
 
     runTask(() => set(this.context, 'otherThing', 'biz'));
 
@@ -1019,15 +1045,17 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with emberA-wrapped arrays',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return { list: wrapped, delegate: wrapped };
+if (!EMBER_A_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each}} with emberA-wrapped arrays',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        return { list: wrapped, delegate: wrapped };
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each}} with native Set',
@@ -1067,63 +1095,215 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, modifying itself',
-  class extends EachTest {
-    createList(items) {
-      let proxty = ArrayProxy.create({ content: emberA(items) });
-      return { list: proxty, delegate: proxty };
+if (!ARRAY_PROXY_REMOVED && !EMBER_A_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, modifying itself',
+    class extends EachTest {
+      createList(items) {
+        let proxty = arrayProxy({ content: emberA(items) });
+        return { list: proxty, delegate: proxty };
+      }
     }
-  }
-);
+  );
+
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, replacing its content',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        return {
+          list: wrapped,
+          delegate: arrayProxy({ content: wrapped }),
+        };
+      }
+    }
+  );
+
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        let proxy = ignoreDeprecation(() =>
+          class extends ArrayProxy {
+            @computed('wrappedItems.[]')
+            get arrangedContent() {
+              // Slice the items to ensure that updates must be propogated
+              return this.wrappedItems.slice();
+            }
+          }.create({
+            wrappedItems: wrapped,
+          })
+        );
+
+        return { list: proxy, delegate: wrapped };
+      }
+    }
+  );
+
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, content is updated after init',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        let proxy = ignoreDeprecation(() =>
+          ArrayProxy.extend({
+            init: function () {
+              this._super(...arguments);
+
+              this.set('content', wrapped);
+            },
+          }).create()
+        );
+
+        return { list: proxy, delegate: wrapped };
+      }
+    }
+  );
+}
 
 moduleFor(
-  'Syntax test: {{#each}} with array proxies, replacing its content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return {
-        list: wrapped,
-        delegate: ArrayProxy.create({ content: wrapped }),
-      };
+  'Syntax test: {{#each}} keys and DOM identity',
+  class extends RenderingTestCase {
+    items() {
+      return Array.from(this.element.querySelectorAll('li'));
     }
-  }
-);
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = class extends ArrayProxy {
-        @computed('wrappedItems.[]')
-        get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
-          return this.wrappedItems.slice();
+    ['@test @identity keeps the node of a null item as the list changes']() {
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [null],
         }
-      }.create({
-        wrappedItems: wrapped,
+      );
+
+      let [nullItem] = this.items();
+
+      runTask(() => set(this.context, 'list', [undefined, null]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 2);
+      this.assert.strictEqual(items[1], nullItem, 'the node of the null item moved with it');
+      this.assert.strictEqual(items[1].textContent, '1');
+    }
+
+    ['@test @identity gives each of several null items its own node']() {
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [null],
+        }
+      );
+
+      let [first] = this.items();
+
+      runTask(() => set(this.context, 'list', [null, null]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 2);
+      this.assert.strictEqual(items[0], first, 'the first null keeps its node');
+      this.assert.notStrictEqual(items[1], first, 'the second null gets a node of its own');
+    }
+
+    ['@test @identity tells duplicate objects apart consistently across updates']() {
+      let yehuda = { name: 'Yehuda' };
+      let godfrey = { name: 'Godfrey' };
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [yehuda, godfrey, godfrey],
       });
 
-      return { list: proxy, delegate: wrapped };
+      let [y, g1, g2] = this.items();
+
+      // drop the last `godfrey`, add one at the front
+      runTask(() => set(this.context, 'list', [godfrey, yehuda, godfrey]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 3);
+      this.assert.strictEqual(items[0], g1, 'the first occurrence keeps its node');
+      this.assert.strictEqual(items[1], y);
+      this.assert.strictEqual(items[2], g2, 'the second occurrence keeps its node');
     }
-  }
-);
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, content is updated after init',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        init: function () {
-          this._super(...arguments);
+    ['@test @identity works with every kind of primitive except null']() {
+      let symbol = Symbol('bar');
 
-          this.set('content', emberA(wrapped));
-        },
-      }).create();
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [undefined, 123, 'foo', symbol, true],
+        }
+      );
 
-      return { list: proxy, delegate: wrapped };
+      let [undef, num, , sym, bool] = this.items();
+      this.assert.strictEqual(this.items().length, 5);
+
+      runTask(() => set(this.context, 'list', [undefined, 123, symbol, true]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 4);
+      this.assert.deepEqual(
+        items,
+        [undef, num, sym, bool],
+        'the nodes of the other items are kept'
+      );
+    }
+
+    ['@test @key keys items by position']() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(
+        `<ul>{{#each this.list key="@key" as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`,
+        {
+          list: [a, b],
+        }
+      );
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      let after = this.items();
+      this.assert.deepEqual(after, before, 'the nodes stay where they are');
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['b', 'a'],
+        'and show the new items'
+      );
+    }
+
+    ['@test @identity moves the nodes of objects when they are reordered']() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [a, b],
+      });
+
+      let [first, second] = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      this.assert.deepEqual(this.items(), [second, first], 'the nodes follow their items');
+    }
+
+    ['@test it works with items that have no prototype']() {
+      let a = Object.assign(Object.create(null), { name: 'a' });
+      let b = Object.assign(Object.create(null), { name: 'b' });
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [a, b],
+      });
+
+      this.assertText('ab');
+
+      let [first, second] = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      this.assertText('ba');
+      this.assert.deepEqual(this.items(), [second, first], 'the nodes follow their items');
     }
   }
 );
@@ -1160,7 +1340,7 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
   class extends RenderingTestCase {
-    ['@test it should itterate over holes']() {
+    [`${testUnless(EMBER_A_REMOVED)} @test it should itterate over holes`]() {
       let sparseArray = [];
       sparseArray[3] = 'foo';
       sparseArray[4] = 'bar';
@@ -1188,43 +1368,42 @@ moduleFor(
 );
 
 /* globals MutationObserver: false */
-if (typeof MutationObserver === 'function') {
-  moduleFor(
-    'Syntax test: {{#each as}} DOM mutation test',
-    class extends RenderingTestCase {
-      constructor() {
-        super(...arguments);
-        this.observer = null;
+moduleFor(
+  'Syntax test: {{#each as}} DOM mutation test',
+  class extends RenderingTestCase {
+    constructor() {
+      super(...arguments);
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = (this.observer = new MutationObserver(function () {}));
+      observer.observe(element, { childList: true, characterData: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
       }
 
-      observe(element) {
-        let observer = (this.observer = new MutationObserver(function () {}));
-        observer.observe(element, { childList: true, characterData: true });
-      }
+      super.teardown();
+    }
 
-      teardown() {
-        if (this.observer) {
-          this.observer.disconnect();
-        }
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
 
-        super.teardown();
-      }
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
 
-      assertNoMutation() {
-        this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
-      }
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
+      let page = { title: 'Blog Posts' };
 
-      expectMutations() {
-        this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
-      }
+      let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
 
-      ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
-        let page = { title: 'Blog Posts' };
-
-        let model = [{ title: 'Rails is omakase' }, { title: 'Ember is omakase' }];
-
-        this.render(
-          strip`
+      this.render(
+        strip`
           <h1>{{this.page.title}}</h1>
 
           <ul id="posts">
@@ -1233,10 +1412,10 @@ if (typeof MutationObserver === 'function') {
             {{/each}}
           </ul>
           `,
-          { page, model }
-        );
+        { page, model }
+      );
 
-        this.assertHTML(strip`
+      this.assertHTML(strip`
         <h1>Blog Posts</h1>
 
         <ul id="posts">
@@ -1245,18 +1424,19 @@ if (typeof MutationObserver === 'function') {
         </ul>
       `);
 
-        this.observe(this.$('#posts')[0]);
+      this.observe(this.$('#posts')[0]);
 
-        // MutationObserver is async
-        return RSVP.Promise.resolve(() => {
+      // MutationObserver is async
+      return RSVP.Promise.resolve()
+        .then(() => {
           this.assertStableRerender();
         })
-          .then(() => {
-            this.assertNoMutation();
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context, 'page', { title: 'Essays' }));
+          runTask(() => set(this.context, 'page', { title: 'Essays' }));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Essays</h1>
 
           <ul id="posts">
@@ -1264,13 +1444,13 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            this.assertNoMutation();
+        })
+        .then(() => {
+          this.assertNoMutation();
 
-            runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+          runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 
-            this.assertHTML(strip`
+          this.assertHTML(strip`
           <h1>Think Pieces™</h1>
 
           <ul id="posts">
@@ -1278,13 +1458,12 @@ if (typeof MutationObserver === 'function') {
             <li>Ember is omakase</li>
           </ul>
         `);
-          })
-          .then(() => {
-            // The last set is localized to the `page` object, so we do not expect Glimmer
-            // to re-iterate the list
-            this.assertNoMutation();
-          });
-      }
+        })
+        .then(() => {
+          // The last set is localized to the `page` object, so we do not expect Glimmer
+          // to re-iterate the list
+          this.assertNoMutation();
+        });
     }
-  );
-}
+  }
+);

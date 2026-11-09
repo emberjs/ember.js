@@ -786,6 +786,22 @@ test('a Handlebars comment inside an HTML comment', () => {
   );
 });
 
+test('Handlebars syntax at the start of an HTML comment is part of the comment', () => {
+  astEqual('<!--{{x}}-->', b.template([b.comment('{{x}}')]));
+  astEqual('<!--{{! c }}-->', b.template([b.comment('{{! c }}')]));
+  astEqual('<!--{{#if a}}b{{/if}}-->', b.template([b.comment('{{#if a}}b{{/if}}')]));
+});
+
+test('Handlebars syntax after a `-` or `--` in an HTML comment is part of the comment', () => {
+  astEqual('<!---{{x}}-->', b.template([b.comment('-{{x}}')]));
+  astEqual('<!-- a -{{x}}-->', b.template([b.comment(' a -{{x}}')]));
+  astEqual('<!-- a --{{x}}-->', b.template([b.comment(' a --{{x}}')]));
+});
+
+test('a mustache after an ignored `/` in a start tag is a modifier', () => {
+  astEqual('<div /{{x}}></div>', b.template([element('div', ['modifiers', 'x'])]));
+});
+
 test('a Handlebars comment', () => {
   let t = 'before {{! some comment }} after';
   astEqual(

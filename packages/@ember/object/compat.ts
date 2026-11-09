@@ -9,11 +9,41 @@ import {
   setClassicDecorator,
 } from '@ember/-internals/metal/lib/decorator';
 import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import {
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from '@ember/-internals/metal/lib/decorator-util';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
 import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
-import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
+import { UPDATE_TAG as updateTag, valueForTag } from '@glimmer/validator/lib/validators';
+
+/**
+  Runs the getter and makes the tag of the property follow the tags that the
+  getter read.
+
+  `updateTag` holds the tag at its last value until the new tags change. So
+  the tag must have its current value first. If not, a read of the getter
+  after a change hides that change from the computed properties and
+  observers that depend on the property.
+*/
+function readAndTrack(obj: object, key: string, getter: Function): any {
+  let propertyTag = tagFor(obj, key) as UpdatableTag;
+
+  valueForTag(propertyTag);
+
+  let ret;
+
+  let tag = track(() => {
+    ret = getter.call(obj);
+  });
+
+  updateTag(propertyTag, tag);
+  consumeTag(tag);
+
+  return ret;
+}
 
 let wrapGetterSetter = function (target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
@@ -25,17 +55,7 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
 
   if (originalGet !== undefined) {
     desc.get = function () {
-      let propertyTag = tagFor(this, key) as UpdatableTag;
-      let ret;
-
-      let tag = track(() => {
-        ret = originalGet!.call(this);
-      });
-
-      updateTag(propertyTag, tag);
-      consumeTag(tag);
-
-      return ret;
+      return readAndTrack(this, key, originalGet!);
     };
   }
 
@@ -95,14 +115,18 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
   @return {PropertyDecorator} property decorator instance
  */
 export function dependentKeyCompat(
+  value: (this: any) => any,
+  context: ClassGetterDecoratorContext
+): void;
+export function dependentKeyCompat(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function dependentKeyCompat(
-  ...args: ElementDescriptor | [PropertyDescriptor]
-): PropertyDescriptor | ExtendedMethodDecorator {
+  ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
+): PropertyDescriptor | ExtendedMethodDecorator | void {
   if (isElementDescriptor(args)) {
     let [target, key, desc] = args;
 
@@ -112,6 +136,15 @@ export function dependentKeyCompat(
     );
 
     return wrapGetterSetter(target, key, desc);
+  } else if (isModernDecoratorArgs(args)) {
+    const dec = identifyModernDecoratorArgs(args);
+    assert(
+      'The @dependentKeyCompat decorator must be applied to getters/setters when used in native classes',
+      dec.kind === 'getter'
+    );
+    return function (this: any) {
+      return readAndTrack(this, dec.context.name as string, dec.value);
+    };
   } else {
     const desc = args[0];
 

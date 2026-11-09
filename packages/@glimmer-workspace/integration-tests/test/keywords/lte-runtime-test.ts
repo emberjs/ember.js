@@ -1,9 +1,5 @@
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import GlimmerComponent from '@glimmer/component';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
@@ -48,7 +44,7 @@ class KeywordLteRuntime extends RenderTest {
 
   @test
   'no eval and no scope'() {
-    class Foo extends GlimmerishComponent {
+    class Foo extends GlimmerComponent {
       static {
         template('{{if (lte this.a this.b) "yes" "no"}}', {
           strictMode: true,

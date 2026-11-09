@@ -1,7 +1,8 @@
 import { sum } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(sum('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(sum('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @sum('foo') sum: unknown;

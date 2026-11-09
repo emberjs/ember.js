@@ -1,5 +1,6 @@
 /**
 @module @ember/array/proxy
+@deprecated
 */
 
 import { objectAt } from '@ember/-internals/metal/lib/object-at';
@@ -15,9 +16,12 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import EmberObject from '@ember/object';
-import EmberArray, { type NativeArray } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import type EmberArray from '@ember/array';
+import type { NativeArray } from '@ember/array';
+import type MutableArray from '@ember/array/mutable';
+import { InternalEmberArray, InternalMutableArray } from '@ember/array/index-internal';
 import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import {
   combine,
@@ -113,6 +117,7 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @extends EmberObject
   @uses MutableArray
   @public
+  @deprecated Use a tracked array or a native `Proxy` instead. See https://deprecations.emberjs.com/id/deprecate-array-proxy
 */
 interface ArrayProxy<T> extends MutableArray<T> {
   /**
@@ -122,6 +127,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @property content
     @type EmberArray
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   content: T[] | EmberArray<T> | NativeArray<T> | null;
   /**
@@ -131,6 +137,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
 
     @property arrangedContent
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   arrangedContent: EmberArray<T> | null;
   /**
@@ -144,6 +151,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   objectAtContent(idx: number): T | undefined;
   /**
@@ -159,6 +167,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @param {Array} objects Optional array of objects to insert.
     @return {void}
     @public
+    @deprecated https://deprecations.emberjs.com/id/deprecate-array-proxy
   */
   replaceContent(idx: number, amt: number, objects?: T[]): void;
 
@@ -200,6 +209,11 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
 
   init(props: object | undefined) {
     super.init(props);
+
+    deprecateUntil(
+      '`ArrayProxy` is deprecated. Use a tracked array (for example `TrackedArray` from `tracked-built-ins`) or a native `Proxy` instead.',
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY
+    );
 
     setCustomTagFor(this, customTagForArrayProxy);
   }
@@ -323,7 +337,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
       assert(
         `ArrayProxy expects a native Array, EmberArray, or ArrayProxy, but you passed ${typeof arrangedContent}`,
         (function (arr: unknown): arr is EmberArray<unknown> {
-          return Array.isArray(arr) || EmberArray.detect(arr);
+          return Array.isArray(arr) || InternalEmberArray.detect(arr);
         })(arrangedContent)
       );
       assert(
@@ -405,7 +419,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
+ArrayProxy.reopen(InternalMutableArray, {
   arrangedContent: alias('content'),
 });
 

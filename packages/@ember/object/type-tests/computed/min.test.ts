@@ -1,7 +1,8 @@
 import { min } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(min('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(min('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @min('foo') min: unknown;

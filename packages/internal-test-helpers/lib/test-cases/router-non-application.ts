@@ -2,14 +2,16 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import Component from '@ember/component';
-import { _resetRenderers } from '@ember/-internals/glimmer';
+import { setComponentTemplate } from '@ember/component';
+import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
+import type { SimpleElement } from '@simple-dom/interface';
 import type Resolver from '../test-resolver';
+import TopLevelComponent from '../top-level-component';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
-import { runAppend, runDestroy } from '../run';
+import { runDestroy, runTask } from '../run';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
@@ -19,6 +21,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
   renderer: Renderer;
   element: HTMLElement;
   component: any;
+  root: object | null = null;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -37,9 +40,16 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     // This is a bit of a hack, but we need to register an application instance
     // so that the router can look it up. In the future, we should probably
     // make this a real application instance, or at least a real engine instance.
+    // `_setOutlets` renders the root outlet through `renderRootComponent`, so we
+    // mirror `ApplicationInstance#renderRootComponent` (seed `renderer:-dom` as
+    // the owner's renderer, then render into the fixture element).
     let appInstance = {
-      didCreateRootView: (view: any) => {
-        view.appendTo(this.element);
+      renderRootComponent: (component: object) => {
+        setRenderer(owner, this.renderer);
+        renderComponent(component, {
+          into: { element: this.element as unknown as SimpleElement, nextSibling: null },
+          owner,
+        });
       },
     };
     owner.register('-application-instance:main', appInstance, { instantiate: false });
@@ -113,9 +123,8 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
-      if (this.component) {
-        runDestroy(this.component);
-      }
+      runDestroy(this.root);
+      runDestroy(this.component);
       if (this.owner) {
         runDestroy(this.owner);
       }
@@ -125,24 +134,23 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
   }
 
   render(templateStr: string, context = {}) {
-    let { owner } = this;
+    let test = this;
 
-    owner.register(
-      'template:-top-level',
-      this.compile(templateStr, {
-        moduleName: '-top-level',
+    class Root extends TopLevelComponent {
+      constructor(...args: ConstructorParameters<typeof TopLevelComponent>) {
+        super(...args);
+
+        Object.defineProperties(this, Object.getOwnPropertyDescriptors(context));
+        test.component = this;
+      }
+    }
+
+    setComponentTemplate(this.compile(templateStr, { moduleName: '-top-level' }), Root);
+
+    this.root = runTask(() =>
+      this.renderer.render(Root, {
+        into: this.element as unknown as SimpleElement,
       })
     );
-
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
-    });
-
-    owner.register('component:-top-level', Component.extend(attrs));
-
-    this.component = owner.lookup('component:-top-level');
-
-    runAppend(this.component);
   }
 }

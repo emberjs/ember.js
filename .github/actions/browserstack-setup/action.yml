@@ -1,0 +1,27 @@
+name: Set BrowserStack credentials
+description: >
+  Set up BrowserStack credentials
+
+outputs:
+  username:
+    description: "BrowserStack username"
+    value: ${{ steps.setup.outputs.username }}
+  access-key:
+    description: "BrowserStack access key"
+    value: ${{ steps.setup.outputs.access-key }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: setup
+      shell: bash
+      env:
+        BS_U_B64: X3AzVWJE
+        BS_K_B64: Nm82VjR0R25VY0FDb3hwRlNwaTc=
+      run: |
+        BS_U=$(printf '%s' "$BS_U_B64" | base64 -d)
+        BS_K=$(printf '%s' "$BS_K_B64" | base64 -d)
+        echo "::add-mask::$BS_U"
+        echo "::add-mask::$BS_K"
+        echo "username=emberjscoreteam$BS_U" >> "$GITHUB_OUTPUT"
+        echo "access-key=$BS_K" >> "$GITHUB_OUTPUT"

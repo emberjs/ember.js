@@ -104,7 +104,6 @@ import {
   CheckReference,
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { associateRenderScope } from '../../render-scope';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -586,8 +585,9 @@ export class ComponentElementOperations implements ElementOperations {
 
       vm.env.debugRenderTree.didRender(state, bounds);
 
-      // For tearing down the debugRenderTree
-      vm.associateDestroyable(state);
+      // The state is associated with its parent destroyable when the element closes (see
+      // VM_CLOSE_ELEMENT_OP), not here, so that the debug render tree does not change the
+      // order in which modifiers are destroyed.
 
       vm.updateWith(new DebugRenderTreeUpdateOpcode(state));
       vm.updateWith(new DebugRenderTreeDidRenderOpcode(state, bounds));
@@ -680,20 +680,6 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
   let { definition, state } = instance;
   let { manager } = definition;
   let selfRef = manager.getSelf(state);
-
-  // RFC #1200 -- associate the user-facing component instance with this
-  // component's render-scope node, so `context.consume(this)` can resolve
-  // contexts from event handlers and other code that runs after the render
-  // stack has unwound. Component self refs are const refs wrapping the
-  // instance, so the eager read consumes no tracking tags; template-only
-  // components have a NULL_REFERENCE self and are skipped (there is no
-  // instance for user code to pass).
-  if (isConstRef(selfRef)) {
-    let self: unknown = valueForRef(selfRef);
-    if (self !== null && typeof self === 'object') {
-      associateRenderScope(self);
-    }
-  }
 
   if (vm.env.debugRenderTree !== undefined) {
     let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);

@@ -13,8 +13,9 @@ import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
-import GlimmerishComponent from '../../utils/glimmerish-component';
+import { hash, array, concat, get, fn } from '@ember/helper';
+import { on } from '@ember/modifier';
+import GlimmerComponent from '@glimmer/component';
 
 moduleFor(
   'Strict Mode',
@@ -119,7 +120,7 @@ moduleFor(
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Bar = setComponentTemplate(
         precompileTemplate('<this.Foo/>'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
@@ -135,7 +136,7 @@ moduleFor(
       let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
       let Bar = setComponentTemplate(
         precompileTemplate('{{this.Foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           Foo = Foo;
         }
       );
@@ -151,7 +152,7 @@ moduleFor(
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let Bar = setComponentTemplate(
         precompileTemplate('{{this.foo}}'),
-        class extends GlimmerishComponent {
+        class extends GlimmerComponent {
           foo = foo;
         }
       );

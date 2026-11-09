@@ -6,6 +6,27 @@ import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-te
 
 let owner;
 
+function classicRouteInfo(name, route) {
+  if (route === undefined) {
+    return { name };
+  }
+
+  return {
+    name,
+    manager: {
+      capabilities: { classicInterop: true },
+      invokeAction(bucket, eventName, args) {
+        let actionHandler = bucket.route.actions?.[eventName];
+        if (!actionHandler) {
+          return undefined;
+        }
+        return actionHandler.apply(bucket.route, args) === true;
+      },
+    },
+    bucket: { route },
+  };
+}
+
 function createRouter({ settings = {}, options = {} } = {}) {
   let CustomRouter = class extends Router {};
   let router = new CustomRouter(owner);
@@ -165,38 +186,29 @@ moduleFor(
       assert.expect(2);
 
       let routeInfos = [
-        {
-          name: 'application',
-          route: {
-            actions: {
-              loading() {
-                assert.ok(false, 'loading not handled by application route');
-              },
+        classicRouteInfo('application', {
+          actions: {
+            loading() {
+              assert.ok(false, 'loading not handled by application route');
             },
           },
-        },
-        {
-          name: 'about',
-          route: {
-            actions: {
-              loading() {
-                assert.ok(true, 'loading handled by about route');
-                return false;
-              },
+        }),
+        classicRouteInfo('about', {
+          actions: {
+            loading() {
+              assert.ok(true, 'loading handled by about route');
+              return false;
             },
           },
-        },
-        {
-          name: 'about.me',
-          route: {
-            actions: {
-              loading() {
-                assert.ok(true, 'loading handled by about.me route');
-                return true;
-              },
+        }),
+        classicRouteInfo('about.me', {
+          actions: {
+            loading() {
+              assert.ok(true, 'loading handled by about.me route');
+              return true;
             },
           },
-        },
+        }),
       ];
 
       triggerEvent(routeInfos, false, ['loading']);
@@ -206,20 +218,14 @@ moduleFor(
       assert.expect(1);
 
       let routeInfos = [
-        {
-          name: 'about',
-          route: {
-            actions: {
-              loading() {
-                assert.ok(true, 'loading handled by about route');
-              },
+        classicRouteInfo('about', {
+          actions: {
+            loading() {
+              assert.ok(true, 'loading handled by about route');
             },
           },
-        },
-        {
-          name: 'about.me',
-          route: undefined,
-        },
+        }),
+        classicRouteInfo('about.me', undefined),
       ];
 
       triggerEvent(routeInfos, false, ['loading']);
