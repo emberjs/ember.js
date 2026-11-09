@@ -1,5 +1,7 @@
 import {
   array,
+  type Context,
+  createContext,
   type ArrayHelper,
   concat,
   type ConcatHelper,
@@ -25,3 +27,16 @@ expectTypeOf(uniqueId).toEqualTypeOf<UniqueIdHelper>();
 type HelperManager = ReturnType<Parameters<typeof setHelperManager>[0]>;
 expectTypeOf<HelperManager['capabilities']>().not.toBeAny();
 expectTypeOf<Parameters<HelperManager['createHelper']>[1]>().not.toBeAny();
+
+class Theme {
+  color = 'dark';
+}
+const theme = createContext<Theme>();
+expectTypeOf(theme).toEqualTypeOf<Context<Theme>>();
+expectTypeOf(theme.value).toEqualTypeOf<Theme>();
+
+// @ts-expect-error createContext takes no value; `<Provide @value>` supplies it
+createContext(Theme);
+
+// @ts-expect-error value is read-only
+theme.value = new Theme();
