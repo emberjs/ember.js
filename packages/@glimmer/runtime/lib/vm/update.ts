@@ -30,6 +30,7 @@ import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
 
 import { clear, move as moveBounds } from '../bounds';
+import { swapDynamicScopeSource } from '../scope';
 import { NewTreeBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
@@ -38,6 +39,7 @@ export class UpdatingVM implements IUpdatingVM {
   public alwaysRevalidate: boolean;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
+  private dynamicScopes: DynamicScope[] = [];
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
@@ -71,19 +73,49 @@ export class UpdatingVM implements IUpdatingVM {
 
   private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
     let { frameStack } = this;
+    let previousSource = swapDynamicScopeSource(this);
 
-    this.try(opcodes, handler);
+    try {
+      this.try(opcodes, handler);
 
-    while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+      while (!frameStack.isEmpty()) {
+        let opcode = this.frame.nextStatement();
 
-      if (opcode === undefined) {
-        frameStack.pop();
-        continue;
+        if (opcode === undefined) {
+          this.popFrame();
+          continue;
+        }
+
+        opcode.evaluate(this);
       }
-
-      opcode.evaluate(this);
+    } finally {
+      swapDynamicScopeSource(previousSource);
     }
+  }
+
+  /**
+   * The dynamic scope of the innermost component with one that the update is in.
+   */
+  dynamicScope(): DynamicScope | null {
+    let { dynamicScopes } = this;
+    return dynamicScopes.length === 0 ? null : (dynamicScopes[dynamicScopes.length - 1] ?? null);
+  }
+
+  enterDynamicScope(scope: DynamicScope) {
+    this.dynamicScopes.push(scope);
+  }
+
+  exitDynamicScope() {
+    this.dynamicScopes.pop();
+  }
+
+  /**
+   * A frame that throws skips its remaining opcodes,
+   * and these can include the exit of a dynamic scope.
+   */
+  private popFrame() {
+    let frame = this.frameStack.pop();
+    if (frame) this.dynamicScopes.length = frame.dynamicScopeDepth;
   }
 
   private get frame() {
@@ -95,12 +127,12 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+    this.frameStack.push(new UpdatingVMFrame(ops, handler, this.dynamicScopes.length));
   }
 
   throw() {
     this.frame.handleException();
-    this.frameStack.pop();
+    this.popFrame();
   }
 }
 
@@ -431,7 +463,8 @@ class UpdatingVMFrame {
 
   constructor(
     private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private exceptionHandler: Nullable<ExceptionHandler>,
+    readonly dynamicScopeDepth: number
   ) {}
 
   goto(index: number) {

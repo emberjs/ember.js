@@ -36,6 +36,38 @@ export class DynamicScopeImpl implements DynamicScope {
   }
 }
 
+interface DynamicScopeSource {
+  dynamicScope(): DynamicScope | null;
+}
+
+let SOURCE: DynamicScopeSource | null = null;
+
+/**
+ * The dynamic scope at the position that the VM renders now.
+ *
+ * Code that runs during render, but has no handle to the VM,
+ * reads it here: a helper body, a component constructor, a getter.
+ *
+ * - `undefined`: no VM runs, so there is no render position.
+ * - `null`: the updating VM runs outside of every component with a dynamic scope.
+ */
+export function currentDynamicScope(): DynamicScope | null | undefined {
+  return SOURCE === null ? undefined : SOURCE.dynamicScope();
+}
+
+/**
+ * Make `source` the answer of `currentDynamicScope()`.
+ *
+ * Returns the previous source, so that a nested render can restore it.
+ */
+export function swapDynamicScopeSource(
+  source: DynamicScopeSource | null
+): DynamicScopeSource | null {
+  let previous = SOURCE;
+  SOURCE = source;
+  return previous;
+}
+
 export function isScopeReference(s: ScopeSlot): s is Reference {
   if (s === null || Array.isArray(s)) return false;
   return true;

@@ -443,6 +443,10 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.updateHook)) {
     vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
   }
+
+  if (dynamicScope !== null) {
+    vm.updateWith(new EnterDynamicScopeOpcode(dynamicScope));
+  }
 });
 
 APPEND_OPCODES.add(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, (vm, { op1: register }) => {
@@ -931,6 +935,10 @@ APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
 
     vm.env.didCreate(instance as ComponentInstanceWithCreate);
     vm.updateWith(new DidUpdateLayoutOpcode(instance as ComponentInstanceWithCreate, bounds));
+
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicScope)) {
+      vm.updateWith(EXIT_DYNAMIC_SCOPE);
+    }
   }
 });
 
@@ -951,6 +959,28 @@ export class UpdateComponentOpcode implements UpdatingOpcode {
     manager.update(component, dynamicScope);
   }
 }
+
+/**
+ * Gives the updating VM the dynamic scope of a component that has one.
+ *
+ * A value that recomputes in an update, for example a getter,
+ * reads the same dynamic scope as in the first render.
+ */
+class EnterDynamicScopeOpcode implements UpdatingOpcode {
+  constructor(private scope: DynamicScope) {}
+
+  evaluate(vm: UpdatingVM) {
+    vm.enterDynamicScope(this.scope);
+  }
+}
+
+class ExitDynamicScopeOpcode implements UpdatingOpcode {
+  evaluate(vm: UpdatingVM) {
+    vm.exitDynamicScope();
+  }
+}
+
+const EXIT_DYNAMIC_SCOPE = new ExitDynamicScopeOpcode();
 
 export class DidUpdateLayoutOpcode implements UpdatingOpcode {
   constructor(

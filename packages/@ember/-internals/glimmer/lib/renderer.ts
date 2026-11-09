@@ -14,7 +14,6 @@ import type {
   Bounds,
   Environment,
   RenderResult as GlimmerRenderResult,
-  DynamicScope as GlimmerDynamicScope,
   Template,
   TemplateFactory,
   EvaluationContext,
@@ -23,7 +22,7 @@ import type {
 
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { curry } from '@glimmer/runtime/lib/curried-value';
@@ -36,7 +35,9 @@ import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
-import type { OutletArgProvider } from '../../routing/route-managers/root-outlet';
+import { DynamicScope } from './dynamic-scope';
+
+export { DynamicScope };
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
 
@@ -61,46 +62,6 @@ export interface View {
   isDestroying: boolean;
   isDestroyed: boolean;
   [BOUNDS]: Bounds | null;
-}
-
-export class DynamicScope implements GlimmerDynamicScope {
-  /**
-   * The variables of `-with-dynamic-vars`, by name.
-   *
-   * A child shares the map of its parent until one of them sets a variable.
-   * Most scopes never set one, so `child()` does not copy.
-   */
-  #vars: Map<string, Reference>;
-  #shared = false;
-
-  constructor(
-    public view: View | null,
-    vars: Map<string, Reference> = new Map()
-  ) {
-    this.#vars = vars;
-  }
-
-  child(): DynamicScope {
-    let child = new DynamicScope(this.view, this.#vars);
-    child.#shared = this.#shared = true;
-    return child;
-  }
-
-  get(key: 'outletState'): Reference<OutletArgProvider | null | undefined>;
-  get(key: string): Reference;
-  get(key: string): Reference {
-    return this.#vars.get(key) ?? UNDEFINED_REFERENCE;
-  }
-
-  set(key: string, value: Reference): Reference {
-    if (this.#shared) {
-      this.#vars = new Map(this.#vars);
-      this.#shared = false;
-    }
-
-    this.#vars.set(key, value);
-    return value;
-  }
 }
 
 class ClassicRootState implements RendererRoot {

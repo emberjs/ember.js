@@ -28,6 +28,7 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
+import { DynamicScope } from './dynamic-scope';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import { renderers } from './renderers';
@@ -137,7 +138,8 @@ export class ComponentRootState implements RendererRoot {
           state.builder(state.env, options.into),
           state.owner,
           definition,
-          options.args
+          options.args,
+          new DynamicScope(null)
         );
 
         this.#result = associateDestroyableChild(this, iterator.sync());

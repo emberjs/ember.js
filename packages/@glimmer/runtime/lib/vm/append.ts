@@ -48,7 +48,7 @@ import {
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
 import { externs } from '../opcodes';
-import { ScopeImpl } from '../scope';
+import { ScopeImpl, swapDynamicScopeSource } from '../scope';
 import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
@@ -801,14 +801,20 @@ export class VM {
       LOCAL_LOGGER.log(`EXECUTING FROM ${this.lowlevel.fetchRegister($pc)}`);
     }
 
-    if (initialize) initialize(this);
+    let previousSource = swapDynamicScopeSource(this);
 
-    let result: RichIteratorResult<null, RenderResult>;
+    try {
+      if (initialize) initialize(this);
 
-    do result = this.next();
-    while (!result.done);
+      let result: RichIteratorResult<null, RenderResult>;
 
-    return result.value;
+      do result = this.next();
+      while (!result.done);
+
+      return result.value;
+    } finally {
+      swapDynamicScopeSource(previousSource);
+    }
   }
 
   next(): RichIteratorResult<null, RenderResult> {
