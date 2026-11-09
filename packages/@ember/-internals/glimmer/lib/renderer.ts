@@ -64,29 +64,41 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
+  /**
+   * The variables of `-with-dynamic-vars`, by name.
+   *
+   * A child shares the map of its parent until one of them sets a variable.
+   * Most scopes never set one, so `child()` does not copy.
+   */
+  #vars: Map<string, Reference>;
+  #shared = false;
+
   constructor(
     public view: View | null,
-    public outletState: Reference<OutletArgProvider | null | undefined>
-  ) {}
-
-  child() {
-    return new DynamicScope(this.view, this.outletState);
+    vars: Map<string, Reference> = new Map()
+  ) {
+    this.#vars = vars;
   }
 
-  get(key: 'outletState'): Reference<OutletArgProvider | null | undefined> {
-    assert(
-      `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    return this.outletState;
+  child(): DynamicScope {
+    let child = new DynamicScope(this.view, this.#vars);
+    child.#shared = this.#shared = true;
+    return child;
   }
 
-  set(key: 'outletState', value: Reference<OutletArgProvider | null | undefined>) {
-    assert(
-      `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    this.outletState = value;
+  get(key: 'outletState'): Reference<OutletArgProvider | null | undefined>;
+  get(key: string): Reference;
+  get(key: string): Reference {
+    return this.#vars.get(key) ?? UNDEFINED_REFERENCE;
+  }
+
+  set(key: string, value: Reference): Reference {
+    if (this.#shared) {
+      this.#vars = new Map(this.#vars);
+      this.#shared = false;
+    }
+
+    this.#vars.set(key, value);
     return value;
   }
 }
@@ -224,7 +236,7 @@ export class Renderer extends BaseRenderer {
 
   _appendDefinition(root: ClassicComponent, definition: CurriedValue, target: SimpleElement): void {
     let self = createConstRef(definition, 'this');
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
+    let dynamicScope = new DynamicScope(null);
     let rootState = new ClassicRootState(
       root,
       this.state.context,
