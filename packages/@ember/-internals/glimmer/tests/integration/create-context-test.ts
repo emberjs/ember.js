@@ -2,44 +2,31 @@ import {
   AbstractStrictTestCase,
   assertHTML,
   buildOwner,
+  defineSimpleHelper,
+  defineSimpleModifier,
   moduleFor,
-  runDestroy,
+  RenderingTestCase,
+  runTask,
 } from 'internal-test-helpers';
 
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import GlimmerishComponent from '../utils/glimmerish-component';
+import GlimmerishComponent from '@glimmer/component';
 
 import { run } from '@ember/runloop';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { on } from '@ember/modifier';
 import { renderComponent } from '../../lib/renderer';
 import { createContext } from '../../lib/create-context';
 import { tracked } from '@glimmer/tracking';
 import type Owner from '@ember/owner';
 
 /**
- * Coverage for `createContext` (the user-facing API discussed in
- * https://github.com/emberjs/rfcs/pull/1200 -- NullVoxPopuli's
- * `createContext` proposal returning `{ Provide, value }`).
+ * RFC #1200: `createContext` returns `{ Provide, value }`.
  *
- * The API:
- *
- *   - `createContext<T>()` takes no value -- the type parameter declares the
- *     shape, and the value is supplied at render time via `<Provide @value>`.
- *   - `<myContext.Provide @value={{...}}>` provides a value to descendants.
- *   - `{{myContext.value}}` (a template path) or `myContext.value` in JS
- *     reads the nearest provided value; `value` is a getter.
- *
- * The substantive scenarios here are ported from
- * `customerio/ember-provide-consume-context`'s test suite -- the prior-art
- * implementation that NullVoxPopuli called out in the RFC -- to pin down the
- * same behaviors production users rely on (sibling isolation, conditionals,
- * reactivity to value changes, etc.). Where the two APIs intentionally
- * diverge (EPCC's `getContext` returns `undefined` for missing context,
- * whereas createContext throws per NVP's "reduce harm" clarification), the
- * test asserts the createContext behavior.
+ * Most scenarios come from the test suite of ember-provide-consume-context.
+ * Where the APIs differ on purpose, the tests assert the RFC behavior:
+ * a read without a provider throws, it does not return `undefined`.
  */
 
 class CreateContextTestCase extends AbstractStrictTestCase {
@@ -71,10 +58,6 @@ class CreateContextTestCase extends AbstractStrictTestCase {
 moduleFor(
   'RFC #1200 -- createContext: smoke test',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
     '@test provide a value, consume it, and it renders'(assert: QUnit['assert']) {
       class Theme {
         color = 'dark';
@@ -106,10 +89,6 @@ moduleFor(
 moduleFor(
   'RFC #1200 -- createContext: API surface',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
     '@test value throws if read outside of rendering'(assert: QUnit['assert']) {
       const theme = createContext<{ color: string }>();
 
@@ -157,8 +136,9 @@ moduleFor(
       const theme = createContext<{ color: string }>();
       const value = { color: 'dark' };
 
-      // The getter composes with paths: both `{{theme.value.color}}` and
-      // going through a `{{#let}}` binding read the nearest provided value.
+      /**
+       * `value` works in a path and through a `{{#let}}` binding.
+       */
       let Root = setComponentTemplate(
         precompileTemplate(
           '<theme.Provide @value={{value}}>{{theme.value.color}}-{{#let theme.value as |t|}}{{t.color}}{{/let}}</theme.Provide>',
@@ -178,17 +158,12 @@ moduleFor(
 );
 
 /**
- * The "real-world scenarios" suite, ported from
- * ember-provide-consume-context's
- * tests/integration/components/built-in-components-test.ts.
+ * Ported from ember-provide-consume-context:
+ * tests/integration/components/built-in-components-test.ts
  */
 moduleFor(
   'RFC #1200 -- createContext: behavior ported from ember-provide-consume-context',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
     '@test a consumer can read context'(assert: QUnit['assert']) {
       const ctx = createContext<string>();
 
@@ -266,8 +241,11 @@ moduleFor(
       }
       setComponentTemplate(precompileTemplate('done'), Reader);
 
-      // Outer is ctxA (left subtree) and ctxB (right subtree); Reader is
-      // under ctxB, so a ctxA.value read should throw -- they don't bleed.
+      /**
+       * Reader is under ctxB only.
+       *
+       * The ctxA provider is a sibling, so a read of ctxA throws.
+       */
       let Root = setComponentTemplate(
         precompileTemplate(
           '<ctxA.Provide @value="A"></ctxA.Provide><ctxB.Provide @value="B"><Reader/></ctxB.Provide>',
@@ -393,8 +371,11 @@ moduleFor(
       const state = new State();
       const ctx = createContext<string>();
 
-      // The inner ctx.Provide @value="2" is in a sibling subtree of the
-      // consumer, so it must never override the outer @value="1".
+      /**
+       * The provider of "2" is a sibling of the reader.
+       *
+       * It never overrides the outer "1".
+       */
       let Root = setComponentTemplate(
         precompileTemplate(
           `<ctx.Provide @value="1">
@@ -475,9 +456,10 @@ moduleFor(
     '@test consumer at component-instance init time sees the nearest provider'(
       assert: QUnit['assert']
     ) {
-      // Mirrors EPCC's "a consumer can read context during initialization":
-      // when the consumer is a class component, its constructor should see
-      // the enclosing provider's value (not throw, not see a stale one).
+      /**
+       * From ember-provide-consume-context:
+       * "a consumer can read context during initialization".
+       */
       const ctx = createContext<string>();
 
       let observed: string | undefined;
@@ -504,10 +486,11 @@ moduleFor(
     '@test a provided object identity is stable across the same Provide re-render'(
       assert: QUnit['assert']
     ) {
-      // Providing a stable object preserves identity. If a sibling tracked
-      // re-render happens, the same instance should be re-yielded -- not a
-      // new one. This matters for downstream code that uses identity (e.g.
-      // caching, refs).
+      /**
+       * A re-render next to the reader keeps the provided object.
+       *
+       * Code that caches by identity depends on this.
+       */
       class State {
         @tracked tick = 0;
       }
@@ -527,8 +510,10 @@ moduleFor(
 
       let Root = setComponentTemplate(
         precompileTemplate(
-          // The bare {{state.tick}} consumes the tracked tag so toggling it
-          // forces the surrounding region to re-render.
+          /**
+           * The bare {{state.tick}} consumes the tracked tag so toggling it
+           * forces the surrounding region to re-render.
+           */
           '<ctx.Provide @value={{value}}>{{state.tick}}<Reader/></ctx.Provide>',
           { strictMode: true, scope: () => ({ ctx, state, value, Reader }) }
         ),
@@ -543,8 +528,10 @@ moduleFor(
         state.tick = 1;
       });
 
-      // Reader's constructor only fires once, so we don't get a second
-      // observed entry -- but the value it saw was the stable instance.
+      /**
+       * Reader's constructor only fires once, so we don't get a second
+       * observed entry -- but the value it saw was the stable instance.
+       */
       assert.strictEqual(observed.length, 1, 'reader constructed once');
       assert.strictEqual(first, value, 'provided object identity is stable');
     }
@@ -552,30 +539,23 @@ moduleFor(
 );
 
 /**
- * Extra-coverage suite for behaviors not exercised by the EPCC port:
+ * Behavior that the ported suite does not cover:
  *
- * - a value read from a plain function helper
- * - a value read from a modifier
- * - explicit @value={{undefined}} / @value={{null}}, and omitting @value
- * - cross-renderComponent isolation
- * - multiple value reads in the same template return the same identity
+ * - a read in a plain function helper
+ * - a read in a modifier
+ * - `@value={{undefined}}`, `@value={{null}}`, and no `@value`
+ * - two reads of the same provider
+ * - `{{#in-element}}`
  */
-import { defineSimpleHelper, defineSimpleModifier } from 'internal-test-helpers';
-
 moduleFor(
   'RFC #1200 -- createContext: extra coverage',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
     '@test value works inside a plain function helper'(assert: QUnit['assert']) {
       const ctx = createContext<string>();
 
-      // A genuine helper -- not just `ctx.value` in a let-binding.
-      // This exercises that value can be read from a function whose
-      // identity is wrapped by the helper manager, which the RFC explicitly
-      // allows ("in a plain function helper's body").
+      /**
+       * The RFC allows a read in the body of a plain function helper.
+       */
       const readContext = defineSimpleHelper(() => ctx.value);
 
       let Root = setComponentTemplate(
@@ -593,14 +573,11 @@ moduleFor(
     '@test KNOWN LIMITATION: a value read inside a modifier install throws'(
       assert: QUnit['assert']
     ) {
-      // Modifier install runs during `transaction.commit()`, which fires
-      // *after* the render frame has popped its scope stack. So reading
-      // value inside a modifier callback sees an empty scope and throws
-      // "outside of rendering".
-      //
-      // This pins down the current behavior so a future fix (e.g. wrapping
-      // modifier install in the enclosing component's scope) doesn't break
-      // silently. RFC #1200 documents this limitation explicitly.
+      /**
+       * Modifiers install when the transaction commits, after the VM is done.
+       *
+       * RFC #1200 documents this limitation.
+       */
       const ctx = createContext<string>();
 
       let caught: Error | undefined;
@@ -642,9 +619,11 @@ moduleFor(
       }
       setComponentTemplate(precompileTemplate(''), Reader);
 
-      // Explicit @value=undefined -- the consumer should see undefined,
-      // NOT throw "no provider" (the Provide *is* in the tree, it just
-      // chose to provide an undefined value).
+      /**
+       * The provider is in the tree and provides `undefined`.
+       *
+       * That is not the "no provider" error.
+       */
       let Root = setComponentTemplate(
         precompileTemplate('<ctx.Provide @value={{undefined}}><Reader/></ctx.Provide>', {
           strictMode: true,
@@ -669,8 +648,10 @@ moduleFor(
       }
       setComponentTemplate(precompileTemplate(''), Reader);
 
-      // No @value at all -- the Provide is still in the tree, so value
-      // is undefined rather than throwing.
+      /**
+       * No @value at all -- the Provide is still in the tree, so value
+       * is undefined rather than throwing.
+       */
       let Root = setComponentTemplate(
         precompileTemplate('<ctx.Provide><Reader/></ctx.Provide>', {
           strictMode: true,
@@ -710,9 +691,10 @@ moduleFor(
     '@test multiple value reads in the same template return the same identity'(
       assert: QUnit['assert']
     ) {
-      // Each value read walks up the scope chain. They should both find the
-      // same provider entry and return the same value -- strict-equal
-      // identity for a provided object.
+      /**
+       * Two reads find the same provider,
+       * so they return the same object.
+       */
       class State {
         marker = Symbol('state');
       }
@@ -754,11 +736,12 @@ moduleFor(
     }
 
     '@test a value read works across {{#in-element}}'(assert: QUnit['assert']) {
-      // {{#in-element}} moves where the DOM lands, not where the block sits
-      // in the render tree. Scoping follows the render tree, so a consumer
-      // portaled into an unrelated element still sees the provider that
-      // encloses it in the template -- even though, in the DOM, its output
-      // lands outside the provider's, in the sibling div above it.
+      /**
+       * `{{#in-element}}` moves the DOM, not the block in the render tree.
+       *
+       * The output lands in the div above the provider,
+       * but the reads still see the provider.
+       */
       const ctx = createContext<string>();
 
       let observedInConstructor: string | undefined;
@@ -802,18 +785,11 @@ moduleFor(
 );
 
 /**
- * Independent renderComponent trees must not share scope state. This sits
- * in its own module so each test's `renderComponent` call is independent
- * (the base class wires `into: #qunit-fixture`, so we render two trees
- * into separate sub-elements within the same fixture).
+ * Two `renderComponent` trees do not share providers.
  */
 moduleFor(
   'RFC #1200 -- createContext: cross-renderComponent isolation',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
     "@test separate renderComponent calls do not see each other's providers"(
       assert: QUnit['assert']
     ) {
@@ -841,10 +817,11 @@ moduleFor(
       }
       setComponentTemplate(precompileTemplate(''), ProvidedReader);
 
-      // Two independent component trees, both rendered into the fixture
-      // but in separate `renderComponent` calls. The first has no
-      // <Provide>; the second is wrapped in one. The presence of a
-      // <Provide> in tree #2 must not bleed into tree #1.
+      /**
+       * Tree A has no provider.
+       *
+       * The provider in tree B must not show in tree A.
+       */
       const fixture = this.element;
       const slotA = document.createElement('div');
       const slotB = document.createElement('div');
@@ -895,37 +872,34 @@ moduleFor(
 );
 
 /**
- * Coverage for `consume()`:
+ * Reads that run again in an update.
  *
- * - `consume()` with no argument behaves exactly like reading `value`
- *   (same result, same error cases).
- * - `consume(componentInstance)` resolves the context from that component's
- *   position in the render tree, *outside* of rendering (the event-handler
- *   use case). The instance -> render-node association is made by the VM
- *   when the component renders -- an implementation detail; user code just
- *   passes `this`.
+ * The append VM is gone then.
+ * The updating VM replays each `-with-dynamic-vars` block of a `Provide`.
  */
 moduleFor(
-  'RFC #1200 -- createContext: consume()',
+  'RFC #1200 -- createContext: updates',
   class extends CreateContextTestCase {
-    afterEach() {
-      runDestroy(this);
-    }
-
-    '@test consume() with no argument reads like value'(assert: QUnit['assert']) {
+    '@test a getter that recomputes in an update sees the provider'(assert: QUnit['assert']) {
+      class State {
+        @tracked count = 1;
+      }
+      const state = new State();
       const ctx = createContext<string>();
 
-      let observed: string | undefined;
       class Reader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          observed = ctx.consume();
+        get label() {
+          assert.step(`label reads ctx and count ${state.count}`);
+          return `${ctx.value}-${state.count}`;
         }
       }
-      setComponentTemplate(precompileTemplate(''), Reader);
+      setComponentTemplate(
+        precompileTemplate('<div id="content">{{this.label}}</div>', { strictMode: true }),
+        Reader
+      );
 
       let Root = setComponentTemplate(
-        precompileTemplate('<ctx.Provide @value="ambient"><Reader/></ctx.Provide>', {
+        precompileTemplate('<ctx.Provide @value="a"><Reader/></ctx.Provide>', {
           strictMode: true,
           scope: () => ({ ctx, Reader }),
         }),
@@ -933,234 +907,149 @@ moduleFor(
       );
 
       this.renderComponent(Root);
-      assert.strictEqual(observed, 'ambient', 'consume() saw the provided value');
-    }
-
-    '@test consume() with no argument throws outside of rendering'(assert: QUnit['assert']) {
-      const ctx = createContext<string>();
-
-      assert.throws(
-        () => ctx.consume(),
-        /outside of rendering/,
-        'an ambient consume() outside a render is rejected'
-      );
-    }
-
-    '@test consume() with no argument throws when no <Provide> exists'(assert: QUnit['assert']) {
-      const ctx = createContext<string>();
-
-      let error: Error | undefined;
-      class Reader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          try {
-            ctx.consume();
-          } catch (e) {
-            error = e as Error;
-          }
-        }
-      }
-      setComponentTemplate(precompileTemplate(''), Reader);
-
-      let Root = setComponentTemplate(
-        precompileTemplate('<Reader/>', { strictMode: true, scope: () => ({ Reader }) }),
-        templateOnly()
-      );
-
-      this.renderComponent(Root);
-      assert.ok(
-        /No matching `<Provide>`/.test(error?.message ?? ''),
-        `error mentions missing provider, got: ${error?.message}`
-      );
-    }
-
-    '@test consume(this) resolves the context from an event handler'(assert: QUnit['assert']) {
-      const theme = createContext<{ color: string }>();
-      const value = { color: 'rebeccapurple' };
-
-      let observed: { color: string } | undefined;
-      let ambientError: Error | undefined;
-      class Button extends GlimmerishComponent {
-        onClick = () => {
-          // Prove we really are outside of rendering: the ambient read throws...
-          try {
-            void theme.value;
-          } catch (e) {
-            ambientError = e as Error;
-          }
-          // ...but the component instance's position still resolves.
-          observed = theme.consume(this);
-        };
-      }
-      setComponentTemplate(
-        precompileTemplate('<button type="button" {{on "click" this.onClick}}>go</button>', {
-          strictMode: true,
-          scope: () => ({ on }),
-        }),
-        Button
-      );
-
-      let Root = setComponentTemplate(
-        precompileTemplate('<theme.Provide @value={{value}}><Button/></theme.Provide>', {
-          strictMode: true,
-          scope: () => ({ theme, value, Button }),
-        }),
-        templateOnly()
-      );
-
-      this.renderComponent(Root);
-      this.element.querySelector('button')!.click();
-
-      assert.ok(
-        /outside of rendering/.test(ambientError?.message ?? ''),
-        'the ambient value read in the handler threw (we were outside of rendering)'
-      );
-      assert.strictEqual(observed, value, 'consume(this) resolved the provided value');
-    }
-
-    '@test consume(this) resolves the nearest provider above each component'(
-      assert: QUnit['assert']
-    ) {
-      const ctx = createContext<string>();
-
-      let innerInstance: object | undefined;
-      let outerInstance: object | undefined;
-      class InnerReader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          innerInstance = this;
-        }
-      }
-      class OuterReader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          outerInstance = this;
-        }
-      }
-      setComponentTemplate(precompileTemplate(''), InnerReader);
-      setComponentTemplate(precompileTemplate(''), OuterReader);
-
-      let Root = setComponentTemplate(
-        precompileTemplate(
-          `<ctx.Provide @value="outer">
-             <OuterReader/>
-             <ctx.Provide @value="inner">
-               <InnerReader/>
-             </ctx.Provide>
-           </ctx.Provide>`,
-          { strictMode: true, scope: () => ({ ctx, InnerReader, OuterReader }) }
-        ),
-        templateOnly()
-      );
-
-      this.renderComponent(Root);
-
-      // Both resolutions happen here, after the render stack has unwound.
-      assert.strictEqual(ctx.consume(outerInstance!), 'outer', 'outer component sees "outer"');
-      assert.strictEqual(ctx.consume(innerInstance!), 'inner', 'inner component sees "inner"');
-    }
-
-    '@test one component instance works with every context'(assert: QUnit['assert']) {
-      const ctxA = createContext<string>();
-      const ctxB = createContext<string>();
-
-      let instance: object | undefined;
-      class Reader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          instance = this;
-        }
-      }
-      setComponentTemplate(precompileTemplate(''), Reader);
-
-      let Root = setComponentTemplate(
-        precompileTemplate(
-          '<ctxA.Provide @value="A"><ctxB.Provide @value="B"><Reader/></ctxB.Provide></ctxA.Provide>',
-          { strictMode: true, scope: () => ({ ctxA, ctxB, Reader }) }
-        ),
-        templateOnly()
-      );
-
-      this.renderComponent(Root);
-
-      assert.strictEqual(ctxA.consume(instance!), 'A', 'the instance resolves ctxA');
-      assert.strictEqual(ctxB.consume(instance!), 'B', 'the same instance resolves ctxB');
-    }
-
-    '@test consume(this) reads the current @value, not a snapshot'(assert: QUnit['assert']) {
-      class State {
-        @tracked count = 1;
-      }
-      const state = new State();
-      const ctx = createContext<number>();
-
-      let instance: object | undefined;
-      class Reader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          instance = this;
-        }
-      }
-      setComponentTemplate(precompileTemplate(''), Reader);
-
-      let Root = setComponentTemplate(
-        precompileTemplate('<ctx.Provide @value={{state.count}}><Reader/></ctx.Provide>', {
-          strictMode: true,
-          scope: () => ({ ctx, state, Reader }),
-        }),
-        templateOnly()
-      );
-
-      this.renderComponent(Root);
-      assert.strictEqual(ctx.consume(instance!), 1, 'initial value');
+      assert.strictEqual(this.element.querySelector('#content')?.textContent, 'a-1');
+      assert.verifySteps(['label reads ctx and count 1']);
 
       run(() => {
         state.count = 2;
       });
-      assert.strictEqual(ctx.consume(instance!), 2, 'resolution reflects the updated @value');
+      assert.strictEqual(this.element.querySelector('#content')?.textContent, 'a-2');
+      assert.verifySteps(['label reads ctx and count 2']);
     }
 
-    '@test consume(this) throws when no provider exists above the component'(
+    '@test helpers that recompute in an update see their nearest provider'(
       assert: QUnit['assert']
     ) {
-      const provided = createContext<string>();
-      const missing = createContext<string>();
-
-      let instance: object | undefined;
-      class Reader extends GlimmerishComponent {
-        constructor(owner: Owner, args: Record<string, unknown>) {
-          super(owner, args);
-          instance = this;
-        }
+      class State {
+        @tracked count = 1;
       }
-      setComponentTemplate(precompileTemplate(''), Reader);
+      const state = new State();
+      const ctx = createContext<string>();
+
+      const readContext = defineSimpleHelper((name, count) => {
+        assert.step(`${String(name)} reads ctx and count ${String(count)}`);
+        return `${ctx.value}-${String(count)}`;
+      });
 
       let Root = setComponentTemplate(
-        precompileTemplate('<provided.Provide @value="here"><Reader/></provided.Provide>', {
-          strictMode: true,
-          scope: () => ({ provided, Reader }),
-        }),
+        precompileTemplate(
+          `<ctx.Provide @value="outer">
+             <div id="before">{{readContext "before" state.count}}</div>
+             <ctx.Provide @value="inner">
+               <div id="inner">{{readContext "inner" state.count}}</div>
+             </ctx.Provide>
+             <div id="after">{{readContext "after" state.count}}</div>
+           </ctx.Provide>`,
+          { strictMode: true, scope: () => ({ ctx, readContext, state }) }
+        ),
         templateOnly()
       );
 
       this.renderComponent(Root);
+      assert.verifySteps([
+        'before reads ctx and count 1',
+        'inner reads ctx and count 1',
+        'after reads ctx and count 1',
+      ]);
 
-      assert.strictEqual(provided.consume(instance!), 'here', 'sanity: the instance is known');
-      assert.throws(
-        () => missing.consume(instance!),
-        /No matching `<Provide>` was found above the component/,
-        'a context with no provider above the component is rejected'
+      run(() => {
+        state.count = 2;
+      });
+      assert.verifySteps([
+        'before reads ctx and count 2',
+        'inner reads ctx and count 2',
+        'after reads ctx and count 2',
+      ]);
+      assert.strictEqual(this.element.querySelector('#before')?.textContent, 'outer-2');
+      assert.strictEqual(this.element.querySelector('#inner')?.textContent, 'inner-2');
+      assert.strictEqual(
+        this.element.querySelector('#after')?.textContent,
+        'outer-2',
+        'the update left the inner provider'
       );
     }
 
-    '@test consume(component) rejects an object that never rendered'(assert: QUnit['assert']) {
+    '@test a read in an update outside of every provider throws "no provider"'(
+      assert: QUnit['assert']
+    ) {
+      class State {
+        @tracked count = 1;
+      }
+      const state = new State();
       const ctx = createContext<string>();
 
-      assert.throws(
-        () => ctx.consume({}),
-        /expects a component instance that has been rendered/,
-        'an arbitrary object is not accepted'
+      const readContext = defineSimpleHelper((count) => {
+        try {
+          return ctx.value;
+        } catch (e) {
+          assert.step(`count ${String(count)}: ${(e as Error).message.slice(0, 27)}`);
+          return 'none';
+        }
+      });
+
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          '<ctx.Provide @value="a"></ctx.Provide><div id="content">{{readContext state.count}}</div>',
+          { strictMode: true, scope: () => ({ ctx, readContext, state }) }
+        ),
+        templateOnly()
       );
+
+      this.renderComponent(Root);
+      assert.verifySteps(['count 1: No matching `<Provide>` was']);
+
+      run(() => {
+        state.count = 2;
+      });
+      assert.verifySteps(['count 2: No matching `<Provide>` was']);
+    }
+
+    '@test new {{#each}} items inside a provider see it'(assert: QUnit['assert']) {
+      class State {
+        @tracked items = ['a'];
+      }
+      const state = new State();
+      const ctx = createContext<string>();
+
+      const readContext = defineSimpleHelper((item) => {
+        assert.step(`${String(item)} reads ctx`);
+        return `${String(item)}:${ctx.value}`;
+      });
+
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<ctx.Provide @value="p">{{#each state.items as |item|}}<span>{{readContext item}}</span>{{/each}}</ctx.Provide>`,
+          { strictMode: true, scope: () => ({ ctx, readContext, state }) }
+        ),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      assert.verifySteps(['a reads ctx']);
+
+      run(() => {
+        state.items = ['a', 'b'];
+      });
+      assert.verifySteps(['b reads ctx']);
+      assert.strictEqual(this.element.textContent, 'a:pb:p');
+    }
+  }
+);
+
+moduleFor(
+  'RFC #1200 -- createContext: classic root',
+  class extends RenderingTestCase {
+    '@test Provide and value work under a classic root'() {
+      let ctx = createContext<string>();
+
+      this.render('<this.ctx.Provide @value={{this.name}}>{{this.ctx.value}}</this.ctx.Provide>', {
+        ctx,
+        name: 'classic',
+      });
+      this.assertText('classic');
+
+      runTask(() => this.context.set('name', 'updated'));
+      this.assertText('updated');
     }
   }
 );

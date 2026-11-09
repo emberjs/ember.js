@@ -1,5 +1,7 @@
 import {
   array,
+  type Context,
+  createContext,
   type ArrayHelper,
   concat,
   type ConcatHelper,
@@ -9,8 +11,6 @@ import {
   type GetHelper,
   hash,
   type HashHelper,
-  createContext,
-  type Context,
   setHelperManager,
   uniqueId,
   type UniqueIdHelper,
@@ -28,27 +28,15 @@ type HelperManager = ReturnType<Parameters<typeof setHelperManager>[0]>;
 expectTypeOf<HelperManager['capabilities']>().not.toBeAny();
 expectTypeOf<Parameters<HelperManager['createHelper']>[1]>().not.toBeAny();
 
-// createContext takes a type parameter, not a value -- the value is supplied
-// at render time via `<Provide @value>`.
 class Theme {
   color = 'dark';
 }
 const theme = createContext<Theme>();
 expectTypeOf(theme).toEqualTypeOf<Context<Theme>>();
-// `value` is a getter, not a function
 expectTypeOf(theme.value).toEqualTypeOf<Theme>();
 
-// @ts-expect-error createContext does not accept a class (or any value) argument
+// @ts-expect-error createContext takes no value; `<Provide @value>` supplies it
 createContext(Theme);
 
-// `consume()` with no argument reads ambiently, like `value`
-expectTypeOf(theme.consume()).toEqualTypeOf<Theme>();
-
-// `consume(component)` resolves from a component instance's render-tree
-// position (validity of the instance is checked at runtime)
-declare const componentInstance: object;
-expectTypeOf(theme.consume(componentInstance)).toEqualTypeOf<Theme>();
-
-// consume takes an object, not a primitive
-// @ts-expect-error
-theme.consume('not-a-component');
+// @ts-expect-error value is read-only
+theme.value = new Theme();

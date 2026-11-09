@@ -1793,80 +1793,54 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 /* eslint-enable @typescript-eslint/no-empty-object-type */
 
 /**
- * Creates a render-tree-scoped context (provide/consume) for sharing values
- * with descendant components without prop drilling.
+ * `createContext` makes a value available to a part of the render tree,
+ * without an argument at each level.
  *
- * See [RFC #1200](https://github.com/emberjs/rfcs/pull/1200) and the original
- * [Context RFC #975](https://github.com/emberjs/rfcs/pull/975).
- *
- * `createContext` takes no value of its own — it only establishes the *type*
- * of the value (via a type parameter) and returns an object with:
- *
- * - `Provide`: a component that exposes its `@value` argument to every
- *    descendant in the block.
- * - `value`: a getter (also usable as a template path) that returns the
- *    nearest enclosing provided value. **Throws** if there is no matching
- *    provider higher in the render tree, or if read outside of rendering.
- * - `consume`: with no argument, identical to reading `value`. Passed a
- *    component instance, it resolves the context from that component's
- *    position in the render tree instead -- the way to read a context from
- *    event handlers and other code that runs outside of rendering.
+ * `Provide` makes its `@value` available to everything in its block.
+ * `value` reads the value of the nearest enclosing `Provide`.
  *
  * ```gjs
+ * import Component from '@glimmer/component';
  * import { createContext } from '@ember/helper';
  *
  * class Theme {
  *   color = 'dark';
  * }
  *
- * const theme = createContext<Theme>();
+ * const theme = createContext();
+ * const dark = new Theme();
+ *
+ * class FancyButton extends Component {
+ *   get color() {
+ *     return theme.value.color;
+ *   }
+ *
+ *   <template>
+ *     <button style="color: {{this.color}}">{{yield}}</button>
+ *   </template>
+ * }
  *
  * <template>
- *   <theme.Provide @value={{this.theme}}>
+ *   <theme.Provide @value={{dark}}>
  *     {{theme.value.color}}
+ *     <FancyButton>Save</FancyButton>
  *   </theme.Provide>
- *
- *   {{theme.value}} {{! throws -- no provider }}
  * </template>
  * ```
  *
- * Reactivity: the `@value` binding is reactive. When the argument updates,
- * consumers re-render; mutating `@tracked` fields on a stable provided
- * object likewise invalidates consumers.
+ * Read `value` while rendering: in a template, in a helper,
+ * or in a component constructor or getter.
+ * It throws outside of rendering, and when no `Provide` of the context encloses the read.
  *
- * Reading a context from an event handler (or any other code that runs
- * outside of rendering, where the ambient `value` read throws) works by
- * passing the component instance to `consume` — the instance identifies the
- * component's position in the render tree:
- *
- * ```gjs
- * import Component from '@glimmer/component';
- * import { createContext } from '@ember/helper';
- * import { on } from '@ember/modifier';
- *
- * const theme = createContext<Theme>();
- *
- * class ThemedButton extends Component {
- *   onClick = () => {
- *     console.log(theme.consume(this).color);
- *   };
- *
- *   <template>
- *     <button {{on 'click' this.onClick}}>{{yield}}</button>
- *   </template>
- * }
- * ```
- *
- * Any rendered component instance works with every context, and resolution
- * happens at `consume` time — the value read is the provider's current
- * `@value`, not a snapshot from render time.
+ * The provided value is reactive.
+ * When `@value` changes, everything that read it renders again.
  *
  * @method createContext
- * @static
  * @for @ember/helper
- * @returns {Object} `{ Provide, value, consume }`
+ * @static
  * @public
+ * @exampleimport import { createContext } from '@ember/helper';
+ * @returns {Object} An object with `Provide` (a component that takes `@value`)
+ *   and `value` (the value of the nearest enclosing `Provide`)
  */
-export { createContext } from '@ember/-internals/glimmer/lib/create-context';
-
-export type { Context } from '@ember/-internals/glimmer/lib/create-context';
+export { createContext, type Context } from '@ember/-internals/glimmer/lib/create-context';
