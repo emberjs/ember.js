@@ -1,11 +1,19 @@
+import type { TagMeta } from '../meta';
 import type { ReactiveOptions } from './types';
 
+import { tagMetaFor } from '../meta';
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
 class TrackedObject<ObjectType extends NonNullable<object>> {
   #options: ReactiveOptions<ObjectType[keyof ObjectType]>;
-  #storages = new Map<PropertyKey, ReturnType<typeof createUpdatableTag>>();
+  /**
+   * The tags that `tagFor(proxy, key)` returns.
+   *
+   * Classic consumers (`@computed`, observers) find tags with `tagFor`,
+   * so they see each change to a key.
+   */
+  #storages!: TagMeta;
   #collection = createUpdatableTag();
 
   #readStorageFor(key: PropertyKey) {
@@ -51,7 +59,7 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
-    return new Proxy(clone, {
+    const proxy = new Proxy(clone, {
       get(target, prop) {
         self.#readStorageFor(prop);
 
@@ -102,7 +110,19 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
         return TrackedObject.prototype;
       },
     }) as TrackedObject<ObjectType>;
+
+    this.#storages = tagMetaFor(proxy);
+
+    return proxy;
   }
+}
+
+/**
+ * A `trackedObject` makes each write reactive.
+ * Debug tools use this to skip checks that are only for plain objects.
+ */
+export function isTrackedObject(obj: object): boolean {
+  return obj instanceof TrackedObject;
 }
 
 export function trackedObject<ObjectType extends object>(
