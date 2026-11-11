@@ -67,8 +67,8 @@ moduleFor(
           @service
           reloader;
 
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             this.reloader.onReload(() => this.recompute());
           }
 
