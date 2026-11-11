@@ -33,6 +33,9 @@ import {
   is destroyed, all registered children will also be destroyed.
 
   ```js
+  import Component from '@glimmer/component';
+  import { associateDestroyableChild } from '@ember/destroyable';
+
   class CustomSelect extends Component {
     constructor(...args) {
       super(...args);

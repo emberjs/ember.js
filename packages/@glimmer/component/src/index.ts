@@ -22,7 +22,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   1. Glimmer components, imported from `@glimmer/component`, which are the
      default components for Ember Octane (3.15) and more recent editions.
   2. Classic components, imported from `@ember/component`, which were the
-     default for older editions of Ember (pre 3.15).
+     default for older editions of Ember (pre 3.15) and are now deprecated.
 
   Below is the documentation for Template-only and Glimmer components. If you
   are looking for the API documentation for Classic components, it is

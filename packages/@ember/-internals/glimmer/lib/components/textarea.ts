@@ -114,11 +114,6 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   * dir
   * value
 
-  ## Classic `layout` and `layoutName` properties
-
-  Because HTML `textarea` elements do not contain inner HTML the `layout` and
-  `layoutName` properties will not be applied.
-
   @method Textarea
   @for @ember/component
   @static

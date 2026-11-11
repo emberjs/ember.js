@@ -361,7 +361,7 @@ class _BootOptions {
 
     * It does not set up an `EventDispatcher`.
 
-    * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+    * It does not install element modifiers (such as `{{on}}`).
 
     * It sets the `location` option to `"none"`. (If you would like to use
       the location adapter specified in the app's router instead, you can also
