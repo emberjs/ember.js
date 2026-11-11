@@ -1284,8 +1284,8 @@ moduleFor(
       this.registerService(
         'name',
         class extends Service {
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             serviceInstance = this;
           }
           last = 'Jackson';
@@ -1312,13 +1312,13 @@ moduleFor(
       this.assertText('Jackson');
 
       runTask(() => {
-        serviceInstance.set('last', 'McGuffey');
+        set(serviceInstance, 'last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
       runTask(() => {
-        serviceInstance.set('last', 'Jackson');
+        set(serviceInstance, 'last', 'Jackson');
       });
 
       this.assertText('Jackson');
