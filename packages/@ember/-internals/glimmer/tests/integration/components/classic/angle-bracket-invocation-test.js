@@ -1,544 +1,589 @@
-import { moduleFor, strip, classes, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  strip,
+  classes,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { set } from '@ember/object';
 import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component as EmberComponent } from '../../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-moduleFor(
-  'AngleBracket Invocation (classic component)',
-  class extends ClassicRenderingTestCase {
-    '@test it can have a custom id and it is not bound'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{this.id}} {{this.elementId}}'),
-          class extends EmberComponent {}
-        )
-      );
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'AngleBracket Invocation (classic component)',
+    class extends ClassicRenderingTestCase {
+      '@test it can have a custom id and it is not bound'() {
+        expectClassicComponentDeprecation();
 
-      this.render('<FooBar @id={{this.customId}} />', {
-        customId: 'bizz',
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('{{this.id}} {{this.elementId}}'),
+            class extends EmberComponent {}
+          )
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
+        this.render('<FooBar @id={{this.customId}} />', {
+          customId: 'bizz',
+        });
 
-      this.assertStableRerender();
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bizz' },
+          content: 'bizz bizz',
+        });
 
-      runTask(() => set(this.context, 'customId', 'bar'));
+        this.assertStableRerender();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bar bizz',
-      });
+        runTask(() => set(this.context, 'customId', 'bar'));
 
-      runTask(() => set(this.context, 'customId', 'bizz'));
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bizz' },
+          content: 'bar bizz',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
-    }
+        runTask(() => set(this.context, 'customId', 'bizz'));
 
-    '@test it can have a custom id attribute and it is bound'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
-      );
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bizz' },
+          content: 'bizz bizz',
+        });
+      }
 
-      this.render('<FooBar id={{this.customId}} />', {
-        customId: 'bizz',
-      });
+      '@test it can have a custom id attribute and it is bound'() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'hello',
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
+        );
 
-      this.assertStableRerender();
+        this.render('<FooBar id={{this.customId}} />', {
+          customId: 'bizz',
+        });
 
-      runTask(() => set(this.context, 'customId', 'bar'));
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bizz' },
+          content: 'hello',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bar' },
-        content: 'hello',
-      });
+        this.assertStableRerender();
 
-      runTask(() => set(this.context, 'customId', 'bizz'));
+        runTask(() => set(this.context, 'customId', 'bar'));
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'hello',
-      });
-    }
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bar' },
+          content: 'hello',
+        });
 
-    '@test it can have a custom tagName'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('hello'),
-          class extends EmberComponent {
-            tagName = 'foo-bar';
-          }
-        )
-      );
+        runTask(() => set(this.context, 'customId', 'bizz'));
 
-      this.render('<FooBar></FooBar>');
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'bizz' },
+          content: 'hello',
+        });
+      }
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
+      '@test it can have a custom tagName'() {
+        expectClassicComponentDeprecation();
 
-      runTask(() => this.rerender());
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('hello'),
+            class extends EmberComponent {
+              tagName = 'foo-bar';
+            }
+          )
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-    }
+        this.render('<FooBar></FooBar>');
 
-    '@test it can have a custom tagName from the invocation'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
-      );
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'foo-bar',
+          content: 'hello',
+        });
 
-      this.render('<FooBar @tagName="foo-bar" />');
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'foo-bar',
+          content: 'hello',
+        });
+      }
 
-      runTask(() => this.rerender());
+      '@test it can have a custom tagName from the invocation'() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'foo-bar',
-        content: 'hello',
-      });
-    }
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
+        );
 
-    '@test it can have custom classNames'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('hello'),
-          class extends EmberComponent {
-            classNames = ['foo', 'bar'];
-          }
-        )
-      );
+        this.render('<FooBar @tagName="foo-bar" />');
 
-      this.render('<FooBar />');
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'foo-bar',
+          content: 'hello',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar') },
-        content: 'hello',
-      });
+        runTask(() => this.rerender());
 
-      runTask(() => this.rerender());
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'foo-bar',
+          content: 'hello',
+        });
+      }
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar') },
-        content: 'hello',
-      });
-    }
+      '@test it can have custom classNames'() {
+        expectClassicComponentDeprecation();
 
-    '@test class property on components can be dynamic'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
-      );
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('hello'),
+            class extends EmberComponent {
+              classNames = ['foo', 'bar'];
+            }
+          )
+        );
 
-      this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
-        fooBar: true,
-      });
+        this.render('<FooBar />');
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar') },
+          content: 'hello',
+        });
 
-      runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar') },
+          content: 'hello',
+        });
+      }
 
-      runTask(() => set(this.context, 'fooBar', false));
+      '@test class property on components can be dynamic'() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
+        );
 
-      runTask(() => set(this.context, 'fooBar', true));
+        this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
+          fooBar: true,
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') },
-      });
-    }
+        this.assertComponentElement(this.firstChild, {
+          content: 'hello',
+          attrs: { class: classes('ember-view foo-bar') },
+        });
 
-    '@test it can set custom classNames from the invocation'() {
-      let FooBarComponent = class extends EmberComponent {
-        classNames = ['foo'];
-      };
+        runTask(() => this.rerender());
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        this.assertComponentElement(this.firstChild, {
+          content: 'hello',
+          attrs: { class: classes('ember-view foo-bar') },
+        });
 
-      this.render(strip`
+        runTask(() => set(this.context, 'fooBar', false));
+
+        this.assertComponentElement(this.firstChild, {
+          content: 'hello',
+          attrs: { class: classes('ember-view') },
+        });
+
+        runTask(() => set(this.context, 'fooBar', true));
+
+        this.assertComponentElement(this.firstChild, {
+          content: 'hello',
+          attrs: { class: classes('ember-view foo-bar') },
+        });
+      }
+
+      '@test it can set custom classNames from the invocation'() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends EmberComponent {
+          classNames = ['foo'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render(strip`
         <FooBar @class="bar baz" />
         <FooBar @classNames="bar baz" />
         <FooBar />
       `);
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo') },
-        content: 'hello',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar baz') },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar baz') },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo') },
+          content: 'hello',
+        });
 
-      runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { class: classes('ember-view foo') },
-        content: 'hello',
-      });
-    }
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar baz') },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo bar baz') },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { class: classes('ember-view foo') },
+          content: 'hello',
+        });
+      }
 
-    '@test it has an element'() {
-      let instance;
+      '@test it has an element'() {
+        expectClassicComponentDeprecation();
 
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          instance = this;
-        }
-      };
+        let instance;
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('<FooBar></FooBar>');
-
-      let element1 = instance.element;
-
-      this.assertComponentElement(element1, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      let element2 = instance.element;
-
-      this.assertComponentElement(element2, { content: 'hello' });
-
-      this.assertSameNode(element2, element1);
-    }
-
-    '@test it has the right parentView and childViews'(assert) {
-      let fooBarInstance, fooBarBazInstance;
-
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarInstance = this;
-        }
-      };
-
-      let FooBarBazComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarBazInstance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
-      );
-      this.owner.register(
-        'component:foo-bar-baz',
-        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
-      );
-
-      this.render('<FooBar />');
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-
-      runTask(() => this.rerender());
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-    }
-
-    '@test it reflects named arguments as properties'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends EmberComponent {})
-      );
-
-      this.render('<FooBar @foo={{this.model.bar}} />', {
-        model: {
-          bar: 'Hola',
-        },
-      });
-
-      this.assertText('Hola');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Hola');
-
-      runTask(() => this.context.set('model.bar', 'Hello'));
-
-      this.assertText('Hello');
-
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
-
-      this.assertText('Hola');
-    }
-
-    '@test positional parameters are not allowed'() {
-      let TestComponent = class extends EmberComponent {
-        static positionalParams = ['first', 'second'];
-      };
-
-      this.owner.register(
-        'component:sample-component',
-        setComponentTemplate(precompileTemplate('{{this.first}}{{this.second}}'), TestComponent)
-      );
-
-      // this is somewhat silly as the browser "corrects" for these as
-      // attribute names, but regardless the thing we care about here is that
-      // they are **not** used as positional params
-      this.render('<SampleComponent one two />');
-
-      this.assertText('');
-    }
-
-    '@test includes invocation specified attributes in root element ("splattributes")'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
-      );
-
-      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
-        foo: 'foo',
-        bar: 'bar',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'foo', 'FOO');
-        set(this.context, 'bar', undefined);
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO' },
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'foo', 'foo');
-        set(this.context, 'bar', 'bar');
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-    }
-
-    '@test invocation attributes are merged with the classes of the component'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('Hello world!'),
-          class extends EmberComponent {
-            classNames = ['inner'];
+        let FooBarComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            instance = this;
           }
-        )
-      );
+        };
 
-      this.render('<FooBar class="outer" />');
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view inner outer') },
-        content: 'Hello world!',
-      });
+        this.render('<FooBar></FooBar>');
 
-      this.assertStableRerender();
-    }
+        let element1 = instance.element;
 
-    '@test invocation attributes win over attributeBindings'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('Hello world!'),
-          class extends EmberComponent {
-            attributeBindings = ['data-foo'];
-            'data-foo' = 'inner';
+        this.assertComponentElement(element1, { content: 'hello' });
+
+        runTask(() => this.rerender());
+
+        let element2 = instance.element;
+
+        this.assertComponentElement(element2, { content: 'hello' });
+
+        this.assertSameNode(element2, element1);
+      }
+
+      '@test it has the right parentView and childViews'(assert) {
+        expectClassicComponentDeprecation();
+
+        let fooBarInstance, fooBarBazInstance;
+
+        let FooBarComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            fooBarInstance = this;
           }
-        )
-      );
+        };
 
-      this.render('<FooBar data-foo="outer" />');
+        let FooBarBazComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            fooBarBazInstance = this;
+          }
+        };
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'outer' },
-        content: 'Hello world!',
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
+        );
+        this.owner.register(
+          'component:foo-bar-baz',
+          setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
+        );
 
-      this.assertStableRerender();
-    }
+        this.render('<FooBar />');
+        this.assertText('foo-bar foo-bar-baz');
 
-    '@test explicit ...attributes in the layout receive the invocation attributes'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('<h1 ...attributes>Hello world!</h1>'),
-          class extends EmberComponent {}
-        )
-      );
+        assert.equal(fooBarInstance.parentView, this.component);
+        assert.equal(fooBarBazInstance.parentView, fooBarInstance);
 
-      this.render('<FooBar data-foo="bar" />');
+        assert.deepEqual(this.component.childViews, [fooBarInstance]);
+        assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'bar' },
-        content: '<h1 data-foo="bar">Hello world!</h1>',
-      });
+        runTask(() => this.rerender());
+        this.assertText('foo-bar foo-bar-baz');
 
-      this.assertStableRerender();
-    }
+        assert.equal(fooBarInstance.parentView, this.component);
+        assert.equal(fooBarBazInstance.parentView, fooBarInstance);
 
-    '@test it can yield to a named block'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('Hello{{yield to="baz"}}world!'),
-          class extends EmberComponent {}
-        )
-      );
+        assert.deepEqual(this.component.childViews, [fooBarInstance]);
+        assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+      }
 
-      this.render('<FooBar><:baz> my </:baz></FooBar>');
+      '@test it reflects named arguments as properties'() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'Hello my world!',
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends EmberComponent {})
+        );
 
-      this.assertStableRerender();
-    }
+        this.render('<FooBar @foo={{this.model.bar}} />', {
+          model: {
+            bar: 'Hola',
+          },
+        });
 
-    '@test it can yield to an explicit default named block'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('Hello{{yield to="default"}}world!'),
-          class extends EmberComponent {}
-        )
-      );
+        this.assertText('Hola');
 
-      this.render('<FooBar><:default> my </:default></FooBar>');
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'Hello my world!',
-      });
+        this.assertText('Hola');
 
-      this.assertStableRerender();
-    }
+        runTask(() => this.context.set('model.bar', 'Hello'));
 
-    '@test it can yield a value to the else and inverse named blocks'() {
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('Hello{{yield "my" to="inverse"}}world!'),
-          class extends EmberComponent {}
-        )
-      );
+        this.assertText('Hello');
 
-      this.render(strip`
+        runTask(() => this.context.set('model', { bar: 'Hola' }));
+
+        this.assertText('Hola');
+      }
+
+      '@test positional parameters are not allowed'() {
+        expectClassicComponentDeprecation();
+
+        let TestComponent = class extends EmberComponent {
+          static positionalParams = ['first', 'second'];
+        };
+
+        this.owner.register(
+          'component:sample-component',
+          setComponentTemplate(precompileTemplate('{{this.first}}{{this.second}}'), TestComponent)
+        );
+
+        // this is somewhat silly as the browser "corrects" for these as
+        // attribute names, but regardless the thing we care about here is that
+        // they are **not** used as positional params
+        this.render('<SampleComponent one two />');
+
+        this.assertText('');
+      }
+
+      '@test includes invocation specified attributes in root element ("splattributes")'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
+        );
+
+        this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+          foo: 'foo',
+          bar: 'bar',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+      }
+
+      '@test invocation attributes are merged with the classes of the component'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('Hello world!'),
+            class extends EmberComponent {
+              classNames = ['inner'];
+            }
+          )
+        );
+
+        this.render('<FooBar class="outer" />');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('ember-view inner outer') },
+          content: 'Hello world!',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test invocation attributes win over attributeBindings'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('Hello world!'),
+            class extends EmberComponent {
+              attributeBindings = ['data-foo'];
+              'data-foo' = 'inner';
+            }
+          )
+        );
+
+        this.render('<FooBar data-foo="outer" />');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'outer' },
+          content: 'Hello world!',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test explicit ...attributes in the layout receive the invocation attributes'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('<h1 ...attributes>Hello world!</h1>'),
+            class extends EmberComponent {}
+          )
+        );
+
+        this.render('<FooBar data-foo="bar" />');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'bar' },
+          content: '<h1 data-foo="bar">Hello world!</h1>',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test it can yield to a named block'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('Hello{{yield to="baz"}}world!'),
+            class extends EmberComponent {}
+          )
+        );
+
+        this.render('<FooBar><:baz> my </:baz></FooBar>');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          content: 'Hello my world!',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test it can yield to an explicit default named block'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('Hello{{yield to="default"}}world!'),
+            class extends EmberComponent {}
+          )
+        );
+
+        this.render('<FooBar><:default> my </:default></FooBar>');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          content: 'Hello my world!',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test it can yield a value to the else and inverse named blocks'() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('Hello{{yield "my" to="inverse"}}world!'),
+            class extends EmberComponent {}
+          )
+        );
+
+        this.render(strip`
         <FooBar><:else as |value|> {{value}} </:else></FooBar>
         <FooBar><:inverse as |value|> {{value}} </:inverse></FooBar>
       `);
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        content: 'Hello my world!',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        content: 'Hello my world!',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          content: 'Hello my world!',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          content: 'Hello my world!',
+        });
 
-      this.assertStableRerender();
+        this.assertStableRerender();
+      }
     }
-  }
-);
+  );
+}

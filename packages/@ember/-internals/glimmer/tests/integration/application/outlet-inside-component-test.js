@@ -1,4 +1,10 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import Component from '@ember/component';
 import templateOnly from '@ember/component/template-only';
@@ -36,7 +42,9 @@ moduleFor(
       });
     }
 
-    ['@test {{outlet}} in a classic component renders the child route']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test {{outlet}} in a classic component renders the child route`]() {
+      expectClassicComponentDeprecation();
+
       this.add(
         'component:layout-wrapper',
         setComponentTemplate(

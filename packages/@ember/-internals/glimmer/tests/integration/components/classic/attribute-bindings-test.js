@@ -1,1072 +1,1139 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
 import { Component } from '../../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
-moduleFor(
-  'Attribute bindings integration (classic component)',
-  class extends RenderingTestCase {
-    ['@test it can have attribute bindings']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['foo:data-foo', 'bar:data-bar'];
-      };
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Attribute bindings integration (classic component)',
+    class extends RenderingTestCase {
+      ['@test it can have attribute bindings']() {
+        expectClassicComponentDeprecation();
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['foo:data-foo', 'bar:data-bar'];
+        };
 
-      this.render('{{foo-bar foo=this.foo bar=this.bar}}', { foo: 'foo', bar: 'bar' });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', { foo: 'foo', bar: 'bar' });
 
-      runTask(() => this.rerender());
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
+        runTask(() => this.rerender());
 
-      runTask(() => {
-        set(this.context, 'foo', 'FOO');
-        set(this.context, 'bar', undefined);
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO' },
-        content: 'hello',
-      });
+        runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+        });
 
-      runTask(() => {
-        set(this.context, 'foo', 'foo');
-        set(this.context, 'bar', 'bar');
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-    }
+        runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+        });
 
-    ['@test it can have attribute bindings with attrs']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'];
-      };
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+      }
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+      ['@test it can have attribute bindings with attrs']() {
+        expectClassicComponentDeprecation();
 
-      this.render('{{foo-bar foo=this.model.foo baz=this.model.baz}}', {
-        model: { foo: undefined, baz: { bar: 'bar' } },
-      });
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'];
+        };
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { 'data-bar': 'bar' },
-      });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      runTask(() => this.rerender());
+        this.render('{{foo-bar foo=this.model.foo baz=this.model.baz}}', {
+          model: { foo: undefined, baz: { bar: 'bar' } },
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { 'data-bar': 'bar' },
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          content: 'hello',
+          attrs: { 'data-bar': 'bar' },
+        });
 
-      runTask(() => {
-        set(this.context, 'model.foo', 'foo');
-        set(this.context, 'model.baz.bar', undefined);
-      });
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo' },
-        content: 'hello',
-      });
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          content: 'hello',
+          attrs: { 'data-bar': 'bar' },
+        });
 
-      runTask(() =>
-        set(this.context, 'model', {
-          foo: undefined,
-          baz: { bar: 'bar' },
-        })
-      );
+        runTask(() => {
+          set(this.context, 'model.foo', 'foo');
+          set(this.context, 'model.baz.bar', undefined);
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { 'data-bar': 'bar' },
-      });
-    }
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo' },
+          content: 'hello',
+        });
 
-    ['@test it can have attribute bindings with a nested path']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['foo.bar:data-foo-bar'];
-      };
+        runTask(() =>
+          set(this.context, 'model', {
+            foo: undefined,
+            baz: { bar: 'bar' },
+          })
+        );
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          content: 'hello',
+          attrs: { 'data-bar': 'bar' },
+        });
+      }
 
-      this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
+      ['@test it can have attribute bindings with a nested path']() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello',
-      });
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['foo.bar:data-foo-bar'];
+        };
 
-      runTask(() => this.rerender());
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo-bar': 'FOO-BAR' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo.bar', undefined));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo', undefined));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello',
-      });
-    }
-
-    ['@test handles non-microsyntax attributeBindings']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['type'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar type=this.submit}}', {
-        submit: 'submit',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'submit' },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'submit' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'submit', 'password'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'password' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'submit', null));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'submit', 'submit'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'submit' },
-        content: 'hello',
-      });
-    }
-
-    ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['foo.bar'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      expectAssertion(() => {
         this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
-      }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
-    }
-
-    ['@test normalizes attributeBindings for property names']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['tiTLe'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar tiTLe=this.name}}', {
-        name: 'qux',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { title: 'qux' },
-        content: 'hello',
-      });
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'name', null));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'name', 'qux'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { title: 'qux' },
-        content: 'hello',
-      });
-    }
-
-    ['@test normalizes attributeBindings for attribute names']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['foo:data-FOO'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar foo=this.foo}}', {
-        foo: 'qux',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'qux' },
-        content: 'hello',
-      });
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'foo', null));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo', 'qux'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'data-foo': 'qux' },
-        content: 'hello',
-      });
-    }
-
-    ['@test  attributeBindings preserves case for mixed-case attributes']() {
-      let FooBarComponent = class extends Component {
-        tagName = 'svg';
-        attributeBindings = ['viewBox'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate(''), FooBarComponent)
-      );
-
-      this.render('{{foo-bar viewBox=this.foo}}', {
-        foo: '0 0 100 100',
-      });
-
-      this.assert.equal(
-        this.firstChild.getAttribute('viewBox'),
-        '0 0 100 100',
-        'viewBox attribute'
-      );
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'foo', null));
-
-      this.assert.ok(!this.firstChild.hasAttribute('viewBox'), 'viewBox attribute removed');
-
-      runTask(() => set(this.context, 'foo', '0 0 100 200'));
-
-      this.assert.equal(
-        this.firstChild.getAttribute('viewBox'),
-        '0 0 100 200',
-        'viewBox attribute'
-      );
-    }
-
-    ['@test attributeBindings handles null/undefined']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['fizz', 'bar'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar fizz=this.fizz bar=this.bar}}', {
-        fizz: null,
-        bar: undefined,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'fizz', 'fizz');
-        set(this.context, 'bar', 'bar');
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { fizz: 'fizz', bar: 'bar' },
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'fizz', null);
-        set(this.context, 'bar', undefined);
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-    }
-
-    ['@test attributeBindings handles number value']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['size'];
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar size=this.size}}', {
-        size: 21,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { size: '21' },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { size: '21' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'size', 0));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { size: '0' },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'size', 21));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { size: '21' },
-        content: 'hello',
-      });
-    }
-
-    ['@test handles internal and external changes']() {
-      let component;
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['type'];
-        type = 'password';
-        init() {
-          super.init(...arguments);
-          component = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{foo-bar}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'password' },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'password' },
-        content: 'hello',
-      });
-
-      runTask(() => set(component, 'type', 'checkbox'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'checkbox' },
-        content: 'hello',
-      });
-
-      runTask(() => set(component, 'type', 'password'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { type: 'password' },
-        content: 'hello',
-      });
-    }
-
-    ['@test can set attributeBindings on component with a different tagName']() {
-      let FooBarComponent = class extends Component {
-        tagName = 'input';
-        attributeBindings = ['type', 'isDisabled:disabled'];
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar type=this.type isDisabled=this.disabled}}', {
-        type: 'password',
-        disabled: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'input',
-        attrs: { type: 'password' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'input',
-        attrs: { type: 'password' },
-      });
-
-      runTask(() => {
-        set(this.context, 'type', 'checkbox');
-        set(this.context, 'disabled', true);
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'input',
-        attrs: { type: 'checkbox', disabled: '' },
-      });
-
-      runTask(() => {
-        set(this.context, 'type', 'password');
-        set(this.context, 'disabled', false);
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'input',
-        attrs: { type: 'password' },
-      });
-    }
-
-    ['@test should allow namespaced attributes in micro syntax']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['xlinkHref:xlink:href'];
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar type=this.type xlinkHref=this.xlinkHref}}', {
-        xlinkHref: '/foo.png',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' },
-      });
-
-      runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'xlink:href': '/lol.png' },
-      });
-
-      runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' },
-      });
-    }
-
-    // This comes into play when using the {{#each}} helper. If the
-    // passed array item is a String, it will be converted into a
-    // String object instead of a normal string.
-    ['@test should allow for String objects']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['foo'];
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar foo=this.foo}}', {
-        foo: function () {
-          return this;
-        }.call('bar'),
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { foo: 'bar' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { foo: 'bar' },
-      });
-
-      runTask(() =>
-        set(
-          this.context,
-          'foo',
-          function () {
-            return this;
-          }.call('baz')
-        )
-      );
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { foo: 'baz' },
-      });
-
-      runTask(() =>
-        set(
-          this.context,
-          'foo',
-          function () {
-            return this;
-          }.call('bar')
-        )
-      );
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { foo: 'bar' },
-      });
-    }
-
-    ['@test can set id initially via attributeBindings ']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['specialSauce:id'];
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar specialSauce=this.sauce}}', {
-        sauce: 'special-sauce',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'special-sauce' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'special-sauce' },
-      });
-
-      runTask(() => set(this.context, 'sauce', 'foo'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'special-sauce' },
-      });
-
-      runTask(() => set(this.context, 'sauce', 'special-sauce'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'special-sauce' },
-      });
-    }
-
-    ['@test attributeBindings are overwritten']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['href'];
-        href = 'a href';
-      };
-
-      let FizzBarComponent = class extends FooBarComponent {
-        attributeBindings = ['newHref:href'];
-      };
-
-      this.owner.register('component:fizz-bar', FizzBarComponent);
-
-      this.render('{{fizz-bar newHref=this.href}}', {
-        href: 'dog.html',
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { href: 'dog.html' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { href: 'dog.html' },
-      });
-
-      runTask(() => set(this.context, 'href', 'cat.html'));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { href: 'cat.html' },
-      });
-    }
-
-    ['@test it can set attribute bindings in the constructor']() {
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-
-          let bindings = [];
-
-          if (this.get('hasFoo')) {
-            bindings.push('foo:data-foo');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo-bar': 'foo-bar' },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo-bar': 'foo-bar' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo-bar': 'FOO-BAR' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'foo.bar', undefined));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'foo', undefined));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo-bar': 'foo-bar' },
+          content: 'hello',
+        });
+      }
+
+      ['@test handles non-microsyntax attributeBindings']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['type'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar type=this.submit}}', {
+          submit: 'submit',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'submit' },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'submit' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'submit', 'password'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'password' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'submit', null));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'submit', 'submit'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'submit' },
+          content: 'hello',
+        });
+      }
+
+      ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['foo.bar'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        expectAssertion(() => {
+          this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
+        }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
+      }
+
+      ['@test normalizes attributeBindings for property names']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['tiTLe'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar tiTLe=this.name}}', {
+          name: 'qux',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { title: 'qux' },
+          content: 'hello',
+        });
+
+        this.assertStableRerender();
+
+        runTask(() => set(this.context, 'name', null));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'name', 'qux'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { title: 'qux' },
+          content: 'hello',
+        });
+      }
+
+      ['@test normalizes attributeBindings for attribute names']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['foo:data-FOO'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar foo=this.foo}}', {
+          foo: 'qux',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'qux' },
+          content: 'hello',
+        });
+
+        this.assertStableRerender();
+
+        runTask(() => set(this.context, 'foo', null));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'foo', 'qux'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'qux' },
+          content: 'hello',
+        });
+      }
+
+      ['@test  attributeBindings preserves case for mixed-case attributes']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          tagName = 'svg';
+          attributeBindings = ['viewBox'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate(''), FooBarComponent)
+        );
+
+        this.render('{{foo-bar viewBox=this.foo}}', {
+          foo: '0 0 100 100',
+        });
+
+        this.assert.equal(
+          this.firstChild.getAttribute('viewBox'),
+          '0 0 100 100',
+          'viewBox attribute'
+        );
+
+        this.assertStableRerender();
+
+        runTask(() => set(this.context, 'foo', null));
+
+        this.assert.ok(!this.firstChild.hasAttribute('viewBox'), 'viewBox attribute removed');
+
+        runTask(() => set(this.context, 'foo', '0 0 100 200'));
+
+        this.assert.equal(
+          this.firstChild.getAttribute('viewBox'),
+          '0 0 100 200',
+          'viewBox attribute'
+        );
+      }
+
+      ['@test attributeBindings handles null/undefined']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['fizz', 'bar'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar fizz=this.fizz bar=this.bar}}', {
+          fizz: null,
+          bar: undefined,
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'fizz', 'fizz');
+          set(this.context, 'bar', 'bar');
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { fizz: 'fizz', bar: 'bar' },
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'fizz', null);
+          set(this.context, 'bar', undefined);
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+      }
+
+      ['@test attributeBindings handles number value']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['size'];
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar size=this.size}}', {
+          size: 21,
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { size: '21' },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { size: '21' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'size', 0));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { size: '0' },
+          content: 'hello',
+        });
+
+        runTask(() => set(this.context, 'size', 21));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { size: '21' },
+          content: 'hello',
+        });
+      }
+
+      ['@test handles internal and external changes']() {
+        expectClassicComponentDeprecation();
+
+        let component;
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['type'];
+          type = 'password';
+          init() {
+            super.init(...arguments);
+            component = this;
           }
+        };
 
-          if (this.get('hasBar')) {
-            bindings.push('bar:data-bar');
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
+
+        this.render('{{foo-bar}}');
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'password' },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'password' },
+          content: 'hello',
+        });
+
+        runTask(() => set(component, 'type', 'checkbox'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'checkbox' },
+          content: 'hello',
+        });
+
+        runTask(() => set(component, 'type', 'password'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { type: 'password' },
+          content: 'hello',
+        });
+      }
+
+      ['@test can set attributeBindings on component with a different tagName']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          tagName = 'input';
+          attributeBindings = ['type', 'isDisabled:disabled'];
+        };
+
+        this.owner.register('component:foo-bar', FooBarComponent);
+
+        this.render('{{foo-bar type=this.type isDisabled=this.disabled}}', {
+          type: 'password',
+          disabled: false,
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'input',
+          attrs: { type: 'password' },
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'input',
+          attrs: { type: 'password' },
+        });
+
+        runTask(() => {
+          set(this.context, 'type', 'checkbox');
+          set(this.context, 'disabled', true);
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'input',
+          attrs: { type: 'checkbox', disabled: '' },
+        });
+
+        runTask(() => {
+          set(this.context, 'type', 'password');
+          set(this.context, 'disabled', false);
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'input',
+          attrs: { type: 'password' },
+        });
+      }
+
+      ['@test should allow namespaced attributes in micro syntax']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['xlinkHref:xlink:href'];
+        };
+
+        this.owner.register('component:foo-bar', FooBarComponent);
+
+        this.render('{{foo-bar type=this.type xlinkHref=this.xlinkHref}}', {
+          xlinkHref: '/foo.png',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'xlink:href': '/foo.png' },
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'xlink:href': '/foo.png' },
+        });
+
+        runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'xlink:href': '/lol.png' },
+        });
+
+        runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'xlink:href': '/foo.png' },
+        });
+      }
+
+      // This comes into play when using the {{#each}} helper. If the
+      // passed array item is a String, it will be converted into a
+      // String object instead of a normal string.
+      ['@test should allow for String objects']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['foo'];
+        };
+
+        this.owner.register('component:foo-bar', FooBarComponent);
+
+        this.render('{{foo-bar foo=this.foo}}', {
+          foo: function () {
+            return this;
+          }.call('bar'),
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { foo: 'bar' },
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { foo: 'bar' },
+        });
+
+        runTask(() =>
+          set(
+            this.context,
+            'foo',
+            function () {
+              return this;
+            }.call('baz')
+          )
+        );
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { foo: 'baz' },
+        });
+
+        runTask(() =>
+          set(
+            this.context,
+            'foo',
+            function () {
+              return this;
+            }.call('bar')
+          )
+        );
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { foo: 'bar' },
+        });
+      }
+
+      ['@test can set id initially via attributeBindings ']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['specialSauce:id'];
+        };
+
+        this.owner.register('component:foo-bar', FooBarComponent);
+
+        this.render('{{foo-bar specialSauce=this.sauce}}', {
+          sauce: 'special-sauce',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'special-sauce' },
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'special-sauce' },
+        });
+
+        runTask(() => set(this.context, 'sauce', 'foo'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'special-sauce' },
+        });
+
+        runTask(() => set(this.context, 'sauce', 'special-sauce'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { id: 'special-sauce' },
+        });
+      }
+
+      ['@test attributeBindings are overwritten']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['href'];
+          href = 'a href';
+        };
+
+        let FizzBarComponent = class extends FooBarComponent {
+          attributeBindings = ['newHref:href'];
+        };
+
+        this.owner.register('component:fizz-bar', FizzBarComponent);
+
+        this.render('{{fizz-bar newHref=this.href}}', {
+          href: 'dog.html',
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { href: 'dog.html' },
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { href: 'dog.html' },
+        });
+
+        runTask(() => set(this.context, 'href', 'cat.html'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { href: 'cat.html' },
+        });
+      }
+
+      ['@test it can set attribute bindings in the constructor']() {
+        expectClassicComponentDeprecation();
+
+        let FooBarComponent = class extends Component {
+          init() {
+            super.init(...arguments);
+
+            let bindings = [];
+
+            if (this.get('hasFoo')) {
+              bindings.push('foo:data-foo');
+            }
+
+            if (this.get('hasBar')) {
+              bindings.push('bar:data-bar');
+            }
+
+            this.attributeBindings = bindings;
           }
+        };
 
-          this.attributeBindings = bindings;
-        }
-      };
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render(
-        strip`
+        this.render(
+          strip`
       {{foo-bar hasFoo=true foo=this.foo hasBar=false bar=this.bar}}
       {{foo-bar hasFoo=false foo=this.foo hasBar=true bar=this.bar}}
       {{foo-bar hasFoo=true foo=this.foo hasBar=true bar=this.bar}}
       {{foo-bar hasFoo=false foo=this.foo hasBar=false bar=this.bar}}
     `,
-        { foo: 'foo', bar: 'bar' }
-      );
+          { foo: 'foo', bar: 'bar' }
+        );
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(3), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(3), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
 
-      runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(3), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(3), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
 
-      runTask(() => {
-        set(this.context, 'foo', 'FOO');
-        set(this.context, 'bar', undefined);
-      });
+        runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+        });
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(3), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(3), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
 
-      runTask(() => set(this.context, 'bar', 'BAR'));
+        runTask(() => set(this.context, 'bar', 'BAR'));
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { 'data-bar': 'BAR' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'FOO', 'data-bar': 'BAR' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(3), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { 'data-bar': 'BAR' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO', 'data-bar': 'BAR' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(3), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
 
-      runTask(() => {
-        set(this.context, 'foo', 'foo');
-        set(this.context, 'bar', 'bar');
-      });
+        runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+        });
 
-      this.assertComponentElement(this.nthChild(0), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(1), {
-        tagName: 'div',
-        attrs: { 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(2), {
-        tagName: 'div',
-        attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello',
-      });
-      this.assertComponentElement(this.nthChild(3), {
-        tagName: 'div',
-        attrs: {},
-        content: 'hello',
-      });
-    }
+        this.assertComponentElement(this.nthChild(0), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(2), {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertComponentElement(this.nthChild(3), {
+          tagName: 'div',
+          attrs: {},
+          content: 'hello',
+        });
+      }
 
-    ['@test asserts if an attributeBinding is setup on class']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['class'];
-      };
+      ['@test asserts if an attributeBinding is setup on class']() {
+        expectClassicComponentDeprecation();
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['class'];
+        };
 
-      expectAssertion(() => {
-        this.render('{{foo-bar}}');
-      }, /You cannot use class as an attributeBinding, use classNameBindings instead./i);
-    }
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-    ['@test blacklists href bindings based on protocol']() {
-      let FooBarComponent = class extends Component {
-        tagName = 'a';
-        attributeBindings = ['href'];
-      };
+        expectAssertion(() => {
+          this.render('{{foo-bar}}');
+        }, /You cannot use class as an attributeBinding, use classNameBindings instead./i);
+      }
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+      ['@test blacklists href bindings based on protocol']() {
+        expectClassicComponentDeprecation();
 
-      this.render('{{foo-bar href=this.xss}}', {
-        xss: "javascript:alert('foo')",
-      });
+        let FooBarComponent = class extends Component {
+          tagName = 'a';
+          attributeBindings = ['href'];
+        };
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'a',
-        attrs: { href: "unsafe:javascript:alert('foo')" },
-      });
-    }
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-    ['@test it can bind the role attribute (issue #14007)']() {
-      let FooBarComponent = class extends Component {
-        attributeBindings = ['role'];
-      };
+        this.render('{{foo-bar href=this.xss}}', {
+          xss: "javascript:alert('foo')",
+        });
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: "unsafe:javascript:alert('foo')" },
+        });
+      }
 
-      this.render('{{foo-bar role=this.role}}', { role: 'button' });
+      ['@test it can bind the role attribute (issue #14007)']() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { role: 'button' },
-      });
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['role'];
+        };
 
-      runTask(() => this.rerender());
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { role: 'button' },
-      });
+        this.render('{{foo-bar role=this.role}}', { role: 'button' });
 
-      runTask(() => set(this.context, 'role', 'combobox'));
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { role: 'button' },
+        });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { role: 'combobox' },
-      });
+        runTask(() => this.rerender());
 
-      runTask(() => set(this.context, 'role', null));
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { role: 'button' },
+        });
 
-      this.assertComponentElement(this.firstChild, { tagName: 'div' });
-    }
+        runTask(() => set(this.context, 'role', 'combobox'));
 
-    ['@test component with an `id` attribute binding of undefined']() {
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          attributeBindings = ['id'];
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { role: 'combobox' },
+        });
 
-          id = undefined;
-        }
-      );
+        runTask(() => set(this.context, 'role', null));
 
-      this.owner.register(
-        'component:baz-qux',
-        class extends Component {
-          attributeBindings = ['somethingUndefined:id'];
+        this.assertComponentElement(this.firstChild, { tagName: 'div' });
+      }
 
-          somethingUndefined = undefined;
-        }
-      );
-      this.render(`{{foo-bar}}{{baz-qux}}`);
+      ['@test component with an `id` attribute binding of undefined']() {
+        expectClassicComponentDeprecation();
 
-      this.assertComponentElement(this.nthChild(0), { content: '' });
-      this.assertComponentElement(this.nthChild(1), { content: '' });
-
-      this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
-      this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
-    }
-
-    ['@test component with an `id` attribute binding of null']() {
-      this.owner.register(
-        'component:foo-bar',
-        class extends Component {
-          attributeBindings = ['id'];
-
-          id = null;
-        }
-      );
-
-      this.owner.register(
-        'component:baz-qux',
-        class extends Component {
-          attributeBindings = ['somethingNull:id'];
-
-          somethingNull = null;
-        }
-      );
-      this.render(`{{foo-bar}}{{baz-qux}}`);
-
-      this.assertComponentElement(this.nthChild(0), { content: '' });
-      this.assertComponentElement(this.nthChild(1), { content: '' });
-
-      this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
-      this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
-    }
-
-    '@test setting a value attributeBinding to null results in an empty string value'(assert) {
-      this.owner.register(
-        'component:input-component',
-        setComponentTemplate(
-          precompileTemplate('input component'),
+        this.owner.register(
+          'component:foo-bar',
           class extends Component {
-            tagName = 'input';
-            attributeBindings = ['value'];
+            attributeBindings = ['id'];
+
+            id = undefined;
           }
-        )
-      );
+        );
 
-      this.render('{{input-component value=this.someProp}}', { someProp: null });
-
-      let element = this.firstChild;
-      assert.strictEqual(element.value, '');
-
-      runTask(() => set(this.context, 'someProp', 'wycats'));
-      assert.strictEqual(element.value, 'wycats');
-
-      runTask(() => set(this.context, 'someProp', null));
-      assert.strictEqual(element.value, '');
-    }
-
-    // https://github.com/emberjs/ember.js/issues/15675
-    renderRange(value) {
-      this.owner.register(
-        'component:range-input',
-        setComponentTemplate(
-          precompileTemplate(''),
+        this.owner.register(
+          'component:baz-qux',
           class extends Component {
-            tagName = 'input';
-            type = 'range';
-            attributeBindings = ['type', 'value', 'min', 'max'];
+            attributeBindings = ['somethingUndefined:id'];
+
+            somethingUndefined = undefined;
           }
-        )
-      );
+        );
+        this.render(`{{foo-bar}}{{baz-qux}}`);
 
-      this.render('{{range-input max=this.max min=this.min value=this.value}}', {
-        max: 50,
-        min: -5,
-        value,
-      });
-    }
+        this.assertComponentElement(this.nthChild(0), { content: '' });
+        this.assertComponentElement(this.nthChild(1), { content: '' });
 
-    '@test [emberjs/ember.js#15675] range input: value over the default max but below the set max is kept'(
-      assert
-    ) {
-      this.renderRange(25);
-      assert.strictEqual(this.firstChild.value, '25');
-    }
+        this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+        this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
+      }
 
-    '@test [emberjs/ember.js#15675] range input: value below the default min but above the set min is kept'(
-      assert
-    ) {
-      this.renderRange(-2);
-      assert.strictEqual(this.firstChild.value, '-2');
-    }
+      ['@test component with an `id` attribute binding of null']() {
+        expectClassicComponentDeprecation();
 
-    '@test [emberjs/ember.js#15675] range input: value in the valid default range is kept'(assert) {
-      this.renderRange(5);
-      assert.strictEqual(this.firstChild.value, '5');
-    }
+        this.owner.register(
+          'component:foo-bar',
+          class extends Component {
+            attributeBindings = ['id'];
 
-    '@test [emberjs/ember.js#15675] range input: value above max is reset to max'(assert) {
-      this.renderRange(55);
-      assert.strictEqual(this.firstChild.value, '50');
-    }
+            id = null;
+          }
+        );
 
-    '@test [emberjs/ember.js#15675] range input: value below min is reset to min'(assert) {
-      this.renderRange(-10);
-      assert.strictEqual(this.firstChild.value, '-5');
+        this.owner.register(
+          'component:baz-qux',
+          class extends Component {
+            attributeBindings = ['somethingNull:id'];
+
+            somethingNull = null;
+          }
+        );
+        this.render(`{{foo-bar}}{{baz-qux}}`);
+
+        this.assertComponentElement(this.nthChild(0), { content: '' });
+        this.assertComponentElement(this.nthChild(1), { content: '' });
+
+        this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+        this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
+      }
+
+      '@test setting a value attributeBinding to null results in an empty string value'(assert) {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:input-component',
+          setComponentTemplate(
+            precompileTemplate('input component'),
+            class extends Component {
+              tagName = 'input';
+              attributeBindings = ['value'];
+            }
+          )
+        );
+
+        this.render('{{input-component value=this.someProp}}', { someProp: null });
+
+        let element = this.firstChild;
+        assert.strictEqual(element.value, '');
+
+        runTask(() => set(this.context, 'someProp', 'wycats'));
+        assert.strictEqual(element.value, 'wycats');
+
+        runTask(() => set(this.context, 'someProp', null));
+        assert.strictEqual(element.value, '');
+      }
+
+      // https://github.com/emberjs/ember.js/issues/15675
+      renderRange(value) {
+        this.owner.register(
+          'component:range-input',
+          setComponentTemplate(
+            precompileTemplate(''),
+            class extends Component {
+              tagName = 'input';
+              type = 'range';
+              attributeBindings = ['type', 'value', 'min', 'max'];
+            }
+          )
+        );
+
+        this.render('{{range-input max=this.max min=this.min value=this.value}}', {
+          max: 50,
+          min: -5,
+          value,
+        });
+      }
+
+      '@test [emberjs/ember.js#15675] range input: value over the default max but below the set max is kept'(
+        assert
+      ) {
+        expectClassicComponentDeprecation();
+
+        this.renderRange(25);
+        assert.strictEqual(this.firstChild.value, '25');
+      }
+
+      '@test [emberjs/ember.js#15675] range input: value below the default min but above the set min is kept'(
+        assert
+      ) {
+        expectClassicComponentDeprecation();
+
+        this.renderRange(-2);
+        assert.strictEqual(this.firstChild.value, '-2');
+      }
+
+      '@test [emberjs/ember.js#15675] range input: value in the valid default range is kept'(
+        assert
+      ) {
+        expectClassicComponentDeprecation();
+
+        this.renderRange(5);
+        assert.strictEqual(this.firstChild.value, '5');
+      }
+
+      '@test [emberjs/ember.js#15675] range input: value above max is reset to max'(assert) {
+        expectClassicComponentDeprecation();
+
+        this.renderRange(55);
+        assert.strictEqual(this.firstChild.value, '50');
+      }
+
+      '@test [emberjs/ember.js#15675] range input: value below min is reset to min'(assert) {
+        expectClassicComponentDeprecation();
+
+        this.renderRange(-10);
+        assert.strictEqual(this.firstChild.value, '-5');
+      }
     }
-  }
-);
+  );
+}
