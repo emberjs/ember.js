@@ -7,7 +7,7 @@ moduleFor(
   'Object events',
   class extends AbstractTestCase {
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a listener can be added to an object`](assert) {
       let count = 0;
       let F = function () {
@@ -52,7 +52,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a listener can be added and removed automatically the first time it is triggered`](
       assert
     ) {
@@ -100,7 +100,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test triggering an event can have arguments`](assert) {
       let self, args;
 
@@ -137,7 +137,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a listener can be added and removed automatically and have arguments`](assert) {
       let self, args;
       let count = 0;
@@ -189,7 +189,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test binding an event can specify a different target`](assert) {
       let self, args;
 
@@ -227,7 +227,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a listener registered with one can take method as string and can be added with different target`](
       assert
     ) {
@@ -276,7 +276,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test a listener registered with one can be removed with off`](assert) {
       let obj;
       expectDeprecation(
@@ -344,7 +344,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test adding and removing listeners should be chainable`](assert) {
       let obj;
       expectDeprecation(
