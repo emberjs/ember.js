@@ -12,8 +12,8 @@ moduleFor(
         class extends Route {
           @service
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
@@ -48,8 +48,8 @@ moduleFor(
           buildRouteInfoMetadata() {
             return 'application-shell';
           }
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -99,8 +99,8 @@ moduleFor(
         class extends Route {
           @service
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -141,8 +141,8 @@ moduleFor(
         class extends Route {
           @service
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeWillChange', (transition) => {
               if (transition.to.name === 'parent.index') {
@@ -209,8 +209,8 @@ moduleFor(
         class extends Route {
           @service
           router;
-          init() {
-            super.init(...arguments);
+          constructor(owner) {
+            super(owner);
 
             this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
