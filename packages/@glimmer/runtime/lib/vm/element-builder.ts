@@ -15,13 +15,14 @@ import type {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
+  SimpleParentNode,
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
-import { destroy, registerDestructor } from '@glimmer/destroyable';
+import { destroy, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
@@ -29,6 +30,7 @@ import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import type { DynamicAttribute } from './attributes/dynamic';
 
 import { clear, ConcreteBounds, CursorImpl } from '../bounds';
+import { isElement } from '../dom/operations';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -64,7 +66,7 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): SimpleElement {
+  parentElement(): SimpleParentNode {
     return this.bounds.parentElement();
   }
 
@@ -93,6 +95,7 @@ export class NewTreeBuilder implements TreeBuilder {
   readonly cursors = new Stack<Cursor>();
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<AppendingBlock>();
+  private shadowRootCursors: Cursor[] = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -108,7 +111,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
+  constructor(env: Environment, parentNode: SimpleParentNode, nextSibling: Nullable<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -132,7 +135,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.blockStack.toArray();
   }
 
-  get element(): SimpleElement {
+  get element(): SimpleParentNode {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.element;
   }
@@ -202,35 +205,68 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.dom.createElement(tag, this.element);
   }
 
-  flushElement(modifiers: Nullable<ModifierInstance[]>) {
+  flushElement(modifiers: Nullable<ModifierInstance[]>): Nullable<RemoteBlock> {
     let parent = this.element;
     let element = expect(
       this.constructing,
       `flushElement should only be called when constructing an element`
     );
 
-    this.__flushElement(parent, element);
+    let shadowRoot = declarativeShadowRoot(parent, element);
+
+    if (shadowRoot === null) {
+      this.__flushElement(parent, element);
+    }
 
     this.constructing = null;
     this.operations = null;
 
     this.pushModifiers(modifiers);
+
+    if (shadowRoot !== null) {
+      return this.__pushShadowRoot(shadowRoot, parent as SimpleElement);
+    }
+
     this.pushElement(element, null);
     this.didOpenElement(element);
+
+    return null;
   }
 
-  __flushElement(parent: SimpleElement, constructing: SimpleElement) {
+  __flushElement(parent: SimpleParentNode, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
+  /**
+   * The `<template shadowrootmode>` element itself never enters the DOM. Its
+   * content renders into the host's shadow root through a remote block, the same
+   * way `{{#in-element}}` renders into a detached target, so the surrounding
+   * block's bounds never include it.
+   */
+  __pushShadowRoot(shadowRoot: SimpleDocumentFragment, host: SimpleElement): RemoteBlock {
+    this.pushElement(shadowRoot, null);
+    this.shadowRootCursors.push(expect(this.cursors.current, 'expected a cursor'));
+
+    let block = new RemoteBlock(shadowRoot);
+    SHADOW_BLOCKS.set(host, block);
+
+    return this.pushBlock(block, true);
+  }
+
   closeElement(): Nullable<ModifierInstance[]> {
-    this.willCloseElement();
+    if (this.shadowRootCursors.at(-1) === this.cursors.current) {
+      this.shadowRootCursors.pop();
+      this.popBlock();
+    } else {
+      this.willCloseElement();
+    }
+
     this.popElement();
     return this.popModifiers();
   }
 
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleParentNode,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -238,7 +274,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleParentNode,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -262,7 +298,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return block;
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
+  protected pushElement(element: SimpleParentNode, nextSibling: Maybe<SimpleNode> = null): void {
     this.cursors.push(new CursorImpl(element, nextSibling));
   }
 
@@ -396,6 +432,66 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 }
 
+// Host element -> the block that last rendered into its shadow root. It answers
+// two questions `attachShadow` cannot: is the root still owned by a live block
+// (then a second template on the same host stays inert, as the HTML parser
+// does), and where is the root of a closed host (`host.shadowRoot` is null).
+const SHADOW_BLOCKS = new WeakMap<SimpleElement, RemoteBlock>();
+
+function isShadowRootMode(value: Nullable<string>): value is ShadowRootMode {
+  return value === 'open' || value === 'closed';
+}
+
+/**
+ * Mirrors the HTML parser: a `<template shadowrootmode>` attaches a shadow root
+ * to its parent element. Returns null for any other element, for a parent that
+ * cannot host a shadow root, and outside a browser (SSR keeps the template so
+ * the parser on the client can attach it).
+ */
+function declarativeShadowRoot(
+  host: SimpleParentNode,
+  element: SimpleElement
+): Nullable<SimpleDocumentFragment> {
+  if (element.tagName !== 'TEMPLATE') return null;
+
+  let mode = element.getAttribute('shadowrootmode');
+
+  if (!isShadowRootMode(mode) || !isElement(host)) return null;
+
+  /**
+   * SimpleElement is missing attachShadow
+   */
+  let browserHost = host as unknown as Element;
+
+  if (typeof browserHost.attachShadow !== 'function') return null;
+
+  let previous = SHADOW_BLOCKS.get(host);
+
+  if (previous !== undefined && !isDestroying(previous)) return null;
+
+  let shadowRoot =
+    previous === undefined
+      ? browserHost.shadowRoot
+      : (previous.parentElement() as unknown as ShadowRoot);
+
+  if (shadowRoot) {
+    /**
+     * The previous owner is going away, or the root came from the parser or from
+     * user code. Either way this render replaces its content, like {{#in-element}}.
+     */
+    shadowRoot.replaceChildren();
+
+    return shadowRoot as unknown as SimpleDocumentFragment;
+  }
+
+  shadowRoot = browserHost.attachShadow({
+    mode,
+    delegatesFocus: element.getAttribute('shadowrootdelegatesfocus') !== null,
+  });
+
+  return shadowRoot as unknown as SimpleDocumentFragment;
+}
+
 export class AppendingBlockImpl implements AppendingBlock {
   declare debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
 
@@ -405,7 +501,7 @@ export class AppendingBlockImpl implements AppendingBlock {
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
-  constructor(private parent: SimpleElement) {
+  constructor(private parent: SimpleParentNode) {
     setLocalDebugType('block:simple', this);
 
     if (LOCAL_DEBUG) {
@@ -475,7 +571,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleParentNode) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -513,7 +609,7 @@ export class RemoteBlock extends AppendingBlockImpl {
 }
 
 export class ResettableBlockImpl extends AppendingBlockImpl implements ResettableBlock {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleParentNode) {
     super(parent);
     setLocalDebugType('block:resettable', this);
   }
@@ -533,7 +629,7 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 // FIXME: All the noops in here indicate a modelling problem
 export class AppendingBlockList implements AppendingBlock {
   constructor(
-    private readonly parent: SimpleElement,
+    private readonly parent: SimpleParentNode,
     public boundList: AppendingBlock[]
   ) {
     this.parent = parent;
