@@ -490,20 +490,17 @@ class RouterService extends Service {
 
      ```gjs {data-filename="app/components/go-to-path.gjs"}
      import Component from '@glimmer/component';
-     import { action } from '@ember/object';
-     import { on } from '@ember/modifier';
      import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
        path = '/';
 
-       @action
-       goToPath() {
+       goToPath = () => {
          if (this.router.recognize(this.path)) {
            this.router.transitionTo(this.path);
          }
-       }
+       };
 
        <template>
          <button type="button" {{on "click" this.goToPath}}>Go</button>
