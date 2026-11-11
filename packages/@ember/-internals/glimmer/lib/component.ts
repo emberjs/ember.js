@@ -801,7 +801,6 @@ declare const SIGNATURE: unique symbol;
   @uses Ember.TargetActionSupport
   @uses Ember.ActionSupport
   @public
-  @deprecated Use a Glimmer component (`@glimmer/component`) or a template-only component instead. See https://deprecations.emberjs.com/id/ember-component
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
