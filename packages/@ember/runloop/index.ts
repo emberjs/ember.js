@@ -219,44 +219,43 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
   invoke in that context. Any additional arguments will be supplied as arguments
   to the function that is passed in.
 
-  Let's use the creation of a TinyMCE component as an example. Currently,
-  TinyMCE provides a setup configuration option we can use to do some processing
-  after the TinyMCE instance is initialized but before it is actually rendered.
-  We can use that setup option to do some additional setup for our component.
+  Let's use a component that tracks the width of the window as an example.
+  The browser calls the `resize` listener outside of the Ember run loop, so
+  we use `bind` to make sure the listener runs inside of it.
   The component itself could look something like the following:
 
-  ```app/components/rich-text-editor.js
-  import Component from '@ember/component';
-  import { on } from '@ember/object/evented';
+  ```gjs {data-filename="app/components/window-width.gjs"}
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+  import { registerDestructor } from '@ember/destroyable';
   import { bind } from '@ember/runloop';
 
-  export default Component.extend({
-    initializeTinyMCE: on('didInsertElement', function() {
-      tinymce.init({
-        selector: '#' + this.$().prop('id'),
-        setup: bind(this, this.setupEditor)
-      });
-    }),
+  export default class WindowWidth extends Component {
+    @tracked width = window.innerWidth;
 
-    didInsertElement() {
-      tinymce.init({
-        selector: '#' + this.$().prop('id'),
-        setup: bind(this, this.setupEditor)
-      });
-    }
+    constructor(owner, args) {
+      super(owner, args);
 
-    setupEditor(editor) {
-      this.set('editor', editor);
+      let onResize = bind(this, this.updateWidth);
 
-      editor.on('change', function() {
-        console.log('content changed!');
+      window.addEventListener('resize', onResize);
+      registerDestructor(this, () => {
+        window.removeEventListener('resize', onResize);
       });
     }
-  });
+
+    updateWidth() {
+      this.width = window.innerWidth;
+    }
+
+    <template>
+      The window is {{this.width}}px wide.
+    </template>
+  }
   ```
 
-  In this example, we use `bind` to bind the setupEditor method to the
-  context of the RichTextEditor component and to have the invocation of that
+  In this example, we use `bind` to bind the `updateWidth` method to the
+  context of the `WindowWidth` component and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
   @method bind
@@ -651,23 +650,26 @@ export function scheduleOnce(...args: any[]): Timer {
 
   Example:
 
-  ```app/components/my-component.js
-  import Component from '@ember/component';
+  ```gjs {data-filename="app/components/my-component.gjs"}
+  import Component from '@glimmer/component';
   import { scheduleOnce } from '@ember/runloop';
 
   export default class MyComponent extends Component {
-    didInsertElement() {
-      super.didInsertElement();
-      scheduleOnce('afterRender', this, 'processChildElements');
-    },
+    constructor(owner, args) {
+      super(owner, args);
+      scheduleOnce('afterRender', this, this.processChildElements);
+    }
 
     processChildElements() {
-      // ... do something with component's child component
-      // elements after they've finished rendering, which
-      // can't be done within this component's
-      // `didInsertElement` hook because that gets run
-      // before the child elements have been added to the DOM.
+      // ... do something with the elements this component
+      // rendered after they've finished rendering, which
+      // can't be done within the constructor because that
+      // runs before the elements have been added to the DOM.
     }
+
+    <template>
+      {{yield}}
+    </template>
   }
   ```
 

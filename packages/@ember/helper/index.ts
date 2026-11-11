@@ -1025,6 +1025,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```
 
   ```gjs {data-filename="app/components/banner.gjs"}
+  import Component from '@glimmer/component';
   import Title from './banner/title';
   import Subtitle from './banner/subtitle';
   import Body from './banner/body';
