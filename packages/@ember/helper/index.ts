@@ -1791,3 +1791,56 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  */
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */
+
+/**
+ * `createContext` makes a value available to a part of the render tree,
+ * without an argument at each level.
+ *
+ * `Provide` makes its `@value` available to everything in its block.
+ * `value` reads the value of the nearest enclosing `Provide`.
+ *
+ * ```gjs
+ * import Component from '@glimmer/component';
+ * import { createContext } from '@ember/helper';
+ *
+ * class Theme {
+ *   color = 'dark';
+ * }
+ *
+ * const theme = createContext();
+ * const dark = new Theme();
+ *
+ * class FancyButton extends Component {
+ *   get color() {
+ *     return theme.value.color;
+ *   }
+ *
+ *   <template>
+ *     <button style="color: {{this.color}}">{{yield}}</button>
+ *   </template>
+ * }
+ *
+ * <template>
+ *   <theme.Provide @value={{dark}}>
+ *     {{theme.value.color}}
+ *     <FancyButton>Save</FancyButton>
+ *   </theme.Provide>
+ * </template>
+ * ```
+ *
+ * Read `value` while rendering: in a template, in a helper,
+ * or in a component constructor or getter.
+ * It throws outside of rendering, and when no `Provide` of the context encloses the read.
+ *
+ * The provided value is reactive.
+ * When `@value` changes, everything that read it renders again.
+ *
+ * @method createContext
+ * @for @ember/helper
+ * @static
+ * @public
+ * @exampleimport import { createContext } from '@ember/helper';
+ * @returns {Object} An object with `Provide` (a component that takes `@value`)
+ *   and `value` (the value of the nearest enclosing `Provide`)
+ */
+export { createContext, type Context } from '@ember/-internals/glimmer/lib/create-context';
