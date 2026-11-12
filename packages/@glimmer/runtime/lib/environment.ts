@@ -3,9 +3,7 @@ import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
   Environment,
-  EnvironmentOptions,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
+  RenderAdapter,
   ModifierInstance,
   Nullable,
   RuntimeArtifacts,
@@ -20,7 +18,6 @@ import { track } from '@glimmer/validator/lib/tracking';
 import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
 import DebugRenderTree from './debug-render-tree';
-import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
@@ -99,9 +96,6 @@ class TransactionImpl implements Transaction {
 export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Nullable<TransactionImpl> = null;
 
-  declare protected appendOperations: GlimmerTreeConstruction;
-  protected updateOperations?: GlimmerTreeChanges | undefined;
-
   // Delegate methods and values
   public isInteractive: boolean;
 
@@ -110,32 +104,12 @@ export class EnvironmentImpl implements Environment {
   debugRenderTree: DebugRenderTree<object> | undefined;
 
   constructor(
-    options: EnvironmentOptions,
+    readonly adapter: RenderAdapter,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
     this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
-    if (options.appendOperations) {
-      this.appendOperations = options.appendOperations;
-      this.updateOperations = options.updateOperations;
-    } else if (options.document) {
-      this.appendOperations = new DOMTreeConstruction(options.document);
-      this.updateOperations = new DOMChangesImpl(options.document);
-    } else if (DEBUG) {
-      throw new Error('you must pass document or appendOperations to a new runtime');
-    }
-  }
-
-  getAppendOperations(): GlimmerTreeConstruction {
-    return this.appendOperations;
-  }
-
-  getDOM(): GlimmerTreeChanges {
-    return expect(
-      this.updateOperations,
-      'Attempted to get DOM updateOperations, but they were not provided by the environment. You may be attempting to rerender in an environment which does not support rerendering, such as SSR.'
-    );
   }
 
   begin() {
@@ -203,13 +177,13 @@ export interface EnvironmentDelegate {
 }
 
 export function runtimeOptions(
-  options: EnvironmentOptions,
+  adapter: RenderAdapter,
   delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
   resolver: Nullable<ClassicResolver>
 ): RuntimeOptions {
   return {
-    env: new EnvironmentImpl(options, delegate),
+    env: new EnvironmentImpl(adapter, delegate),
     program: new ProgramImpl(artifacts.constants, artifacts.heap),
     resolver,
   };

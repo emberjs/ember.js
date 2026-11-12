@@ -1,5 +1,5 @@
 import { precompile } from '@glimmer/compiler';
-import { NodeDOMTreeConstruction } from '@glimmer/node';
+import { NodeDOMRenderAdapter } from '@glimmer/node';
 
 import { blockStack } from '../dom/blocks';
 import { toInnerHTML } from '../dom/simple-utils';
@@ -13,10 +13,10 @@ export class DOMHelperTests extends AbstractNodeTest {
   static suiteName = 'Server-side rendering in Node.js (normal)';
 
   @test
-  'can instantiate NodeDOMTreeConstruction without a document'() {
+  'can instantiate NodeDOMRenderAdapter without a document'() {
     // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
 
-    let helper = new NodeDOMTreeConstruction(null as any);
+    let helper = new NodeDOMRenderAdapter(null as any);
 
     this.assert.ok(!!helper, 'helper was instantiated without errors');
   }

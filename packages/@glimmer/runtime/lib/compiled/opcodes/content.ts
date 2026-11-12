@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import type { RenderAdapter } from '@glimmer/interfaces';
 import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
 import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
@@ -25,13 +26,13 @@ import { isIndexable } from '@glimmer/util/lib/collections';
 import { ContentType } from '@glimmer/vm/lib/content';
 
 import { isCurriedType } from '../../curried-value';
-import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
+import { isEmpty, isSafeString, shouldCoerce } from '../../dom/normalize';
 import { APPEND_OPCODES } from '../../opcodes';
 import DynamicTextContent from '../../vm/content/text';
 import { CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
 
-function toContentType(value: unknown) {
+function toContentType(value: unknown, adapter: RenderAdapter) {
   if (shouldCoerce(value)) {
     return ContentType.String;
   } else if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
@@ -40,9 +41,9 @@ function toContentType(value: unknown) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
-  } else if (isFragment(value)) {
+  } else if (adapter.isFragment(value)) {
     return ContentType.Fragment;
-  } else if (isNode(value)) {
+  } else if (adapter.isNode(value)) {
     return ContentType.Node;
   } else {
     return ContentType.String;
@@ -71,10 +72,12 @@ function toDynamicContentType(value: unknown) {
 APPEND_OPCODES.add(VM_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  vm.stack.push(toContentType(valueForRef(reference)));
+  let { adapter } = vm.env;
+
+  vm.stack.push(toContentType(valueForRef(reference), adapter));
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new AssertFilter(reference, toContentType));
+    vm.updateWith(new AssertFilter(reference, toContentType, adapter));
   }
 });
 
@@ -84,7 +87,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
   vm.stack.push(toDynamicContentType(valueForRef(reference)));
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new AssertFilter(reference, toDynamicContentType));
+    vm.updateWith(new AssertFilter(reference, toDynamicContentType, vm.env.adapter));
   }
 });
 
