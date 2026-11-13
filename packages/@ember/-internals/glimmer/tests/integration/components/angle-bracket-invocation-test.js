@@ -1,4 +1,13 @@
-import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import {
+  classes,
+  expectClassicComponentDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  strip,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
 
@@ -1149,7 +1158,9 @@ moduleFor(
       this.assert.strictEqual(href(), 'unsafe:vbscript:alert(1)');
     }
 
-    '@test a bound URL attribute on a classic component element is sanitized, also on update'() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} a bound URL attribute on a classic component element is sanitized, also on update`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:foo-link',
         setComponentTemplate(
@@ -1295,7 +1306,11 @@ moduleFor(
       });
     }
 
-    '@test a classic component does not see an attribute as a property'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} a classic component does not see an attribute as a property`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(

@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectClassicComponentDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set } from '@ember/object';
 import ClassicComponent from '@ember/component';
@@ -11,7 +18,9 @@ import { setComponentTemplate } from '@glimmer/manager';
 moduleFor(
   'Components test: argument names',
   class extends RenderingTestCase {
-    ['@test a classic component gets an argument named SymbolTable']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} a classic component gets an argument named SymbolTable`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:show-table',
         setComponentTemplate(
@@ -29,7 +38,9 @@ moduleFor(
       this.assertText('b|b');
     }
 
-    ['@test a classic component invoked with curlies gets an argument named SymbolTable']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} a classic component invoked with curlies gets an argument named SymbolTable`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:show-table',
         setComponentTemplate(
