@@ -66,10 +66,17 @@ import { helperNotFound, lookupHelper } from './resolver';
 import { type InternalHelper } from './runtime-helpers';
 import { createCache, getValue, type Cache } from './validator';
 
-interface HelperInstance {
+/**
+ * The helper instance of one call site. It IS the call site's argument source
+ * (`ArgsSource`: `positional` / `named` / `labels`, updated per evaluation) —
+ * the manager's caches, references and proxies read the arguments through it,
+ * so a call site costs one object, not an instance plus a source.
+ */
+interface HelperInstance extends ArgsSource {
   readonly definition: unknown;
-  /** The call site's current arguments (updated per evaluation). */
-  readonly source: ArgsSource;
+  positional: readonly unknown[];
+  named: Readonly<Record<string, unknown>>;
+  labels?: ArgLabels | undefined;
   /**
    * What the call site evaluates. `null` for an internal helper's direct form,
    * whose value (`value`) is computed once and never changes.
@@ -139,7 +146,21 @@ function argumentRef(read: () => unknown, label: string | null | undefined): Ref
   return ref;
 }
 
-function createInstance(key: object | string, ctx: unknown, source: ArgsSource): HelperInstance {
+// The instance under construction: its `cache` / `value` / `destroyable` are
+// set once below; the caches close over the instance as their argument source.
+interface PendingInstance extends HelperInstance {
+  cache: Cache | null;
+  value?: unknown;
+  destroyable: object | null;
+}
+
+function createInstance(
+  key: object | string,
+  ctx: unknown,
+  positional: readonly unknown[],
+  named: Readonly<Record<string, unknown>>,
+  labels: ArgLabels | undefined
+): HelperInstance {
   let owner: object | undefined;
   let definition: object;
   if (typeof key === 'string') {
@@ -152,14 +173,26 @@ function createInstance(key: object | string, ctx: unknown, source: ArgsSource):
     | CustomHelperManager
     | InternalHelper
     | undefined;
+  // Every field in the literal (the `value` slot included), so the object
+  // keeps all of them in-object: a field added afterwards would move the
+  // instance's properties to a separate backing store.
+  const instance: PendingInstance = {
+    definition: key,
+    positional,
+    named,
+    labels,
+    cache: null,
+    value: undefined,
+    destroyable: null,
+  };
 
   if (manager === DEFAULT_HELPER_MANAGER) {
-    const cache = functionHelperCache(definition as (...args: unknown[]) => unknown, source);
-    return { definition: key, source, cache, destroyable: null };
+    instance.cache = functionHelperCache(definition as (...args: unknown[]) => unknown, instance);
+    return instance;
   }
   if (typeof manager === 'function' && manager.valueForCallSite !== undefined) {
-    const value = manager.valueForCallSite(source);
-    return { definition: key, source, cache: null, value, destroyable: null };
+    instance.value = manager.valueForCallSite(instance);
+    return instance;
   }
   if (typeof key !== 'string') owner = ownerOfContext(ctx);
 
@@ -169,34 +202,31 @@ function createInstance(key: object | string, ctx: unknown, source: ArgsSource):
     // the helper invoked ONCE per call site.
     // DEBUG: a path argument's reference is labelled with its path, as
     // Glimmer's is (its `fn` assertion names the callback by it).
-    const { labels } = source;
-    const positional = source.positional.map((_, i) =>
+    const source: ArgsSource = instance;
+    const positionalRefs = positional.map((_, i) =>
       argumentRef(() => unwrapArg(source.positional[i]), labels?.positional?.[i])
     );
-    const named: Record<string, Reference> = {};
-    for (const key of Object.keys(source.named)) {
-      named[key] = argumentRef(() => unwrapArg(source.named[key]), labels?.named?.[key]);
+    const namedRefs: Record<string, Reference> = {};
+    for (const key of Object.keys(named)) {
+      namedRefs[key] = argumentRef(() => unwrapArg(source.named[key]), labels?.named?.[key]);
     }
-    const ref = manager({ positional, named }, owner);
-    return {
-      definition: key,
-      source,
-      cache: createCache(() => valueForRef(ref)),
-      destroyable: _hasDestroyableChildren(ref) ? ref : null,
-    };
+    const ref = manager({ positional: positionalRefs, named: namedRefs }, owner);
+    instance.cache = createCache(() => valueForRef(ref));
+    instance.destroyable = _hasDestroyableChildren(ref) ? ref : null;
+    return instance;
   }
 
   if (manager instanceof CustomHelperManager) {
     const delegate = manager.getDelegateFor(owner) as HelperDelegate;
-    const args = argsProxyFor(source, 'helper');
+    const args = argsProxyFor(instance, 'helper');
     const bucket = delegate.createHelper(definition, args);
-    const cache = delegate.capabilities.hasValue
+    instance.cache = delegate.capabilities.hasValue
       ? createCache(() => delegate.getValue!(bucket), DEBUG && delegate.getDebugName?.(definition))
       : createCache(() => undefined);
-    const destroyable = delegate.capabilities.hasDestroyable
+    instance.destroyable = delegate.capabilities.hasDestroyable
       ? (delegate.getDestroyable!(bucket) ?? null)
       : null;
-    return { definition: key, source, cache, destroyable };
+    return instance;
   }
 
   throw new Error(
@@ -213,7 +243,13 @@ function resolveHelperName(name: string, owner: object | undefined): object {
 }
 
 // ---------------------------------------------------------------- call sites
-const SITES = new WeakMap<object, Map<number, HelperInstance>>();
+// A render context's call-site instances, indexed by the compiler's per-template
+// call-site index (small consecutive integers): an array, not a Map — a
+// `{{#each}}` row context holds a few sites, and a four-slot array is a
+// fraction of a Map and its hash table. Pre-sized: an element store that grows
+// from empty reserves room for seventeen.
+const SITES = new WeakMap<object, (HelperInstance | undefined)[]>();
+const SITES_INITIAL_SLOTS = 4;
 
 function destroyInstance(instance: HelperInstance): void {
   const { destroyable } = instance;
@@ -230,27 +266,27 @@ function instanceFor(
 ): HelperInstance {
   let sites = SITES.get(ctx);
   if (sites === undefined) {
-    sites = new Map();
+    sites = new Array<HelperInstance | undefined>(SITES_INITIAL_SLOTS);
     SITES.set(ctx, sites);
     const owned = sites;
     // The call sites live as long as the render context holding them.
     gxtRegisterDestructor(ctx as never, () => {
       SITES.delete(ctx);
-      for (const instance of owned.values()) destroyInstance(instance);
-      owned.clear();
+      for (const instance of owned) if (instance !== undefined) destroyInstance(instance);
+      owned.length = 0;
     });
   }
-  let instance = sites.get(site);
+  let instance = sites[site];
   if (instance !== undefined && instance.definition === definition) {
-    instance.source.positional = positional;
-    instance.source.named = named;
+    instance.positional = positional;
+    instance.named = named;
     return instance;
   }
   // First evaluation — or a dynamic helper (`{{(this.helper) …}}`) whose
   // definition changed: a new instance; the outgoing one is destroyed.
   if (instance !== undefined) destroyInstance(instance);
-  instance = createInstance(definition, ctx, { positional, named, labels });
-  sites.set(site, instance);
+  instance = createInstance(definition, ctx, positional, named, labels);
+  sites[site] = instance;
   return instance;
 }
 
@@ -293,11 +329,13 @@ function handle(
     );
   }
   // No call site to own it (not compiler-emitted): a one-shot invocation.
-  const instance = createInstance(definition as object | string, ctx, {
+  const instance = createInstance(
+    definition as object | string,
+    ctx,
     positional,
-    named: namedArgs,
-    labels,
-  });
+    namedArgs,
+    labels
+  );
   try {
     return valueOf(instance);
   } finally {
