@@ -12,6 +12,7 @@ import {
   getElementsByTagName,
   jitSuite,
   RenderTest,
+  skipGxtMarkers,
   stripTight,
   test,
   TestHelper,
@@ -1126,7 +1127,12 @@ class UpdatingTest extends RenderTest {
       );
       assert.strictEqual(firstNode.nodeValue, 'hello world', 'its content should be hello world');
 
-      assert.strictEqual(firstNode.nextSibling, null, 'there should only be one nodes');
+      // Under GXT the block's anchor comment follows the text (see `skipGxtMarkers`).
+      assert.strictEqual(
+        skipGxtMarkers(firstNode.nextSibling),
+        null,
+        'there should only be one nodes'
+      );
     }
   }
 
