@@ -1,15 +1,15 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-11-06T06:00:22.778Z",
+    "capturedAt": "2026-11-13T09:27:41.967Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "f790883",
-    "totalTests": 10464,
+    "emberCommit": "315393f",
+    "totalTests": 10465,
     "totalModules": 1065,
     "quarantinedTests": 0,
-    "totalAssertions": 62110,
-    "totalAssertionsPassing": 61816,
-    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 493985e956; written by runner.mjs in the GitHub Actions GXT full workflow (run 42171628281, attempt 2, merged from 5 shards, trigger f790883; the code of this series, but for the place of one import in glimmer's components/textarea.ts). 10226/10464 green, 1065 modules, no timeouts, no harness errors. Against the previous baseline (10215/10453, 1061 modules): 4 new modules, 11 tests (an {{#each}} over a list that is no Array, by the path to the list; argument names; the built-in components known by identity; runtime-template scope names), all green. No other test changed status. Attempt 1 had one red, the timing test 'runloop `next` :: multiple calls to next share coalesce callbacks into same run loop' (a 20 ms setTimeout check), which was green when its shard ran again."
+    "totalAssertions": 62111,
+    "totalAssertionsPassing": 61817,
+    "note": "Compat full run on #21340 (gxt 0.0.86) rebased onto main 9ed291512e, with the gxt-native memory fixes; written by runner.mjs in the GitHub Actions GXT full workflow, merged from 5 shards. 10227/10465 green, 1065 modules, no timeouts, no harness errors. Against the previous baseline (10226/10464): one new test in ember-debug, from main, green. No other test changed status."
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -7833,10 +7833,10 @@
       "failingTests": []
     },
     "ember-debug": {
-      "total": 20,
-      "passing": 20,
-      "assertionsTotal": 31,
-      "assertionsPassing": 31,
+      "total": 21,
+      "passing": 21,
+      "assertionsTotal": 32,
+      "assertionsPassing": 32,
       "failingTests": []
     },
     "ember-debug: registerHandler": {

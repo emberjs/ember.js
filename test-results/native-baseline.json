@@ -1,14 +1,14 @@
 {
   "meta": {
     "runner": "scripts/gxt-test-runner/runner.mjs@v1",
-    "capturedAt": "2026-11-06T04:16:23.114Z",
+    "capturedAt": "2026-11-13T09:27:40.509Z",
     "gxtVersion": "0.0.86",
-    "emberCommit": "e30f940",
-    "totalTests": 7206,
+    "emberCommit": "315393f",
+    "totalTests": 7208,
     "totalModules": 684,
     "quarantinedTests": 0,
-    "totalAssertions": 36297,
-    "totalAssertionsPassing": 36262
+    "totalAssertions": 36302,
+    "totalAssertionsPassing": 36267
   },
   "modules": {
     "<LinkTo /> component (URL sanitization of forwarded attributes)": {
@@ -4414,10 +4414,10 @@
       "failingTests": []
     },
     "ember-debug": {
-      "total": 20,
-      "passing": 20,
-      "assertionsTotal": 31,
-      "assertionsPassing": 31,
+      "total": 21,
+      "passing": 21,
+      "assertionsTotal": 32,
+      "assertionsPassing": 32,
       "failingTests": []
     },
     "ember-debug: registerHandler": {
@@ -4685,10 +4685,10 @@
       "failingTests": []
     },
     "gxt-native | modifiers": {
-      "total": 10,
-      "passing": 10,
-      "assertionsTotal": 31,
-      "assertionsPassing": 31,
+      "total": 11,
+      "passing": 11,
+      "assertionsTotal": 35,
+      "assertionsPassing": 35,
       "failingTests": []
     },
     "gxt-native | outlet": {
