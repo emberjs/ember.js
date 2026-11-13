@@ -231,6 +231,9 @@ const MODIFIER_LABEL = '(modifier)';
 // with a run-loop `actions` flush as the fallback. Ported from the compat
 // manager (`_queueModifierDestroy` / `_gxtDestroyPendingModifiers`).
 let pendingDestroys: ModifierInstance[] = [];
+// The run loop instance (backburner DeferredActionQueues) the `actions`
+// fallback flush is scheduled in, until that flush — or a sync drain — runs.
+let destroyScheduledIn: object | null = null;
 
 function remove(instance: ModifierInstance): void {
   if (instance.removed) return;
@@ -240,7 +243,15 @@ function remove(instance: ModifierInstance): void {
   pendingDestroys.push(instance);
   // Fallback for a destroy outside a render pass / root teardown (the two sync
   // points that drain the queue themselves): flush on the run loop's `actions`.
-  if (_getCurrentRunLoop() !== null) {
+  // Scheduled once per run loop INSTANCE — `scheduleOnce` itself scans the
+  // queue for a duplicate, so one call per removed modifier (every row of a
+  // cleared list) was quadratic in the number of removed modifiers. Keyed on
+  // the instance, not a flag: a nested `run()` is its own instance and flushes
+  // when it ends, so a modifier removed inside it is destroyed then, as before;
+  // and a flush that never ran (a cancelled loop) cannot block the next loop.
+  const loop: object | null = _getCurrentRunLoop();
+  if (loop !== null && destroyScheduledIn !== loop) {
+    destroyScheduledIn = loop;
     _backburner.scheduleOnce('actions', null, destroyPendingModifiers);
   }
 }
@@ -251,6 +262,7 @@ function remove(instance: ModifierInstance): void {
  * `actions` fallback all call it, and it no-ops on an empty queue.
  */
 export function destroyPendingModifiers(): void {
+  destroyScheduledIn = null;
   if (pendingDestroys.length === 0) return;
   const queue = pendingDestroys;
   pendingDestroys = [];

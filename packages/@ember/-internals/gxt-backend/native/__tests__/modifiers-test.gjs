@@ -8,6 +8,7 @@
 // call logs) — the modifier provably RUNS.
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
+import { destroy } from '@ember/destroyable';
 import { capabilities, setModifierManager } from '@ember/modifier';
 import { renderComponent } from '@ember/renderer';
 import { run } from '@ember/runloop';
@@ -44,6 +45,48 @@ function functionModifier(fn, log) {
 
 module('gxt-native | modifiers', function (hooks) {
   setupNativeRendering(hooks);
+
+  // Ember `destroy(component)` outside a render pass tears the component's gxt
+  // node down (its element modifiers are queued for destruction) and the queue
+  // is flushed at the end of the run loop the destroy happened in — a nested
+  // `run()` included, whether or not the outer loop already has such a flush
+  // pending (one flush per run loop instance).
+  test('components destroyed in a nested run loop: their modifiers are destroyed when that loop ends', function (assert) {
+    const log = [];
+    const tagged = functionModifier((element, [label]) => {
+      element.setAttribute('data-tagged', label);
+      return () => log.push(`teardown ${label}`);
+    }, log);
+    const made = [];
+    class Child extends Component {
+      constructor(owner, args) {
+        super(owner, args);
+        made.push(this);
+      }
+      <template><div {{tagged @label}}></div></template>
+    }
+    this.render(<template><Child @label="a" /><Child @label="b" /></template>);
+    // both created during the render pass, both installed at its commit
+    assert.deepEqual(
+      log,
+      ['create', 'create', 'install connected=true', 'install connected=true'],
+      'both modifiers installed'
+    );
+    log.length = 0;
+
+    run(() => {
+      // the outer loop now has the modifier-destroy flush scheduled, not yet run
+      destroy(made[0]);
+      assert.deepEqual(log, [], 'destroyed at the end of a run loop, not synchronously');
+      run(() => destroy(made[1]));
+      assert.deepEqual(
+        log,
+        ['destroy', 'teardown a', 'destroy', 'teardown b'],
+        'the nested loop flushed the queued modifier destroys when it ended'
+      );
+    });
+    assert.deepEqual(log.length, 4, 'nothing destroyed twice by the outer loop');
+  });
 
   test('function modifier: installs after insertion, updates on arg change, destroys on removal', function (assert) {
     const log = [];
