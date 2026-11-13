@@ -1,0 +1,5 @@
+{
+  "name": "@ember/-internals/gxt-backend",
+  "private": true,
+  "type": "module"
+}

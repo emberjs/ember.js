@@ -2,6 +2,7 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
+import { gxtHarness } from '../gxt-harness';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
@@ -57,6 +58,21 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
   }
 
   afterEach() {
+    if (__GXT_MODE__) {
+      try {
+        gxtHarness!.cleanupActiveComponents();
+
+        runDestroy(this.applicationInstance);
+        runDestroy(this.application);
+
+        super.teardown();
+      } finally {
+        gxtHarness!.resetSyncFlags();
+        gxtHarness!.clearRenderErrors();
+      }
+      return;
+    }
+
     runDestroy(this.applicationInstance);
     runDestroy(this.application);
 

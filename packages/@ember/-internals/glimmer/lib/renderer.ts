@@ -2,6 +2,7 @@ import { privatize as P } from '@ember/-internals/container/lib/registry';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { getGxtGlimmerHost, getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 import { assert } from '@ember/debug';
 import {
@@ -119,6 +120,25 @@ class ClassicRootState implements RendererRoot {
     this.destroyed = false;
     this.env = context.env;
 
+    // Two separate `errorLoopTransaction` calls, not one callback branching on
+    // `__GXT_MODE__`: rollup keeps every binding a callback passed there refers
+    // to (the helper reassigns its parameter), even in a folded branch, so a
+    // shared callback would keep the GXT helpers in the classic build.
+    if (__GXT_MODE__) {
+      const host = getGxtGlimmerHost();
+      assert('[gxt] the glimmer host is not installed (gxt-backend/glimmer-host.ts)', host);
+      // gxt-backend's classic-roots.ts renders the root, with this root state as
+      // `this`.
+      this.render = errorLoopTransaction(() =>
+        host.renderClassicRoot.call(
+          this,
+          { root, owner, template, self, parentElement },
+          errorLoopTransaction
+        )
+      );
+      return;
+    }
+
     this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
 
@@ -159,6 +179,16 @@ class ClassicRootState implements RendererRoot {
     this.render = undefined as any;
 
     if (result !== undefined) {
+      if (__GXT_MODE__) {
+        // GXT teardown: `result` is the minimal gxt result object, which
+        // gxt-backend's classic-roots.ts destroys. There is no Glimmer VM
+        // transaction to open (the GXT renderer has no VM environment).
+        const host = getGxtGlimmerHost();
+        assert('[gxt] the glimmer host is not installed (gxt-backend/glimmer-host.ts)', host);
+        host.destroyClassicRoot(result);
+        return;
+      }
+
       /*
        Handles these scenarios:
 
@@ -282,11 +312,32 @@ export class Renderer extends BaseRenderer {
   }
 
   get _context() {
+    // In GXT mode there is no real EvaluationContext (see the BaseRenderer
+    // constructor). Callers such as the runtime-resolver cache tests only read
+    // `_context.constants.{component,helper,modifier}DefinitionCount`, so
+    // serve those counts from the GXT resolver-cache tracker instead.
+    if (__GXT_MODE__) {
+      const counters = getGxtRenderer()?.compilePipeline.getResolverCacheCounters?.();
+      return {
+        constants: {
+          componentDefinitionCount: counters?.componentDefinitionCount || 0,
+          helperDefinitionCount: counters?.helperDefinitionCount || 0,
+          modifierDefinitionCount: counters?.modifierDefinitionCount || 0,
+        },
+      } as unknown as EvaluationContext;
+    }
     return this.state.context;
   }
 
   register(view: any): void {
     let id = getViewId(view);
+    // In GXT mode, view registration can conflict during a forced rerender
+    // or when views aren't fully cleaned up between test runs. Silently
+    // overwrite the existing entry instead of asserting.
+    if (__GXT_MODE__) {
+      this._viewRegistry[id] = view;
+      return;
+    }
     assert(
       'Attempted to register a view with an id already in use: ' + id,
       !this._viewRegistry[id]
@@ -314,6 +365,20 @@ export class Renderer extends BaseRenderer {
     lastNode: SimpleNode;
   } {
     let bounds: Bounds | null = component[BOUNDS];
+
+    // In GXT mode, BOUNDS may not be set on the component. gxt-backend's
+    // classic-roots.ts then synthesizes them from the component's element
+    // (wrapper or tagless).
+    if (__GXT_MODE__) {
+      if (!bounds) {
+        const host = getGxtGlimmerHost();
+        assert('[gxt] the glimmer host is not installed (gxt-backend/glimmer-host.ts)', host);
+        const gxtBounds = host.componentBounds(component);
+        if (gxtBounds !== null) {
+          return gxtBounds;
+        }
+      }
+    }
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 

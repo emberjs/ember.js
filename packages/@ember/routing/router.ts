@@ -6,6 +6,7 @@ import { tracked } from '@ember/-internals/metal/lib/tracked';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type Owner from '@ember/owner';
+import { getRouteOutletHooks } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
@@ -21,6 +22,7 @@ import {
   getActiveTargetName,
   queryParamType,
   resemblesURL,
+  stashParamNames,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import type {
@@ -81,6 +83,12 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo[]) {
 
   notifyPropertyChange(this, 'url');
   this.currentState = this.targetState;
+
+  // GXT: dirty the `-routing` service's `currentState` and sync the DOM, so
+  // `<LinkTo>` hrefs follow a query-param-only transition (gxt-backend/outlet.ts).
+  if (__GXT_MODE__) {
+    getRouteOutletHooks()?.didTransition(this);
+  }
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -625,6 +633,15 @@ class EmberRouter extends EmberObject {
       #pendingOutletFlush: ReturnType<typeof later> | null = null;
 
       protected override scheduleOutletUpdate(immediate = false): void {
+        // GXT renders each route from the render state its `setup` recorded
+        // (gxt-backend/outlet.ts), so an incremental pass mid-transition has
+        // nothing new to render (the resolved routes are not set up yet); its
+        // outlet machinery renders the settled transition and the
+        // loading/error substates, the immediate passes.
+        if (__GXT_MODE__ && !immediate) {
+          return;
+        }
+
         if (immediate) {
           if (this.#pendingOutletFlush !== null) {
             cancel(this.#pendingOutletFlush);
@@ -798,6 +815,16 @@ class EmberRouter extends EmberObject {
 
     let routeInfos = this._routerMicrolib.currentRouteInfos;
     if (!routeInfos) {
+      return;
+    }
+
+    if (__GXT_MODE__) {
+      // GXT renders routes through its own outlet machinery
+      // (gxt-backend/outlet.ts), from the render states that `Route#setup`
+      // recorded, instead of through the `RootOutlet` component below.
+      let hooks = getRouteOutletHooks();
+      assert('[gxt] the GXT route-outlet hooks are not installed', hooks !== null);
+      hooks.setOutlets(this, routeInfos);
       return;
     }
 
@@ -1279,6 +1306,26 @@ class EmberRouter extends EmberObject {
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
+    // GXT: Ensure qp.parts is populated for model-scoped query params so that
+    // the cacheKey in _hydrateUnsuppliedQueryParams matches the one used when
+    // _qpChanged stashed the sticky value. stashParamNames dispatches to each
+    // routeInfo's route manager — but reading `routeInfo.manager` fetches
+    // (async-loads) the route if it's not yet resolved, which would break
+    // "only fetch handlers for the current route" invariants for links that
+    // point to lazy routes. Probe `hasResolvedManagement` without triggering
+    // a fetch.
+    if (__GXT_MODE__) {
+      let allRoutesLoaded = true;
+      for (let info of state.routeInfos) {
+        if (!info.hasResolvedManagement) {
+          allRoutesLoaded = false;
+          break;
+        }
+      }
+      if (allRoutesLoaded) {
+        stashParamNames(this, state.routeInfos);
+      }
+    }
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
 
