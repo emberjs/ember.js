@@ -1273,6 +1273,177 @@ moduleFor(
       );
     }
 
+    ['@test key="@index": a yielded item follows the item now at its row']() {
+      this.owner.register(
+        'component:positional-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<ul>{{#each @items key="@index" as |item|}}<li>{{yield item}}</li>{{/each}}</ul>'
+          ),
+          class extends Component {}
+        )
+      );
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(`<PositionalList @items={{this.list}} as |item|>{{item.name}}</PositionalList>`, {
+        list: [a, b],
+      });
+
+      let before = this.items();
+      this.assert.deepEqual(
+        before.map((li) => li.textContent),
+        ['a', 'b']
+      );
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      let after = this.items();
+      this.assert.deepEqual(after, before, 'the rows stay where they are');
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['b', 'a'],
+        'and yield the items now at them'
+      );
+
+      runTask(() => set(this.context, 'list', [{ name: 'c' }]));
+
+      after = this.items();
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['c'],
+        'a new list'
+      );
+      this.assert.strictEqual(after[0], before[0], 'the first row stays');
+    }
+
+    ['@test key="@index": the components a yielded item renders stay, keep their state and show the item now at their row']() {
+      let instances = [];
+      let destroyed = 0;
+      let inserted = 0;
+      this.owner.register(
+        'component:positional-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<ul>{{#each @items key="@index" as |item|}}<li>{{yield item}}</li>{{/each}}</ul>'
+          ),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:item-counter',
+        setComponentTemplate(
+          precompileTemplate('<b {{this.didInsert}}>{{@item.name}}:{{this.count}}</b>'),
+          class extends Component {
+            @tracked count = 0;
+            didInsert = defineSimpleModifier(() => {
+              inserted++;
+            });
+            constructor(owner, args) {
+              super(owner, args);
+              instances.push(this);
+            }
+            willDestroy() {
+              destroyed++;
+              super.willDestroy();
+            }
+          }
+        )
+      );
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(
+        `<PositionalList @items={{this.list}} as |item|><ItemCounter @item={{item}} /></PositionalList>`,
+        { list: [a, b] }
+      );
+
+      let created = instances.slice();
+      this.assert.strictEqual(created.length, 2, 'a component per row');
+      this.assert.strictEqual(inserted, 2);
+      runTask(() => {
+        created[0].count = 1;
+        created[1].count = 2;
+      });
+      this.assertText('a:1b:2');
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      this.assertText(
+        'b:1a:2',
+        'the components show the items now at their rows, with their state'
+      );
+      this.assert.deepEqual(instances, created, 'the same component instances');
+      this.assert.strictEqual(destroyed, 0, 'no component is destroyed');
+      this.assert.strictEqual(inserted, 2, 'no element is inserted again');
+
+      runTask(() => set(this.context, 'list', [{ name: 'c' }]));
+
+      this.assertText('c:1', 'the kept row shows the new item');
+      this.assert.deepEqual(instances, created, 'no component is created');
+      this.assert.strictEqual(destroyed, 1, 'the removed row destroys its component');
+      this.assert.strictEqual(inserted, 2, 'no element is inserted again');
+    }
+
+    ['@test key="@index": a yielded item that turns from a primitive into an object or back is followed']() {
+      this.owner.register(
+        'component:positional-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<ul>{{#each @items key="@index" as |item|}}<li>{{yield item}}</li>{{/each}}</ul>'
+          ),
+          class extends Component {}
+        )
+      );
+
+      this.render(
+        `<PositionalList @items={{this.list}} as |item|>{{if item.name item.name item}}</PositionalList>`,
+        { list: ['loading'] }
+      );
+      this.assertText('loading');
+
+      runTask(() => set(this.context, 'list', [{ name: 'x' }]));
+      this.assertText('x', 'primitive -> object');
+
+      runTask(() => set(this.context, 'list', ['done']));
+      this.assertText('done', 'object -> primitive');
+    }
+
+    ['@test key="@index": an item invoked as a component follows the component now at its row']() {
+      let First = setComponentTemplate(precompileTemplate('first'), class extends Component {});
+      let Second = setComponentTemplate(precompileTemplate('second'), class extends Component {});
+
+      this.render(`<ul>{{#each this.list key="@index" as |Item|}}<li><Item /></li>{{/each}}</ul>`, {
+        list: [First, Second],
+      });
+
+      let before = this.items();
+      this.assert.deepEqual(
+        before.map((li) => li.textContent),
+        ['first', 'second']
+      );
+
+      runTask(() => set(this.context, 'list', [Second, First]));
+
+      let after = this.items();
+      this.assert.deepEqual(after, before, 'the rows stay where they are');
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['second', 'first'],
+        'and invoke the components now at them'
+      );
+
+      runTask(() => set(this.context, 'list', [Second]));
+
+      after = this.items();
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['second'],
+        'a new list'
+      );
+      this.assert.strictEqual(after[0], before[0], 'the first row stays');
+    }
+
     ['@test @identity moves the nodes of objects when they are reordered']() {
       let a = { name: 'a' };
       let b = { name: 'b' };

@@ -16,6 +16,88 @@ import { setComponentTemplate } from '@glimmer/manager';
 moduleFor(
   'Helpers test: custom helpers',
   class extends RenderingTestCase {
+    ['@test a class helper and a function helper get `(fn)` results and actions passed as named arguments as they are'](
+      assert
+    ) {
+      // In the compat build a helper's named arguments were read by calling
+      // every function among them. The native build passes every argument as
+      // a literal or a getter it reads with exactly one call, so a function
+      // value is never taken for a getter there; the test guards both.
+      let received = {};
+      let calls = [];
+      this.registerHelper('class-helper', {
+        compute(_positional, named) {
+          received.classSave = named.save;
+          received.classAction = named.action;
+          return 'class';
+        },
+      });
+      this.registerHelper('function-helper', (_positional, named) => {
+        received.functionSave = named.save;
+        received.functionAction = named.action;
+        return 'function';
+      });
+
+      this.render(
+        `{{class-helper save=(fn this.save 1) action=this.act}} {{function-helper save=(fn this.save 2) action=this.act}}`,
+        {
+          save: (n) => calls.push(`save ${n}`),
+          act: () => calls.push('act'),
+        }
+      );
+
+      this.assertText('class function');
+      assert.deepEqual(calls, [], 'nothing is called when the helpers render');
+      assert.strictEqual(typeof received.classSave, 'function', 'the class helper gets the (fn)');
+      assert.strictEqual(
+        typeof received.functionSave,
+        'function',
+        'the function helper gets the (fn)'
+      );
+      assert.strictEqual(
+        received.classAction,
+        this.context.act,
+        'the class helper gets the action'
+      );
+      assert.strictEqual(
+        received.functionAction,
+        this.context.act,
+        'the function helper gets the action'
+      );
+
+      received.classSave();
+      received.functionSave();
+      received.classAction();
+      assert.deepEqual(calls, ['save 1', 'save 2', 'act'], 'and calls them when it likes');
+    }
+
+    ['@test an arrow a helper returns, passed positionally to another helper, is the value'](
+      assert
+    ) {
+      let received = [];
+      this.registerHelper('make-arrow', () => () => 'called');
+      this.registerHelper('describe', ([fn]) => {
+        received.push(fn);
+        return typeof fn;
+      });
+      this.registerHelper('describe-class', {
+        compute([fn]) {
+          received.push(fn);
+          return typeof fn;
+        },
+      });
+
+      this.render('{{describe (make-arrow)}} {{describe-class (make-arrow)}}');
+
+      this.assertText('function function');
+      assert.strictEqual(received.length, 2);
+      assert.deepEqual(
+        received.map((fn) => fn()),
+        ['called', 'called'],
+        'the arrows, not their results'
+      );
+    }
+
     ['@test it cannot override built-in syntax']() {
       this.registerHelper('array', () => 'Nope');
       expectAssertion(() => {

@@ -19,6 +19,8 @@ import { set, get, computed, observer } from '@ember/object';
 import { trackedArray } from '@ember/reactive/collections';
 import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
 import { Component } from '../../../utils/helpers';
+import GlimmerComponent from '@glimmer/component';
+import templateOnly from '@ember/component/template-only';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -1704,6 +1706,614 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         });
 
         this.assertText('initial value - initial value');
+      }
+
+      ['@test a two way binding writes each shape of argument where Glimmer writes it']() {
+        expectClassicComponentDeprecation();
+
+        let components = {};
+        this.owner.register(
+          'component:two-way',
+          setComponentTemplate(
+            precompileTemplate('{{this.bar}}'),
+            class extends Component {
+              init() {
+                super.init(...arguments);
+                components[this.name] = this;
+              }
+            }
+          )
+        );
+        this.owner.register(
+          'component:two-way-outer',
+          setComponentTemplate(
+            precompileTemplate('{{two-way name="arg" bar=@value}}'),
+            class extends Component {}
+          )
+        );
+
+        let model = { myProp: 'm' };
+        let item = { name: 'i' };
+        let items = [item];
+        this.render(
+          strip`
+          {{two-way name="dot" bar=this.model.myProp}}
+          {{two-way-outer value=this.local}}
+          {{#each this.items as |it|}}{{two-way name="param" bar=it.name}}{{two-way name="item" bar=it}}{{/each}}
+          {{#let this.aliased as |a|}}{{two-way name="let" bar=a}}{{/let}}
+          {{two-way name="helper" bar=(concat this.local "!")}}
+          {{two-way name="literal" bar="lit"}}`,
+          { model, local: 'l', items, aliased: 'a' }
+        );
+
+        // `this.a.b`: written to `this.a`'s `b`.
+        runTask(() => components.dot.set('bar', 'M'));
+        this.assert.strictEqual(model.myProp, 'M', 'this.model.myProp');
+
+        // `@x`: the caller's reference, through to its source.
+        runTask(() => components.arg.set('bar', 'L'));
+        this.assert.strictEqual(this.context.local, 'L', '@value, through the outer component');
+
+        // A block param's path: written to the item.
+        runTask(() => components.param.set('bar', 'I'));
+        this.assert.strictEqual(item.name, 'I', 'it.name');
+
+        // A {{#let}} binding: written where its value's path writes.
+        runTask(() => components.let.set('bar', 'A'));
+        this.assert.strictEqual(this.context.aliased, 'A', '{{#let}} alias of this.aliased');
+
+        // Not writable: a block param itself, a helper's result, a literal.
+        runTask(() => components.item.set('bar', 'X'));
+        this.assert.strictEqual(items[0], item, 'an each block param itself is not written');
+        runTask(() => components.helper.set('bar', 'H'));
+        this.assert.strictEqual(this.context.local, 'L', 'a helper result is not written');
+        runTask(() => components.literal.set('bar', 'Y'));
+        this.assert.strictEqual(
+          components.literal.get('bar'),
+          'Y',
+          'a literal keeps the set value'
+        );
+      }
+
+      ['@test a two way binding through a {{#let}} alias writes where the alias was made']() {
+        expectClassicComponentDeprecation();
+
+        let components = [];
+        this.owner.register(
+          'component:two-way',
+          setComponentTemplate(
+            precompileTemplate('{{this.bar}}'),
+            class extends Component {
+              init() {
+                super.init(...arguments);
+                components.push(this);
+              }
+            }
+          )
+        );
+
+        let friend = { name: 'f', profile: 'friend profile' };
+        let outer = { profile: 'outer profile', friends: [friend] };
+        let a = { profile: 'a' };
+        let b = { profile: 'b' };
+        this.render(
+          strip`
+          {{#each this.items as |item|}}{{#let item.profile as |p|}}{{#each item.friends as |item|}}{{two-way bar=p}}{{/each}}{{/let}}{{/each}}
+          {{#each this.rows key="@index" as |row|}}{{#let row.profile as |p|}}{{two-way bar=p}}{{/let}}{{/each}}`,
+          { items: [outer], rows: [a, b] }
+        );
+
+        // The alias `p` of the outer row's `item.profile`, used under an inner
+        // block param of the same name: written to the outer item.
+        runTask(() => components[0].set('bar', 'written'));
+        this.assert.strictEqual(outer.profile, 'written', 'the outer item is written');
+        this.assert.strictEqual(friend.profile, 'friend profile', 'the inner item is not');
+
+        // An alias of a positional row's path: written to the item now at the row.
+        runTask(() => set(this.context, 'rows', [b, a]));
+        runTask(() => components[1].set('bar', 'B'));
+        this.assert.strictEqual(b.profile, 'B', 'the item now at the first row');
+        this.assert.strictEqual(a.profile, 'a', 'not the item the row had before');
+      }
+
+      ['@test a two way binding through @x of an angle-bracket caller writes the caller source']() {
+        expectClassicComponentDeprecation();
+
+        let components = {};
+        this.owner.register(
+          'component:two-way',
+          setComponentTemplate(
+            precompileTemplate('{{this.bar}}'),
+            class extends Component {
+              init() {
+                super.init(...arguments);
+                components[this.name] = this;
+              }
+            }
+          )
+        );
+        this.owner.register(
+          'component:two-way-outer',
+          setComponentTemplate(
+            precompileTemplate('{{two-way name=@name bar=@value}}'),
+            class extends Component {}
+          )
+        );
+
+        this.render(
+          strip`
+          <TwoWayOuter @name="angle" @value={{this.angle}} />
+          {{two-way-outer name="curly" value=this.curly}}`,
+          { angle: 'a', curly: 'c' }
+        );
+
+        runTask(() => components.angle.set('bar', 'A'));
+        this.assert.strictEqual(this.context.angle, 'A', 'the angle-bracket caller source');
+        runTask(() => components.curly.set('bar', 'C'));
+        this.assert.strictEqual(this.context.curly, 'C', 'the curly caller source');
+      }
+
+      ['@test a two way binding through @x of a lexically invoked component writes the caller source']() {
+        expectClassicComponentDeprecation();
+
+        // gxt's own angle-bracket invocation path (a component in a strict
+        // template's scope): a classic, a Glimmer and a template-only outer
+        // component pass `@value` to a classic child, whose `set('bar')` writes
+        // the caller's `this.<name>`, as Glimmer's `@value` is its reference.
+        let components = {};
+        this.owner.register(
+          'component:two-way',
+          setComponentTemplate(
+            precompileTemplate('{{this.bar}}'),
+            class extends Component {
+              init() {
+                super.init(...arguments);
+                components[this.name] = this;
+              }
+            }
+          )
+        );
+        let classicOuters = [];
+        let ClassicOuter = setComponentTemplate(
+          precompileTemplate('{{two-way name=@name bar=@value}}'),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              classicOuters.push(this);
+            }
+          }
+        );
+        let GlimmerOuter = setComponentTemplate(
+          precompileTemplate('{{two-way name=@name bar=@value}}'),
+          class extends GlimmerComponent {}
+        );
+        let TemplateOnlyOuter = setComponentTemplate(
+          precompileTemplate('{{two-way name=@name bar=@value}}'),
+          templateOnly()
+        );
+        let host;
+        this.owner.register(
+          'component:lexical-host',
+          setComponentTemplate(
+            precompileTemplate(
+              '<ClassicOuter @name="classic" @value={{this.classic}} /><GlimmerOuter @name="glimmer" @value={{this.glimmer}} /><TemplateOnlyOuter @name="template-only" @value={{this.templateOnly}} />',
+              {
+                strictMode: true,
+                scope: () => ({ ClassicOuter, GlimmerOuter, TemplateOnlyOuter }),
+              }
+            ),
+            class extends Component {
+              classic = 'a';
+              glimmer = 'b';
+              templateOnly = 'c';
+              init() {
+                super.init(...arguments);
+                host = this;
+              }
+            }
+          )
+        );
+
+        this.render('{{lexical-host}}');
+        this.assertText('abc');
+        // The classic outer is a classic component, with its instance.
+        this.assert.strictEqual(classicOuters.length, 1, 'the classic outer has an instance');
+        this.assert.strictEqual(classicOuters[0].value, 'a', 'with its arguments');
+
+        runTask(() => components.classic.set('bar', 'A'));
+        this.assert.strictEqual(host.classic, 'A', 'through a classic outer');
+        this.assert.strictEqual(
+          classicOuters[0].value,
+          'A',
+          'the classic outer gets the new value'
+        );
+        runTask(() => components.glimmer.set('bar', 'B'));
+        this.assert.strictEqual(host.glimmer, 'B', 'through a Glimmer outer');
+        runTask(() => components['template-only'].set('bar', 'C'));
+        this.assert.strictEqual(host.templateOnly, 'C', 'through a template-only outer');
+        this.assertText('ABC');
+      }
+
+      ['@test a classic component class invoked from the scope of a strict template is a classic component']() {
+        expectClassicComponentDeprecation();
+
+        // A co-located classic component a `.gjs` imports (`Component.extend`
+        // with `setComponentTemplate`, in a strict template's scope).
+        let instances = [];
+        let inserted = [];
+        let Legacy = setComponentTemplate(
+          precompileTemplate(
+            '<span class="local">{{this.local}}</span><span class="arg">{{this.value}}</span><button {{on "click" this.bump}}>{{this.count}}</button>'
+          ),
+          Component.extend({
+            count: 0,
+            init() {
+              this._super(...arguments);
+              instances.push(this);
+              this.set('local', 'from init');
+            },
+            didInsertElement() {
+              inserted.push(this.element.querySelector('.arg').textContent);
+            },
+            bump: action(function () {
+              this.incrementProperty('count');
+            }),
+          })
+        );
+        let host;
+        this.owner.register(
+          'component:strict-host',
+          setComponentTemplate(
+            precompileTemplate('<Legacy @value={{this.value}} />', {
+              strictMode: true,
+              scope: () => ({ Legacy }),
+            }),
+            class extends Component {
+              value = 'a';
+              init() {
+                super.init(...arguments);
+                host = this;
+              }
+            }
+          )
+        );
+
+        this.render('{{strict-host}}');
+
+        this.assert.strictEqual(instances.length, 1, 'init runs');
+        this.assert.deepEqual(inserted, ['a'], 'didInsertElement fires');
+        let text = (selector) => this.element.querySelector(selector).textContent;
+        this.assert.strictEqual(text('.local'), 'from init', 'a property set in init renders');
+        this.assert.strictEqual(text('.arg'), 'a', 'the argument arrives');
+
+        runTask(() => set(host, 'value', 'b'));
+        this.assert.strictEqual(text('.arg'), 'b', 'the argument updates');
+        this.assert.strictEqual(instances[0].value, 'b', 'on the instance');
+
+        runTask(() => this.element.querySelector('button').click());
+        this.assert.strictEqual(text('button'), '1', 'the action runs on the instance');
+        this.assert.strictEqual(instances.length, 1, 'the same instance');
+      }
+
+      ['@test a classic component class curried from the scope of a strict template is a classic component']() {
+        expectClassicComponentDeprecation();
+
+        let instances = [];
+        let Legacy = setComponentTemplate(
+          precompileTemplate('<span class="arg">{{this.value}}</span>'),
+          Component.extend({
+            init() {
+              this._super(...arguments);
+              instances.push(this);
+            },
+          })
+        );
+        let host;
+        this.owner.register(
+          'component:curry-host',
+          setComponentTemplate(
+            precompileTemplate(
+              '{{#let (component Legacy value=this.value) as |Curried|}}<Curried />{{/let}}',
+              { strictMode: true, scope: () => ({ Legacy }) }
+            ),
+            class extends Component {
+              value = 'a';
+              init() {
+                super.init(...arguments);
+                host = this;
+              }
+            }
+          )
+        );
+
+        this.render('{{curry-host}}');
+
+        this.assert.strictEqual(instances.length, 1, 'init runs');
+        this.assert.strictEqual(instances[0].value, 'a', 'the argument arrives');
+        this.assertText('a');
+        runTask(() => set(host, 'value', 'b'));
+        this.assert.strictEqual(instances[0].value, 'b', 'and updates');
+        this.assertText('b');
+      }
+
+      ['@test a classic component class with only a layout, from the scope of a strict template, is a classic component']() {
+        expectClassicComponentDeprecation();
+
+        let instances = [];
+        let Legacy = Component.extend({
+          layout: precompileTemplate('<span class="arg">{{this.value}}</span>'),
+          init() {
+            this._super(...arguments);
+            instances.push(this);
+          },
+        });
+        let host;
+        this.owner.register(
+          'component:layout-host',
+          setComponentTemplate(
+            precompileTemplate('<Legacy @value={{this.value}} />', {
+              strictMode: true,
+              scope: () => ({ Legacy }),
+            }),
+            class extends Component {
+              value = 'a';
+              init() {
+                super.init(...arguments);
+                host = this;
+              }
+            }
+          )
+        );
+
+        this.render('{{layout-host}}');
+
+        this.assert.strictEqual(instances.length, 1, 'init runs');
+        this.assert.strictEqual(instances[0].value, 'a', 'the argument arrives');
+        this.assertText('a');
+        runTask(() => set(host, 'value', 'b'));
+        this.assert.strictEqual(instances[0].value, 'b', 'and updates');
+        this.assertText('b');
+      }
+
+      ['@test key="@index": the classic component of a kept row whose argument also changed fires each update hook once']() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:positional-list',
+          setComponentTemplate(
+            precompileTemplate(
+              '<ul>{{#each this.items key="@index" as |i|}}<li>{{yield i}}</li>{{/each}}</ul>'
+            ),
+            class extends Component {}
+          )
+        );
+        this.owner.register(
+          'component:glimmer-positional-list',
+          setComponentTemplate(
+            precompileTemplate(
+              '<ul>{{#each @items key="@index" as |i|}}<li>{{yield i}}</li>{{/each}}</ul>'
+            ),
+            class extends GlimmerComponent {}
+          )
+        );
+        let rows = [];
+        let record = (row, hook) => row.hooks.push(`${hook} ${row.item.name} ${row.label}`);
+        this.owner.register(
+          'component:item-row',
+          setComponentTemplate(
+            precompileTemplate('{{this.item.name}}{{this.label}}'),
+            class extends Component {
+              hooks = [];
+              init() {
+                super.init(...arguments);
+                rows.push(this);
+              }
+              didUpdateAttrs() {
+                record(this, 'didUpdateAttrs');
+              }
+              didReceiveAttrs() {
+                record(this, 'didReceiveAttrs');
+              }
+              willUpdate() {
+                record(this, 'willUpdate');
+              }
+              willRender() {
+                record(this, 'willRender');
+              }
+              didUpdate() {
+                record(this, 'didUpdate');
+              }
+              didRender() {
+                record(this, 'didRender');
+              }
+            }
+          )
+        );
+
+        let a = { name: 'a' };
+        let b = { name: 'b' };
+        this.render(
+          strip`
+          <div class="classic-list">{{#positional-list items=this.list as |item|}}{{item-row item=item label=this.label}}{{/positional-list}}</div>
+          <div class="glimmer-list"><GlimmerPositionalList @items={{this.list}} as |item|>{{item-row item=item label=this.label}}</GlimmerPositionalList></div>`,
+          { list: [a, b], label: 'l' }
+        );
+        let created = rows.slice();
+        this.assert.strictEqual(created.length, 4, 'a row component per row');
+        let rowsOf = (name) =>
+          Array.from(this.element.querySelectorAll(`.${name} li`)).map((li) =>
+            created.find((row) => li.contains(row.element))
+          );
+        for (let row of created) row.hooks = [];
+
+        runTask(() => {
+          set(this.context, 'label', 'x');
+          set(this.context, 'list', [b, a]);
+        });
+
+        this.assert.deepEqual(rows, created, 'the same instances');
+        let once = (name) => [
+          `didUpdateAttrs ${name} x`,
+          `didReceiveAttrs ${name} x`,
+          `willUpdate ${name} x`,
+          `willRender ${name} x`,
+          `didUpdate ${name} x`,
+          `didRender ${name} x`,
+        ];
+        for (let name of ['classic-list', 'glimmer-list']) {
+          this.assert.deepEqual(
+            rowsOf(name).map((row) => row.hooks),
+            [once('b'), once('a')],
+            `${name}: each update hook once, with the final arguments`
+          );
+          this.assert.deepEqual(
+            Array.from(this.element.querySelectorAll(`.${name} li`)).map((li) =>
+              li.textContent.trim()
+            ),
+            ['bx', 'ax'],
+            `${name}: the rows show the final arguments`
+          );
+        }
+      }
+
+      ['@test a helper arrow passed positionally to a component is the value']() {
+        expectClassicComponentDeprecation();
+
+        let received;
+        this.registerHelper('make-arrow', () => () => 'called');
+        this.owner.register(
+          'component:receives-fn',
+          setComponentTemplate(
+            precompileTemplate('{{this.kind}}'),
+            class extends Component {
+              static positionalParams = ['fn'];
+              get kind() {
+                received = this.fn;
+                return typeof this.fn;
+              }
+            }
+          )
+        );
+
+        this.render('{{receives-fn (make-arrow)}}');
+
+        this.assertText('function');
+        this.assert.strictEqual(received(), 'called', 'the arrow, not its result');
+      }
+
+      ['@test key="@index": a classic component in a kept row gets the item now at its row in the same render']() {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:positional-list',
+          setComponentTemplate(
+            precompileTemplate(
+              '<ul>{{#each this.items key="@index" as |i|}}<li>{{yield i}}</li>{{/each}}</ul>'
+            ),
+            class extends Component {}
+          )
+        );
+        this.owner.register(
+          'component:glimmer-positional-list',
+          setComponentTemplate(
+            precompileTemplate(
+              '<ul>{{#each @items key="@index" as |i|}}<li>{{yield i}}</li>{{/each}}</ul>'
+            ),
+            class extends GlimmerComponent {}
+          )
+        );
+        let rows = [];
+        this.owner.register(
+          'component:item-row',
+          setComponentTemplate(
+            precompileTemplate('{{this.item.name}}'),
+            class extends Component {
+              hooks = [];
+              init() {
+                super.init(...arguments);
+                rows.push(this);
+              }
+              didReceiveAttrs() {
+                this.hooks.push(`didReceiveAttrs ${this.item.name}`);
+              }
+              didUpdateAttrs() {
+                this.hooks.push(`didUpdateAttrs ${this.item.name}`);
+              }
+              willUpdate() {
+                this.hooks.push(`willUpdate ${this.item.name}`);
+              }
+              didUpdate() {
+                this.hooks.push(`didUpdate ${this.item.name}`);
+              }
+            }
+          )
+        );
+        // (The template is spelled out in each call: precompileTemplate takes a
+        // string literal.)
+        this.owner.register(
+          'component:classic-parent',
+          setComponentTemplate(
+            precompileTemplate(
+              '{{#positional-list items=@list as |item|}}{{item-row item=item}}{{/positional-list}}'
+            ),
+            class extends Component {}
+          )
+        );
+        this.owner.register(
+          'component:glimmer-parent',
+          setComponentTemplate(
+            precompileTemplate(
+              '{{#positional-list items=@list as |item|}}{{item-row item=item}}{{/positional-list}}'
+            ),
+            class extends GlimmerComponent {}
+          )
+        );
+
+        let a = { name: 'a' };
+        let b = { name: 'b' };
+        // A classic list (top level, in a classic parent, in a Glimmer parent)
+        // and a Glimmer list, each yielding its row's item to a classic row.
+        this.render(
+          strip`
+          <div class="top">{{#positional-list items=this.list as |item|}}{{item-row item=item}}{{/positional-list}}</div>
+          <div class="glimmer-list"><GlimmerPositionalList @items={{this.list}} as |item|>{{item-row item=item}}</GlimmerPositionalList></div>
+          <div class="classic-parent"><ClassicParent @list={{this.list}} /></div>
+          <div class="glimmer-parent"><GlimmerParent @list={{this.list}} /></div>`,
+          { list: [a, b] }
+        );
+        let cases = ['top', 'glimmer-list', 'classic-parent', 'glimmer-parent'];
+        let texts = (name) =>
+          Array.from(this.element.querySelectorAll(`.${name} li`)).map((li) =>
+            li.textContent.trim()
+          );
+        for (let name of cases) this.assert.deepEqual(texts(name), ['a', 'b'], name);
+        let created = rows.slice();
+        this.assert.strictEqual(created.length, 8, 'a row component per row');
+        // The row components of each case, in row order.
+        let rowsOf = (name) =>
+          Array.from(this.element.querySelectorAll(`.${name} li`)).map((li) =>
+            created.find((row) => li.contains(row.element))
+          );
+        for (let row of created) row.hooks = [];
+
+        runTask(() => set(this.context, 'list', [b, a]));
+
+        this.assert.deepEqual(rows, created, 'the same instances');
+        for (let name of cases) {
+          this.assert.deepEqual(
+            texts(name),
+            ['b', 'a'],
+            `${name}: the rows show the items now at them`
+          );
+          this.assert.deepEqual(
+            rowsOf(name).map((row) => [row.item.name, ...row.hooks]),
+            [
+              ['b', 'didUpdateAttrs b', 'didReceiveAttrs b', 'willUpdate b', 'didUpdate b'],
+              ['a', 'didUpdateAttrs a', 'didReceiveAttrs a', 'willUpdate a', 'didUpdate a'],
+            ],
+            `${name}: this.item is the new item; its update hooks once each`
+          );
+        }
       }
 
       ['@test a two way binding flows upstream through a CP when consumed in the template']() {
