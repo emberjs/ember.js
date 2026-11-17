@@ -42,6 +42,10 @@
 - [#21725](https://github.com/emberjs/ember.js/pull/21725) Keep pushObject/removeObject on DataAdapter#releaseMethods until 8.0.0
 - [#21602](https://github.com/emberjs/ember.js/pull/21602) Decode the opcode header once per instruction via RuntimeOp.seek
 
+## v7.4.1 (November 16, 2026)
+
+- [#21771](https://github.com/emberjs/ember.js/pull/21771) [BUGFIX] LinkTo: do not read unknown properties from models
+
 ## v7.4.0 (October 26, 2026)
 
 - [#21586](https://github.com/emberjs/ember.js/pull/21586) Update browser support per Ember's browser support policy (RFC #685). Support is now Support is now Chrome >= 109, Edge >= 149 Firefox >= 121, Safari >= 16.6, ChromeAndroid >= 151, FirefoxAndroid >= 153
