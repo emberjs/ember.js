@@ -24,6 +24,11 @@ export type ReferenceSymbol = typeof REFERENCE;
 export interface Reference<T = unknown> {
   [REFERENCE]: ReferenceType;
   debugLabel?: string | false | undefined;
+  /**
+   * The untransformed name the reference was created with (e.g. the helper
+   * name for compute references). Debug builds only.
+   */
+  debugName?: string | undefined;
   compute: Nullable<() => T>;
   children: null | Map<string | Reference, Reference>;
 }
