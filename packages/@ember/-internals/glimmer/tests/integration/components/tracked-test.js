@@ -64,7 +64,9 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved ||
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved ||
+        import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
       expectDeprecation(

@@ -190,4 +190,9 @@ const Evented = InternalMixin.create({
   },
 });
 
-export default Evented;
+const ExportedEvented = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : Evented
+) as typeof Evented;
+type ExportedEvented = Evented;
+
+export default ExportedEvented;

@@ -11,7 +11,7 @@ moduleFor(
   'Ember.Evented',
   class extends AbstractTestCase {
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test Evented.detect returns true for framework classes that provide the Evented methods`](
       assert
     ) {
@@ -28,7 +28,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test works properly on proxy-ish objects`](assert) {
       let eventedProxyObj;
       expectDeprecation(
