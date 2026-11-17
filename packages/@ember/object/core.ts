@@ -360,7 +360,7 @@ class CoreObject {
     in the superclass. However, there are some cases where it is preferable
     to build up a property's value by combining the superclass' property
     value with the subclass' value. An example of this in use within Ember
-    is the `classNames` property of `Component` from `@ember/component`.
+    is the `queryParams` property of `Controller` from `@ember/controller`.
 
     Here is some sample code showing the difference between a concatenated
     property and a normal one:
@@ -410,8 +410,7 @@ class CoreObject {
     Using the `concatenatedProperties` property, we can tell Ember to mix the
     content of the properties.
 
-    In `Component` the `classNames`, `classNameBindings` and
-    `attributeBindings` properties are concatenated.
+    In `Controller` the `queryParams` property is concatenated.
 
     This feature is available for you to use throughout the Ember object model,
     although typical app developers are likely to use it infrequently. Since
@@ -632,16 +631,6 @@ class CoreObject {
     This defines a new subclass of EmberObject: `Person`. It contains one method: `say()`.
 
     You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Component` class:
-
-    ```javascript
-    import Component from '@ember/component';
-
-    const PersonComponent = Component.extend({
-      tagName: 'li',
-      classNameBindings: ['isAdministrator']
-    });
-    ```
 
     When defining a subclass, you can override methods but still access the
     implementation of your parent class by calling the special `_super()` method:

@@ -488,19 +488,23 @@ class RouterService extends Service {
      In the following example `recognize` is used to verify if a path belongs to our
      application before transitioning to it.
 
-     ```js
-     import Component from '@ember/component';
+     ```gjs {data-filename="app/components/go-to-path.gjs"}
+     import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
        path = '/';
 
-       click() {
+       goToPath = () => {
          if (this.router.recognize(this.path)) {
            this.router.transitionTo(this.path);
          }
-       }
+       };
+
+       <template>
+         <button type="button" {{on "click" this.goToPath}}>Go</button>
+       </template>
      }
      ```
 

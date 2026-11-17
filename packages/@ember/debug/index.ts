@@ -238,17 +238,19 @@ if (DEBUG) {
     freely added for documentation and debugging purposes without worries of
     incuring any performance penalty.
 
-    ```javascript
-    import Component from '@ember/component';
+    ```gjs {data-filename="app/components/profile.gjs"}
+    import Component from '@glimmer/component';
     import { runInDebug } from '@ember/debug';
 
-    runInDebug(() => {
-      Component.reopen({
-        didInsertElement() {
-          console.log("I'm happy");
-        }
-      });
-    });
+    export default class Profile extends Component {
+      constructor(owner, args) {
+        super(owner, args);
+
+        runInDebug(() => {
+          console.log('Rendering a profile for', this.args.user);
+        });
+      }
+    }
     ```
 
     @method runInDebug

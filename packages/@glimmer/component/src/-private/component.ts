@@ -112,22 +112,28 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  *
  * ## Lifecycle Hooks
  *
- * Lifecycle hooks allow you to respond to changes to a component, such as when
- * it gets created, rendered, updated or destroyed. To add a lifecycle hook to a
- * component, implement the hook as a method on your component subclass.
+ * Lifecycle hooks allow you to respond to a component being created or
+ * destroyed. Use the `constructor` for setup, and implement the
+ * `willDestroy()` method on your component subclass for teardown.
  *
- * For example, to be notified when Glimmer has rendered your component so you
- * can attach a legacy jQuery plugin, implement the `didInsertElement()` method:
+ * For example, to stop a timer when the component is removed from the page,
+ * implement the `willDestroy()` method:
  *
  * ```ts
  * import Component from '@glimmer/component';
  *
  * export default class extends Component {
- *   didInsertElement() {
- *     $(this.element).pickadate();
+ *   timer = setInterval(() => console.log('tick'), 1000);
+ *
+ *   willDestroy() {
+ *     super.willDestroy();
+ *     clearInterval(this.timer);
  *   }
  * }
  * ```
+ *
+ * To work with the elements a component renders, use a modifier such as
+ * `{{on}}` in the component's template.
  *
  * ## Data for Templates
  *
@@ -251,8 +257,8 @@ export default class GlimmerComponent<S = unknown> {
    * If you needed to calculate `fullName` by combining both of them, you would do:
    *
    * ```ts
-   * didInsertElement() {
-   *   console.log(`Hi, my full name is ${this.args.firstName} ${this.args.lastName}`);
+   * get fullName() {
+   *   return `${this.args.firstName} ${this.args.lastName}`;
    * }
    * ```
    *
