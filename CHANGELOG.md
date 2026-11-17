@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v7.5.0-beta.3 (November 16, 2026)
+
+- [#21771](https://github.com/emberjs/ember.js/pull/21771) [BUGFIX] LinkTo: do not read unknown properties from models
+
 ## v7.5.0-beta.2 (November 4, 2026)
 
 - [#21762](https://github.com/emberjs/ember.js/pull/21762) [BUGFIX] Render {{outlet}} inside components again
