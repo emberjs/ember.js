@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
-import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { flushChanges } from '@ember/-internals/metal/lib/watchers';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
@@ -45,12 +45,12 @@ function onBegin(current: DeferredActionQueues) {
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers(schedule);
+  flushChanges(schedule);
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers(schedule);
+    flushChanges(schedule);
   }
 
   next();
