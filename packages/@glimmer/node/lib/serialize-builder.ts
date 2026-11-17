@@ -5,21 +5,26 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
-  SimpleElement,
   SimpleNode,
+  SimpleParentNode,
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
+import { isElement } from '@glimmer/runtime/lib/dom/operations';
 import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
 
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
+function tagNameOf(node: SimpleParentNode): Nullable<string> {
+  return isElement(node) ? node.tagName : null;
+}
+
 function currentNode(
-  cursor: TreeBuilder | { element: SimpleElement; nextSibling: SimpleNode }
+  cursor: TreeBuilder | { element: SimpleParentNode; nextSibling: SimpleNode }
 ): Nullable<SimpleNode> {
   let { element, nextSibling } = cursor;
 
@@ -34,7 +39,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
-    let { tagName } = this.element;
+    let tagName = tagNameOf(this.element);
 
     if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
       let depth = this.serializeBlockDepth++;
@@ -45,7 +50,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __closeBlock(): void {
-    let { tagName } = this.element;
+    let tagName = tagNameOf(this.element);
 
     super.__closeBlock();
 
@@ -56,7 +61,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendHTML(html: string): Bounds {
-    let { tagName } = this.element;
+    let tagName = tagNameOf(this.element);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
       return super.__appendHTML(html);
@@ -84,7 +89,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    let { tagName } = this.element;
+    let tagName = tagNameOf(this.element);
     let current = currentNode(this);
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
@@ -110,11 +115,9 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
   override openElement(tag: string) {
     if (tag === 'tr') {
-      if (
-        this.element.tagName !== 'TBODY' &&
-        this.element.tagName !== 'THEAD' &&
-        this.element.tagName !== 'TFOOT'
-      ) {
+      let tagName = tagNameOf(this.element);
+
+      if (tagName !== 'TBODY' && tagName !== 'THEAD' && tagName !== 'TFOOT') {
         this.openElement('tbody');
         // This prevents the closeBlock comment from being re-parented
         // under the auto inserted tbody. Rehydration builder needs to
@@ -130,7 +133,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleParentNode,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
@@ -144,7 +147,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
 export function serializeBuilder(
   env: Environment,
-  cursor: { element: SimpleElement; nextSibling: Nullable<SimpleNode> }
+  cursor: { element: SimpleParentNode; nextSibling: Nullable<SimpleNode> }
 ): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

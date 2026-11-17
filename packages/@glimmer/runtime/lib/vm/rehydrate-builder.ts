@@ -8,12 +8,12 @@ import type {
   SimpleComment,
   SimpleElement,
   SimpleNode,
+  SimpleParentNode,
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
-import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
@@ -31,7 +31,7 @@ export class RehydratingCursor extends CursorImpl {
   openBlockDepth: number;
   injectedOmittedNode = false;
   constructor(
-    element: SimpleElement,
+    element: SimpleParentNode,
     nextSibling: Nullable<SimpleNode>,
     public readonly startingBlockDepth: number
   ) {
@@ -46,7 +46,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   blockDepth = 0;
   startingBlockOffset: number;
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
+  constructor(env: Environment, parentNode: SimpleParentNode, nextSibling: Nullable<SimpleNode>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
@@ -136,7 +136,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     this:
       | RehydrateTree
       | (NewTreeBuilder & Partial<Pick<RehydrateTree, 'blockDepth' | 'candidate'>>),
-    element: SimpleElement,
+    element: SimpleParentNode,
     nextSibling: Maybe<SimpleNode> = null
   ) {
     const cursor = new RehydratingCursor(element, nextSibling, this.blockDepth || 0);
@@ -198,7 +198,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const { candidate } = currentCursor;
     if (candidate === null) return;
 
-    const { tagName } = currentCursor.element;
+    const tagName = isElement(currentCursor.element) ? currentCursor.element.tagName : null;
 
     if (
       isOpenBlock(candidate) &&
@@ -430,7 +430,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     return super.__setProperty(name, value);
   }
 
-  override __flushElement(parent: SimpleElement, constructing: SimpleElement): void {
+  override __flushElement(parent: SimpleParentNode, constructing: SimpleElement): void {
     const { unmatchedAttributes: unmatched } = this;
     if (unmatched) {
       for (const attr of unmatched) {
@@ -457,25 +457,25 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super.willCloseElement();
   }
 
-  getMarker(element: HTMLElement, guid: string): Nullable<SimpleNode> {
-    const marker = element.querySelector(`script[glmr="${guid}"]`);
-    if (marker) {
-      return castToSimple(marker);
+  // The serializer writes the marker as a direct child of the remote target, so
+  // a scan of the children is enough. This keeps the lookup on the SimpleNode
+  // API, which a ShadowRoot or DocumentFragment target satisfies as well.
+  getMarker(parent: SimpleParentNode, guid: string): Nullable<SimpleNode> {
+    for (let node = parent.firstChild; node !== null; node = node.nextSibling) {
+      if (isElement(node) && node.tagName === 'SCRIPT' && node.getAttribute('glmr') === guid) {
+        return node;
+      }
     }
+
     return null;
   }
 
   override __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleParentNode,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
-    const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
-
-    assert(
-      !marker || marker.parentNode === element,
-      `expected remote element marker's parent node to match remote element`
-    );
+    const marker = this.getMarker(element, cursorId);
 
     // when insertBefore is not present, we clear the element
     if (insertBefore === undefined) {
