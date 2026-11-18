@@ -1,4 +1,6 @@
-import { preprocess as parse, print } from '@glimmer/syntax';
+import type { ASTv1 } from '@glimmer/syntax';
+
+import { builders as b, preprocess as parse, print } from '@glimmer/syntax';
 
 const { test } = QUnit;
 
@@ -97,6 +99,24 @@ let templates = [
 
   // Empty string literal: arguments use ="" while attributes are valueless
   `<Hello @world="" data-foo />`,
+
+  // escaped mustaches
+  '\\{{escaped}}',
+  '\\\\{{live}}',
+  '\\\\\\{{live}}',
+  '<p title="\\{{x}}">a \\{{y}} b</p>',
+  '<p class="a \\{{x}} {{y}}">\\{{a}}\\{{b}} {{c}} \\{{d</p>',
+  '{{#if x}}\\{{a}}{{else}}b\\\\{{/if}}',
+
+  // segment literals
+  '{{foo.[bar baz]}}',
+  '{{foo.[bar.baz]}}',
+  '{{array.[0]}}',
+  '{{foo.[true]}}',
+  '{{foo.[a\\]b]}}',
+  '{{[foo bar]}}',
+  '{{@[foo bar].baz}}',
+  '<Foo @value={{this.list.[1]}} />',
 ];
 
 QUnit.module('[glimmer-syntax] Code generation', () => {
@@ -120,7 +140,55 @@ QUnit.module('[glimmer-syntax] Code generation', () => {
   test('Handlebars comment', (assert) => {
     assert.strictEqual(printTransform('{{! foo }}'), '{{!-- foo --}}');
   });
+
+  test('segment literals that are plain IDs print without brackets', (assert) => {
+    assert.strictEqual(printTransform('{{this.[foo]}}'), '{{this.foo}}');
+  });
+
+  test('text next to mustaches keeps its meaning', (assert) => {
+    let x = () => b.mustache(b.path('x'));
+    let cases: [ASTv1.Statement[], string][] = [
+      [[b.text('a\\'), x()], 'a\\\\{{x}}'],
+      [[b.text('a{'), x()], 'a&#123;{{x}}'],
+      [[x(), b.text('}a')], '{{x}}&#125;a'],
+      [[b.text('a\\{{b')], 'a&#92;\\{{b'],
+      [[b.text('a\\'), b.text('{{b')], 'a&#92;\\{{b'],
+      [[b.text('{{{'), x()], '\\{{&#123;{{x}}'],
+    ];
+
+    for (let [body, expected] of cases) {
+      let printed = print(b.template(body));
+      assert.strictEqual(printed, expected);
+      assert.deepEqual(chars(parse(printed).body), chars(body), `${expected} parses back`);
+    }
+  });
 });
+
+/**
+ * The text of each node, with adjacent text joined
+ * and each mustache as its path.
+ */
+function chars(body: ASTv1.Statement[]): string[] {
+  let result: string[] = [];
+  let text = '';
+
+  for (let node of body) {
+    if (node.type === 'TextNode') {
+      text += node.chars;
+    } else if (node.type === 'MustacheStatement' && node.path.type === 'PathExpression') {
+      if (text) {
+        result.push(text);
+      }
+      text = '';
+      result.push(`{{${node.path.original}}}`);
+    }
+  }
+
+  if (text) {
+    result.push(text);
+  }
+  return result;
+}
 
 QUnit.module('[glimmer-syntax] Code generation - source -> source', () => {
   function printTransform(template: string) {
