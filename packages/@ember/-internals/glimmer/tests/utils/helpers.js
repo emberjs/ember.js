@@ -6,6 +6,5 @@ export {
   Component,
   htmlSafe,
   SafeString,
-  DOMChanges,
   isHTMLSafe,
 } from '@ember/-internals/glimmer';

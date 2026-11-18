@@ -72,9 +72,6 @@ function setupComponentTest() {
 
   module.element = new SimpleDOM.Document();
   module.owner = buildOwner({ resolve: function () {} }, { isInteractive: module.isInteractive });
-  module.owner.register('service:-document', new SimpleDOM.Document(), {
-    instantiate: false,
-  });
 
   this._hasRendered = false;
   this.component = null;

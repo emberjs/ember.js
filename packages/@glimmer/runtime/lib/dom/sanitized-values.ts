@@ -1,4 +1,4 @@
-import type { Nullable, SimpleElement } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
@@ -123,7 +123,7 @@ function protocolForUrl(url: string): string {
 }
 
 export function sanitizeAttributeValue(
-  element: SimpleElement,
+  tagName: string,
   attribute: string,
   value: unknown
 ): unknown {
@@ -134,8 +134,6 @@ export function sanitizeAttributeValue(
   if (isSafeString(value)) {
     return value.toHTML();
   }
-
-  const tagName = element.tagName;
 
   let str = normalizeStringValue(value);
 
