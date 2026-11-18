@@ -152,6 +152,16 @@ QUnit.module('[glimmer-syntax] Code generation', () => {
   /**
    * These cases start from built nodes, the way a codemod calls print().
    *
+   * Where each case comes from:
+   * - plain source: only `a\` before a mustache (source `a\\{{x}}`)
+   * - source with an HTML entity, parsed in the default mode:
+   *   the cases that print `&#123;`, `&#125;`, or `&#92;`
+   * - codemods and AST plugins that set `TextNode.chars`: all of them
+   *
+   * Codemod mode keeps entities as text,
+   * so in v2 addon builds (`babel-plugin-ember-template-compilation`)
+   * only codemods and AST plugins produce the entity cases.
+   *
    * A single text node with `a\{{b` has no source form.
    * Parsing `a&#92;\{{b` gives two text nodes, not one.
    * So a source -> source check in `templates` cannot cover it.
@@ -163,11 +173,17 @@ QUnit.module('[glimmer-syntax] Code generation', () => {
   test('text next to mustaches keeps its meaning', (assert) => {
     let x = () => b.mustache(b.path('x'));
     let cases: [ASTv1.Statement[], string][] = [
+      /** source: `a\\{{x}}` */
       [[b.text('a\\'), x()], 'a\\\\{{x}}'],
+      /** source: `a&#123;{{x}}` */
       [[b.text('a{'), x()], 'a&#123;{{x}}'],
+      /** source: `{{x}}&#125;a` */
       [[x(), b.text('}a')], '{{x}}&#125;a'],
+      /** source: none, codemods and AST plugins only */
       [[b.text('a\\{{b')], 'a&#92;\\{{b'],
+      /** source: `a&#92;\{{b` */
       [[b.text('a\\'), b.text('{{b')], 'a&#92;\\{{b'],
+      /** source: `\{{&#123;{{x}}` */
       [[b.text('{{{'), x()], '\\{{&#123;{{x}}'],
     ];
 
