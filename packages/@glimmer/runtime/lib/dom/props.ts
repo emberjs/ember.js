@@ -1,4 +1,4 @@
-import type { Dict, SimpleElement } from '@glimmer/interfaces';
+import type { Dict, RenderAdapter, SimpleElement } from '@glimmer/interfaces';
 
 /*
  * @method normalizeProperty
@@ -6,15 +6,19 @@ import type { Dict, SimpleElement } from '@glimmer/interfaces';
  * @param slotName {String}
  * @returns {Object} { name, type }
  */
-export function normalizeProperty(element: SimpleElement, slotName: string) {
+export function normalizeProperty(
+  adapter: RenderAdapter,
+  element: SimpleElement,
+  slotName: string
+) {
   let type, normalized;
 
-  if (slotName in element) {
+  if (adapter.hasProperty(element, slotName)) {
     normalized = slotName;
     type = 'prop';
   } else {
     let lower = slotName.toLowerCase();
-    if (lower in element) {
+    if (adapter.hasProperty(element, lower)) {
       type = 'prop';
       normalized = lower;
     } else {
@@ -25,7 +29,7 @@ export function normalizeProperty(element: SimpleElement, slotName: string) {
 
   if (
     type === 'prop' &&
-    (normalized.toLowerCase() === 'style' || preferAttr(element.tagName, normalized))
+    (normalized.toLowerCase() === 'style' || preferAttr(adapter.tagName(element), normalized))
   ) {
     type = 'attr';
   }

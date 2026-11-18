@@ -1,11 +1,11 @@
 import type { Bounds } from '../dom/bounds.js';
-import type { GlimmerTreeChanges } from '../dom/changes.js';
+import type { RenderAdapter } from '../render-adapter.js';
 import type { Environment } from './environment.js';
 import type { ExceptionHandler } from './render.js';
 
 export interface UpdatingVM {
   env: Environment;
-  dom: GlimmerTreeChanges;
+  adapter: RenderAdapter;
   alwaysRevalidate: boolean;
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler): void;

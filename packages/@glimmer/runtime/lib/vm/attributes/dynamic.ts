@@ -4,39 +4,38 @@ import type {
   AttributeOperation,
   AttrNamespace,
   Dict,
+  RenderAdapter,
   Environment,
   Nullable,
   SimpleElement,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants/lib/dom';
-import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
-
-import type { MutableKey } from '../element-builder';
 
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
 
 export function dynamicAttribute(
+  adapter: RenderAdapter,
   element: SimpleElement,
   attr: string,
   namespace: Nullable<AttrNamespace>,
   isTrusting = false
 ): DynamicAttribute {
-  const { tagName, namespaceURI } = element;
-  const attribute = { element, name: attr, namespace };
+  const tagName = adapter.tagName(element);
+  const attribute = { element, name: attr, namespace, tagName };
 
   if (DEBUG && attr === 'style' && !isTrusting) {
     return new DebugStyleAttributeManager(attribute);
   }
 
-  if (namespaceURI === NS_SVG) {
+  if (adapter.namespaceURI(element) === NS_SVG) {
     return buildDynamicAttribute(tagName, attr, attribute);
   }
 
-  const { type, normalized } = normalizeProperty(element, attr);
+  const { type, normalized } = normalizeProperty(adapter, element, attr);
 
   if (type === 'attr') {
     return buildDynamicAttribute(tagName, normalized, attribute);
@@ -80,28 +79,28 @@ function buildDynamicProperty(
 export abstract class DynamicAttribute implements AttributeOperation {
   constructor(public attribute: AttributeCursor) {}
 
-  abstract set(dom: TreeBuilder, value: unknown, env: Environment): void;
+  abstract set(adapter: TreeBuilder, value: unknown, env: Environment): void;
   abstract update(value: unknown, env: Environment): void;
 }
 
 export class SimpleDynamicAttribute extends DynamicAttribute {
-  set(dom: TreeBuilder, value: unknown, _env: Environment): void {
+  set(adapter: TreeBuilder, value: unknown, _env: Environment): void {
     const normalizedValue = normalizeValue(value);
 
     if (normalizedValue !== null) {
       const { name, namespace } = this.attribute;
-      dom.__setAttribute(name, normalizedValue, namespace);
+      adapter.__setAttribute(name, normalizedValue, namespace);
     }
   }
 
-  update(value: unknown, _env: Environment): void {
+  update(value: unknown, env: Environment): void {
     const normalizedValue = normalizeValue(value);
     const { element, name } = this.attribute;
 
     if (normalizedValue === null) {
-      element.removeAttribute(name);
+      env.adapter.removeAttribute(element, name);
     } else {
-      element.setAttribute(name, normalizedValue);
+      env.adapter.setAttribute(element, name, normalizedValue);
     }
   }
 }
@@ -115,105 +114,94 @@ export class DefaultDynamicProperty extends DynamicAttribute {
   }
 
   value: unknown;
-  set(dom: TreeBuilder, value: unknown, _env: Environment): void {
+  set(adapter: TreeBuilder, value: unknown, _env: Environment): void {
     if (value !== null && value !== undefined) {
       this.value = value;
-      dom.__setProperty(this.normalizedName, value);
+      adapter.__setProperty(this.normalizedName, value);
     }
   }
 
-  update(value: unknown, _env: Environment): void {
+  update(value: unknown, env: Environment): void {
     const { element } = this.attribute;
 
     if (this.value !== value) {
-      (element as unknown as Element)[this.normalizedName as MutableKey<Element>] = this.value =
-        value as never;
+      env.adapter.setProperty(element, this.normalizedName, (this.value = value));
 
       if (value === null || value === undefined) {
-        this.removeAttribute();
+        this.removeAttribute(env.adapter);
       }
     }
   }
 
-  protected removeAttribute() {
+  protected removeAttribute(adapter: RenderAdapter) {
     // TODO this sucks but to preserve properties first and to meet current
     // semantics we must do this.
     const { element, namespace } = this.attribute;
 
-    if (namespace) {
-      element.removeAttributeNS(namespace, this.normalizedName);
-    } else {
-      element.removeAttribute(this.normalizedName);
-    }
+    adapter.removeAttribute(element, this.normalizedName, namespace);
   }
 }
 
 export class SafeDynamicProperty extends DefaultDynamicProperty {
-  override set(dom: TreeBuilder, value: unknown, env: Environment): void {
-    const { element, name } = this.attribute;
-    const sanitized = sanitizeAttributeValue(element, name, value);
-    super.set(dom, sanitized, env);
+  override set(adapter: TreeBuilder, value: unknown, env: Environment): void {
+    const { tagName, name } = this.attribute;
+    const sanitized = sanitizeAttributeValue(tagName, name, value);
+    super.set(adapter, sanitized, env);
   }
 
   override update(value: unknown, env: Environment): void {
-    const { element, name } = this.attribute;
-    const sanitized = sanitizeAttributeValue(element, name, value);
+    const { tagName, name } = this.attribute;
+    const sanitized = sanitizeAttributeValue(tagName, name, value);
     super.update(sanitized, env);
   }
 }
 
 export class SafeDynamicAttribute extends SimpleDynamicAttribute {
-  override set(dom: TreeBuilder, value: unknown, env: Environment): void {
-    const { element, name } = this.attribute;
-    const sanitized = sanitizeAttributeValue(element, name, value);
-    super.set(dom, sanitized, env);
+  override set(adapter: TreeBuilder, value: unknown, env: Environment): void {
+    const { tagName, name } = this.attribute;
+    const sanitized = sanitizeAttributeValue(tagName, name, value);
+    super.set(adapter, sanitized, env);
   }
 
   override update(value: unknown, env: Environment): void {
-    const { element, name } = this.attribute;
-    const sanitized = sanitizeAttributeValue(element, name, value);
+    const { tagName, name } = this.attribute;
+    const sanitized = sanitizeAttributeValue(tagName, name, value);
     super.update(sanitized, env);
   }
 }
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
-  override set(dom: TreeBuilder, value: unknown) {
+  override set(adapter: TreeBuilder, value: unknown) {
     const normalized = normalizeStringValue(value);
-    dom.__setProperty('value', normalized);
+    adapter.__setProperty('value', normalized);
 
     // GH#19219: Browsers don't reflect `input.value = ''` as a value attribute when
     // type is later changed to "radio"/"checkbox". Explicitly set the attribute for <input>.
     // Not needed for <textarea> (no value attribute).
-    if (value === '' && this.attribute.element.tagName === 'INPUT') {
-      dom.__setAttribute('value', '', null);
+    if (value === '' && this.attribute.tagName === 'INPUT') {
+      adapter.__setAttribute('value', '', null);
     }
   }
 
-  override update(value: unknown) {
-    const input = castToBrowser(this.attribute.element, ['input', 'textarea']);
-    const currentValue = input.value;
+  override update(value: unknown, env: Environment) {
+    const input = this.attribute.element;
+    const currentValue = env.adapter.getProperty(input, 'value');
     const normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
-      input.value = normalizedValue;
+      env.adapter.setProperty(input, 'value', normalizedValue);
     }
   }
 }
 
 export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
-  override set(dom: TreeBuilder, value: unknown): void {
+  override set(adapter: TreeBuilder, value: unknown): void {
     if (value !== null && value !== undefined && value !== false) {
-      dom.__setProperty('selected', true);
+      adapter.__setProperty('selected', true);
     }
   }
 
-  override update(value: unknown): void {
-    const option = castToBrowser(this.attribute.element, 'option');
-
-    if (value) {
-      option.selected = true;
-    } else {
-      option.selected = false;
-    }
+  override update(value: unknown, env: Environment): void {
+    env.adapter.setProperty(this.attribute.element, 'selected', value ? true : false);
   }
 }
 
@@ -252,10 +240,10 @@ let DebugStyleAttributeManager: {
 
 if (DEBUG) {
   DebugStyleAttributeManager = class extends SimpleDynamicAttribute {
-    override set(dom: TreeBuilder, value: unknown, env: Environment): void {
+    override set(adapter: TreeBuilder, value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);
 
-      super.set(dom, value, env);
+      super.set(adapter, value, env);
     }
     override update(value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);
