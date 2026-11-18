@@ -107,6 +107,10 @@ let templates = [
   '<p title="\\{{x}}">a \\{{y}} b</p>',
   '<p class="a \\{{x}} {{y}}">\\{{a}}\\{{b}} {{c}} \\{{d</p>',
   '{{#if x}}\\{{a}}{{else}}b\\\\{{/if}}',
+  '<div class="a\\\\{{x}}b&#123;{{y}}"></div>',
+
+  // a `}` after a comment needs no entity
+  '{{!-- c --}}}',
 
   // segment literals
   '{{foo.[bar baz]}}',
