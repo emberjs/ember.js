@@ -419,34 +419,14 @@ function instantiateFactory(
   throw new Error('Could not create factory');
 }
 
-const PLAIN_PROTOTYPES = new WeakSet<object>();
-
 /**
-  Marks a framework base class that extends no other class, such as the
-  `Service` of the `EMBER_DROP_CLASSIC_FEATURES` build. Its instances have
-  no `destroy` method. The container calls their `willDestroy`, then the
-  `destroy` function of `@ember/destroyable`.
+  The plain framework classes of the `EMBER_DROP_CLASSIC_FEATURES` build,
+  such as `Service`, have no `destroy` method.
 */
-export function setPlainFrameworkClass(klass: { prototype: object }): void {
-  PLAIN_PROTOTYPES.add(klass.prototype);
-}
-
-function isPlainFrameworkInstance(value: object): boolean {
-  let proto = Object.getPrototypeOf(value);
-
-  while (proto !== null) {
-    if (PLAIN_PROTOTYPES.has(proto)) {
-      return true;
-    }
-
-    proto = Object.getPrototypeOf(proto);
-  }
-
-  return false;
-}
-
 function destroyInstance(value: object): void {
-  if (isPlainFrameworkInstance(value)) {
+  if (typeof (value as { destroy?: unknown }).destroy === 'function') {
+    (value as { destroy(): void }).destroy();
+  } else if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
     let { willDestroy } = value as { willDestroy?: unknown };
 
     if (typeof willDestroy === 'function') {
@@ -454,8 +434,6 @@ function destroyInstance(value: object): void {
     }
 
     destroy(value);
-  } else if (typeof (value as { destroy?: unknown }).destroy === 'function') {
-    (value as { destroy(): void }).destroy();
   }
 }
 
