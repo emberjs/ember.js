@@ -149,6 +149,17 @@ QUnit.module('[glimmer-syntax] Code generation', () => {
     assert.strictEqual(printTransform('{{this.[foo]}}'), '{{this.foo}}');
   });
 
+  /**
+   * These cases start from built nodes, the way a codemod calls print().
+   *
+   * A single text node with `a\{{b` has no source form.
+   * Parsing `a&#92;\{{b` gives two text nodes, not one.
+   * So a source -> source check in `templates` cannot cover it.
+   *
+   * With no source to compare against, each case checks:
+   * - the exact printed string
+   * - that the printed string parses back to the same text and mustaches
+   */
   test('text next to mustaches keeps its meaning', (assert) => {
     let x = () => b.mustache(b.path('x'));
     let cases: [ASTv1.Statement[], string][] = [
@@ -171,6 +182,12 @@ QUnit.module('[glimmer-syntax] Code generation', () => {
 /**
  * The text of each node, with adjacent text joined
  * and each mustache as its path.
+ *
+ * Built text nodes and parsed text nodes do not split the same way:
+ *
+ *   [text `a\{{b`] → prints `a&#92;\{{b` → parses as [text `a\`, text `{{b`]
+ *
+ * Joining adjacent text compares what renders, not how the nodes split.
  */
 function chars(body: ASTv1.Statement[]): string[] {
   let result: string[] = [];
