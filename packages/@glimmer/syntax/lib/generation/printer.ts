@@ -1,6 +1,8 @@
 import type * as ASTv1 from '../v1/api';
 
-import { escapeAttrValue, escapeText, sortByLoc } from './util';
+import type { TextNeighbor } from './util';
+
+import { escapeAttrValue, escapeMustaches, escapeText, printPathSegment, sortByLoc } from './util';
 
 export const voidMap = new Set([
   'area',
@@ -57,6 +59,42 @@ export interface PrinterOptions {
  */
 export function isVoidTag(tag: string): boolean {
   return voidMap.has(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0];
+}
+
+/**
+ * Glimmer joins a slash path such as `namespace/foo` into one head name.
+ */
+function printVarHead(name: string): string {
+  for (let piece of name.split('/')) {
+    if (printPathSegment(piece) !== piece) {
+      return printPathSegment(name);
+    }
+  }
+
+  return name;
+}
+
+function textNeighbor(
+  node: ASTv1.Node | undefined,
+  edge: TextNeighbor,
+  follows: boolean
+): TextNeighbor {
+  if (node === undefined) {
+    return edge;
+  }
+
+  switch (node.type) {
+    case 'MustacheStatement':
+    case 'BlockStatement':
+      return 'mustache';
+    case 'MustacheCommentStatement':
+      /** A comment closes with `--}}`, so only its opening `{{` matters. */
+      return follows ? 'mustache' : 'other';
+    case 'TextNode':
+      return follows && node.chars.startsWith('{{') ? 'escaped' : 'other';
+    default:
+      return 'other';
+  }
 }
 
 export default class Printer {
@@ -226,11 +264,28 @@ export default class Printer {
       return;
     }
 
-    this.TopLevelStatements(block.body);
+    this.TopLevelStatements(block.body, 'mustache');
   }
 
-  TopLevelStatements(statements: ASTv1.TopLevelStatement[]): void {
-    statements.forEach((statement) => this.TopLevelStatement(statement));
+  /**
+   * @param edge what the printer writes before and after the statements:
+   *   `{{` and `}}` around a block body, HTML or nothing elsewhere
+   */
+  TopLevelStatements(statements: ASTv1.TopLevelStatement[], edge: TextNeighbor = 'other'): void {
+    for (let i = 0; i < statements.length; i++) {
+      let statement = statements[i] as ASTv1.TopLevelStatement;
+
+      if (statement.type === 'TextNode') {
+        this.TextNode(
+          statement,
+          undefined,
+          textNeighbor(statements[i - 1], edge, false),
+          textNeighbor(statements[i + 1], edge, true)
+        );
+      } else {
+        this.TopLevelStatement(statement);
+      }
+    }
   }
 
   ElementNode(el: ASTv1.ElementNode): void {
@@ -309,22 +364,31 @@ export default class Printer {
     }
   }
 
-  TextNode(text: ASTv1.TextNode, isInAttr?: "'" | '"'): void {
+  TextNode(
+    text: ASTv1.TextNode,
+    isInAttr?: "'" | '"',
+    before: TextNeighbor = 'other',
+    after: TextNeighbor = 'other'
+  ): void {
     if (this.handledByOverride(text)) {
       return;
     }
 
+    let chars: string;
+
     if (this.options.entityEncoding === 'raw') {
       if (isInAttr && text.chars.includes(isInAttr)) {
-        this.buffer += escapeAttrValue(text.chars);
+        chars = escapeAttrValue(text.chars);
       } else {
-        this.buffer += text.chars;
+        chars = text.chars;
       }
     } else if (isInAttr) {
-      this.buffer += escapeAttrValue(text.chars);
+      chars = escapeAttrValue(text.chars);
     } else {
-      this.buffer += escapeText(text.chars);
+      chars = escapeText(text.chars);
     }
+
+    this.buffer += escapeMustaches(chars, before, after);
   }
 
   MustacheStatement(mustache: ASTv1.MustacheStatement): void {
@@ -402,14 +466,23 @@ export default class Printer {
       return;
     }
 
+    let { parts } = concat;
+
     this.buffer += '"';
-    concat.parts.forEach((part) => {
+    for (let i = 0; i < parts.length; i++) {
+      let part = parts[i] as ASTv1.ConcatStatement['parts'][number];
+
       if (part.type === 'TextNode') {
-        this.TextNode(part, '"');
+        this.TextNode(
+          part,
+          '"',
+          textNeighbor(parts[i - 1], 'other', false),
+          textNeighbor(parts[i + 1], 'other', true)
+        );
       } else {
         this.Node(part);
       }
-    });
+    }
     this.buffer += '"';
   }
 
@@ -446,7 +519,23 @@ export default class Printer {
       return;
     }
 
-    this.buffer += path.original;
+    let { head, tail } = path;
+
+    switch (head.type) {
+      case 'ThisHead':
+        this.buffer += 'this';
+        break;
+      case 'AtHead':
+        this.buffer += `@${printPathSegment(head.name.slice(1))}`;
+        break;
+      case 'VarHead':
+        this.buffer += printVarHead(head.name);
+        break;
+    }
+
+    for (let segment of tail) {
+      this.buffer += `.${printPathSegment(segment)}`;
+    }
   }
 
   SubExpression(sexp: ASTv1.SubExpression): void {
