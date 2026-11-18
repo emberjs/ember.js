@@ -1,0 +1,32 @@
+{
+  "name": "@ember/inspector-support",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/controller": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/instrumentation": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@glimmer/component": "workspace:^",
+    "@glimmer/destroyable": "0.92.3",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.92.4",
+    "@glimmer/owner": "0.92.3",
+    "@glimmer/tracking": "workspace:*",
+    "@glimmer/validator": "0.92.3",
+    "backburner.js": "^2.7.0"
+  }
+}
