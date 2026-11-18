@@ -422,6 +422,13 @@ function instantiateFactory(
 /**
   The plain framework classes of the `EMBER_DROP_CLASSIC_FEATURES` build,
   such as `Service`, have no `destroy` method.
+
+  `CoreObject` runs `willDestroy` from a destructor, and apps put their
+  service teardown in it. The plain classes keep that hook, so the
+  container calls it here.
+
+  No deprecation covers `willDestroy` yet. When one lands, remove the call,
+  and apps use `registerDestructor` from `@ember/destroyable`.
 */
 function destroyInstance(value: object): void {
   if (typeof (value as { destroy?: unknown }).destroy === 'function') {
