@@ -12,3 +12,15 @@ export { defaultId, precompile, precompileJSON, type PrecompileOptions } from '.
 
 // exported only for tests!
 export { default as WireFormatDebugger } from './lib/wire-format-debug';
+
+// EXPERIMENTAL: compile strict-mode templates directly to DOM operations
+export {
+  CodegenError,
+  codegenBabelPlugin,
+  type CodegenBabelPluginOptions,
+  compileToDOM,
+  type CompileToDOMOptions,
+  generate as generateDOM,
+  type GenerateOptions as GenerateDOMOptions,
+  ImportCollector,
+} from './lib/codegen';
