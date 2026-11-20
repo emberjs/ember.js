@@ -15,7 +15,9 @@
     "declarationMap": false,
     "declarationDir": "../types/stable"
   },
-  "include": ["../packages/**/*.ts"],
+  // gxt-ambient.d.ts declares the `__GXT_MODE__` build constant the classic
+  // packages' GXT hooks read.
+  "include": ["../packages/**/*.ts", "../types/gxt-ambient.d.ts"],
   "exclude": [
     "../**/type-tests",
     "../**/tests",
@@ -32,6 +34,14 @@
     "../**/@glimmer/debug-util/**/*.ts",
     "../**/@glimmer/encoder/**/*.ts",
     "../**/@glimmer/env/**/*.ts",
-    "../**/@glimmer/local-debug-flags/**/*.ts"
+    "../**/@glimmer/local-debug-flags/**/*.ts",
+
+    // The GXT backends are not public API. The compat backend is reached only
+    // through gxt-bridge (imported by the classic packages, so tsc still emits
+    // it); the gxt-native layer only through the gxt-native build's module
+    // aliases (scripts/gxt-alias-map.mjs). @glimmer/component-gxt is a GXT
+    // test/compat package.
+    "../**/@ember/-internals/gxt-backend/**/*.ts",
+    "../**/@glimmer/component-gxt/**/*.ts"
   ]
 }

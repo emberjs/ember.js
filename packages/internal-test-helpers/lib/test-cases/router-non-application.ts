@@ -12,6 +12,7 @@ import { ModuleBasedResolver } from '../test-resolver';
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runDestroy, runTask } from '../run';
+import { gxtHarness } from '../gxt-harness';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
@@ -52,6 +53,11 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
         });
       },
     };
+    if (__GXT_MODE__) {
+      // GXT renders the router's top-level outlet view into the instance's
+      // root element (gxt-backend/outlet.ts), not through `renderRootComponent`.
+      Object.defineProperty(appInstance, 'rootElement', { get: () => this.element });
+    }
     owner.register('-application-instance:main', appInstance, { instantiate: false });
 
     this.renderer = this.owner.lookup('renderer:-dom') as Renderer;
@@ -146,6 +152,16 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     }
 
     setComponentTemplate(this.compile(templateStr, { moduleName: '-top-level' }), Root);
+
+    if (__GXT_MODE__) {
+      // The render runs as `runAppend` runs one (see `gxtHarness.runRender`).
+      this.root = gxtHarness!.runRender(() =>
+        this.renderer.render(Root, {
+          into: this.element as unknown as SimpleElement,
+        })
+      );
+      return;
+    }
 
     this.root = runTask(() =>
       this.renderer.render(Root, {

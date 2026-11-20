@@ -17,8 +17,12 @@
 
       window.EmberENV = {};
 
-      // Test under octane defaults
-      EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+      // In GXT mode, use synchronous observers to match standard Ember behavior.
+      // Tests expect observers to fire synchronously during notifyPropertyChange.
+      // Classic keeps upstream's async default (`true`) — flipping it changes
+      // observer/CP timing and fails the classic observer suites. The bare
+      // flag is inlined per build by replaceBuildConstant.
+      EmberENV._DEFAULT_ASYNC_OBSERVERS = !__GXT_MODE__;
 
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
@@ -47,9 +51,60 @@
         id: 'skip_tests_with_target_blank',
         label: 'Skip tests w/ target _blank',
       });
+
+      if (__GXT_MODE__) {
+        // GXT test-harness setup. None of it runs in the classic build.
+
+        // Per-test timeout: some GXT rendering operations can loop in
+        // backburner, and a hung test would otherwise stall the whole run.
+        QUnit.config.testTimeout = 10000;
+
+        // Loop guard: renderer.ts and metal/property_events.ts call
+        // `__gxtOpCheck()` (GXT + DEBUG only); it throws once a test exceeds
+        // the operation budget, breaking an infinite synchronous loop.
+        globalThis.__gxtOpCount = 0;
+        globalThis.__gxtOpLimit = 500000;
+        globalThis.__gxtOpCheck = function () {
+          if (++globalThis.__gxtOpCount > globalThis.__gxtOpLimit) {
+            globalThis.__gxtOpCount = 0;
+            throw new Error('[GXT] Operation limit exceeded - breaking infinite loop');
+          }
+        };
+
+        // Skip the nested each-body proxy wrap for self-reactive wrapper
+        // instances (e.g. RFC#1071 cells) whose reads entangle their own native
+        // reactivity. Only this test page sets the flag; see
+        // `_isSelfReactiveWrapper` in compile.ts.
+        if (typeof globalThis.__gxtR6SkipSelfReactive === 'undefined') {
+          globalThis.__gxtR6SkipSelfReactive = true;
+        }
+
+        QUnit.testStart(function () {
+          // Each test gets a fresh operation budget.
+          globalThis.__gxtOpCount = 0;
+        });
+
+        QUnit.testDone(function () {
+          globalThis.__gxtOpCount = 0;
+          // Periodically force GC when the harness exposes it (the GXT test
+          // runner launches Chromium with --js-flags=--expose-gc). The
+          // cumulative single-page run accumulates renderer GC debt across ~10k
+          // tests; without this the realm eventually fails allocations outright
+          // (RangeError: Array buffer allocation failed).
+          globalThis.__gxtTestDoneCount = (globalThis.__gxtTestDoneCount || 0) + 1;
+          if (typeof window.gc === 'function' && globalThis.__gxtTestDoneCount % 50 === 0) {
+            window.gc();
+          }
+        });
+      }
     </script>
 
     <script type="module">
+      // GXT builds: registers the gxt runtime template compiler before any
+      // template module loads. Classic builds resolve it to an empty module (see
+      // the gxtTestSetup plugin in vite.config.mjs).
+      import 'virtual:gxt-test-setup';
+
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       import setupTestHelpers from './packages/internal-test-helpers/lib/ember-dev/setup-test-helpers.js';
       import { setTesting } from './packages/@ember/debug/index.ts';
@@ -82,6 +137,9 @@
           eager: true,
         }
       );
+
+      // GXT builds: gxt-backend's own tests (an empty module in classic builds).
+      import 'virtual:gxt-tests';
 
       // ember-qunit calls the testem hook when a test imports it, and that call
       // throws if testem is already hooked. So testem loads after the tests.

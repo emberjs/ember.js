@@ -111,6 +111,17 @@ class ApplicationInstance extends EngineInstance {
       this.rootElement = rootElement;
     }
 
+    // GXT renders with neither of Glimmer's server-side builders: the serialize
+    // builder (block comments a later rehydration reads) and the rehydration
+    // builder (reuses the server-rendered nodes). Classic picks them from
+    // `_renderMode` in `service:-dom-builder`.
+    if (__GXT_MODE__) {
+      assert(
+        `\`_renderMode: '${options._renderMode}'\` is not supported by the GXT renderer: it neither serializes its output for rehydration nor rehydrates server-rendered DOM`,
+        options._renderMode !== 'serialize' && options._renderMode !== 'rehydrate'
+      );
+    }
+
     if (options.location) {
       set(this.router, 'location', options.location);
     }

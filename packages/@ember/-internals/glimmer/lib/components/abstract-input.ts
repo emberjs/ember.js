@@ -105,6 +105,59 @@ class ForkedValue implements Value {
   }
 }
 
+// The fields of a `ForkedValue` that its GXT methods below use.
+interface GxtForkedValue {
+  local?: Value;
+  upstream: Value;
+  lastUpstreamValue: unknown;
+}
+
+// GXT: two methods gxt-backend's manager.ts calls on an input's forked value,
+// installed on the prototype in GXT builds only (non-enumerable, as class
+// methods are).
+if (__GXT_MODE__) {
+  Object.defineProperties(ForkedValue.prototype, {
+    /**
+     * Read the current upstream value WITHOUT touching/initializing the local
+     * fork. Used by GXT's compat layer to subscribe a dedicated effect to just
+     * the upstream source cells, so it can detect when the parent re-pushes a
+     * value (including an object-identity swap whose leaf primitive happens to
+     * equal the previous upstream value).
+     */
+    __peekUpstream: {
+      configurable: true,
+      writable: true,
+      value(this: GxtForkedValue): unknown {
+        return this.upstream.get();
+      },
+    },
+
+    /**
+     * Sync the local fork to the current upstream value by dirtying the
+     * tracked local-value field. This causes effects depending on get() to
+     * re-run and re-read. Used by GXT's compat layer when the parent
+     * re-invokes the component's render path — a signal that args may have
+     * been replaced from the parent side. Without this, if the replaced
+     * arg's primitive value happens to equal the previous upstream value,
+     * the identity-based check in get() wouldn't detect the change and the
+     * stale local fork would win.
+     */
+    __syncFromUpstream: {
+      configurable: true,
+      writable: true,
+      value(this: GxtForkedValue): void {
+        const upstreamValue = this.upstream.get();
+        this.lastUpstreamValue = upstreamValue;
+        if (this.local) {
+          (this.local as LocalValue).set(upstreamValue);
+        } else {
+          this.local = new LocalValue(upstreamValue);
+        }
+      },
+    },
+  });
+}
+
 export default abstract class AbstractInput extends InternalComponent {
   validateArguments(): void {
     assert(

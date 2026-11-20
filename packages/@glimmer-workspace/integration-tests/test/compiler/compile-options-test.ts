@@ -8,7 +8,9 @@ import { preprocess } from '@glimmer-workspace/integration-tests';
 import { module } from '../support';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
-  test('moduleName option is passed into meta', (assert) => {
+  // Skipped under GXT: it reads the Glimmer compiled template's `referrer` meta
+  // (opcode-compiler), which a GXT template does not have.
+  (__GXT_MODE__ ? QUnit.skip : test)('moduleName option is passed into meta', (assert) => {
     let moduleName = "It ain't hard to tell";
     let template = unwrapTemplate(
       preprocess('Hi, {{name}}!', { meta: { moduleName } })

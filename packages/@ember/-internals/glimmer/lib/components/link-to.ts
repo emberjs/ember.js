@@ -1,5 +1,6 @@
 import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
+import { setGxtBuiltinComponent } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { isSimpleClick } from '@ember/-internals/views/lib/system/utils';
 import inspect from '@ember/debug/lib/inspect';
 import { assert, debugFreeze, warn } from '@ember/debug';
@@ -701,5 +702,10 @@ let descriptorFor = (target: object, property: string): Nullable<PropertyDescrip
 }
 
 const LinkTo = opaquify(_LinkTo, LinkToTemplate) as LinkTo;
+if (__GXT_MODE__) {
+  // GXT builds the element of this component itself (gxt-backend/manager.ts),
+  // and knows it by this registration.
+  setGxtBuiltinComponent(LinkTo, 'LinkTo');
+}
 interface LinkTo extends Opaque<'component:link-to'>, OpaqueInternalComponentConstructor {}
 export default LinkTo;

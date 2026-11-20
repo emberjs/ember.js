@@ -505,6 +505,46 @@ moduleFor(
 
       this.assertText('[0:1][1:2][2:3][foo:bar]');
     }
+
+    [`@test a nested each-in's rows read the outer row's key and value`]() {
+      this.render(
+        strip`
+        {{#each-in this.groups as |groupName group|}}
+          {{#each-in group as |field value|}}
+            [{{groupName}}.{{field}}={{value}}/{{group.title}}]
+          {{/each-in}}
+        {{/each-in}}`,
+        {
+          groups: {
+            first: { title: 'One', a: 1 },
+            second: { title: 'Two', b: 2 },
+          },
+        }
+      );
+
+      this.assertText('[first.title=One/One][first.a=1/One][second.title=Two/Two][second.b=2/Two]');
+
+      // The outer rows stay (the same group objects); an inner row is
+      // replaced and reads the outer row's key and value.
+      runTask(() => set(this.context.groups.first, 'a', 5));
+
+      this.assertText('[first.title=One/One][first.a=5/One][second.title=Two/Two][second.b=2/Two]');
+
+      runTask(() => set(this.context.groups.second, 'title', 'Deux'));
+
+      this.assertText(
+        '[first.title=One/One][first.a=5/One][second.title=Deux/Deux][second.b=2/Deux]'
+      );
+
+      runTask(() =>
+        set(this.context, 'groups', {
+          second: { title: 'Two', b: 3 },
+          first: { title: 'One', a: 1 },
+        })
+      );
+
+      this.assertText('[second.title=Two/Two][second.b=3/Two][first.title=One/One][first.a=1/One]');
+    }
   }
 );
 

@@ -1,0 +1,669 @@
+// Custom helper manager for gxt compatibility
+// Note: In Ember, setHelperManager(factory, helper) passes a factory function
+// that takes (owner) and returns a manager with createHelper, getValue, etc.
+//
+// This class implements the InternalHelperManager interface, meaning it wraps
+// a factory and provides getDelegateFor(owner) which returns the actual
+// HelperManager delegate for a given owner.
+
+import { DEBUG } from '@glimmer/env';
+import { isEmberArray } from '@ember/array/-internals';
+import { bumpHelperArgsTag, consumeTag, createCache, createHelperArgsTag } from './validator';
+import {
+  createComputeRef,
+  createConstRef,
+  UNDEFINED_REFERENCE,
+  REFERENCE,
+  valueForRef,
+} from './reference';
+import { associateDestroyableChild } from './destroyable';
+import { getGxtRenderer, getAmbientOwner } from './gxt-bridge';
+import { capabilitiesErrorPrefix } from './utils';
+
+// Shared WeakSet to track capabilities created via helperCapabilities()
+export const FROM_CAPABILITIES = new WeakSet();
+
+/**
+ * Detect whether a value is a Glimmer Reference object. References are tagged
+ * with the canonical REFERENCE symbol by the GXT reference module
+ * (see reference.ts brandRef()) so `REFERENCE in obj` is the canonical test.
+ */
+function isReference(v: any): boolean {
+  return v != null && typeof v === 'object' && REFERENCE in v;
+}
+
+/**
+ * Unwrap a Reference to its value. Pass non-references through unchanged so
+ * this function is safe to call on already-unwrapped values (e.g., the args
+ * shape produced by GXT-side _resolveEmberHelper which passes raw values).
+ */
+function unwrapValue(v: any): any {
+  return isReference(v) ? valueForRef(v) : v;
+}
+
+/**
+ * Wrap captured args so reads of `args.positional[i]` and `args.named[key]`
+ * auto-unwrap Reference values into their current value. This matches stock
+ * Glimmer's argsProxyFor() (in @glimmer/manager/lib/util/args-proxy.ts) which
+ * is required by the HelperManager spec — `FunctionalHelperManager.getValue`
+ * does `fn(...args.positional)` and expects values, not References.
+ *
+ * When called from VM_HELPER_OP via getHelper(), `capturedArgs.positional`
+ * holds References. When called from GXT-side _resolveEmberHelper, the
+ * positional/named entries are already unwrapped values — `unwrapValue`
+ * passes those through unchanged, so the proxy is a no-op for that path.
+ *
+ * Only used inside getHelper() — paths that explicitly need raw References
+ * (e.g., createHelper called directly via invokeHelper with SimpleArgsProxy)
+ * bypass this wrapper entirely.
+ */
+function argsProxyForCustom(capturedArgs: any): { positional: any; named: any } {
+  const positional = capturedArgs?.positional ?? [];
+  const named = capturedArgs?.named ?? {};
+
+  const positionalProxy: any = new Proxy(positional, {
+    get(target: any, prop: string | symbol) {
+      if (prop === 'length') return target.length;
+      if (prop === Symbol.iterator) {
+        // eslint-disable-next-line disable-features/disable-generator-functions -- the proxy's iterator
+        return function* () {
+          for (let i = 0; i < target.length; i++) {
+            yield unwrapValue(target[i]);
+          }
+        };
+      }
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num) && num >= 0 && num < target.length) {
+          return unwrapValue(target[num]);
+        }
+      }
+      // Fallback: pass through (e.g., toString, etc.)
+      return target[prop as any];
+    },
+    has(target: any, prop: string | symbol) {
+      if (prop === 'length' || prop === Symbol.iterator) return true;
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num)) return num >= 0 && num < target.length;
+      }
+      return prop in target;
+    },
+  });
+
+  const namedProxy: any = new Proxy(named, {
+    get(target: any, prop: string | symbol) {
+      const v = (target as any)[prop];
+      return unwrapValue(v);
+    },
+    has(target: any, prop: string | symbol) {
+      return prop in target;
+    },
+    ownKeys(target: any) {
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target: any, prop: string | symbol) {
+      if (prop in target) {
+        return { enumerable: true, configurable: true };
+      }
+      return undefined;
+    },
+  });
+
+  return { positional: positionalProxy, named: namedProxy };
+}
+
+/**
+ * The helper-argument comparison. A slot (a positional argument, or a named
+ * argument's key) is unchanged when it holds the same value as before, by
+ * `Object.is`, as Glimmer compares a reference's value: a function (an action,
+ * a curried helper) is the same argument only when it is the same function.
+ * For an array the elements recorded with it must also still be the same:
+ * reading an array argument in Glimmer consumes the array's `[]` tag, so an
+ * array changed in place (`pushObject`, a `trackedArray` push) is a changed
+ * argument.
+ */
+// A recorded array argument: a snapshot of its elements (`null`: not an array,
+// compared by identity only). An EmberArray is mutated in place (`pushObject`)
+// and keeps a stable identity, so comparing the element snapshot is what reveals
+// an in-place change — Glimmer consumes the array's `[]` tag for the same effect.
+type ArgSlot = { elements: unknown[] } | null;
+
+interface HelperArgSlots {
+  // The array snapshot recorded for each positional slot (`null`: not an array).
+  positional: ArgSlot[];
+  // The same per named argument.
+  named: Record<string, ArgSlot>;
+}
+
+// An EmberArray (ArrayProxy, a MutableArray, a hand-rolled `objectAt`/`length`
+// implementation, …) is not a native array. `isEmberArray` only recognises
+// instances branded by the mixin's `init`, so also accept the `EmberArray`
+// shape (an `objectAt` method with a numeric `length`).
+function isEmberArrayLike(value: unknown): value is EmberArrayShape {
+  if (isEmberArray(value)) return true;
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as { objectAt?: unknown }).objectAt === 'function' &&
+    typeof (value as { length?: unknown }).length === 'number'
+  );
+}
+
+interface EmberArrayShape {
+  length: number;
+  objectAt(index: number): unknown;
+  toArray?(): unknown[];
+}
+
+// Snapshot an EmberArray's current elements via its `objectAt`/`length` array
+// primitives (or `toArray`). Runs outside a tracking frame (createHelper / the
+// args setter), so reading the elements consumes no tags.
+function emberArrayElements(value: EmberArrayShape): unknown[] {
+  if (typeof value.objectAt === 'function' && typeof value.length === 'number') {
+    const out = new Array<unknown>(value.length);
+    for (let i = 0; i < value.length; i++) out[i] = value.objectAt(i);
+    return out;
+  }
+  return typeof value.toArray === 'function' ? value.toArray() : [];
+}
+
+function slotFor(value: unknown): ArgSlot {
+  if (Array.isArray(value)) return { elements: value.slice() };
+  if (isEmberArrayLike(value)) return { elements: emberArrayElements(value) };
+  return null;
+}
+
+function slotUnchanged(value: unknown, slot: ArgSlot, next: unknown): boolean {
+  if (!Object.is(value, next)) return false;
+  if (slot === null) return true;
+  const elements = slot.elements;
+  const nextElements = Array.isArray(next)
+    ? next
+    : isEmberArrayLike(next)
+      ? emberArrayElements(next)
+      : [];
+  if (nextElements.length !== elements.length) return false;
+  for (let i = 0; i < elements.length; i++) {
+    if (!Object.is(nextElements[i], elements[i])) return false;
+  }
+  return true;
+}
+
+function positionalSlots(positional: unknown): ArgSlot[] {
+  return Array.isArray(positional) ? positional.map(slotFor) : [];
+}
+
+function namedSlots(named: unknown): Record<string, ArgSlot> {
+  const slots: Record<string, ArgSlot> = {};
+  if (named !== null && typeof named === 'object') {
+    for (const key of Object.keys(named)) {
+      slots[key] = slotFor((named as Record<string, unknown>)[key]);
+    }
+  }
+  return slots;
+}
+
+function samePositionalArgs(current: unknown, slots: ArgSlot[], next: unknown): boolean {
+  if (!Array.isArray(current) || !Array.isArray(next)) return current === next;
+  if (current.length !== next.length) return false;
+  for (let i = 0; i < current.length; i++) {
+    if (!slotUnchanged(current[i], slots[i] ?? null, next[i])) return false;
+  }
+  return true;
+}
+
+function sameNamedArgs(current: unknown, slots: Record<string, ArgSlot>, next: unknown): boolean {
+  if (
+    current === null ||
+    next === null ||
+    typeof current !== 'object' ||
+    typeof next !== 'object'
+  ) {
+    return current === next;
+  }
+  const keys = Object.keys(current);
+  if (keys.length !== Object.keys(next).length) return false;
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(next, key)) return false;
+    const value = (current as Record<string, unknown>)[key];
+    if (!slotUnchanged(value, slots[key] ?? null, (next as Record<string, unknown>)[key])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Call delegate.getValue(bucket) inside a backtracking frame with proper
+ * debug name and assertion message formatting.
+ */
+function _callGetValueWithBacktracking(
+  delegate: any,
+  origGetValue: Function,
+  bucket: any,
+  self: CustomHelperManager
+): any {
+  const bt = getGxtRenderer()?.backtracking;
+  let debugName = 'Helper';
+  // Manager getDebugName is DEBUG-only API: upstream implementations (e.g.
+  // ClassicHelperManager) call @glimmer/util's debug-only getDebugName in
+  // their bodies, which is undefined in production builds — the method
+  // EXISTS but throws when invoked. Never call it outside DEBUG.
+  if (DEBUG && typeof delegate.getDebugName === 'function') {
+    const definition = self._getDefinitionForBucket(bucket);
+    debugName = delegate.getDebugName(definition || bucket) || 'Helper';
+  }
+  if (bt) {
+    bt.beginFrame(debugName);
+  }
+  try {
+    return origGetValue.call(delegate, bucket);
+  } finally {
+    if (bt) {
+      bt.endFrame();
+    }
+  }
+}
+
+export class CustomHelperManager {
+  factory: any;
+  private helperManagerDelegates: WeakMap<any, any> = new WeakMap();
+  private undefinedDelegate: any = null;
+
+  constructor(factory: any) {
+    // factory is a function that takes owner and returns a manager
+    this.factory = factory;
+  }
+
+  private getDelegateForOwner(owner: any): any {
+    let delegate = this.helperManagerDelegates.get(owner);
+    if (delegate === undefined) {
+      delegate = this.factory(owner);
+      this.helperManagerDelegates.set(owner, delegate);
+    }
+    return delegate;
+  }
+
+  /**
+   * Get the delegate manager for a given owner.
+   * This is the key method called by invokeHelper from @glimmer/runtime.
+   * Returns a proxy that wraps getValue() in a backtracking frame for
+   * debug assertions (backtracking detection with helper debug name).
+   */
+  getDelegateFor(owner: any): any {
+    let delegate: any;
+    if (owner === undefined || owner === null) {
+      let { undefinedDelegate } = this;
+      if (undefinedDelegate === null) {
+        this.undefinedDelegate = undefinedDelegate = this.factory(undefined);
+      }
+      delegate = undefinedDelegate;
+    } else {
+      delegate = this.getDelegateForOwner(owner);
+    }
+    // Validate capabilities — must be from helperCapabilities()
+    // Throw if missing or if not created via the proper capability builder.
+    if (delegate && typeof delegate === 'object') {
+      const caps = delegate.capabilities;
+      if (!caps || !FROM_CAPABILITIES.has(caps)) {
+        const err = new Error(
+          capabilitiesErrorPrefix('helper') +
+            'Received: `' +
+            (caps ? JSON.stringify(caps) : String(caps)) +
+            '`'
+        );
+        // Capture for flushRenderErrors so assert.throws() can see it
+        // even if GXT swallows synchronous render-time exceptions.
+        const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
+        if (typeof captureFn === 'function') {
+          captureFn(err);
+        }
+        throw err;
+      }
+    }
+    // Wrap delegate so getValue() runs inside a backtracking frame
+    return this.wrapDelegate(delegate);
+  }
+
+  private wrappedDelegates = new WeakMap<any, any>();
+
+  // Map from bucket (helper instance) to definition (helper class) for debug name resolution
+  private bucketToDefinition = new WeakMap<any, any>();
+  // Cache per bucket for getValue results
+  private bucketCacheInfo = new WeakMap<any, any>();
+
+  /** @internal - used by _callGetValueWithBacktracking */
+  _getDefinitionForBucket(bucket: any): any {
+    return this.bucketToDefinition.get(bucket);
+  }
+
+  private wrapDelegate(delegate: any): any {
+    if (!delegate) return delegate;
+    let wrapped = this.wrappedDelegates.get(delegate);
+    if (wrapped) return wrapped;
+
+    const origGetValue = delegate.getValue;
+    const origCreateHelper = delegate.createHelper;
+    if (typeof origGetValue !== 'function') return delegate;
+
+    const self = this;
+    wrapped = Object.create(delegate);
+
+    // Intercept createHelper to record bucket→definition mapping and give the
+    // args the semantics of Glimmer's args proxy (template path only).
+    //
+    // Glimmer hands a helper an args proxy over the call site's references:
+    // reading `args.positional` / `args.named` consumes the arguments, so the
+    // helper's cached value (the createCache in `getValue` below, or any cache
+    // the helper keeps itself) goes stale exactly when an argument it read
+    // changed. Here the GXT caller (`$_maybeHelper_ember`) assigns the current
+    // argument values on every evaluation of the formula that renders the
+    // helper, so the args become accessors over plain storage:
+    // - an assignment compares slot by slot (`Object.is`, function values by
+    //   identity, an array's elements too; see `slotUnchanged`) and records a
+    //   change only when a slot differs;
+    // - a change bumps a helper-args tag (validator.ts), which invalidates the
+    //   caches that read the args and nothing else: no GXT cell is written, so
+    //   assigning the args while a formula reads the helper does not dirty
+    //   that formula (it already depends on the argument sources it evaluated).
+    //
+    // Skip the wrapping for invokeHelper's SimpleArgsProxy: its
+    // positional/named are lazy prototype accessors over an internal args
+    // cache (the lazy read is the API contract — class-field initializers
+    // call invokeHelper before the owner's constructor body runs). The
+    // snapshot-and-redefine below would eagerly evaluate computeArgs and
+    // freeze the stale result in place. `Object.isFrozen` only catches the
+    // DEBUG shape (upstream freezes the proxy in debug builds only), so also
+    // require positional/named to be own, configurable data properties, which
+    // is the captured-args shape this wrap is meant for.
+    if (typeof origCreateHelper === 'function') {
+      wrapped.createHelper = function (definition: any, args: any) {
+        const _posDesc =
+          args && typeof args === 'object'
+            ? Object.getOwnPropertyDescriptor(args, 'positional')
+            : undefined;
+        const _namedDesc =
+          args && typeof args === 'object'
+            ? Object.getOwnPropertyDescriptor(args, 'named')
+            : undefined;
+        if (
+          args &&
+          typeof args === 'object' &&
+          !args.__reactiveHelper &&
+          !Object.isFrozen(args) &&
+          _posDesc !== undefined &&
+          'value' in _posDesc &&
+          _posDesc.configurable === true &&
+          _namedDesc !== undefined &&
+          'value' in _namedDesc &&
+          _namedDesc.configurable === true
+        ) {
+          let positional = args.positional;
+          let named = args.named;
+          const slots: HelperArgSlots = {
+            positional: positionalSlots(positional),
+            named: namedSlots(named),
+          };
+          const positionalTag = createHelperArgsTag();
+          const namedTag = createHelperArgsTag();
+          Object.defineProperty(args, 'positional', {
+            get() {
+              consumeTag(positionalTag);
+              return positional;
+            },
+            set(next) {
+              if (samePositionalArgs(positional, slots.positional, next)) return;
+              positional = next;
+              slots.positional = positionalSlots(next);
+              bumpHelperArgsTag(positionalTag);
+            },
+            configurable: true,
+            enumerable: true,
+          });
+          Object.defineProperty(args, 'named', {
+            get() {
+              consumeTag(namedTag);
+              return named;
+            },
+            set(next) {
+              if (sameNamedArgs(named, slots.named, next)) return;
+              named = next;
+              slots.named = namedSlots(next);
+              bumpHelperArgsTag(namedTag);
+            },
+            configurable: true,
+            enumerable: true,
+          });
+          args.__reactiveHelper = true;
+        }
+
+        const bucket = origCreateHelper.call(delegate, definition, args);
+        if (bucket && typeof bucket === 'object') {
+          self.bucketToDefinition.set(bucket, definition);
+        }
+        return bucket;
+      };
+    }
+
+    wrapped.getValue = function (bucket: any) {
+      // Use createCache to cache getValue results — avoids redundant calls
+      // when the component re-renders but no tracked dependencies changed.
+      let cache = self.bucketCacheInfo.get(bucket);
+      if (!cache) {
+        cache = createCache(() => {
+          return _callGetValueWithBacktracking(delegate, origGetValue, bucket, self);
+        });
+        self.bucketCacheInfo.set(bucket, cache);
+      }
+      return cache.value;
+    };
+    this.wrappedDelegates.set(delegate, wrapped);
+    return wrapped;
+  }
+
+  getHelper(helper: any) {
+    // Two call conventions exist:
+    //
+    //   1) Stock Glimmer VM (@glimmer/program/lib/constants.ts → VM_HELPER_OP
+    //      + VM_DYNAMIC_HELPER_OP): expects the returned function to return a
+    //      Reference-shaped object (so valueForRef / CheckReference work).
+    //
+    //   2) GXT-side ember-gxt-wrappers/_resolveEmberHelper/curried-helper
+    //      paths inside this same backend: treat the return value as the raw
+    //      computed value.
+    //
+    // Return a Reference wrapper (createComputeRef) to satisfy (1). The GXT
+    // callers in manager.ts that use this method unwrap via `.value` /
+    // `valueForRef`, so both paths remain sound. The extra indirection is
+    // cheap and the cache semantics (via createCache inside createComputeRef)
+    // match what stock Glimmer's CustomHelperManager.getHelper produces.
+    return (capturedArgs: any, owner: any): any => {
+      const manager = this.getDelegateFor(owner);
+      if (!manager || typeof manager.createHelper !== 'function') {
+        // eslint-disable-next-line no-console -- reports a helper manager without createHelper
+        console.warn('[CustomHelperManager] No createHelper on manager:', manager);
+        return UNDEFINED_REFERENCE;
+      }
+
+      // Normalize args shape: ensure { positional, named } object regardless
+      // of whether the caller passed an array (legacy GXT path) or a
+      // CapturedArguments-shaped object (VM_HELPER_OP / glimmer path).
+      const rawArgs =
+        capturedArgs && typeof capturedArgs === 'object' && !Array.isArray(capturedArgs)
+          ? capturedArgs
+          : { positional: Array.isArray(capturedArgs) ? capturedArgs : [], named: {} };
+
+      // Wrap args with an unwrap-on-read proxy so `args.positional[i]` and
+      // `args.named[key]` yield the value of the underlying Reference rather
+      // than the Reference object itself. This matches stock Glimmer's
+      // argsProxyFor() (in @glimmer/manager) and is required by the
+      // HelperManager spec — `FunctionalHelperManager.getValue` does
+      // `fn(...args.positional)` and expects values.
+      //
+      // Skip wrapping when the args object is frozen — SimpleArgsProxy from
+      // @glimmer/runtime's invokeHelper is frozen and already implements the
+      // proxy semantics (it lazily computes args, returning values not refs).
+      // Re-wrapping it would break Object.freeze semantics tests.
+      const args = Object.isFrozen(rawArgs) ? rawArgs : argsProxyForCustom(rawArgs);
+
+      const bucket = manager.createHelper(helper, args);
+      // DEBUG-gated: upstream manager getDebugName bodies call the
+      // debug-only @glimmer/util getDebugName and throw in production.
+      const debugName =
+        (DEBUG && typeof manager.getDebugName === 'function' && manager.getDebugName(helper)) ||
+        'Helper';
+
+      let ref: any;
+      if (manager.capabilities?.hasValue) {
+        // Wrap getValue() in a backtracking-aware compute. The compute is
+        // re-run whenever Glimmer's reference system reads `.value`, so
+        // tracked-data reads inside getValue() entangle correctly.
+        ref = createComputeRef(
+          () => {
+            const bt = getGxtRenderer()?.backtracking;
+            if (bt) {
+              bt.beginFrame(debugName);
+            }
+            try {
+              return manager.getValue(bucket);
+            } finally {
+              if (bt) bt.endFrame();
+            }
+          },
+          null,
+          debugName
+        );
+      } else {
+        // hasDestroyable-only / hasScheduledEffect: helper returns no value
+        // but may still need destroyable association. Return a const ref
+        // carrying undefined.
+        ref = createConstRef(undefined, debugName);
+      }
+
+      // Brand the returned object with the REFERENCE symbol so Glimmer VM's
+      // CheckReference.validate() (which asserts `REFERENCE in value`) accepts
+      // it. The createComputeRef/createConstRef wrappers don't set this by
+      // default because most GXT paths consume `.value` directly without
+      // going through the VM's reference checker.
+      (ref as any)[REFERENCE] = true;
+
+      // Associate the helper bucket as a destroyable child of the returned
+      // ref. When stock Glimmer VM's VM_DYNAMIC_HELPER_OP swaps the helper
+      // definition (e.g., `{{@helper}}` where @helper transitions from
+      // Helper1 to Helper2), it calls `destroy(helperRef)` on the previous
+      // ref. Propagating that to the bucket lets the destructors
+      // (registered in TestHelper's constructor via registerDestructor)
+      // fire willDestroy on the outgoing helper instance.
+      //
+      // Only associate when the delegate opted into destroyable handling.
+      if (manager.capabilities?.hasDestroyable && typeof manager.getDestroyable === 'function') {
+        const destroyable = manager.getDestroyable(bucket);
+        if (destroyable) {
+          associateDestroyableChild(ref, destroyable);
+        }
+      }
+      return ref;
+    };
+  }
+
+  create(owner: any, helper: any, args: any) {
+    const manager = this.getDelegateFor(owner);
+    if (!manager || typeof manager.createHelper !== 'function') {
+      // eslint-disable-next-line no-console -- reports a helper manager without createHelper
+      console.warn('[CustomHelperManager] No createHelper on manager for create:', manager);
+      return null;
+    }
+    return manager.createHelper(helper, args);
+  }
+
+  createHelper(definition: any, args: any) {
+    // This delegates to getDelegateFor, primarily used by invokeHelper path
+    const owner = getAmbientOwner();
+    const manager = this.getDelegateFor(owner);
+    return manager.createHelper(definition, args);
+  }
+
+  getValue(bucket: any, definition?: any) {
+    const owner = getAmbientOwner();
+    const manager = this.getDelegateFor(owner);
+    // Wrap in backtracking frame so read-then-write is detected with debug
+    // name. DEBUG-gated: upstream manager getDebugName bodies call the
+    // debug-only @glimmer/util getDebugName and throw in production.
+    const debugName =
+      DEBUG && definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
+    const bt = getGxtRenderer()?.backtracking;
+    if (bt) {
+      bt.beginFrame(debugName);
+    }
+    try {
+      return manager?.getValue?.(bucket);
+    } finally {
+      if (bt) {
+        bt.endFrame();
+      }
+    }
+  }
+
+  getDestroyable(bucket: any) {
+    const owner = getAmbientOwner();
+    const manager = this.getDelegateFor(owner);
+    return manager?.getDestroyable?.(bucket) || null;
+  }
+
+  // The delegate's capabilities. What creating the delegate throws (the
+  // manager factory, or its capabilities assertion) propagates, as Glimmer's
+  // `getDelegateFor` does.
+  get capabilities() {
+    const manager = this.getDelegateFor(getAmbientOwner());
+    return (
+      manager?.capabilities || {
+        hasValue: false,
+        hasDestroyable: false,
+        hasScheduledEffect: false,
+      }
+    );
+  }
+
+  getDebugName(helper: any) {
+    if (!DEBUG) return 'Helper';
+    const manager = this.getDelegateFor(getAmbientOwner());
+    return manager?.getDebugName?.(helper) || 'Helper';
+  }
+}
+
+/**
+ * FunctionHelperManager - handles plain function helpers.
+ * This is the default manager for function-based helpers.
+ */
+export class FunctionHelperManager {
+  capabilities: any;
+
+  constructor() {
+    // Create capabilities using the proper builder so they pass validation
+    this.capabilities = {
+      hasValue: true,
+      hasDestroyable: false,
+      hasScheduledEffect: false,
+    };
+    FROM_CAPABILITIES.add(this.capabilities);
+  }
+
+  createHelper(fn: any, args: any) {
+    return { fn, args };
+  }
+
+  getValue({ fn, args }: { fn: any; args: any }) {
+    if (args?.named && Object.keys(args.named).length > 0) {
+      return fn(...(args.positional || []), args.named);
+    }
+    return fn(...(args?.positional || []));
+  }
+
+  getDebugName(fn: any) {
+    if (fn?.name) {
+      return `(helper function ${fn.name})`;
+    }
+    return '(anonymous helper function)';
+  }
+}

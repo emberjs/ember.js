@@ -517,6 +517,61 @@ moduleFor(
         "stopping propagation in the caller's listener prevents the ancestor listener"
       );
     }
+
+    '@test listeners for different events on one element are all added'(assert) {
+      let calls = [];
+
+      this.render(
+        '<button {{on "mouseenter" this.onEnter}} {{on "click" this.onClick}}>Click Me</button>',
+        {
+          onEnter: () => calls.push('enter'),
+          onClick: () => calls.push('click'),
+        }
+      );
+
+      this.assertCounts({ adds: 2, removes: 0 });
+
+      runTask(() => this.element.querySelector('button').dispatchEvent(new Event('mouseenter')));
+      runTask(() => this.$('button').click());
+      assert.deepEqual(calls, ['enter', 'click'], 'both listeners run');
+    }
+
+    '@test each {{on}} for the same event on one element adds and updates its own listener'(
+      assert
+    ) {
+      let calls = [];
+
+      this.render(
+        '<button {{on "click" this.first}} {{on "click" this.second}}>Click Me</button>',
+        {
+          first: () => calls.push('first'),
+          second: () => calls.push('second'),
+        }
+      );
+
+      this.assertCounts({ adds: 2, removes: 0 });
+
+      runTask(() => this.$('button').click());
+      assert.deepEqual(calls, ['first', 'second'], 'both listeners run, in order');
+
+      runTask(() => this.context.set('first', () => calls.push('first updated')));
+      this.assertCounts({ adds: 3, removes: 1 });
+
+      calls = [];
+      runTask(() => this.$('button').click());
+      assert.deepEqual(
+        calls,
+        ['second', 'first updated'],
+        'the updated listener was removed and added again, after the other one'
+      );
+
+      runTask(() => this.context.set('second', () => calls.push('second updated')));
+      this.assertCounts({ adds: 4, removes: 2 });
+
+      calls = [];
+      runTask(() => this.$('button').click());
+      assert.deepEqual(calls, ['first updated', 'second updated'], 'each listener updated once');
+    }
   }
 );
 

@@ -1650,6 +1650,309 @@ moduleFor(
   }
 );
 
+// Glimmer's dynamic attribute rule (`normalizeValue` in
+// `@glimmer/runtime/lib/vm/attributes/dynamic.ts`, and a property's
+// `DefaultDynamicProperty`): `null` and `undefined` remove the attribute,
+// whether it is set first or updated later, while `""` keeps it.
+moduleFor(
+  'Dynamic attribute values (null, undefined and false)',
+  class extends RenderingTestCase {
+    ['@test an attribute updated to null, undefined or false is removed, and "" keeps it']() {
+      this.render('<div data-foo={{this.value}}>hello</div>', { value: 'bar' });
+      this.assertHTML('<div data-foo="bar">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', ''));
+      this.assertHTML('<div data-foo="">hello</div>');
+
+      runTask(() => set(this.context, 'value', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', 0));
+      this.assertHTML('<div data-foo="0">hello</div>');
+
+      runTask(() => set(this.context, 'value', false));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', 'bar'));
+      this.assertHTML('<div data-foo="bar">hello</div>');
+    }
+
+    ['@test an href that starts null is not rendered, and is removed again when set to null or undefined']() {
+      this.render('<a href={{this.href}}>link</a>', { href: null });
+      this.assertHTML('<a>link</a>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'href', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+
+      runTask(() => set(this.context, 'href', ''));
+      this.assertHTML('<a href="">link</a>');
+
+      runTask(() => set(this.context, 'href', null));
+      this.assertHTML('<a>link</a>');
+
+      runTask(() => set(this.context, 'href', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+
+      runTask(() => set(this.context, 'href', undefined));
+      this.assertHTML('<a>link</a>');
+    }
+
+    ['@test a title updated to null or undefined is removed']() {
+      this.render('<div title={{this.title}}>hello</div>', { title: 'a title' });
+      this.assertHTML('<div title="a title">hello</div>');
+
+      runTask(() => set(this.context, 'title', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'title', 'a title'));
+      this.assertHTML('<div title="a title">hello</div>');
+
+      runTask(() => set(this.context, 'title', undefined));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a quoted attribute of one dynamic part is removed when it is null or undefined']() {
+      this.render('<img src="{{this.src}}">', { src: undefined });
+      this.assertHTML('<img>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'src', 'image.png'));
+      this.assertHTML('<img src="image.png">');
+
+      runTask(() => set(this.context, 'src', ''));
+      this.assertHTML('<img src="">');
+
+      runTask(() => set(this.context, 'src', null));
+      this.assertHTML('<img>');
+
+      runTask(() => set(this.context, 'src', 'image.png'));
+      this.assertHTML('<img src="image.png">');
+
+      runTask(() => set(this.context, 'src', undefined));
+      this.assertHTML('<img>');
+    }
+
+    ['@test a quoted attribute is removed when all of its parts are null or undefined']() {
+      this.render('<div data-foo="{{this.a}}{{this.b}}" data-bar="a-{{this.b}}">hello</div>', {
+        a: 'x',
+        b: null,
+      });
+      this.assertHTML('<div data-foo="x" data-bar="a-">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'a', undefined));
+      this.assertHTML('<div data-bar="a-">hello</div>');
+
+      runTask(() => set(this.context, 'b', 'y'));
+      this.assertHTML('<div data-foo="y" data-bar="a-y">hello</div>');
+
+      runTask(() => set(this.context, 'b', null));
+      this.assertHTML('<div data-bar="a-">hello</div>');
+
+      runTask(() => set(this.context, 'a', ''));
+      this.assertHTML('<div data-foo="" data-bar="a-">hello</div>');
+    }
+
+    // `class` is always an attribute in Glimmer, so it follows the same rule;
+    // `true` is a bare `class=""`.
+    ['@test a class set to false, null or undefined is not rendered, and "" keeps the attribute']() {
+      this.render('<div class={{this.cls}}>hello</div>', { cls: false });
+      this.assertHTML('<div>hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'cls', 'foo'));
+      this.assertHTML('<div class="foo">hello</div>');
+
+      runTask(() => set(this.context, 'cls', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'cls', 0));
+      this.assertHTML('<div class="0">hello</div>');
+
+      runTask(() => set(this.context, 'cls', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'cls', ''));
+      this.assertHTML('<div class="">hello</div>');
+
+      runTask(() => set(this.context, 'cls', true));
+      this.assertHTML('<div class="">hello</div>');
+
+      runTask(() => set(this.context, 'cls', false));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a class that starts null is not rendered']() {
+      this.render('<p class={{this.cls}}>hello</p>', { cls: null });
+      this.assertHTML('<p>hello</p>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'cls', 'foo'));
+      this.assertHTML('<p class="foo">hello</p>');
+
+      runTask(() => set(this.context, 'cls', undefined));
+      this.assertHTML('<p>hello</p>');
+    }
+
+    // Glimmer merges an element's classes with the ones `...attributes`
+    // forwards (`createClassListRef`): each part is stringified, null,
+    // undefined and "" parts are skipped, and no class at all removes the
+    // attribute. A lone class (nothing else to merge) keeps the rule above.
+    ['@test classes merged through ...attributes skip empty parts, and no class at all is no attribute']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class={{@inner}} ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar @inner={{this.inner}} class={{this.outer}} />', {
+        inner: 'a',
+        outer: 'b',
+      });
+      this.assertHTML('<div class="a b">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'inner', null));
+      this.assertHTML('<div class="b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', undefined));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'inner', ''));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'inner', false));
+      this.assertHTML('<div class="false">hello</div>');
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="false b">hello</div>');
+
+      runTask(() => set(this.context, 'inner', 'a'));
+      this.assertHTML('<div class="a b">hello</div>');
+    }
+
+    ['@test a static class merged with a forwarded one keeps its place']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class="x" ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar class={{this.outer}} />', { outer: null });
+      this.assertHTML('<div class="x">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="x b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', undefined));
+      this.assertHTML('<div class="x">hello</div>');
+    }
+
+    ['@test a class forwarded alone through ...attributes is removed when false or null']() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar class={{this.outer}} />', { outer: false });
+      this.assertHTML('<div>hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'outer', 'b'));
+      this.assertHTML('<div class="b">hello</div>');
+
+      runTask(() => set(this.context, 'outer', null));
+      this.assertHTML('<div>hello</div>');
+    }
+
+    ['@test a class and an attribute in {{#each}} rows follow the same rules']() {
+      this.render(
+        '<ul>{{#each this.items as |item|}}<li class={{item.cls}} data-x={{item.cls}}>{{item.n}}</li>{{/each}}</ul>',
+        {
+          items: [
+            { n: 1, cls: null },
+            { n: 2, cls: false },
+            { n: 3, cls: 'c' },
+          ],
+        }
+      );
+      this.assertHTML('<ul><li>1</li><li>2</li><li class="c" data-x="c">3</li></ul>');
+      runTask(() => set(this.context.items[2], 'cls', null));
+      this.assertHTML('<ul><li>1</li><li>2</li><li>3</li></ul>');
+      runTask(() => set(this.context.items[0], 'cls', 'a'));
+      this.assertHTML('<ul><li class="a" data-x="a">1</li><li>2</li><li>3</li></ul>');
+    }
+  }
+);
+
+// Glimmer compiles an unquoted `attr={{{value}}}` to a trusting dynamic
+// attribute: the same value as `attr={{value}}` (removed when nullish, a URL
+// still sanitized), except that a trusting `style` does not warn (see
+// 'Inline style tests - warnings'). Inside a quoted value and as a component
+// argument a triple curly is an ordinary value.
+moduleFor(
+  'Triple curlies in attribute position',
+  class extends RenderingTestCase {
+    ['@test an unquoted attribute renders and updates the value, and null removes it']() {
+      this.render('<div data-foo={{{this.value}}}>hello</div>', { value: 'bar' });
+      this.assertHTML('<div data-foo="bar">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', 'baz'));
+      this.assertHTML('<div data-foo="baz">hello</div>');
+
+      runTask(() => set(this.context, 'value', null));
+      this.assertHTML('<div>hello</div>');
+
+      runTask(() => set(this.context, 'value', htmlSafe('safe')));
+      this.assertHTML('<div data-foo="safe">hello</div>');
+    }
+
+    ['@test a quoted attribute interpolates the value']() {
+      this.render('<div title="a {{{this.value}}} b">hello</div>', { value: 'x' });
+      this.assertHTML('<div title="a x b">hello</div>');
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'value', 'y'));
+      this.assertHTML('<div title="a y b">hello</div>');
+    }
+
+    ['@test a URL attribute is still sanitized']() {
+      this.render('<a href={{{this.url}}}>link</a>', { url: 'javascript:alert(1)' });
+      this.assert.strictEqual(this.firstChild.getAttribute('href'), 'unsafe:javascript:alert(1)');
+
+      runTask(() => set(this.context, 'url', 'http://example.com'));
+      this.assertHTML('<a href="http://example.com">link</a>');
+    }
+
+    ['@test a component argument receives the value']() {
+      this.owner.register(
+        'component:show-value',
+        setComponentTemplate(precompileTemplate('[{{@value}}]'), class extends Component {})
+      );
+
+      this.render('<ShowValue @value={{{this.value}}} />', { value: 'a' });
+      this.assertText('[a]');
+
+      runTask(() => set(this.context, 'value', 'b'));
+      this.assertText('[b]');
+    }
+  }
+);
+
 let warnings, originalWarn;
 class StyleTest extends RenderingTestCase {
   constructor() {
@@ -1760,6 +2063,54 @@ if (DEBUG) {
       ['@test specifying `<div style={{{this.userValue}}}></div>` works properly without a warning']() {
         this.render('<div style={{{this.userValue}}}></div>', {
           userValue: 'width: 42px',
+        });
+
+        this.assertNoWarning();
+      }
+
+      ['@test `<div style={{{this.userValue}}}></div>` applies and updates the style without a warning']() {
+        this.render('<div style={{{this.userValue}}}></div>', {
+          userValue: 'width: 42px;',
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: '',
+          attrs: { style: 'width: 42px;' },
+        });
+
+        runTask(() => set(this.context, 'userValue', 'height: 42px;'));
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: '',
+          attrs: { style: 'height: 42px;' },
+        });
+
+        runTask(() => set(this.context, 'userValue', null));
+
+        this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: {} });
+
+        this.assertNoWarning();
+      }
+
+      ['@test a `style={{{this.userValue}}}` passed through `...attributes` does not warn']() {
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('<div ...attributes>hello</div>'),
+            class extends Component {}
+          )
+        );
+
+        this.render('<FooBar style={{{this.userValue}}} />', {
+          userValue: 'width: 42px;',
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          content: 'hello',
+          attrs: { style: 'width: 42px;' },
         });
 
         this.assertNoWarning();

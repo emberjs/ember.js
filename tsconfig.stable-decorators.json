@@ -3,10 +3,20 @@
   // `experimentalDecorators`. The per-package type-tests exercise the legacy
   // decorator signatures (including decorators on `declare` fields, which
   // standard decorators don't allow), so they're only checked by the main
-  // tsconfig.
+  // tsconfig. So is gxt-backend's glimmer-tracking test: it ports classic tests
+  // that use legacy-only forms (`@service declare`, `@computed` on a getter),
+  // and the GXT test builds only use legacy decorators.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "experimentalDecorators": false
   },
-  "exclude": ["dist", "node_modules", "tmp", "types", "packages/**/type-tests/**"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types/stable",
+    "types/preview",
+    "packages/**/type-tests/**",
+    "packages/@ember/-internals/gxt-backend/__tests__/glimmer-tracking-test.ts"
+  ]
 }

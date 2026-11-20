@@ -62,7 +62,10 @@ moduleFor(
       });
     }
 
-    [`@test _renderMode: rehydration`](assert) {
+    // Skipped under GXT: GXT has neither Glimmer's serialize builder nor its
+    // rehydration builder, so both render modes assert that they are not
+    // supported (gxt-backend/__tests__/visit-render-mode-test.ts).
+    [`${__GXT_MODE__ ? '@skip' : '@test'} _renderMode: rehydration`](assert) {
       assert.expect(2);
 
       let indexTemplate = '<div class="foo">Hi, Mom!</div>';
