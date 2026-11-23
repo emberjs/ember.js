@@ -477,7 +477,8 @@ class Rehydration extends AbstractRehydrationTests {
     let template = '<input disabled={{this.disabled}}>';
     this.renderServerSide(template, { disabled: true });
     this.renderClientSide(template, { disabled: true });
-    this.assertHTML('<input disabled="">');
+    // Before the fix: `<input disabled="true">`.
+    this.assertHTML('<input disabled>');
     let input = (this.element as unknown as HTMLElement).querySelector('input');
     this.assert.true(input?.disabled, 'the property is set');
     this.assertStableRerender();
