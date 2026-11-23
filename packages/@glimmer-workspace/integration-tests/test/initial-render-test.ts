@@ -488,6 +488,78 @@ class Rehydration extends AbstractRehydrationTests {
     this.assert.false(input?.disabled, 'the property is cleared');
   }
 
+  /**
+   * Renders on the server, then rewrites the server's HTML as an older server wrote it (FastBoot
+   * 6 and lower wrote a boolean attribute as `disabled="true"`), and puts that in the element the
+   * client renders into.
+   */
+  private renderLegacyServerSide(template: string, context: Dict, from: string, to: string) {
+    this.renderServerSide(template, context);
+    let output = this.serverOutput ?? '';
+    this.assert.true(output.includes(from), `the server wrote ${from}`);
+    replaceHTML(this.element, output.replace(from, to));
+  }
+
+  @test
+  'a property rehydrates over an older server\'s disabled="true"'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderLegacyServerSide(
+      template,
+      { disabled: true },
+      '<input disabled>',
+      '<input disabled="true">'
+    );
+    this.renderClientSide(template, { disabled: true });
+    // Setting the property rewrites the reflected attribute to `disabled=""`, as a client render
+    // leaves it.
+    this.assertHTML('<input disabled>');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.true(input?.disabled, 'the property is set');
+
+    this.rerender({ disabled: false });
+    this.assertHTML('<input>');
+    this.assert.false(input?.disabled, 'the property is cleared');
+
+    this.rerender({ disabled: true });
+    this.assertHTML('<input disabled>');
+    this.assert.true(input?.disabled, 'the property is set again');
+  }
+
+  @test
+  'a property the client turns off rehydrates over an older server\'s disabled="true"'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderLegacyServerSide(
+      template,
+      { disabled: true },
+      '<input disabled>',
+      '<input disabled="true">'
+    );
+    this.renderClientSide(template, { disabled: false });
+    this.assertHTML('<input>');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.false(input?.disabled, 'the property is cleared');
+  }
+
+  @test
+  'a selected option rehydrates over an older server\'s selected="true"'() {
+    let template =
+      '<select><option>1</option><option selected={{this.selected}}>2</option></select>';
+    this.renderLegacyServerSide(
+      template,
+      { selected: true },
+      '<option selected>',
+      '<option selected="true">'
+    );
+    this.renderClientSide(template, { selected: true });
+    // `selected` reflects nothing: the attribute stays as that server wrote it.
+    this.assertHTML('<select><option>1</option><option selected="true">2</option></select>');
+    let select = (this.element as unknown as HTMLElement).querySelector('select');
+    this.assert.strictEqual(select?.selectedIndex, 1, 'the option is selected');
+
+    this.rerender({ selected: false });
+    this.assert.strictEqual(select?.selectedIndex, 0, 'the option is no longer selected');
+  }
+
   @test
   'in-element can rehydrate'() {
     let template = strip`
