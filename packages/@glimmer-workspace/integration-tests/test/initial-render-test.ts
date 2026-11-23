@@ -430,13 +430,18 @@ class Rehydration extends AbstractRehydrationTests {
     let doc = this.delegate.serverDoc;
     let node = doc.createTextNode('hello');
     this.renderServerSide(template, { node });
-    this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
+    this.assertServerOutput('<div>', OPEN, '<!--%glmr%-->hello<!--%glmr%-->', CLOSE, '</div>');
     doc = this.delegate.clientDoc;
     let clientNode = doc.createTextNode('hello');
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
-    // Just repairs the value of the text node
-    this.assertRehydrationStats({ nodesRemoved: 0 });
+    // The client's own node takes the place of the server's copy of it.
+    this.assertRehydrationStats({ nodesRemoved: 1 });
+    this.assert.true(
+      (this.element as unknown as HTMLElement).querySelector('div')?.firstChild ===
+        (clientNode as unknown as ChildNode),
+      'the node in the page is the client one'
+    );
     this.assertStableRerender();
 
     let clientNode2 = doc.createTextNode('goodbye');
@@ -447,6 +452,39 @@ class Rehydration extends AbstractRehydrationTests {
     this.rerender({ node: clientNode });
     this.assertHTML('<div>hello</div>', 'back to the beginning');
     this.assertStableNodes({ except: clientNode2 });
+  }
+
+  @test
+  'Node curlies insert an empty text node the client holds'() {
+    let template = '<div>{{this.node}}<span>after</span></div>';
+
+    let node = this.delegate.serverDoc.createTextNode('');
+    this.renderServerSide(template, { node });
+    let clientNode = this.delegate.clientDoc.createTextNode('');
+    this.renderClientSide(template, { node: clientNode });
+    this.assertHTML('<div><span>after</span></div>');
+    let div = (this.element as unknown as HTMLElement).querySelector('div');
+    this.assert.true(
+      div?.firstChild === (clientNode as unknown as ChildNode),
+      'the empty node is the client one'
+    );
+    this.assert.strictEqual(div?.lastChild?.nodeName, 'SPAN', 'the span after it stays');
+    this.assertStableRerender();
+  }
+
+  @test
+  'a rehydrated property sets the property, and keeps the attribute the server wrote'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderServerSide(template, { disabled: true });
+    this.renderClientSide(template, { disabled: true });
+    this.assertHTML('<input disabled="">');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.true(input?.disabled, 'the property is set');
+    this.assertStableRerender();
+
+    this.rerender({ disabled: false });
+    this.assertHTML('<input>');
+    this.assert.false(input?.disabled, 'the property is cleared');
   }
 
   @test

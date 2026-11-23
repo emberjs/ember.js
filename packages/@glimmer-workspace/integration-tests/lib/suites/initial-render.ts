@@ -410,10 +410,12 @@ export class InitialRenderSuite extends RenderTest {
       { selected: true }
     );
 
+    // Rehydration keeps the attribute the server wrote, and sets the property, as a client render
+    // does: the attribute is not the selection.
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option ${this.name === 'rehydration' ? ' selected' : ''}>2</option>
         <option>3</option>
       </select>
     `);
@@ -426,7 +428,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option ${this.name === 'rehydration' ? ' selected' : ''}>2</option>
         <option>3</option>
       </select>
     `);
@@ -442,7 +444,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option ${this.name === 'rehydration' ? ' selected' : ''}>2</option>
         <option>3</option>
       </select>
     `);
@@ -457,7 +459,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option ${this.name === 'rehydration' ? ' selected' : ''}>2</option>
         <option>3</option>
       </select>
     `);
@@ -508,8 +510,8 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(strip`
       <select multiple="">
         <option>0</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>1</option>
-        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option ${this.name === 'rehydration' ? ' selected' : ''}>1</option>
+        <option ${this.name === 'rehydration' ? ' selected="is-true"' : ''}>2</option>
         <option>3</option>
         <option>4</option>
         <option>5</option>
