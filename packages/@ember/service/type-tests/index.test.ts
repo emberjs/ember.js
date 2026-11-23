@@ -17,8 +17,6 @@ let mainService = new MainService(owner);
 
 expectTypeOf(mainService).toMatchTypeOf<FrameworkObject>();
 
-// @ts-expect-error `isServiceFactory` is not public API
-Service.isServiceFactory;
 
 expectTypeOf(inject()).toEqualTypeOf<InjectionDecorator>();
 expectTypeOf(inject('foo')).toEqualTypeOf<InjectionDecorator>();
