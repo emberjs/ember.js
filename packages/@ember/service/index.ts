@@ -111,9 +111,7 @@ export function service(
   @since 1.10.0
   @public
 */
-export default class Service extends FrameworkObject {
-  static isServiceFactory = true;
-}
+export default class Service extends FrameworkObject {}
 
 /**
   A type registry for Ember `Service`s. Meant to be declaration-merged so string
