@@ -25,7 +25,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib/registers';
 import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
 import { unwrapHandle } from '@glimmer/debug-util/lib/template';
-import { associateDestroyableChild } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
@@ -739,6 +739,34 @@ export class VM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
+    let hasErrored = true;
+    try {
+      let value = this.#executeWithDebugCleanup(initialize);
+
+      /**
+       * A flag, not a `catch` and rethrow,
+       * so that "pause on uncaught exceptions" still stops at the error.
+       */
+      hasErrored = false;
+
+      return value;
+    } finally {
+      if (hasErrored) {
+        /**
+         * The render result owns the drop.
+         * After an error there is no render result,
+         * so nothing else destroys what the render made before it failed:
+         *
+         * - components and their destructors
+         * - modifiers
+         * - block opcodes
+         */
+        destroy(this.#stacks.drop);
+      }
+    }
+  }
+
+  #executeWithDebugCleanup(initialize?: (vm: this) => void): RenderResult {
     if (DEBUG) {
       let hasErrored = true;
       try {
