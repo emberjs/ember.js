@@ -183,12 +183,6 @@ class RouterService extends Service {
     return (this[ROUTER] = _router);
   }
 
-  willDestroy() {
-    super.willDestroy();
-
-    this[ROUTER] = undefined;
-  }
-
   /**
      Transition the application into another route. The route may
      be either a single route or route path:
@@ -298,7 +292,7 @@ class RouterService extends Service {
 
     ```gjs {data-filename="app/templates/application.gjs"}
     import CopyLink from '../components/copy-link';
-      
+
     <template>
       <CopyLink @author={{hash id="tomster" name="Tomster"}} />
     </template>
