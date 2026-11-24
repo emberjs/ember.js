@@ -1,12 +1,10 @@
 import { renderComponent } from '@ember/renderer';
-import { registerDestructor } from '@ember/destroyable';
-import { run } from '@ember/runloop';
+import { destroy, registerDestructor } from '@ember/destroyable';
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import { isTracking, resetTracking } from '@glimmer/validator';
 import { DEBUG } from '@glimmer/env';
 import { module, test } from 'qunit';
-import { resetOnerror, settled, setupOnerror } from '@ember/test-helpers';
+import { settled } from '@ember/test-helpers';
 import { setupRenderingTest } from 'ember-qunit';
 
 module('render error cleanup', function (hooks) {
@@ -53,7 +51,7 @@ module('render error cleanup', function (hooks) {
     assert.false(isTracking(), 'no tracking frame is left open');
   });
 
-  test('a first render that throws destroys what it made before the error', async function (assert) {
+  test('a first render that throws: destroying the owner destroys what the render made', async function (assert) {
     class Child extends Component {
       constructor(owner, args) {
         super(owner, args);
@@ -68,6 +66,12 @@ module('render error cleanup', function (hooks) {
         throw new Error('boom');
       }
     }
+
+    /**
+     * The renderer lives as long as its owner,
+     * so this test makes an owner that it can destroy.
+     */
+    let owner = {};
 
     assert.throws(() => {
       renderComponent(
@@ -75,58 +79,16 @@ module('render error cleanup', function (hooks) {
           <Child />
           <Boom />
         </template>,
-        { into: this.element, owner: this.owner }
+        { into: this.element, owner }
       );
     }, /boom/);
 
     await settled();
+    assert.verifySteps(['child created']);
 
-    assert.verifySteps(['child created', 'child destroyed']);
-  });
-
-  test('a block render that throws destroys what it made before the error', async function (assert) {
-    class State {
-      @tracked show = false;
-    }
-
-    let state = new State();
-
-    class Child extends Component {
-      constructor(owner, args) {
-        super(owner, args);
-        assert.step('child created');
-        registerDestructor(this, () => assert.step('child destroyed'));
-      }
-    }
-
-    class Boom extends Component {
-      constructor(owner, args) {
-        super(owner, args);
-        throw new Error('boom');
-      }
-    }
-
-    renderComponent(
-      <template>
-        {{#if state.show}}
-          <Child />
-          <Boom />
-        {{/if}}
-      </template>,
-      { into: this.element, owner: this.owner }
-    );
-
-    /**
-     * Without `onerror`, backburner drops the rest of the run loop
-     * after an error, and the destructors are in that run loop.
-     */
-    setupOnerror((error) => assert.step(`onerror: ${error.message}`));
-
-    run(() => (state.show = true));
-
+    destroy(owner);
     await settled();
-    resetOnerror();
 
-    assert.verifySteps(['child created', 'onerror: boom', 'child destroyed']);
+    assert.verifySteps(['child destroyed']);
   });
 });

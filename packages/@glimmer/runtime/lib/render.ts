@@ -24,6 +24,10 @@ import { VM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
   constructor(private vm: VM) {}
+
+  get drop(): object {
+    return this.vm.drop;
+  }
   next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
   }
