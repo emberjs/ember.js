@@ -1,9 +1,7 @@
 /**
  * @module @ember/routing/router-service
  */
-import type Owner from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { registerDestructor } from '@glimmer/destroyable';
 import { assert } from '@ember/debug';
 import { dependentKeyCompat } from '@ember/object/compat';
 import Service from '@ember/service';
@@ -68,14 +66,6 @@ type EventName = 'routeWillChange' | 'routeDidChange';
  */
 class RouterService extends Service {
   [ROUTER]?: EmberRouter;
-
-  constructor(owner: Owner) {
-    super(owner);
-
-    registerDestructor(this, () => {
-      this[ROUTER] = undefined;
-    });
-  }
 
   /**
     Subscribes to a named event with given function.
@@ -191,6 +181,12 @@ class RouterService extends Service {
       _router instanceof EmberRouter
     );
     return (this[ROUTER] = _router);
+  }
+
+  willDestroy() {
+    super.willDestroy();
+
+    this[ROUTER] = undefined;
   }
 
   /**
