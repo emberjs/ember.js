@@ -17,7 +17,7 @@ import type {
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { destroy, destroyChildren } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
@@ -164,16 +164,14 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     destroyChildren(this);
 
     let tree = NewTreeBuilder.resume(env, bounds);
-    let vm = state.evaluate(tree);
+    let vm = state.evaluate(tree, this);
 
     let children = (this.children = []);
 
-    let result = vm.execute((vm) => {
+    vm.executeBlock((vm) => {
       vm.updateWith(this);
       vm.pushUpdating(children);
     });
-
-    associateDestroyableChild(this, result.drop);
   }
 }
 
@@ -364,15 +362,14 @@ export class ListBlockOpcode extends BlockOpcode {
       nextSibling,
     });
 
-    let vm = state.evaluate(elementStack);
+    let vm = state.evaluate(elementStack, this);
 
-    vm.execute((vm) => {
+    vm.executeBlock((vm) => {
       let opcode = vm.enterItem(item);
 
       opcode.index = children.length;
       children.push(opcode);
       opcodeMap.set(key, opcode);
-      associateDestroyableChild(this, opcode);
     });
   }
 

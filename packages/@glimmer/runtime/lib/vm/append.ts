@@ -15,6 +15,7 @@ import type {
   ProgramConstants,
   RenderResult,
   RichIteratorResult,
+  RuntimeOp,
   Scope,
   SyscallRegisters,
   TreeBuilder,
@@ -66,7 +67,6 @@ class Drop {
 
 class Stacks {
   declare debug?: () => DebugStacks;
-  readonly drop: object = new Drop();
 
   readonly scope = new Stack<Scope>();
   readonly dynamicScope = new Stack<DynamicScope>();
@@ -75,10 +75,14 @@ class Stacks {
   readonly list = new Stack<ListBlockOpcode>();
   readonly destroyable = new Stack<object>();
 
-  constructor(scope: Scope, dynamicScope: DynamicScope) {
+  constructor(
+    scope: Scope,
+    dynamicScope: DynamicScope,
+    readonly drop: object
+  ) {
     this.scope.push(scope);
     this.dynamicScope.push(dynamicScope);
-    this.destroyable.push(this.drop);
+    this.destroyable.push(drop);
 
     if (LOCAL_DEBUG) {
       this.debug = (): DebugStacks => {
@@ -233,10 +237,17 @@ export class VM {
   readonly #tree: TreeBuilder;
   readonly context: EvaluationContext;
 
+  /**
+   * `drop` is the root destroyable of everything that this VM renders.
+   *
+   * - A top-level render makes its own, and its render result owns it.
+   * - A block that renders again passes its own opcode.
+   */
   constructor(
     { scope, dynamicScope, stack, pc }: ClosureState,
     context: EvaluationContext,
-    tree: TreeBuilder
+    tree: TreeBuilder,
+    drop: object = new Drop()
   ) {
     if (DEBUG) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -248,7 +259,7 @@ export class VM {
     this.#tree = tree;
     this.context = context;
 
-    this.#stacks = new Stacks(scope, dynamicScope);
+    this.#stacks = new Stacks(scope, dynamicScope, drop);
 
     this.args = new VMArgumentsImpl();
     this.lowlevel = new LowLevelVM(evalStack, context, externs(this), evalStack.registers);
@@ -750,50 +761,86 @@ export class VM {
 
         return value;
       } finally {
-        if (hasErrored) {
-          // If any existing blocks are open, due to an error or something like
-          // that, we need to close them all and clean things up properly.
-          let elements = this.tree();
-
-          try {
-            while (elements.hasBlocks) {
-              elements.popBlock();
-            }
-          } finally {
-            /**
-             * popBlock can throw.
-             *
-             * An empty block finalizes with an insert of a comment
-             * before the `nextSibling` of the cursor.
-             * If the parent element does not contain that node,
-             * `insertBefore` throws a `NotFoundError`.
-             *
-             * No manual DOM change is necessary for this.
-             * A known sequence:
-             *
-             * 1. A render fails. For example, a modifier throws
-             *    when Glimmer installs it. Its root stays registered.
-             * 2. `renderComponent` clears the same element
-             *    and renders into it again.
-             *    `clearRender()` of `@ember/test-helpers` does this.
-             * 3. The second render fails too.
-             *    Its open block needs a node that is gone.
-             *
-             * The reset must run anyway.
-             * With an open tracking frame, each later tracked write
-             * fails with a backtracking assertion.
-             * Each later test of the same run fails too.
-             *
-             * https://github.com/emberjs/ember.js/issues/21681
-             */
-            // eslint-disable-next-line no-console
-            console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
-          }
-        }
+        if (hasErrored) this.#cleanUpAfterError();
       }
     } else {
       return this._execute(initialize);
     }
+  }
+
+  /**
+   * Renders a block again, for `TryOpcode` and `ListBlockOpcode`.
+   *
+   * The block opcode owns what this renders,
+   * so there is no render result to make.
+   */
+  executeBlock(initialize: (vm: this) => void): void {
+    if (DEBUG) {
+      let hasErrored = true;
+      try {
+        this.#executeBlock(initialize);
+        hasErrored = false;
+      } finally {
+        if (hasErrored) this.#cleanUpAfterError();
+      }
+    } else {
+      this.#executeBlock(initialize);
+    }
+  }
+
+  #cleanUpAfterError(): void {
+    // If any existing blocks are open, due to an error or something like
+    // that, we need to close them all and clean things up properly.
+    let elements = this.tree();
+
+    try {
+      while (elements.hasBlocks) {
+        elements.popBlock();
+      }
+    } finally {
+      /**
+       * popBlock can throw.
+       *
+       * An empty block finalizes with an insert of a comment
+       * before the `nextSibling` of the cursor.
+       * If the parent element does not contain that node,
+       * `insertBefore` throws a `NotFoundError`.
+       *
+       * No manual DOM change is necessary for this.
+       * A known sequence:
+       *
+       * 1. A render fails. For example, a modifier throws
+       *    when Glimmer installs it. Its root stays registered.
+       * 2. `renderComponent` clears the same element
+       *    and renders into it again.
+       *    `clearRender()` of `@ember/test-helpers` does this.
+       * 3. The second render fails too.
+       *    Its open block needs a node that is gone.
+       *
+       * The reset must run anyway.
+       * With an open tracking frame, each later tracked write
+       * fails with a backtracking assertion.
+       * Each later test of the same run fails too.
+       *
+       * https://github.com/emberjs/ember.js/issues/21681
+       */
+      // eslint-disable-next-line no-console
+      console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
+    }
+  }
+
+  #executeBlock(initialize: (vm: this) => void): void {
+    initialize(this);
+
+    let opcode: RuntimeOp | null;
+
+    while ((opcode = this.lowlevel.nextStatement()) !== null) {
+      this.lowlevel.evaluateOuter(opcode, this);
+    }
+
+    this.stack.reset();
+    this.popUpdating();
+    this.#tree.popBlock();
   }
 
   private _execute(initialize?: (vm: this) => void): RenderResult {
@@ -906,8 +953,8 @@ export class Closure {
     this.context = context;
   }
 
-  evaluate(tree: TreeBuilder): VM {
-    return new VM(this.state, this.context, tree);
+  evaluate(tree: TreeBuilder, drop: object): VM {
+    return new VM(this.state, this.context, tree, drop);
   }
 }
 
