@@ -1,7 +1,7 @@
 import type { SimpleElement } from '@simple-dom/interface';
 
 import type { Destroyable } from '../../core.js';
-import type { Owner } from '../../runtime.js';
+import type { Environment, Owner } from '../../runtime.js';
 import type { CapturedArguments } from '../../runtime/arguments.js';
 import type { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier.js';
 import type { UpdatableTag } from '../../tags.js';
@@ -15,7 +15,8 @@ export interface InternalModifierManager<
     owner: Owner,
     element: SimpleElement,
     state: TModifierDefinitionState,
-    args: CapturedArguments
+    args: CapturedArguments,
+    env: Environment
   ): TModifierInstanceState;
 
   // Convert the opaque modifier into a `RevisionTag` that determins when

@@ -1,4 +1,4 @@
-import type { Dict, Indexable, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
+import type { Dict, Indexable, SimpleNode } from '@glimmer/interfaces';
 
 export interface SafeString {
   toHTML(): string;
@@ -11,22 +11,6 @@ export type TrustingInsertion = string | SimpleNode;
 export function normalizeStringValue(value: unknown): string {
   if (isEmpty(value)) {
     return '';
-  }
-  return String(value);
-}
-
-export function normalizeTrustedValue(value: unknown): TrustingInsertion {
-  if (isEmpty(value)) {
-    return '';
-  }
-  if (isString(value)) {
-    return value;
-  }
-  if (isSafeString(value)) {
-    return value.toHTML();
-  }
-  if (isNode(value)) {
-    return value;
   }
   return String(value);
 }
@@ -49,14 +33,6 @@ export function isIndexable(value: unknown): value is Indexable {
 
 export function isSafeString(value: unknown): value is SafeString {
   return isIndexable(value) && typeof value['toHTML'] === 'function';
-}
-
-export function isNode(value: unknown): value is SimpleNode {
-  return isIndexable(value) && typeof value['nodeType'] === 'number';
-}
-
-export function isFragment(value: unknown): value is SimpleDocumentFragment {
-  return isIndexable(value) && value['nodeType'] === 11;
 }
 
 export function isString(value: unknown): value is string {

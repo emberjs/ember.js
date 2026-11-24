@@ -1,4 +1,4 @@
-import type { SimpleDocument } from '@glimmer/interfaces';
+import type { RenderAdapter } from '@glimmer/interfaces';
 import { ENV } from '@ember/-internals/environment';
 import { setRenderer } from '@ember/-internals/glimmer';
 import { BaseRenderer, type IBuilder } from '@ember/-internals/glimmer/lib/base-renderer';
@@ -24,7 +24,7 @@ export function boundsOf(handle: RenderHandle): DebugBounds {
 }
 
 /**
- * An Ember renderer for one owner and document, registered as the renderer that the
+ * An Ember renderer for one owner and output, registered as the renderer that the
  * public `renderComponent` uses for that owner.
  *
  * `isInteractive` is false for a server render, matching FastBoot: modifiers do not run and
@@ -35,7 +35,7 @@ export function boundsOf(handle: RenderHandle): DebugBounds {
  */
 export function createRenderer(
   owner: object,
-  doc: SimpleDocument,
+  adapter: RenderAdapter,
   resolver: ResolverImpl,
   builder: IBuilder,
   debugRenderTree: boolean,
@@ -47,7 +47,7 @@ export function createRenderer(
   let renderer: BaseRenderer;
 
   try {
-    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, doc, resolver, builder);
+    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, adapter, resolver, builder);
   } finally {
     ENV._DEBUG_RENDER_TREE = previous;
   }
