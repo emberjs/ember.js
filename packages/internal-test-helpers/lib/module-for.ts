@@ -1,4 +1,3 @@
-/* globals URLSearchParams */
 import { isEnabled } from '@ember/canary-features';
 import { assertDestroyablesDestroyed, enableDestroyableTracking } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -25,17 +24,6 @@ interface TestClass<T extends TestCase> {
 interface TestContext<T extends TestCase> {
   instance: T | null | undefined;
 }
-
-const ASSERT_DESTROYABLES = (() => {
-  if (typeof document !== 'object') {
-    return false;
-  }
-
-  let queryParams = new URLSearchParams(document.location.search.substring(1));
-  let assertDestroyables = queryParams.get('assertDestroyables');
-
-  return assertDestroyables !== null;
-})();
 
 export function moduleForDevelopment<T extends TestCase, M extends Generator>(
   description: string,
@@ -78,7 +66,7 @@ export default function moduleFor<T extends TestCase, M extends Generator>(
 function afterEachFinally() {
   unsetContext();
 
-  if (DEBUG && ASSERT_DESTROYABLES) {
+  if (DEBUG) {
     assertDestroyablesDestroyed!();
   }
 }
@@ -89,7 +77,7 @@ export function setupTestClass<T extends TestCase, G extends Generator>(
   ...mixins: Mixin<G>[]
 ) {
   hooks.beforeEach(function (this: TestContext<T>, assert: QUnit['assert']) {
-    if (DEBUG && ASSERT_DESTROYABLES) {
+    if (DEBUG) {
       enableDestroyableTracking!();
     }
 
