@@ -5,6 +5,7 @@ import {
   GlimmerComponents,
   HasBlockParamsHelperSuite,
   HasBlockSuite,
+  InElementShadowRootSuite,
   InElementSuite,
   jitComponentSuite,
   jitSuite,
@@ -18,6 +19,7 @@ import {
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
+jitSuite(InElementShadowRootSuite);
 
 jitComponentSuite(GlimmerComponents);
 jitComponentSuite(TemplateOnlyComponents);

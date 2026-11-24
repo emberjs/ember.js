@@ -7,9 +7,11 @@ import type {
   SimpleDocument,
   SimpleElement,
   SimpleNode,
+  SimpleParentNode,
   SimpleText,
 } from '@glimmer/interfaces';
 import {
+  ELEMENT_NODE,
   INSERT_BEFORE_BEGIN,
   INSERT_BEFORE_END,
   NS_MATHML,
@@ -44,13 +46,14 @@ export class DOMOperations {
     this.uselessElement = this.document.createElement('div');
   }
 
-  createElement(tag: string, context?: SimpleElement): SimpleElement {
+  createElement(tag: string, context?: SimpleParentNode): SimpleElement {
     let isElementInSVGNamespace: boolean,
       isHTMLIntegrationPoint: boolean,
       isElementInMathMlNamespace: boolean,
       ns: Namespace;
 
-    if (context) {
+    // A fragment has no namespace, so children of a ShadowRoot start in HTML.
+    if (context && isElement(context)) {
       isElementInSVGNamespace = context.namespaceURI === NS_SVG || tag === 'svg';
       isElementInMathMlNamespace = context.namespaceURI === NS_MATHML || tag === 'math';
       isHTMLIntegrationPoint = !!(SVG_INTEGRATION_POINTS as Dict<number>)[context.tagName];
@@ -79,11 +82,15 @@ export class DOMOperations {
     }
   }
 
-  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Nullable<SimpleNode>) {
+  insertBefore(parent: SimpleParentNode, node: SimpleNode, reference: Nullable<SimpleNode>) {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(parent: SimpleElement, nextSibling: Nullable<SimpleNode>, html: string): Bounds {
+  insertHTMLBefore(
+    parent: SimpleParentNode,
+    nextSibling: Nullable<SimpleNode>,
+    html: string
+  ): Bounds {
     if (html === '') {
       const comment = this.createComment('');
       parent.insertBefore(comment, nextSibling);
@@ -93,7 +100,9 @@ export class DOMOperations {
     const prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
     let last: SimpleNode;
 
-    if (nextSibling === null) {
+    // Only elements have insertAdjacentHTML; a DocumentFragment (such as a
+    // ShadowRoot) falls through to the useless-element path below.
+    if (nextSibling === null && isElement(parent)) {
       parent.insertAdjacentHTML(INSERT_BEFORE_END, html);
       last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
     } else if (nextSibling instanceof HTMLElement) {
@@ -123,9 +132,13 @@ export class DOMOperations {
   }
 }
 
+export function isElement(node: SimpleParentNode): node is SimpleElement {
+  return node.nodeType === ELEMENT_NODE;
+}
+
 export function moveNodesBefore(
   source: SimpleNode,
-  target: SimpleElement,
+  target: SimpleParentNode,
   nextSibling: Nullable<SimpleNode>
 ): Bounds {
   const first = expect(source.firstChild, 'source is empty');
