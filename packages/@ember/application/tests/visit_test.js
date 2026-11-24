@@ -62,6 +62,35 @@ moduleFor(
       });
     }
 
+    [`@test renders into the \`document\` boot option`](assert) {
+      this.add('template:index', precompileTemplate('<div class="foo">Hi, Mom!</div>'));
+
+      let otherDocument = document.implementation.createHTMLDocument('other');
+      let rootElement = otherDocument.createElement('div');
+      otherDocument.body.appendChild(rootElement);
+
+      let created = new Set();
+      let createElement = otherDocument.createElement;
+      otherDocument.createElement = function (tagName, options) {
+        let element = createElement.call(this, tagName, options);
+        created.add(element);
+        return element;
+      };
+
+      let bootOptions = {
+        isBrowser: false,
+        document: otherDocument,
+        rootElement,
+      };
+
+      return this.visit('/', bootOptions).then(() => {
+        let rendered = rootElement.querySelector('.foo');
+
+        assert.strictEqual(rendered.textContent, 'Hi, Mom!');
+        assert.true(created.has(rendered), 'the `document` boot option created the element');
+      });
+    }
+
     [`@test _renderMode: rehydration`](assert) {
       assert.expect(2);
 

@@ -1,23 +1,15 @@
-import type { SimpleDocument } from '@simple-dom/interface';
-
 import type {
   ComponentDefinitionState,
   ComponentInstance,
   ComponentInstanceState,
 } from '../components.js';
 import type { Nullable } from '../core.js';
-import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes.js';
+import type { RenderAdapter } from '../render-adapter.js';
 import type { WithCreateInstance } from '../managers.js';
 import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
 import type { ModifierInstance } from './modifier.js';
 import type { Program } from './runtime.js';
-
-export interface EnvironmentOptions {
-  document?: SimpleDocument;
-  appendOperations?: GlimmerTreeConstruction;
-  updateOperations?: GlimmerTreeChanges;
-}
 
 export type Transaction = object;
 
@@ -42,8 +34,10 @@ export interface Environment {
   begin(): void;
   commit(): void;
 
-  getDOM(): GlimmerTreeChanges;
-  getAppendOperations(): GlimmerTreeConstruction;
+  /**
+   * Every operation on the output tree goes through this object.
+   */
+  readonly adapter: RenderAdapter;
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;
