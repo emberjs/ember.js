@@ -65,18 +65,13 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         runDestroy(owner);
       }
 
-      ['@test willDestroy runs once when the owner is destroyed'](assert) {
+      ['@test a destructor runs once when the owner is destroyed'](assert) {
         let owner = buildOwner();
 
         class MainService extends Service {
           constructor(owner) {
             super(owner);
             registerDestructor(this, () => assert.step('destructor'));
-          }
-
-          willDestroy() {
-            super.willDestroy(...arguments);
-            assert.step('willDestroy');
           }
         }
 
@@ -88,7 +83,26 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         runDestroy(owner);
 
-        assert.verifySteps(['willDestroy', 'destructor']);
+        assert.verifySteps(['destructor']);
+        assert.true(isDestroyed(main));
+      }
+
+      ['@test the container does not call willDestroy'](assert) {
+        let owner = buildOwner();
+
+        class MainService extends Service {
+          willDestroy() {
+            assert.step('willDestroy');
+          }
+        }
+
+        owner.register('service:main', MainService);
+
+        let main = owner.lookup('service:main');
+
+        runDestroy(owner);
+
+        assert.verifySteps([]);
         assert.true(isDestroyed(main));
       }
 
@@ -102,17 +116,13 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         runDestroy(owner);
       }
 
-      ['@test unregister runs willDestroy, then destroys the service'](assert) {
+      ['@test unregister destroys the service'](assert) {
         let owner = buildOwner();
 
         class MainService extends Service {
           constructor(owner) {
             super(owner);
             registerDestructor(this, () => assert.step('destructor'));
-          }
-
-          willDestroy() {
-            assert.step('willDestroy');
           }
         }
 
@@ -122,32 +132,12 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         runTask(() => owner.unregister('service:main'));
 
-        assert.verifySteps(['willDestroy', 'destructor']);
+        assert.verifySteps(['destructor']);
         assert.true(isDestroyed(main));
 
         runDestroy(owner);
 
         assert.verifySteps([]);
-      }
-
-      ['@test a service without willDestroy is destroyed with its owner'](assert) {
-        let owner = buildOwner();
-
-        class MainService extends Service {
-          constructor(owner) {
-            super(owner);
-            registerDestructor(this, () => assert.step('destructor'));
-          }
-        }
-
-        owner.register('service:main', MainService);
-
-        let main = owner.lookup('service:main');
-
-        runDestroy(owner);
-
-        assert.verifySteps(['destructor']);
-        assert.true(isDestroyed(main));
       }
     }
   );

@@ -121,8 +121,9 @@ class Service extends FrameworkObject {}
   is set. It extends no other class.
 
   The owner passes itself to the constructor, as it does for Glimmer
-  components. When the owner is destroyed, the container calls
-  `willDestroy`, then destroys the service with `@ember/destroyable`.
+  components. When the owner is destroyed, the container destroys the
+  service with `@ember/destroyable`, so teardown goes in a destructor that
+  `registerDestructor` adds.
 */
 class PlainService {
   /** The container creates instances only through `create`. */
@@ -136,9 +137,6 @@ class PlainService {
   constructor(owner: Owner) {
     setOwner(this, owner);
   }
-
-  /** Empty, so that `super.willDestroy()` works in subclasses. */
-  willDestroy(): void {}
 }
 
 const ExportedService = (
