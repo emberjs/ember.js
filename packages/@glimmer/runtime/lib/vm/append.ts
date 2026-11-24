@@ -241,7 +241,9 @@ export class VM {
    * `drop` is the root destroyable of everything that this VM renders.
    *
    * - A top-level render makes its own, and its render result owns it.
-   * - A block that renders again passes its own opcode.
+   * - `TryOpcode` lets the VM make one, and owns it.
+   * - `ListBlockOpcode` passes itself, so a new item is its direct child,
+   *   as in the first render.
    */
   constructor(
     { scope, dynamicScope, stack, pc }: ClosureState,
@@ -692,6 +694,14 @@ export class VM {
    *
    * @utility
    */
+  /**
+   * The root destroyable of this render.
+   * Its owner destroys what the render made.
+   */
+  get drop(): object {
+    return this.#stacks.drop;
+  }
+
   associateDestroyable(child: Destroyable): void {
     let parent = expect(this.#stacks.destroyable.current, 'Expected destructor parent');
     associateDestroyableChild(parent, child);
@@ -953,7 +963,7 @@ export class Closure {
     this.context = context;
   }
 
-  evaluate(tree: TreeBuilder, drop: object): VM {
+  evaluate(tree: TreeBuilder, drop?: object): VM {
     return new VM(this.state, this.context, tree, drop);
   }
 }

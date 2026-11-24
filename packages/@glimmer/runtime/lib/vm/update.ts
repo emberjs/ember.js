@@ -17,7 +17,7 @@ import type {
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import { destroy, destroyChildren } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
@@ -164,7 +164,19 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     destroyChildren(this);
 
     let tree = NewTreeBuilder.resume(env, bounds);
-    let vm = state.evaluate(tree, this);
+    let vm = state.evaluate(tree);
+
+    /**
+     * What this render makes goes into one drop, as in the first render.
+     *
+     * The old children leave `this` only when the destroy queue runs.
+     * If the new children were direct children of `this`,
+     * that removal would reorder them, and so their destroy order.
+     *
+     * The drop belongs to `this` before the render runs,
+     * so a render that throws is destroyed with `this` too.
+     */
+    associateDestroyableChild(this, vm.drop);
 
     let children = (this.children = []);
 
