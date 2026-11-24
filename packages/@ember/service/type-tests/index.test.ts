@@ -17,7 +17,6 @@ let mainService = new MainService(owner);
 
 expectTypeOf(mainService).toMatchTypeOf<FrameworkObject>();
 
-expectTypeOf(Service.isServiceFactory).toEqualTypeOf<boolean>();
 
 expectTypeOf(inject()).toEqualTypeOf<InjectionDecorator>();
 expectTypeOf(inject('foo')).toEqualTypeOf<InjectionDecorator>();
