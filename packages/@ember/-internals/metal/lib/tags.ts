@@ -9,6 +9,7 @@ import type { Tag } from '@glimmer/interfaces';
 import type { TagMeta } from '@glimmer/validator/lib/meta';
 import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
 import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
+import { isTrackedObject } from '@glimmer/validator/lib/collections/object';
 
 /////////
 
@@ -35,7 +36,7 @@ export function tagForProperty(
 
   let tag = tagFor(obj, propertyKey, meta);
 
-  if (DEBUG && addMandatorySetter) {
+  if (DEBUG && addMandatorySetter && !isTrackedObject(obj)) {
     setupMandatorySetter!(tag, obj, propertyKey);
   }
 
