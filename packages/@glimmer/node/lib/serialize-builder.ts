@@ -83,6 +83,21 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     return new ConcreteBounds(this.element, first, last);
   }
 
+  override __appendNode(node: SimpleNode): SimpleNode {
+    let { tagName } = this.element;
+
+    if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
+      return super.__appendNode(node);
+    }
+
+    // As for HTML: the client puts its own node between the markers, since no node of the
+    // server's can be the one the client holds (an empty text node does not even serialize).
+    this.__appendComment('%glmr%');
+    let inserted = super.__appendNode(node);
+    this.__appendComment('%glmr%');
+    return inserted;
+  }
+
   override __appendText(string: string): SimpleText {
     let { tagName } = this.element;
     let current = currentNode(this);

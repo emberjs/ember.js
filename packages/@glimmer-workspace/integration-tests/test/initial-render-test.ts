@@ -430,13 +430,18 @@ class Rehydration extends AbstractRehydrationTests {
     let doc = this.delegate.serverDoc;
     let node = doc.createTextNode('hello');
     this.renderServerSide(template, { node });
-    this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
+    this.assertServerOutput('<div>', OPEN, '<!--%glmr%-->hello<!--%glmr%-->', CLOSE, '</div>');
     doc = this.delegate.clientDoc;
     let clientNode = doc.createTextNode('hello');
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
-    // Just repairs the value of the text node
-    this.assertRehydrationStats({ nodesRemoved: 0 });
+    // The client's own node takes the place of the server's copy of it.
+    this.assertRehydrationStats({ nodesRemoved: 1 });
+    this.assert.true(
+      (this.element as unknown as HTMLElement).querySelector('div')?.firstChild ===
+        (clientNode as unknown as ChildNode),
+      'the node in the page is the client one'
+    );
     this.assertStableRerender();
 
     let clientNode2 = doc.createTextNode('goodbye');
@@ -447,6 +452,112 @@ class Rehydration extends AbstractRehydrationTests {
     this.rerender({ node: clientNode });
     this.assertHTML('<div>hello</div>', 'back to the beginning');
     this.assertStableNodes({ except: clientNode2 });
+  }
+
+  @test
+  'Node curlies insert an empty text node the client holds'() {
+    let template = '<div>{{this.node}}<span>after</span></div>';
+
+    let node = this.delegate.serverDoc.createTextNode('');
+    this.renderServerSide(template, { node });
+    let clientNode = this.delegate.clientDoc.createTextNode('');
+    this.renderClientSide(template, { node: clientNode });
+    this.assertHTML('<div><span>after</span></div>');
+    let div = (this.element as unknown as HTMLElement).querySelector('div');
+    this.assert.true(
+      div?.firstChild === (clientNode as unknown as ChildNode),
+      'the empty node is the client one'
+    );
+    this.assert.strictEqual(div?.lastChild?.nodeName, 'SPAN', 'the span after it stays');
+    this.assertStableRerender();
+  }
+
+  @test
+  'a rehydrated property sets the property, and keeps the attribute the server wrote'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderServerSide(template, { disabled: true });
+    this.renderClientSide(template, { disabled: true });
+    // Before the fix: `<input disabled="true">`.
+    this.assertHTML('<input disabled>');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.true(input?.disabled, 'the property is set');
+    this.assertStableRerender();
+
+    this.rerender({ disabled: false });
+    this.assertHTML('<input>');
+    this.assert.false(input?.disabled, 'the property is cleared');
+  }
+
+  /**
+   * Renders on the server, then rewrites the server's HTML as an older server wrote it (FastBoot
+   * 6 and lower wrote a boolean attribute as `disabled="true"`), and puts that in the element the
+   * client renders into.
+   */
+  private renderLegacyServerSide(template: string, context: Dict, from: string, to: string) {
+    this.renderServerSide(template, context);
+    let output = this.serverOutput ?? '';
+    this.assert.true(output.includes(from), `the server wrote ${from}`);
+    replaceHTML(this.element, output.replace(from, to));
+  }
+
+  @test
+  'a property rehydrates over an older server\'s disabled="true"'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderLegacyServerSide(
+      template,
+      { disabled: true },
+      '<input disabled>',
+      '<input disabled="true">'
+    );
+    this.renderClientSide(template, { disabled: true });
+    // Setting the property rewrites the reflected attribute to `disabled=""`, as a client render
+    // leaves it.
+    this.assertHTML('<input disabled>');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.true(input?.disabled, 'the property is set');
+
+    this.rerender({ disabled: false });
+    this.assertHTML('<input>');
+    this.assert.false(input?.disabled, 'the property is cleared');
+
+    this.rerender({ disabled: true });
+    this.assertHTML('<input disabled>');
+    this.assert.true(input?.disabled, 'the property is set again');
+  }
+
+  @test
+  'a property the client turns off rehydrates over an older server\'s disabled="true"'() {
+    let template = '<input disabled={{this.disabled}}>';
+    this.renderLegacyServerSide(
+      template,
+      { disabled: true },
+      '<input disabled>',
+      '<input disabled="true">'
+    );
+    this.renderClientSide(template, { disabled: false });
+    this.assertHTML('<input>');
+    let input = (this.element as unknown as HTMLElement).querySelector('input');
+    this.assert.false(input?.disabled, 'the property is cleared');
+  }
+
+  @test
+  'a selected option rehydrates over an older server\'s selected="true"'() {
+    let template =
+      '<select><option>1</option><option selected={{this.selected}}>2</option></select>';
+    this.renderLegacyServerSide(
+      template,
+      { selected: true },
+      '<option selected>',
+      '<option selected="true">'
+    );
+    this.renderClientSide(template, { selected: true });
+    // `selected` reflects nothing: the attribute stays as that server wrote it.
+    this.assertHTML('<select><option>1</option><option selected="true">2</option></select>');
+    let select = (this.element as unknown as HTMLElement).querySelector('select');
+    this.assert.strictEqual(select?.selectedIndex, 1, 'the option is selected');
+
+    this.rerender({ selected: false });
+    this.assert.strictEqual(select?.selectedIndex, 0, 'the option is no longer selected');
   }
 
   @test

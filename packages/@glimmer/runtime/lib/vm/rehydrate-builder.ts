@@ -268,6 +268,23 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendNode(node: SimpleNode): SimpleNode {
+    const candidateBounds = this.markerBounds();
+
+    if (candidateBounds) {
+      // The server's copy of the node, between the markers it wrote around it, gives way to the
+      // client's own node, which the template's author may hold a reference to.
+      const last = candidateBounds.lastNode();
+      let current: Nullable<SimpleNode> = candidateBounds.firstNode();
+
+      while (current !== null && current !== last) {
+        current = this.remove(current);
+      }
+
+      this.candidate = this.remove(last);
+      this.element.insertBefore(node, this.candidate);
+      return node;
+    }
+
     const { candidate } = this;
 
     // This code path is only used when inserting precisely one node. It needs more
@@ -419,9 +436,10 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     if (unmatched) {
       const attr = findByName(unmatched, name);
       if (attr) {
-        if (attr.value !== value) {
-          attr.value = value;
-        }
+        // A property, as a client render sets it, not the attribute's text: a `disabled` that is
+        // `true` keeps the server's `disabled=""`, never `disabled="true"`.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        (this.constructing! as unknown as Record<string, unknown>)[name] = value;
         unmatched.splice(unmatched.indexOf(attr), 1);
         return;
       }
