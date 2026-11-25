@@ -5,8 +5,7 @@
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
-
-type Tag = ReturnType<typeof createUpdatableTag>;
+import { KeyTags } from './key-tags';
 
 export function trackedSet<Value = unknown>(
   data?: Set<Value> | Value[] | Iterable<Value> | null,
@@ -15,26 +14,7 @@ export function trackedSet<Value = unknown>(
   const equals = options?.equals ?? Object.is;
   const target = new Set<Value>(data ?? []);
   const collection = createUpdatableTag();
-  const storages = new Map<Value, Tag>();
-
-  function storageFor(key: Value): Tag {
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
-    }
-
-    return storage;
-  }
-
-  function dirtyStorageFor(key: Value): void {
-    const storage = storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
+  const tags = new KeyTags<Value>();
 
   const proxy: Set<Value> = new Proxy(target, {
     get(target, prop, receiver) {
@@ -47,7 +27,7 @@ export function trackedSet<Value = unknown>(
             DIRTY_TAG(collection);
           }
 
-          dirtyStorageFor(value);
+          tags.dirty(value);
 
           target.add(value);
 
@@ -59,10 +39,9 @@ export function trackedSet<Value = unknown>(
         return function (value: Value): boolean {
           if (!target.has(value)) return false;
 
-          dirtyStorageFor(value);
+          tags.delete(value);
           DIRTY_TAG(collection);
 
-          storages.delete(value);
           return target.delete(value);
         };
       }
@@ -71,17 +50,16 @@ export function trackedSet<Value = unknown>(
         return function (): void {
           if (target.size === 0) return;
 
-          storages.forEach((s) => DIRTY_TAG(s));
+          tags.clear(target);
           DIRTY_TAG(collection);
 
-          storages.clear();
           target.clear();
         };
       }
 
       if (prop === 'has') {
         return function (value: Value): boolean {
-          consumeTag(storageFor(value));
+          tags.consume(value);
 
           return target.has(value);
         };

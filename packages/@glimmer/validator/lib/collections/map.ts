@@ -5,8 +5,7 @@
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
-
-type Tag = ReturnType<typeof createUpdatableTag>;
+import { KeyTags } from './key-tags';
 
 export function trackedMap<Key = any, Value = any>(
   data?:
@@ -22,26 +21,7 @@ export function trackedMap<Key = any, Value = any>(
   const target: Map<Key, Value> =
     data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
   const collection = createUpdatableTag();
-  const storages = new Map<Key, Tag>();
-
-  function storageFor(key: Key): Tag {
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
-    }
-
-    return storage;
-  }
-
-  function dirtyStorageFor(key: Key): void {
-    const storage = storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
+  const tags = new KeyTags<Key>();
 
   const proxy: Map<Key, Value> = new Proxy(target, {
     get(target, prop, receiver) {
@@ -57,7 +37,7 @@ export function trackedMap<Key = any, Value = any>(
             if (isUnchanged) return proxy;
           }
 
-          dirtyStorageFor(key);
+          tags.dirty(key);
           DIRTY_TAG(collection);
 
           target.set(key, value);
@@ -70,10 +50,9 @@ export function trackedMap<Key = any, Value = any>(
         return function (key: Key): boolean {
           if (!target.has(key)) return false;
 
-          dirtyStorageFor(key);
+          tags.delete(key);
           DIRTY_TAG(collection);
 
-          storages.delete(key);
           return target.delete(key);
         };
       }
@@ -82,17 +61,16 @@ export function trackedMap<Key = any, Value = any>(
         return function (): void {
           if (target.size === 0) return;
 
-          storages.forEach((s) => DIRTY_TAG(s));
-          storages.clear();
-
+          tags.clear(target.keys());
           DIRTY_TAG(collection);
+
           target.clear();
         };
       }
 
       if (prop === 'get') {
         return function (key: Key): Value | undefined {
-          consumeTag(storageFor(key));
+          tags.consume(key);
 
           return target.get(key);
         };
@@ -100,7 +78,7 @@ export function trackedMap<Key = any, Value = any>(
 
       if (prop === 'has') {
         return function (key: Key): boolean {
-          consumeTag(storageFor(key));
+          tags.consume(key);
 
           return target.has(key);
         };

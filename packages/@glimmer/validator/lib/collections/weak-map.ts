@@ -2,7 +2,7 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
-import { consumeTag } from '../tracking';
+import { consumeTag, isTracking } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
 type Tag = ReturnType<typeof createUpdatableTag>;
@@ -21,7 +21,11 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
     existing instanceof WeakMap ? existing : new WeakMap<Key, Value>(existing);
   const storages = new WeakMap<Key, Tag>();
 
-  function storageFor(key: Key): Tag {
+  function readStorageFor(key: Key): void {
+    if (!isTracking()) {
+      return;
+    }
+
     let storage = storages.get(key);
 
     if (storage === undefined) {
@@ -29,7 +33,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
       storages.set(key, storage);
     }
 
-    return storage;
+    consumeTag(storage);
   }
 
   function dirtyStorageFor(key: Key): void {
@@ -73,7 +77,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
 
       if (prop === 'get') {
         return function (key: Key): Value | undefined {
-          consumeTag(storageFor(key));
+          readStorageFor(key);
 
           return target.get(key);
         };
@@ -81,7 +85,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
 
       if (prop === 'has') {
         return function (key: Key): boolean {
-          consumeTag(storageFor(key));
+          readStorageFor(key);
 
           return target.has(key);
         };

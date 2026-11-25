@@ -2,7 +2,7 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
-import { consumeTag } from '../tracking';
+import { consumeTag, isTracking } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
 type Tag = ReturnType<typeof createUpdatableTag>;
@@ -22,7 +22,11 @@ export function trackedWeakSet<Value extends WeakKey>(
   const target = new WeakSet<Value>(data ?? []);
   const storages = new WeakMap<Value, Tag>();
 
-  function storageFor(key: Value): Tag {
+  function readStorageFor(key: Value): void {
+    if (!isTracking()) {
+      return;
+    }
+
     let storage = storages.get(key);
 
     if (storage === undefined) {
@@ -30,7 +34,7 @@ export function trackedWeakSet<Value extends WeakKey>(
       storages.set(key, storage);
     }
 
-    return storage;
+    consumeTag(storage);
   }
 
   function dirtyStorageFor(key: Value): void {
@@ -89,7 +93,7 @@ export function trackedWeakSet<Value extends WeakKey>(
 
       if (prop === 'has') {
         return function (value: Value): boolean {
-          consumeTag(storageFor(value));
+          readStorageFor(value);
 
           return target.has(value);
         };
