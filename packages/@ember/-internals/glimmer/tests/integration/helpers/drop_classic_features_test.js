@@ -102,79 +102,7 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         assert.verifySteps(['compute first', 'compute second']);
       }
 
-      ['@test willDestroy runs once when the template output goes away'](assert) {
-        let instance;
-
-        class BaseHelper extends Helper {
-          willDestroy() {
-            super.willDestroy(...arguments);
-            assert.step('base willDestroy');
-          }
-        }
-
-        this.registerCustomHelper(
-          'some-helper',
-          class extends BaseHelper {
-            constructor(owner) {
-              super(owner);
-              instance = this;
-            }
-
-            compute() {
-              return 'value';
-            }
-
-            willDestroy() {
-              super.willDestroy(...arguments);
-              assert.step('willDestroy');
-            }
-          }
-        );
-
-        this.render('{{some-helper}}');
-
-        assert.verifySteps([]);
-
-        runDestroy(this.component);
-
-        assert.verifySteps(['base willDestroy', 'willDestroy']);
-        assert.true(isDestroyed(instance));
-      }
-
-      ['@test a direct destroy() call runs willDestroy once'](assert) {
-        let instance;
-
-        this.registerCustomHelper(
-          'some-helper',
-          class extends Helper {
-            constructor(owner) {
-              super(owner);
-              instance = this;
-            }
-
-            compute() {
-              return 'value';
-            }
-
-            willDestroy() {
-              assert.step('willDestroy');
-            }
-          }
-        );
-
-        this.render('{{some-helper}}');
-
-        runTask(() => instance.destroy());
-
-        assert.verifySteps(['willDestroy']);
-        assert.true(isDestroyed(instance));
-
-        runDestroy(this.component);
-
-        assert.verifySteps([]);
-      }
-
-      ['@test a helper without willDestroy is destroyed by the helper manager'](assert) {
+      ['@test a destructor runs once when the template output goes away'](assert) {
         let instance;
 
         this.registerCustomHelper(
@@ -194,10 +122,63 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         this.render('{{some-helper}}');
 
+        assert.verifySteps([]);
+
         runDestroy(this.component);
 
         assert.verifySteps(['destructor']);
         assert.true(isDestroyed(instance));
+      }
+
+      ['@test the helper manager does not call willDestroy'](assert) {
+        let instance;
+
+        this.registerCustomHelper(
+          'some-helper',
+          class extends Helper {
+            constructor(owner) {
+              super(owner);
+              instance = this;
+            }
+
+            compute() {
+              return 'value';
+            }
+
+            willDestroy() {
+              assert.step('willDestroy');
+            }
+          }
+        );
+
+        this.render('{{some-helper}}');
+
+        runDestroy(this.component);
+
+        assert.verifySteps([]);
+        assert.true(isDestroyed(instance));
+      }
+
+      ['@test a helper has no destroy method'](assert) {
+        let instance;
+
+        this.registerCustomHelper(
+          'some-helper',
+          class extends Helper {
+            constructor(owner) {
+              super(owner);
+              instance = this;
+            }
+
+            compute() {
+              return 'value';
+            }
+          }
+        );
+
+        this.render('{{some-helper}}');
+
+        assert.false('destroy' in instance);
       }
 
       ['@test a helper in a subexpression can recompute'](assert) {

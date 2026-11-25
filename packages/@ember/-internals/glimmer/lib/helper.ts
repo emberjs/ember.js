@@ -15,7 +15,6 @@ import { setHelperManager } from '@glimmer/manager/lib/public/api';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
-import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { IS_CLASSIC_HELPER } from './helper-brand';
 
 export { isClassicHelper } from './helper-brand';
@@ -196,9 +195,9 @@ class Helper<S = unknown> extends FrameworkObject {
   is set. It extends no other class.
 
   The owner passes itself to the constructor. `invokeHelper` can create a
-  helper without an owner. The helper manager destroys every helper when its
-  template output goes away. If a subclass overrides `willDestroy`, it runs
-  then.
+  helper without an owner. When its template output goes away, the helper
+  manager destroys the helper with `@ember/destroyable`, so teardown goes in
+  a destructor that `registerDestructor` adds.
 */
 class PlainHelper {
   static isHelperFactory = true;
@@ -220,17 +219,7 @@ class PlainHelper {
     }
 
     assert('expected compute to be defined', (this as { compute?: unknown }).compute);
-
-    if (this.willDestroy !== PlainHelper.prototype.willDestroy) {
-      registerDestructor(this, () => this.willDestroy());
-    }
   }
-
-  destroy() {
-    destroy(this);
-  }
-
-  willDestroy() {}
 
   recompute() {
     join(() => dirtyTag(this[RECOMPUTE_TAG]));
@@ -281,7 +270,11 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
       (function (instance: unknown): instance is HelperInstance<unknown> {
         if (instance !== null && typeof instance === 'object') {
           let cast = instance as HelperInstance<unknown>;
-          return typeof cast.compute === 'function' && typeof cast.destroy === 'function';
+          return (
+            typeof cast.compute === 'function' &&
+            (Boolean(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) ||
+              typeof cast.destroy === 'function')
+          );
         }
         return false;
       })(instance)
