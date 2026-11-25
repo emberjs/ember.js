@@ -1,6 +1,6 @@
 import type { ReactiveOptions } from './types';
 
-import { consumeTag } from '../tracking';
+import { consumeTag, isTracking } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
 class TrackedObject<ObjectType extends NonNullable<object>> {
@@ -9,6 +9,10 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
   #collection = createUpdatableTag();
 
   #readStorageFor(key: PropertyKey) {
+    if (!isTracking()) {
+      return;
+    }
+
     let storage = this.#storages.get(key);
 
     if (storage === undefined) {

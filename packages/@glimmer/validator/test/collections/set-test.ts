@@ -1,4 +1,4 @@
-import { trackedSet } from '@glimmer/validator';
+import { track, trackedSet, untrack, validateTag, valueForTag } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
@@ -368,6 +368,123 @@ module('@glimmer/validator: trackedSet', function () {
     assert.strictEqual(set.size, 0);
     assert.false(set.has(0));
     assert.false(set.has(1));
+  });
+
+  test('tracks object and function keys across add, delete, and clear', (assert) => {
+    const obj = { id: 1 };
+    const fn = () => 'hello';
+    const set = trackedSet<object | (() => string)>();
+
+    let objTag = track(() => {
+      assert.false(set.has(obj));
+    });
+    let fnTag = track(() => {
+      assert.false(set.has(fn));
+    });
+    let objSnapshot = valueForTag(objTag);
+    let fnSnapshot = valueForTag(fnTag);
+
+    set.add(obj);
+    assert.false(validateTag(objTag, objSnapshot), 'adding object key invalidates its tag');
+    assert.true(validateTag(fnTag, fnSnapshot), 'adding unrelated object does not invalidate fn');
+
+    set.add(fn);
+    assert.false(validateTag(fnTag, fnSnapshot), 'adding function key invalidates its tag');
+
+    objTag = track(() => {
+      assert.true(set.has(obj));
+    });
+    fnTag = track(() => {
+      assert.true(set.has(fn));
+    });
+    objSnapshot = valueForTag(objTag);
+    fnSnapshot = valueForTag(fnTag);
+
+    set.delete(obj);
+    assert.false(validateTag(objTag, objSnapshot), 'deleting object key invalidates its tag');
+    assert.true(validateTag(fnTag, fnSnapshot), 'deleting object key does not invalidate fn');
+
+    set.clear();
+    assert.false(validateTag(fnTag, fnSnapshot), 'clearing set invalidates present function key');
+  });
+
+  test('clear does not invalidate absent object keys and preserves future tracking', (assert) => {
+    const present = { id: 'present' };
+    const absent = { id: 'absent' };
+    const set = trackedSet([present]);
+
+    const presentTag = track(() => {
+      assert.true(set.has(present));
+    });
+    const absentTag = track(() => {
+      assert.false(set.has(absent));
+    });
+
+    const presentSnapshot = valueForTag(presentTag);
+    const absentSnapshot = valueForTag(absentTag);
+
+    set.clear();
+    assert.false(validateTag(presentTag, presentSnapshot), 'present object key is invalidated');
+    assert.true(validateTag(absentTag, absentSnapshot), 'absent object key is not invalidated');
+
+    set.add(absent);
+    assert.false(
+      validateTag(absentTag, absentSnapshot),
+      'adding previously absent object key after clear still invalidates'
+    );
+  });
+
+  test('tracks primitive and symbol keys including NaN, null, undefined, and symbols', (assert) => {
+    const unregisteredSym = Symbol('local');
+    const registeredSym = Symbol.for('ember.trackedSet.test');
+    const keys: unknown[] = ['a', 0, NaN, null, undefined, unregisteredSym, registeredSym];
+    const set = trackedSet<unknown>();
+
+    for (const key of keys) {
+      const tag = track(() => {
+        assert.false(set.has(key));
+      });
+      const snapshot = valueForTag(tag);
+
+      set.add(key);
+      assert.false(validateTag(tag, snapshot), `adding ${String(key)} invalidates`);
+    }
+
+    const tags = keys.map((key) => {
+      const tag = track(() => {
+        assert.true(set.has(key));
+      });
+      return { key, tag, snapshot: valueForTag(tag) };
+    });
+
+    set.clear();
+
+    for (const { key, tag, snapshot } of tags) {
+      assert.false(validateTag(tag, snapshot), `clearing invalidates ${String(key)}`);
+    }
+  });
+
+  test('untracked and imperative reads do not interfere with subsequent tracked reads', (assert) => {
+    const obj = { id: 1 };
+    const set = trackedSet<object>();
+
+    assert.false(set.has(obj));
+
+    const untrackTag = track(() => {
+      untrack(() => {
+        assert.false(set.has(obj));
+      });
+    });
+    const untrackSnapshot = valueForTag(untrackTag);
+
+    const trackedTag = track(() => {
+      assert.false(set.has(obj));
+    });
+    const trackedSnapshot = valueForTag(trackedTag);
+
+    set.add(obj);
+    assert.true(validateTag(untrackTag, untrackSnapshot), 'untracked read did not subscribe');
+    assert.false(validateTag(trackedTag, trackedSnapshot), 'tracked read subscribed normally');
   });
 });
 

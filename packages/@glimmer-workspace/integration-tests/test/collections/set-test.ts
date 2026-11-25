@@ -272,6 +272,40 @@ class TrackedSetTest extends RenderTest {
   }
 
   @test
+  'clear with object keys updates present keys without rerendering absent keys'(assert: Assert) {
+    const present = { id: 'present' };
+    const absent = { id: 'absent' };
+    const set = trackedSet([present]);
+
+    const readPresent = () => {
+      const value = String(set.has(present));
+      assert.step(`present:${value}`);
+      return value;
+    };
+    const readAbsent = () => {
+      const value = String(set.has(absent));
+      assert.step(`absent:${value}`);
+      return value;
+    };
+
+    const Foo = defineComponent({ readPresent, readAbsent }, '{{(readPresent)}}|{{(readAbsent)}}');
+
+    this.renderComponent(Foo);
+    this.assertHTML('true|false');
+    assert.verifySteps(['present:true', 'absent:false']);
+
+    set.clear();
+    this.rerender();
+    this.assertHTML('false|false');
+    assert.verifySteps(['present:false']);
+
+    set.add(absent);
+    this.rerender();
+    this.assertHTML('false|true');
+    assert.verifySteps(['absent:true']);
+  }
+
+  @test
   'each: add'() {
     this.assertEachReactivity(
       class extends Component {

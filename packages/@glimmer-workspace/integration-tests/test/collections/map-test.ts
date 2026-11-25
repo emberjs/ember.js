@@ -264,6 +264,40 @@ class TrackedMapTest extends RenderTest {
   }
 
   @test
+  'clear with object keys updates present keys without rerendering absent keys'(assert: Assert) {
+    const present = { id: 'present' };
+    const absent = { id: 'absent' };
+    const map = trackedMap<object, string>([[present, 'one']]);
+
+    const readPresent = () => {
+      const value = map.get(present) ?? 'none';
+      assert.step(`present:${value}`);
+      return value;
+    };
+    const readAbsent = () => {
+      const value = map.get(absent) ?? 'none';
+      assert.step(`absent:${value}`);
+      return value;
+    };
+
+    const Foo = defineComponent({ readPresent, readAbsent }, '{{(readPresent)}}|{{(readAbsent)}}');
+
+    this.renderComponent(Foo);
+    this.assertHTML('one|none');
+    assert.verifySteps(['present:one', 'absent:none']);
+
+    map.clear();
+    this.rerender();
+    this.assertHTML('none|none');
+    assert.verifySteps(['present:none']);
+
+    map.set(absent, 'two');
+    this.rerender();
+    this.assertHTML('none|two');
+    assert.verifySteps(['absent:two']);
+  }
+
+  @test
   'values: set existing value triggers reactivity'() {
     this.assertReactivity(
       class extends Component {

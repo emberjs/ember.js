@@ -1,4 +1,4 @@
-import { trackedMap } from '@glimmer/validator';
+import { track, trackedMap, untrack, validateTag, valueForTag } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
@@ -201,5 +201,142 @@ module('@glimmer/validator: trackedMap', function () {
     assert.strictEqual(map.size, 0);
     assert.strictEqual(map.get(0), undefined);
     assert.strictEqual(map.get(1), undefined);
+  });
+
+  test('tracks object and function keys across set, delete, and clear', (assert) => {
+    const obj = { id: 1 };
+    const fn = () => 'hello';
+    const map = trackedMap<object | (() => string), number | undefined>();
+
+    let objTag = track(() => {
+      assert.strictEqual(map.get(obj), undefined);
+    });
+    let fnTag = track(() => {
+      assert.false(map.has(fn));
+    });
+    let objSnapshot = valueForTag(objTag);
+    let fnSnapshot = valueForTag(fnTag);
+
+    map.set(obj, 10);
+    assert.false(validateTag(objTag, objSnapshot), 'setting object key invalidates its tag');
+    assert.true(validateTag(fnTag, fnSnapshot), 'setting unrelated object does not invalidate fn');
+
+    map.set(fn, undefined);
+    assert.false(validateTag(fnTag, fnSnapshot), 'setting function key invalidates its tag');
+
+    objTag = track(() => {
+      assert.strictEqual(map.get(obj), 10);
+    });
+    fnTag = track(() => {
+      assert.true(map.has(fn));
+    });
+    objSnapshot = valueForTag(objTag);
+    fnSnapshot = valueForTag(fnTag);
+
+    map.delete(obj);
+    assert.false(validateTag(objTag, objSnapshot), 'deleting object key invalidates its tag');
+    assert.true(validateTag(fnTag, fnSnapshot), 'deleting object key does not invalidate fn');
+
+    map.clear();
+    assert.false(
+      validateTag(fnTag, fnSnapshot),
+      'clearing map invalidates present function key even when mapped value is undefined'
+    );
+  });
+
+  test('clear does not invalidate absent object keys and preserves future tracking', (assert) => {
+    const present = { id: 'present' };
+    const absent = { id: 'absent' };
+    const map = trackedMap<object, number>([[present, 1]]);
+
+    const presentTag = track(() => {
+      assert.strictEqual(map.get(present), 1);
+    });
+    const absentGetTag = track(() => {
+      assert.strictEqual(map.get(absent), undefined);
+    });
+    const absentHasTag = track(() => {
+      assert.false(map.has(absent));
+    });
+
+    const presentSnapshot = valueForTag(presentTag);
+    const absentGetSnapshot = valueForTag(absentGetTag);
+    const absentHasSnapshot = valueForTag(absentHasTag);
+
+    map.clear();
+    assert.false(validateTag(presentTag, presentSnapshot), 'present object key is invalidated');
+    assert.true(
+      validateTag(absentGetTag, absentGetSnapshot),
+      'absent object get is not invalidated'
+    );
+    assert.true(
+      validateTag(absentHasTag, absentHasSnapshot),
+      'absent object has is not invalidated'
+    );
+
+    map.set(absent, 2);
+    assert.false(
+      validateTag(absentGetTag, absentGetSnapshot),
+      'setting previously absent object key after clear still invalidates get'
+    );
+    assert.false(
+      validateTag(absentHasTag, absentHasSnapshot),
+      'setting previously absent object key after clear still invalidates has'
+    );
+  });
+
+  test('tracks primitive and symbol keys including NaN, null, undefined, and symbols', (assert) => {
+    const unregisteredSym = Symbol('local');
+    const registeredSym = Symbol.for('ember.trackedMap.test');
+    const keys: unknown[] = ['a', 0, NaN, null, undefined, unregisteredSym, registeredSym];
+    const map = trackedMap<unknown, number>();
+
+    for (const key of keys) {
+      const tag = track(() => {
+        assert.strictEqual(map.get(key), undefined);
+      });
+      const snapshot = valueForTag(tag);
+
+      map.set(key, 1);
+      assert.false(validateTag(tag, snapshot), `setting ${String(key)} invalidates`);
+    }
+
+    const tags = keys.map((key) => {
+      const tag = track(() => {
+        assert.strictEqual(map.get(key), 1);
+      });
+      return { key, tag, snapshot: valueForTag(tag) };
+    });
+
+    map.clear();
+
+    for (const { key, tag, snapshot } of tags) {
+      assert.false(validateTag(tag, snapshot), `clearing invalidates ${String(key)}`);
+    }
+  });
+
+  test('untracked and imperative reads do not interfere with subsequent tracked reads', (assert) => {
+    const obj = { id: 1 };
+    const map = trackedMap<object, number>();
+
+    assert.strictEqual(map.get(obj), undefined);
+    assert.false(map.has(obj));
+
+    const untrackTag = track(() => {
+      untrack(() => {
+        assert.strictEqual(map.get(obj), undefined);
+        assert.false(map.has(obj));
+      });
+    });
+    const untrackSnapshot = valueForTag(untrackTag);
+
+    const trackedTag = track(() => {
+      assert.strictEqual(map.get(obj), undefined);
+    });
+    const trackedSnapshot = valueForTag(trackedTag);
+
+    map.set(obj, 1);
+    assert.true(validateTag(untrackTag, untrackSnapshot), 'untracked reads did not subscribe');
+    assert.false(validateTag(trackedTag, trackedSnapshot), 'tracked read subscribed normally');
   });
 });

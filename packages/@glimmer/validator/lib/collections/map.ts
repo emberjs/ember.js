@@ -3,10 +3,14 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
-import { consumeTag } from '../tracking';
+import { consumeTag, isTracking } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
 type Tag = ReturnType<typeof createUpdatableTag>;
+
+function isObjectKey(key: unknown): key is object {
+  return (typeof key === 'object' && key !== null) || typeof key === 'function';
+}
 
 export function trackedMap<Key = any, Value = any>(
   data?:
@@ -22,24 +26,50 @@ export function trackedMap<Key = any, Value = any>(
   const target: Map<Key, Value> =
     data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
   const collection = createUpdatableTag();
-  const storages = new Map<Key, Tag>();
+  const objectStorages = new WeakMap<object, Tag>();
+  const primitiveStorages = new Map<Key, Tag>();
+  let hasObjectStorages = false;
 
-  function storageFor(key: Key): Tag {
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
+  function readStorageFor(key: Key): void {
+    if (!isTracking()) {
+      return;
     }
 
-    return storage;
+    let storage: Tag | undefined;
+
+    if (isObjectKey(key)) {
+      storage = objectStorages.get(key);
+
+      if (storage === undefined) {
+        storage = createUpdatableTag();
+        objectStorages.set(key, storage);
+        hasObjectStorages = true;
+      }
+    } else {
+      storage = primitiveStorages.get(key);
+
+      if (storage === undefined) {
+        storage = createUpdatableTag();
+        primitiveStorages.set(key, storage);
+      }
+    }
+
+    consumeTag(storage);
   }
 
   function dirtyStorageFor(key: Key): void {
-    const storage = storages.get(key);
+    const storage = isObjectKey(key) ? objectStorages.get(key) : primitiveStorages.get(key);
 
     if (storage) {
       DIRTY_TAG(storage);
+    }
+  }
+
+  function deleteStorageFor(key: Key): void {
+    if (isObjectKey(key)) {
+      objectStorages.delete(key);
+    } else {
+      primitiveStorages.delete(key);
     }
   }
 
@@ -73,7 +103,7 @@ export function trackedMap<Key = any, Value = any>(
           dirtyStorageFor(key);
           DIRTY_TAG(collection);
 
-          storages.delete(key);
+          deleteStorageFor(key);
           return target.delete(key);
         };
       }
@@ -82,8 +112,20 @@ export function trackedMap<Key = any, Value = any>(
         return function (): void {
           if (target.size === 0) return;
 
-          storages.forEach((s) => DIRTY_TAG(s));
-          storages.clear();
+          // Object keys live in a WeakMap, which can't be enumerated, so walk the
+          // entries being removed instead. Tags for absent object keys are left
+          // alone: their readers are unaffected by the clear.
+          if (hasObjectStorages) {
+            for (const key of target.keys()) {
+              if (isObjectKey(key)) {
+                dirtyStorageFor(key);
+                objectStorages.delete(key);
+              }
+            }
+          }
+
+          primitiveStorages.forEach((s) => DIRTY_TAG(s));
+          primitiveStorages.clear();
 
           DIRTY_TAG(collection);
           target.clear();
@@ -92,7 +134,7 @@ export function trackedMap<Key = any, Value = any>(
 
       if (prop === 'get') {
         return function (key: Key): Value | undefined {
-          consumeTag(storageFor(key));
+          readStorageFor(key);
 
           return target.get(key);
         };
@@ -100,7 +142,7 @@ export function trackedMap<Key = any, Value = any>(
 
       if (prop === 'has') {
         return function (key: Key): boolean {
-          consumeTag(storageFor(key));
+          readStorageFor(key);
 
           return target.has(key);
         };
