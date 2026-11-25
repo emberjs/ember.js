@@ -1,0 +1,12 @@
+{
+  "name": "ember-memory-v8",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Memory benchmarks for ember-source in Node, with happy-dom and mitata",
+  "dependencies": {
+    "ember-source": "workspace:*",
+    "happy-dom": "^21.0.4",
+    "mitata": "^1.0.34"
+  }
+}

@@ -8,3 +8,4 @@ packages:
   - 'packages/*/*/test'
   - 'smoke-tests/*'
   - 'tests/*'
+  - 'tests/memory/*'
