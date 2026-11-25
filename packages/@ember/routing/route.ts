@@ -10,7 +10,8 @@ import {
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
+import { registerDestructor } from '@glimmer/destroyable';
 import type { default as BucketCache } from './lib/cache';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -281,7 +282,35 @@ interface Route<Model = unknown> extends InternalActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
+/**
+  The base class of `Route` when the `EMBER_DROP_CLASSIC_FEATURES` build flag
+  is set. It extends no other class.
+
+  The owner passes itself to the constructor. A route without an owner is
+  allowed, as on the classic class.
+
+  The container destroys the route with `@ember/destroyable`. Teardown in
+  subclasses goes in a destructor that `registerDestructor` adds.
+*/
+class PlainRouteBase {
+  /** The container creates instances only through `create`. */
+  static create<T extends PlainRouteBase>(this: new (owner?: Owner) => T, props?: object): T {
+    return new this(props === undefined ? undefined : getOwner(props));
+  }
+
+  constructor(owner?: Owner) {
+    if (owner !== undefined) {
+      setOwner(this, owner);
+    }
+  }
+}
+
+const ClassicRouteBase = EmberObject.extend(InternalActionHandler);
+const RouteBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainRouteBase : ClassicRouteBase
+) as typeof ClassicRouteBase;
+
+class Route<Model = unknown> extends RouteBase {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
@@ -309,6 +338,10 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
       let bucketCache = owner.lookup(P`-bucket-cache:main`);
       this._router = router as EmberRouter;
       this._bucketCache = bucketCache as BucketCache;
+    }
+
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      registerDestructor(this, () => this.teardownViews());
     }
   }
 
@@ -1981,28 +2014,12 @@ export function hasDefaultSerialize(route: Route): boolean {
   return route.serialize === defaultSerialize;
 }
 
-// Set these here so they can be overridden with extend
-Route.reopen({
-  mergedProperties: ['queryParams'],
+/**
+  These defaults sit on the prototype, so subclasses can override them. The
+  classic class also merges the `queryParams` of `Route.extend()` calls.
+*/
+const ROUTE_DEFAULTS = {
   queryParams: {},
-  templateName: null,
-  controllerName: null,
-
-  send(...args: any[]) {
-    assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
-      !this.isDestroying && !this.isDestroyed
-    );
-    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
-      this._router.send(...args);
-    } else {
-      let name = args.shift();
-      let action = this.actions[name];
-      if (action) {
-        return action.apply(this, args);
-      }
-    }
-  },
 
   /**
     The controller associated with this route.
@@ -2079,7 +2096,34 @@ Route.reopen({
       );
     },
   },
-});
+};
+
+/** The plain `Route` of the `EMBER_DROP_CLASSIC_FEATURES` build has none of these. */
+const CLASSIC_ROUTE_DEFAULTS = {
+  templateName: null,
+  controllerName: null,
+
+  send(this: Route, name: string, ...args: any[]) {
+    assert(
+      `Attempted to call .send() with the action '${name}' on the destroyed route '${this.routeName}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
+      this._router.send(name, ...args);
+    } else {
+      let action = this.actions[name];
+      if (action) {
+        return action.apply(this, args);
+      }
+    }
+  },
+};
+
+if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+  Object.assign(Route.prototype, ROUTE_DEFAULTS);
+} else {
+  Route.reopen({ mergedProperties: ['queryParams'] }, ROUTE_DEFAULTS, CLASSIC_ROUTE_DEFAULTS);
+}
 
 setRouteManager((owner) => new ClassicRouteManager(owner), Route);
 

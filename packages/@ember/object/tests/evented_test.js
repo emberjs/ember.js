@@ -4,7 +4,13 @@ import EventedMixin from '@ember/object/evented';
 import Component from '@ember/component';
 import Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
-import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  runDestroy,
+  testUnless,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
@@ -22,7 +28,7 @@ moduleFor(
 
       let route = Route.create();
       assert.true(EventedMixin.detect(route), 'Route instance');
-      route.destroy();
+      runDestroy(route);
 
       assert.false(EventedMixin.detect(EmberObject.prototype), 'EmberObject');
     }
