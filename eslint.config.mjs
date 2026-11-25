@@ -529,4 +529,22 @@ export default [
       'disable-features/disable-generator-functions': 'off',
     },
   },
+  {
+    ...nodePlugin.configs['flat/recommended'],
+    files: ['tests/memory/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        // lib/setup.js puts a happy-dom window on globalThis
+        document: 'readonly',
+      },
+      ecmaVersion: 2026,
+      sourceType: 'module',
+    },
+    rules: {
+      // the scripts report their results on the console
+      'no-console': 'off',
+      'disable-features/disable-async-await': 'off',
+    },
+  },
 ];
