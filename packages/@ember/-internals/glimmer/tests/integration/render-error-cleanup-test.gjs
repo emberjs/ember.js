@@ -1,7 +1,10 @@
 import { renderComponent } from '@ember/renderer';
+import { destroy, registerDestructor } from '@ember/destroyable';
+import Component from '@glimmer/component';
 import { isTracking, resetTracking } from '@glimmer/validator';
 import { DEBUG } from '@glimmer/env';
 import { module, test } from 'qunit';
+import { settled } from '@ember/test-helpers';
 import { setupRenderingTest } from 'ember-qunit';
 
 module('render error cleanup', function (hooks) {
@@ -46,5 +49,46 @@ module('render error cleanup', function (hooks) {
     );
 
     assert.false(isTracking(), 'no tracking frame is left open');
+  });
+
+  test('a first render that throws: destroying the owner destroys what the render made', async function (assert) {
+    class Child extends Component {
+      constructor(owner, args) {
+        super(owner, args);
+        assert.step('child created');
+        registerDestructor(this, () => assert.step('child destroyed'));
+      }
+    }
+
+    class Boom extends Component {
+      constructor(owner, args) {
+        super(owner, args);
+        throw new Error('boom');
+      }
+    }
+
+    /**
+     * The renderer lives as long as its owner,
+     * so this test makes an owner that it can destroy.
+     */
+    let owner = {};
+
+    assert.throws(() => {
+      renderComponent(
+        <template>
+          <Child />
+          <Boom />
+        </template>,
+        { into: this.element, owner }
+      );
+    }, /boom/);
+
+    await settled();
+    assert.verifySteps(['child created']);
+
+    destroy(owner);
+    await settled();
+
+    assert.verifySteps(['child destroyed']);
   });
 });

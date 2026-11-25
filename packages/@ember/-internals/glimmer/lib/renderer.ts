@@ -6,7 +6,7 @@ import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-u
 import { assert } from '@ember/debug';
 import {
   associateDestroyableChild,
-  destroy,
+  destroyChildren,
   isDestroyed,
   isDestroying,
 } from '@glimmer/destroyable';
@@ -131,6 +131,16 @@ class ClassicRootState implements RendererRoot {
         dynamicScope
       );
 
+      /**
+       * If the render throws, there is no render result.
+       * The root then still destroys what the render made before the error.
+       *
+       * In production a failed root renders again on the next revalidate.
+       * The drop of the failed render stays until the root is destroyed,
+       * because it shares the root component with the next render.
+       */
+      associateDestroyableChild(this, iterator.drop);
+
       let result = (this.result = iterator.sync());
 
       associateDestroyableChild(this, result);
@@ -150,7 +160,7 @@ class ClassicRootState implements RendererRoot {
   }
 
   destroy() {
-    let { result, env } = this;
+    let { env } = this;
 
     this.destroyed = true;
 
@@ -158,20 +168,18 @@ class ClassicRootState implements RendererRoot {
     this.result = undefined;
     this.render = undefined as any;
 
-    if (result !== undefined) {
-      /*
-       Handles these scenarios:
+    /*
+     Handles these scenarios:
 
-       * When roots are removed during standard rendering process, a transaction exists already
-         `.begin()` / `.commit()` are not needed.
-       * When roots are being destroyed manually (`component.append(); component.destroy() case), no
-         transaction exists already.
-       * When roots are being destroyed during `Renderer#destroy`, no transaction exists
+     * When roots are removed during standard rendering process, a transaction exists already
+       `.begin()` / `.commit()` are not needed.
+     * When roots are being destroyed manually (`component.append(); component.destroy() case), no
+       transaction exists already.
+     * When roots are being destroyed during `Renderer#destroy`, no transaction exists
 
-       */
+     */
 
-      inTransaction(env, () => destroy(result!));
-    }
+    inTransaction(env, () => destroyChildren(this));
   }
 }
 

@@ -140,6 +140,12 @@ export class ComponentRootState implements RendererRoot {
           options.args
         );
 
+        /**
+         * If the render throws, there is no render result.
+         * The root then still destroys what the render made before the error.
+         */
+        associateDestroyableChild(this, iterator.drop);
+
         this.#result = associateDestroyableChild(this, iterator.sync());
       } else if (!isDestroying(result)) {
         result.rerender({ alwaysRevalidate: false });

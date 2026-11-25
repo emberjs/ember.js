@@ -675,6 +675,14 @@ export class VM {
   }
 
   /**
+   * The root destroyable of this render.
+   * Its owner destroys what the render made.
+   */
+  get drop(): object {
+    return this.#stacks.drop;
+  }
+
+  /**
    * ## State changes
    *
    * [-] associate destroyable `child`
