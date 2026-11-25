@@ -675,13 +675,6 @@ export class VM {
   }
 
   /**
-   * ## State changes
-   *
-   * [-] associate destroyable `child`
-   *
-   * @utility
-   */
-  /**
    * The root destroyable of this render.
    * Its owner destroys what the render made.
    */
@@ -689,6 +682,13 @@ export class VM {
     return this.#stacks.drop;
   }
 
+  /**
+   * ## State changes
+   *
+   * [-] associate destroyable `child`
+   *
+   * @utility
+   */
   associateDestroyable(child: Destroyable): void {
     let parent = expect(this.#stacks.destroyable.current, 'Expected destructor parent');
     associateDestroyableChild(parent, child);
