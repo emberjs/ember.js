@@ -289,9 +289,8 @@ interface Route<Model = unknown> extends InternalActionHandler {
   The owner passes itself to the constructor. A route without an owner is
   allowed, as on the classic class.
 
-  The container destroys the route with `@ember/destroyable`, and a
-  destructor tears down the views. Teardown in subclasses goes in a
-  destructor that `registerDestructor` adds.
+  The container destroys the route with `@ember/destroyable`. Teardown in
+  subclasses goes in a destructor that `registerDestructor` adds.
 */
 class PlainRouteBase {
   /** The container creates instances only through `create`. */
@@ -303,8 +302,6 @@ class PlainRouteBase {
     if (owner !== undefined) {
       setOwner(this, owner);
     }
-
-    registerDestructor(this, () => (this as unknown as Route).teardownViews());
   }
 }
 
@@ -341,6 +338,10 @@ class Route<Model = unknown> extends RouteBase {
       let bucketCache = owner.lookup(P`-bucket-cache:main`);
       this._router = router as EmberRouter;
       this._bucketCache = bucketCache as BucketCache;
+    }
+
+    if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+      registerDestructor(this, () => this.teardownViews());
     }
   }
 
