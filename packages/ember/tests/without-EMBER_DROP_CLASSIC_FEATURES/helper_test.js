@@ -1,8 +1,8 @@
 import Helper, { helper } from '@ember/component/helper';
 import Service, { service } from '@ember/service';
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import { getOwner } from '@ember/owner';
-import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 /*
   The classic `Helper` API, which the `EMBER_DROP_CLASSIC_FEATURES` build
@@ -128,12 +128,12 @@ if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
           }
         );
 
-        this.render('{{some-helper}}');
+        this.render('{{#if this.show}}{{some-helper}}{{/if}}', { show: true });
 
         assert.false(instance.isDestroying);
         assert.false(instance.isDestroyed);
 
-        runDestroy(this.component);
+        runTask(() => set(this.context, 'show', false));
 
         assert.verifySteps(['willDestroy']);
         assert.true(instance.isDestroying);
