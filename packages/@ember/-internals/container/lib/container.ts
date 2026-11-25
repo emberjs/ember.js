@@ -10,6 +10,7 @@ import { setOwner } from '@ember/-internals/owner';
 import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { destroy } from '@glimmer/destroyable';
 import type { DebugRegistry } from './registry';
 import type Registry from './registry';
 
@@ -396,9 +397,7 @@ function instantiateFactory(
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed
     if (container.isDestroying) {
-      if (typeof (instance as any).destroy === 'function') {
-        (instance as any).destroy();
-      }
+      destroyInstance(instance);
     }
 
     return instance;
@@ -420,6 +419,18 @@ function instantiateFactory(
   throw new Error('Could not create factory');
 }
 
+/**
+  The plain framework classes of the `EMBER_DROP_CLASSIC_FEATURES` build,
+  such as `Service`, have no `destroy` method.
+*/
+function destroyInstance(value: object): void {
+  if (typeof (value as { destroy?: unknown }).destroy === 'function') {
+    (value as { destroy(): void }).destroy();
+  } else if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
+    destroy(value);
+  }
+}
+
 function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
@@ -428,9 +439,7 @@ function destroyDestroyables(container: Container): void {
     let value = cache[key];
     assert('has cached value', value);
 
-    if ((value as any).destroy) {
-      (value as any).destroy();
-    }
+    destroyInstance(value);
   }
 }
 
@@ -447,9 +456,7 @@ function resetMember(container: Container, fullName: string) {
   if (member) {
     delete container.cache[fullName];
 
-    if ((member as any).destroy) {
-      (member as any).destroy();
-    }
+    destroyInstance(member);
   }
 }
 

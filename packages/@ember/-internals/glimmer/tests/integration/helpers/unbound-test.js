@@ -4,6 +4,7 @@ import {
   strip,
   runTask,
   runLoopSettled,
+  testUnless,
 } from 'internal-test-helpers';
 
 import { set, get, setProperties } from '@ember/object';
@@ -372,7 +373,7 @@ moduleFor(
       this.assertText('abc abc');
     }
 
-    async ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render an unbound helper invocation for helpers with dependent keys`]() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
@@ -487,7 +488,7 @@ moduleFor(
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
     }
 
-    async ['@test should be able to render an unbound helper invocation with bound hash options']() {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to render an unbound helper invocation with bound hash options`]() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
