@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import { getOwner } from '@ember/owner';
-import { isDestroyed } from '@ember/destroyable';
+import { isDestroyed, registerDestructor } from '@ember/destroyable';
 import Route from '@ember/routing/route';
 import { precompileTemplate } from '@ember/template-compilation';
 import {
@@ -57,20 +57,13 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         runDestroy(owner);
       }
 
-      ['@test willDestroy runs once when the owner is destroyed'](assert) {
+      ['@test a destructor runs once when the owner is destroyed'](assert) {
         let owner = buildOwner();
 
-        class BaseController extends Controller {
-          willDestroy() {
-            super.willDestroy(...arguments);
-            assert.step('base willDestroy');
-          }
-        }
-
-        class MainController extends BaseController {
-          willDestroy() {
-            super.willDestroy(...arguments);
-            assert.step('willDestroy');
+        class MainController extends Controller {
+          constructor(owner) {
+            super(owner);
+            registerDestructor(this, () => assert.step('destructor'));
           }
         }
 
@@ -82,11 +75,11 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         runDestroy(owner);
 
-        assert.verifySteps(['base willDestroy', 'willDestroy']);
+        assert.verifySteps(['destructor']);
         assert.true(isDestroyed(main));
       }
 
-      ['@test willDestroy runs once when destroy is called before the owner is destroyed'](assert) {
+      ['@test the container does not call willDestroy'](assert) {
         let owner = buildOwner();
 
         class MainController extends Controller {
@@ -99,26 +92,20 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         let main = owner.lookup('controller:main');
 
-        runTask(() => main.destroy());
-
-        assert.verifySteps(['willDestroy']);
-        assert.true(isDestroyed(main));
-
         runDestroy(owner);
 
         assert.verifySteps([]);
+        assert.true(isDestroyed(main));
       }
 
-      ['@test a controller without willDestroy is destroyed with its owner'](assert) {
+      ['@test a controller has no destroy method'](assert) {
         let owner = buildOwner();
 
         owner.register('controller:main', class extends Controller {});
 
-        let main = owner.lookup('controller:main');
+        assert.false('destroy' in owner.lookup('controller:main'));
 
         runDestroy(owner);
-
-        assert.true(isDestroyed(main));
       }
     }
   );

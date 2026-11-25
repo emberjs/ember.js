@@ -16,7 +16,6 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import { tracked } from '@ember/-internals/metal/lib/tracked';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { assert } from '@ember/debug';
-import { destroy, registerDestructor } from '@glimmer/destroyable';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam =
@@ -253,8 +252,9 @@ const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
   flag is set. It extends no other class.
 
   The owner passes itself to the constructor, as it does for Glimmer
-  components. The controller is destroyed with its owner. If a subclass
-  overrides `willDestroy`, it runs then.
+  components. When the owner is destroyed, the container destroys the
+  controller with `@ember/destroyable`, so teardown goes in a destructor that
+  `registerDestructor` adds.
 
   The route reads `queryParams`, sets `model` and the query param values, and
   uses `_qpDelegate` and `_qpChanged` to sync the query params with the URL.
@@ -286,18 +286,7 @@ class PlainControllerBase {
 
     this.namespace = owner.lookup('application:main');
     this.target = owner.lookup('router:main');
-
-    if (this.willDestroy !== PlainControllerBase.prototype.willDestroy) {
-      registerDestructor(this, () => this.willDestroy());
-    }
   }
-
-  /** The container calls this when it destroys its instances. */
-  destroy(): void {
-    destroy(this);
-  }
-
-  willDestroy(): void {}
 
   /** @internal */
   _qpChanged(controller: PlainControllerBase, _prop: string) {
