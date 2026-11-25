@@ -241,7 +241,7 @@ module('Helpers test: {{hash}}', function (hooks) {
     await assert.stableRender('Godfrey');
   });
 
-  test('works with computeds', async function (assert) {
+  (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? test.skip : test)('works with computeds', async function (assert) {
     let state = new Model({ firstName: 'Chad', lastName: 'Hietala' });
 
     class FooBar extends Component {

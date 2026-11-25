@@ -390,7 +390,7 @@ moduleFor(
     }
 
     [`${testUnless(
-      EMBER_A.isRemoved
+      EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES
     )} @test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization`](
       assert
     ) {

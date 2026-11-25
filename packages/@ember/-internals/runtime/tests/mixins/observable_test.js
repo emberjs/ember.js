@@ -1,6 +1,6 @@
 import { addObserver } from '@ember/-internals/metal';
 import EmberObject, { computed, get } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled, testUnless } from 'internal-test-helpers';
 
 moduleFor(
   'mixins/observable',
@@ -43,7 +43,9 @@ moduleFor(
       assert.equal('Cook', obj.get('lastName'));
     }
 
-    async ['@test calling setProperties completes safely despite exceptions'](assert) {
+    async [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test calling setProperties completes safely despite exceptions`](
+      assert
+    ) {
       let exc = new Error('Something unexpected happened!');
       let obj = class extends EmberObject {
         @computed
@@ -81,7 +83,7 @@ moduleFor(
       obj.destroy();
     }
 
-    ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test should be able to retrieve cached values of computed properties without invoking the computed property`](
       assert
     ) {
       let obj = class extends EmberObject {

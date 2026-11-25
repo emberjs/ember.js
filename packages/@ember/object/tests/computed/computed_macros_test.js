@@ -28,7 +28,9 @@ const EMBER_A = DEPRECATIONS.DEPRECATE_EMBER_ARRAY_A;
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test empty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test empty part 1/2`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
@@ -53,7 +55,9 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    [`${testUnless(isRemoved || EMBER_A.isRemoved)} @test notEmpty part 1/2`](assert) {
+    [`${testUnless(isRemoved || EMBER_A.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notEmpty part 1/2`](
+      assert
+    ) {
       expectDeprecation(/`A` from `@ember\/array` is deprecated/, EMBER_A.isEnabled);
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
@@ -78,7 +82,9 @@ moduleFor(
       assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test not`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test not`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -93,7 +99,9 @@ moduleFor(
       assert.equal(get(obj, 'notFoo'), false);
     }
 
-    [`${testUnless(isRemoved)} @test empty part 2/2`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test empty part 2/2`](
+      assert
+    ) {
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -113,7 +121,9 @@ moduleFor(
       assert.equal(get(obj, 'quzEmpty'), false);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test bool`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test bool`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -130,7 +140,9 @@ moduleFor(
       assert.equal(get(obj, 'quzBool'), false);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test alias`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test alias`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -168,7 +180,9 @@ moduleFor(
       assert.equal(get(obj, 'quz'), null);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test alias set`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test alias set`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -200,7 +214,9 @@ moduleFor(
       assert.equal(get(obj, 'aliased'), constantValue);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test match`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test match`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -216,7 +232,9 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    [`${testUnless(isRemoved)} @test notEmpty part 2/2`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test notEmpty part 2/2`](
+      assert
+    ) {
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -230,7 +248,9 @@ moduleFor(
       assert.equal(get(obj, 'hasItems'), false, 'is empty');
     }
 
-    [`${testUnless(isRemoved)} @test none`](assert) {
+    [`${testUnless(isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test none`](
+      assert
+    ) {
       expectDeprecation(/`none` from `@ember\/object\/computed` is deprecated/, isEnabled);
       expectDeprecation(/`isNone` from `@ember\/utils` is deprecated/, isEnabled);
 
@@ -248,7 +268,9 @@ moduleFor(
       assert.true(get(obj, 'isHungry'), 'undefined is none');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test equal`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test equal`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -264,7 +286,9 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test gt`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test gt`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -284,7 +308,9 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test gte`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test gte`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -304,7 +330,9 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lt`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lt`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -324,7 +352,9 @@ moduleFor(
       assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test lte`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test lte`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -344,7 +374,7 @@ moduleFor(
       assert.equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with two properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test and, with two properties`](
       assert
     ) {
       expectDeprecation(
@@ -372,7 +402,7 @@ moduleFor(
       assert.equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with three properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test and, with three properties`](
       assert
     ) {
       expectDeprecation(
@@ -396,7 +426,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test and, with expand properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test and, with expand properties`](
       assert
     ) {
       expectDeprecation(
@@ -420,7 +450,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with two properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test or, with two properties`](
       assert
     ) {
       expectDeprecation(
@@ -454,7 +484,7 @@ moduleFor(
       assert.equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with three properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test or, with three properties`](
       assert
     ) {
       expectDeprecation(
@@ -492,7 +522,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or, with expand properties`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test or, with expand properties`](
       assert
     ) {
       expectDeprecation(
@@ -530,7 +560,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test or and and, warn about dependent keys with spaces`]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test or and and, warn about dependent keys with spaces`]() {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -546,7 +576,9 @@ moduleFor(
       }, /Dependent keys passed to `and` computed macro can't have spaces\./);
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test oneWay`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test oneWay`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -575,7 +607,9 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TeddyBear');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test readOnly`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test readOnly`](
+      assert
+    ) {
       expectDeprecation(
         /from `@ember\/object\/computed` is deprecated/,
         DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isEnabled
@@ -606,7 +640,7 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved)} @test deprecatingAlias`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_COMPUTED_MACROS.isRemoved || import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test deprecatingAlias`](
       assert
     ) {
       expectDeprecation(

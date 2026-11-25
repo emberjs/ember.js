@@ -4,6 +4,7 @@ import {
   styles,
   runTask,
   expectClassicComponentDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -244,7 +245,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         assert.equal(instance.get('second'), 'second', 'matches known value');
       }
 
-      ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test bound computed properties can be overridden in extensions, set during init, and passed in as attrs`]() {
         expectClassicComponentDeprecation();
 
         let FooClass = class extends Component {

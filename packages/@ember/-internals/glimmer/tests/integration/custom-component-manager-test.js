@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, strip, testUnless } from 'internal-test-helpers';
 
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
@@ -272,7 +272,7 @@ moduleFor(
       this.assertHTML(`<p>sayonara world </p>`);
     }
 
-    ['@test it can set arguments on the component instance']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can set arguments on the component instance`]() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         class extends EmberObject {
@@ -293,7 +293,7 @@ moduleFor(
       this.assertHTML(`<p>Yehuda Katz</p>`);
     }
 
-    ['@test arguments are updated if they change']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test arguments are updated if they change`]() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         class extends EmberObject {
@@ -326,7 +326,7 @@ moduleFor(
       this.assertHTML(`<p>Chad Hietala</p>`);
     }
 
-    ['@test it can set positional params on the component instance']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can set positional params on the component instance`]() {
       let ComponentClass = class extends NativeComponent {
         @computed('args.positional.[]')
         get salutation() {
@@ -344,7 +344,7 @@ moduleFor(
       this.assertHTML(`<p>Yehuda Katz</p>`);
     }
 
-    ['@test positional params are updated if they change (computed, arr tag)']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test positional params are updated if they change (computed, arr tag)`]() {
       let ComponentClass = class extends NativeComponent {
         @computed('args.positional.[]')
         get salutation() {
@@ -374,7 +374,7 @@ moduleFor(
       this.assertHTML(`<p>Chad Hietala</p>`);
     }
 
-    ['@test positional params are updated if they change (computed, individual tags)']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test positional params are updated if they change (computed, individual tags)`]() {
       let ComponentClass = class extends NativeComponent {
         @computed('args.positional.0', 'args.positional.1')
         get salutation() {
@@ -631,7 +631,7 @@ moduleFor(
       this.assertHTML(`<p>hello world</p>`);
     }
 
-    ['@test it can set arguments on the component instance']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test it can set arguments on the component instance`]() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         class extends EmberObject {
@@ -668,7 +668,7 @@ moduleFor(
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
     }
 
-    ['@test arguments are updated if they change']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test arguments are updated if they change`]() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         class extends EmberObject {

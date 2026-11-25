@@ -5,6 +5,7 @@ import {
   classes,
   runTask,
   expectClassicComponentDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
@@ -574,7 +575,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         });
       }
 
-      ['@test using a computed property for classNameBindings triggers an assertion']() {
+      [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test using a computed property for classNameBindings triggers an assertion`]() {
         expectClassicComponentDeprecation();
 
         let FooBarComponent = class extends Component {
