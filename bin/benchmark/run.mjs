@@ -30,6 +30,11 @@ const DEFAULT_FIDELITY = process.env['RUNS'] || '20';
 const DEFAULT_THROTTLE = '8';
 const DEFAULT_REGRESSION_THRESHOLD = '25';
 const DEFAULT_SAMPLE_TIMEOUT = '60';
+/**
+ * Extra V8 flags for both browsers, separated by spaces.
+ * For example `--no-incremental-marking`, to see how much of a change is GC timing.
+ */
+const EXTRA_JS_FLAGS = process.env['BENCH_JS_FLAGS']?.trim() ?? '';
 const DEFAULT_MARKERS = [
   // Copied from glimmer-vm/bin/setup-bench.mts (krausest benchmark)
   'render',
@@ -180,9 +185,13 @@ async function bootAndRun({ headless = true } = {}) {
       // Exposes gc(), which the benchmark app calls between phases (see
       // waitForIdle in smoke-tests/benchmark-app/app/run-benchmark.js), so
       // the garbage of one phase is not collected inside a later one.
-      '--js-flags=--expose-gc',
+      `--js-flags=${['--expose-gc', EXTRA_JS_FLAGS].filter(Boolean).join(' ')}`,
     ].join(','),
   ];
+
+  if (EXTRA_JS_FLAGS) {
+    console.log(`\tExtra V8 flags: ${EXTRA_JS_FLAGS}\n`);
+  }
 
   await run('node', args, { cwd: EXPERIMENT_DIRS.app });
 }
