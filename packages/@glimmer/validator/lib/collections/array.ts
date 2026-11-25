@@ -6,8 +6,11 @@
 // and it will blow up in JS in exactly the same way, so it is safe to assume
 // that properties within the getter have the correct type in TS.
 
+import type { UpdatableTag } from '@glimmer/interfaces';
+
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeKeyTag, dirtyKeyTag } from './key-tags';
 
 const ARRAY_GETTER_METHODS = new Set<string | symbol | number>([
   Symbol.iterator,
@@ -75,7 +78,7 @@ class TrackedArray<T = unknown> {
         const index = convertToInt(prop);
 
         if (index !== null) {
-          self.#readStorageFor(index);
+          consumeKeyTag(self.#storages, index);
           consumeTag(self.#collection);
 
           return target[index];
@@ -137,7 +140,7 @@ class TrackedArray<T = unknown> {
         const index = convertToInt(prop);
 
         if (index !== null) {
-          self.#dirtyStorageFor(index);
+          dirtyKeyTag(self.#storages, index);
           self.#dirtyCollection();
         } else if (prop === 'length') {
           self.#dirtyCollection();
@@ -154,26 +157,7 @@ class TrackedArray<T = unknown> {
 
   #collection = createUpdatableTag();
 
-  #storages = new Map<number, ReturnType<typeof createUpdatableTag>>();
-
-  #readStorageFor(index: number) {
-    let storage = this.#storages.get(index);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      this.#storages.set(index, storage);
-    }
-
-    consumeTag(storage);
-  }
-
-  #dirtyStorageFor(index: number): void {
-    const storage = this.#storages.get(index);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
+  #storages = new Map<number, UpdatableTag>();
 
   #dirtyCollection() {
     DIRTY_TAG(this.#collection);
