@@ -121,7 +121,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test .send just calls an action if the router is absent'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test .send just calls an action if the router is absent`](
+      assert
+    ) {
       assert.expect(7);
       let route = class extends EmberRoute {
         actions = {
@@ -146,7 +148,9 @@ moduleFor(
       runDestroy(route);
     }
 
-    ['@test .send just calls an action if the routers internal router property is absent'](assert) {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test .send just calls an action if the routers internal router property is absent`](
+      assert
+    ) {
       assert.expect(7);
       let route = class extends EmberRoute {
         router = {};
@@ -172,7 +176,7 @@ moduleFor(
       runDestroy(route);
     }
 
-    ['@test .send asserts if called on a destroyed route']() {
+    [`${testUnless(import.meta.env?.EMBER_DROP_CLASSIC_FEATURES)} @test .send asserts if called on a destroyed route`]() {
       route.routeName = 'rip-alley';
       runDestroy(route);
 

@@ -104,6 +104,20 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         runDestroy(owner);
       }
 
+      ['@test a route has no send, templateName or controllerName'](assert) {
+        let owner = buildOwner();
+
+        owner.register('route:index', class extends Route {});
+
+        let route = owner.lookup('route:index');
+
+        assert.false('send' in route);
+        assert.false('templateName' in route);
+        assert.false('controllerName' in route);
+
+        runDestroy(owner);
+      }
+
       ['@test destroying a route tears down the views'](assert) {
         let owner = buildOwner();
 

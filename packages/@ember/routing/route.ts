@@ -11,7 +11,7 @@ import {
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
+import { registerDestructor } from '@glimmer/destroyable';
 import type { default as BucketCache } from './lib/cache';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -2020,23 +2020,6 @@ export function hasDefaultSerialize(route: Route): boolean {
 */
 const ROUTE_DEFAULTS = {
   queryParams: {},
-  templateName: null,
-  controllerName: null,
-
-  send(this: Route, name: string, ...args: any[]) {
-    assert(
-      `Attempted to call .send() with the action '${name}' on the destroyed route '${this.routeName}'.`,
-      !isDestroying(this) && !isDestroyed(this)
-    );
-    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
-      this._router.send(name, ...args);
-    } else {
-      let action = this.actions[name];
-      if (action) {
-        return action.apply(this, args);
-      }
-    }
-  },
 
   /**
     The controller associated with this route.
@@ -2115,10 +2098,31 @@ const ROUTE_DEFAULTS = {
   },
 };
 
+/** The plain `Route` of the `EMBER_DROP_CLASSIC_FEATURES` build has none of these. */
+const CLASSIC_ROUTE_DEFAULTS = {
+  templateName: null,
+  controllerName: null,
+
+  send(this: Route, name: string, ...args: any[]) {
+    assert(
+      `Attempted to call .send() with the action '${name}' on the destroyed route '${this.routeName}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
+      this._router.send(name, ...args);
+    } else {
+      let action = this.actions[name];
+      if (action) {
+        return action.apply(this, args);
+      }
+    }
+  },
+};
+
 if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
   Object.assign(Route.prototype, ROUTE_DEFAULTS);
 } else {
-  Route.reopen({ mergedProperties: ['queryParams'] }, ROUTE_DEFAULTS);
+  Route.reopen({ mergedProperties: ['queryParams'] }, ROUTE_DEFAULTS, CLASSIC_ROUTE_DEFAULTS);
 }
 
 setRouteManager((owner) => new ClassicRouteManager(owner), Route);
