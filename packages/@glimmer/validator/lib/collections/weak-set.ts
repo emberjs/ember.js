@@ -2,10 +2,9 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
-import { consumeTag, isTracking } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import type { KeyTags } from './key-tags';
 
-type Tag = ReturnType<typeof createUpdatableTag>;
+import { consumeKeyTag, deleteKeyTag, dirtyKeyTag } from './key-tags';
 
 /**
  * NOTE: we cannot pass a WeakSet because WeakSets are not iterable
@@ -20,30 +19,7 @@ export function trackedWeakSet<Value extends WeakKey>(
 ): WeakSet<Value> {
   const equals = options?.equals ?? Object.is;
   const target = new WeakSet<Value>(data ?? []);
-  const storages = new WeakMap<Value, Tag>();
-
-  function readStorageFor(key: Value): void {
-    if (!isTracking()) {
-      return;
-    }
-
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
-    }
-
-    consumeTag(storage);
-  }
-
-  function dirtyStorageFor(key: Value): void {
-    const storage = storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
+  const tags: KeyTags = new WeakMap();
 
   const proxy: WeakSet<Value> = new Proxy(target, {
     get(target, prop, receiver) {
@@ -74,7 +50,7 @@ export function trackedWeakSet<Value extends WeakKey>(
           // Add to vals first to get better error message
           target.add(value);
 
-          dirtyStorageFor(value);
+          dirtyKeyTag(tags, value);
 
           return proxy;
         };
@@ -84,16 +60,15 @@ export function trackedWeakSet<Value extends WeakKey>(
         return function (value: Value): boolean {
           if (!target.has(value)) return false;
 
-          dirtyStorageFor(value);
+          deleteKeyTag(tags, value);
 
-          storages.delete(value);
           return target.delete(value);
         };
       }
 
       if (prop === 'has') {
         return function (value: Value): boolean {
-          readStorageFor(value);
+          consumeKeyTag(tags, value);
 
           return target.has(value);
         };

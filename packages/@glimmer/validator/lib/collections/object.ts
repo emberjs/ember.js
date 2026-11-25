@@ -1,35 +1,15 @@
+import type { UpdatableTag } from '@glimmer/interfaces';
+
 import type { ReactiveOptions } from './types';
 
-import { consumeTag, isTracking } from '../tracking';
+import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeKeyTag, deleteKeyTag, dirtyKeyTag } from './key-tags';
 
 class TrackedObject<ObjectType extends NonNullable<object>> {
   #options: ReactiveOptions<ObjectType[keyof ObjectType]>;
-  #storages = new Map<PropertyKey, ReturnType<typeof createUpdatableTag>>();
+  #storages = new Map<PropertyKey, UpdatableTag>();
   #collection = createUpdatableTag();
-
-  #readStorageFor(key: PropertyKey) {
-    if (!isTracking()) {
-      return;
-    }
-
-    let storage = this.#storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      this.#storages.set(key, storage);
-    }
-
-    consumeTag(storage);
-  }
-
-  #dirtyStorageFor(key: PropertyKey) {
-    const storage = this.#storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
 
   #dirtyCollection() {
     DIRTY_TAG(this.#collection);
@@ -57,13 +37,13 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
 
     return new Proxy(clone, {
       get(target, prop) {
-        self.#readStorageFor(prop);
+        consumeKeyTag(self.#storages, prop);
 
         return target[prop as keyof ObjectType];
       },
 
       has(target, prop) {
-        self.#readStorageFor(prop);
+        consumeKeyTag(self.#storages, prop);
 
         return prop in target;
       },
@@ -85,7 +65,7 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         target[prop as keyof ObjectType] = value;
 
-        self.#dirtyStorageFor(prop);
+        dirtyKeyTag(self.#storages, prop);
         self.#dirtyCollection();
 
         return true;
@@ -94,8 +74,7 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
       deleteProperty(target, prop) {
         if (prop in target) {
           delete target[prop as keyof ObjectType];
-          self.#dirtyStorageFor(prop);
-          self.#storages.delete(prop);
+          deleteKeyTag(self.#storages, prop);
           self.#dirtyCollection();
         }
 

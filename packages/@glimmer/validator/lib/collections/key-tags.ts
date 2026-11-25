@@ -1,77 +1,88 @@
+import type { UpdatableTag } from '@glimmer/interfaces';
+
 import { consumeTag, isTracking } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
-type Tag = ReturnType<typeof createUpdatableTag>;
+/**
+ * The per-key tags of a tracked collection.
+ *
+ * A `Map` has the same `get`, `set` and `delete` as a `WeakMap`,
+ * so these helpers take either one.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type KeyTags = WeakMap<any, UpdatableTag>;
 
-function isWeakKey(key: unknown): key is object {
+/**
+ * Keys that a `WeakMap` can hold.
+ *
+ * A tag is created when a key is read, even when the collection doesn't have it.
+ * Tags for these keys go in a `WeakMap`,
+ * so that an object that was only looked up is not kept alive by the collection.
+ *
+ * Primitives can't be `WeakMap` keys, and they can't leak either.
+ */
+export function isWeakKey(key: unknown): key is object {
   return (typeof key === 'object' && key !== null) || typeof key === 'function';
 }
 
 /**
- * The per-key tags of a `trackedSet` or `trackedMap`.
- *
- * Tags are created when a key is read, whether or not the collection has that
- * key, so that the reader is notified when the key is added. Holding those
- * tags in a `Map` would keep every object that was ever looked up alive for as
- * long as the collection is. Tags for objects are held in a `WeakMap` instead.
- * Primitives can't be `WeakMap` keys (and can't leak), so they keep using a
- * `Map`.
+ * Picks the store for `key` in a `Set` or `Map`, which can hold any key.
  */
-export class KeyTags<Key> {
-  #objects = new WeakMap<object, Tag>();
-  #primitives = new Map<Key, Tag>();
+export function tagsFor(
+  objectTags: KeyTags,
+  primitiveTags: Map<unknown, UpdatableTag>,
+  key: unknown
+): KeyTags {
+  return isWeakKey(key) ? objectTags : primitiveTags;
+}
 
-  #tagsFor(key: Key): { get(key: unknown): Tag | undefined; delete(key: unknown): boolean } {
-    return isWeakKey(key) ? this.#objects : this.#primitives;
-  }
-
-  consume(key: Key): void {
-    // Outside of a tracking frame nothing can be notified, so there is no
-    // reason to create a tag.
-    if (!isTracking()) return;
-
-    let tag = this.#tagsFor(key).get(key);
-
-    if (tag === undefined) {
-      tag = createUpdatableTag();
-
-      if (isWeakKey(key)) {
-        this.#objects.set(key, tag);
-      } else {
-        this.#primitives.set(key, tag);
-      }
-    }
-
-    consumeTag(tag);
-  }
-
-  dirty(key: Key): void {
-    const tag = this.#tagsFor(key).get(key);
-
-    if (tag) {
-      DIRTY_TAG(tag);
-    }
-  }
-
-  delete(key: Key): void {
-    this.dirty(key);
-    this.#tagsFor(key).delete(key);
-  }
-
+export function consumeKeyTag(tags: KeyTags, key: unknown): void {
   /**
-   * Called with the keys that are about to be removed from the collection.
-   *
-   * A `WeakMap` can't be enumerated, so the tags of object keys are found
-   * through the keys being removed.
+   * Outside of a tracking frame nothing can be notified,
+   * so there is no reason to create a tag.
    */
-  clear(keys: Iterable<Key>): void {
-    for (const key of keys) {
-      if (isWeakKey(key)) {
-        this.delete(key);
-      }
-    }
+  if (!isTracking()) return;
 
-    this.#primitives.forEach((tag) => DIRTY_TAG(tag));
-    this.#primitives.clear();
+  let tag = tags.get(key);
+
+  if (tag === undefined) {
+    tag = createUpdatableTag();
+    tags.set(key, tag);
   }
+
+  consumeTag(tag);
+}
+
+export function dirtyKeyTag(tags: KeyTags, key: unknown): void {
+  const tag = tags.get(key);
+
+  if (tag !== undefined) {
+    DIRTY_TAG(tag);
+  }
+}
+
+export function deleteKeyTag(tags: KeyTags, key: unknown): void {
+  dirtyKeyTag(tags, key);
+  tags.delete(key);
+}
+
+/**
+ * Called with the keys of a `Set` or `Map` just before it is cleared.
+ *
+ * A `WeakMap` can't be enumerated,
+ * so the tags of object keys are found through the keys being removed.
+ */
+export function clearKeyTags(
+  objectTags: KeyTags,
+  primitiveTags: Map<unknown, UpdatableTag>,
+  keys: Iterable<unknown>
+): void {
+  for (const key of keys) {
+    if (isWeakKey(key)) {
+      deleteKeyTag(objectTags, key);
+    }
+  }
+
+  primitiveTags.forEach((tag) => DIRTY_TAG(tag));
+  primitiveTags.clear();
 }

@@ -3,9 +3,13 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
+import type { UpdatableTag } from '@glimmer/interfaces';
+
+import type { KeyTags } from './key-tags';
+
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
-import { KeyTags } from './key-tags';
+import { clearKeyTags, consumeKeyTag, deleteKeyTag, dirtyKeyTag, tagsFor } from './key-tags';
 
 export function trackedSet<Value = unknown>(
   data?: Set<Value> | Value[] | Iterable<Value> | null,
@@ -14,7 +18,8 @@ export function trackedSet<Value = unknown>(
   const equals = options?.equals ?? Object.is;
   const target = new Set<Value>(data ?? []);
   const collection = createUpdatableTag();
-  const tags = new KeyTags<Value>();
+  const objectTags: KeyTags = new WeakMap();
+  const primitiveTags = new Map<unknown, UpdatableTag>();
 
   const proxy: Set<Value> = new Proxy(target, {
     get(target, prop, receiver) {
@@ -27,7 +32,7 @@ export function trackedSet<Value = unknown>(
             DIRTY_TAG(collection);
           }
 
-          tags.dirty(value);
+          dirtyKeyTag(tagsFor(objectTags, primitiveTags, value), value);
 
           target.add(value);
 
@@ -39,7 +44,7 @@ export function trackedSet<Value = unknown>(
         return function (value: Value): boolean {
           if (!target.has(value)) return false;
 
-          tags.delete(value);
+          deleteKeyTag(tagsFor(objectTags, primitiveTags, value), value);
           DIRTY_TAG(collection);
 
           return target.delete(value);
@@ -50,7 +55,7 @@ export function trackedSet<Value = unknown>(
         return function (): void {
           if (target.size === 0) return;
 
-          tags.clear(target);
+          clearKeyTags(objectTags, primitiveTags, target);
           DIRTY_TAG(collection);
 
           target.clear();
@@ -59,7 +64,7 @@ export function trackedSet<Value = unknown>(
 
       if (prop === 'has') {
         return function (value: Value): boolean {
-          tags.consume(value);
+          consumeKeyTag(tagsFor(objectTags, primitiveTags, value), value);
 
           return target.has(value);
         };

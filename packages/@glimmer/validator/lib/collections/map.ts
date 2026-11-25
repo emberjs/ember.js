@@ -3,9 +3,13 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
+import type { UpdatableTag } from '@glimmer/interfaces';
+
+import type { KeyTags } from './key-tags';
+
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
-import { KeyTags } from './key-tags';
+import { clearKeyTags, consumeKeyTag, deleteKeyTag, dirtyKeyTag, tagsFor } from './key-tags';
 
 export function trackedMap<Key = any, Value = any>(
   data?:
@@ -21,7 +25,8 @@ export function trackedMap<Key = any, Value = any>(
   const target: Map<Key, Value> =
     data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
   const collection = createUpdatableTag();
-  const tags = new KeyTags<Key>();
+  const objectTags: KeyTags = new WeakMap();
+  const primitiveTags = new Map<unknown, UpdatableTag>();
 
   const proxy: Map<Key, Value> = new Proxy(target, {
     get(target, prop, receiver) {
@@ -37,7 +42,7 @@ export function trackedMap<Key = any, Value = any>(
             if (isUnchanged) return proxy;
           }
 
-          tags.dirty(key);
+          dirtyKeyTag(tagsFor(objectTags, primitiveTags, key), key);
           DIRTY_TAG(collection);
 
           target.set(key, value);
@@ -50,7 +55,7 @@ export function trackedMap<Key = any, Value = any>(
         return function (key: Key): boolean {
           if (!target.has(key)) return false;
 
-          tags.delete(key);
+          deleteKeyTag(tagsFor(objectTags, primitiveTags, key), key);
           DIRTY_TAG(collection);
 
           return target.delete(key);
@@ -61,7 +66,7 @@ export function trackedMap<Key = any, Value = any>(
         return function (): void {
           if (target.size === 0) return;
 
-          tags.clear(target.keys());
+          clearKeyTags(objectTags, primitiveTags, target.keys());
           DIRTY_TAG(collection);
 
           target.clear();
@@ -70,7 +75,7 @@ export function trackedMap<Key = any, Value = any>(
 
       if (prop === 'get') {
         return function (key: Key): Value | undefined {
-          tags.consume(key);
+          consumeKeyTag(tagsFor(objectTags, primitiveTags, key), key);
 
           return target.get(key);
         };
@@ -78,7 +83,7 @@ export function trackedMap<Key = any, Value = any>(
 
       if (prop === 'has') {
         return function (key: Key): boolean {
-          tags.consume(key);
+          consumeKeyTag(tagsFor(objectTags, primitiveTags, key), key);
 
           return target.has(key);
         };
