@@ -18,6 +18,11 @@ Options:
      --reuse                  reuse existing apps and tarballs, if available (by default only the control app/tarball is reused)
      --no-headless            run Chrome without headless mode (opens visible browser windows)
 
+Environment variables:
+     RUNS=<n>                 samples per side (default 20)
+     BENCH_JS_FLAGS="<flags>" extra V8 flags for both browsers, separated by spaces,
+                              for example "--no-incremental-marking --initial-heap-size=512"
+
 Notes:
 	- This script runs \`pnpm install\`, \`pnpm build\`, and \`pnpm pack\` in both repos.
 	- Benchmark apps are built with \`vite build\` and served using \`vite preview\`.
