@@ -59,7 +59,7 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
           @tracked isExpanded = true;
 
           toggle = () => {
-            this.toggleProperty('isExpanded');
+            this.isExpanded = !this.isExpanded;
           };
         }
 

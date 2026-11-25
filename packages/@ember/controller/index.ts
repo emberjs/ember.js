@@ -11,6 +11,11 @@ import type InternalActionHandler from '@ember/-internals/runtime/lib/mixins/act
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import InternalControllerMixin from '@ember/controller/controller-internal';
 import type { Transition } from 'router_js';
+import type Owner from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { assert } from '@ember/debug';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam =
@@ -242,6 +247,65 @@ const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
   },
 });
 
+/**
+  The base class of `Controller` when the `EMBER_DROP_CLASSIC_FEATURES` build
+  flag is set. It extends no other class.
+
+  The owner passes itself to the constructor, as it does for Glimmer
+  components. When the owner is destroyed, the container destroys the
+  controller with `@ember/destroyable`, so teardown goes in a destructor that
+  `registerDestructor` adds.
+
+  The route reads `queryParams`, sets `model` and the query param values, and
+  uses `_qpDelegate` and `_qpChanged` to sync the query params with the URL.
+*/
+class PlainControllerBase {
+  /** The container creates instances only through `create`. */
+  static create<C extends PlainControllerBase>(this: new (owner: Owner) => C, props: object): C {
+    let owner = getOwner(props);
+    assert('A controller must be created by its owner', owner);
+
+    return new this(owner);
+  }
+
+  declare isController: true;
+
+  @tracked model: unknown;
+
+  queryParams: Readonly<Array<ControllerQueryParam>> | null = null;
+
+  target: unknown = null;
+
+  namespace: unknown;
+
+  /** @internal */
+  _qpDelegate: ((prop: string, value: unknown) => void) | null = null;
+
+  constructor(owner: Owner) {
+    setOwner(this, owner);
+
+    this.namespace = owner.lookup('application:main');
+    this.target = owner.lookup('router:main');
+  }
+
+  /** @internal */
+  _qpChanged(controller: PlainControllerBase, _prop: string) {
+    let dotIndex = _prop.indexOf('.[]');
+    let prop = dotIndex === -1 ? _prop : _prop.slice(0, dotIndex);
+
+    let delegate = controller._qpDelegate;
+    assert('[BUG] a query param changed without a delegate', delegate);
+    delegate(prop, get(controller, prop));
+  }
+}
+
+PlainControllerBase.prototype.isController = true;
+
+const ClassicControllerBase = FrameworkObject.extend(InternalControllerMixin);
+const ControllerBase = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? PlainControllerBase : ClassicControllerBase
+) as typeof ClassicControllerBase;
+
 // NOTE: This doesn't actually extend EmberObject.
 /**
   @class Controller
@@ -250,7 +314,7 @@ const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
   @public
 */
 interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(InternalControllerMixin) {}
+class Controller<_T = unknown> extends ControllerBase {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

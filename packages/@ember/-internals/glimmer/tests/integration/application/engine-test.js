@@ -150,8 +150,8 @@ moduleFor(
             this.register(
               'controller:application',
               class extends Controller {
-                init() {
-                  super.init(...arguments);
+                constructor(owner) {
+                  super(owner);
                   hooks.push('engine - application');
                 }
               }
