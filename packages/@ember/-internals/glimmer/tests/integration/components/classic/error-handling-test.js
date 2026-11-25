@@ -3,6 +3,7 @@ import GlimmerComponent from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { DEBUG } from '@glimmer/env';
 import { set } from '@ember/object';
+import { registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { ClassicRenderingTestCase } from '../../../utils/classic-rendering-test-case';
@@ -59,6 +60,41 @@ if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
         } else {
           this.assertText('hello', 'it rerenders after error in production');
         }
+      }
+
+      ['@test a failed initial render is destroyed with its root'](assert) {
+        expectClassicComponentDeprecation();
+
+        class Child extends GlimmerComponent {
+          constructor(owner, args) {
+            super(owner, args);
+            assert.step('child created');
+            registerDestructor(this, () => assert.step('child destroyed'));
+          }
+        }
+
+        class Boom extends GlimmerComponent {
+          constructor(owner, args) {
+            super(owner, args);
+            throw new Error('boom');
+          }
+        }
+
+        this.owner.register(
+          'component:x-child',
+          setComponentTemplate(precompileTemplate(''), Child)
+        );
+        this.owner.register('component:x-boom', setComponentTemplate(precompileTemplate(''), Boom));
+
+        assert.throws(() => {
+          this.render('<XChild /><XBoom />');
+        }, /boom/);
+
+        assert.verifySteps(['child created']);
+
+        runTask(() => this.context.destroy());
+
+        assert.verifySteps(['child destroyed']);
       }
 
       ['@test the render stack of a backtracking message starts with -top-level']() {

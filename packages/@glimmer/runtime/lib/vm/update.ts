@@ -166,14 +166,24 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     let tree = NewTreeBuilder.resume(env, bounds);
     let vm = state.evaluate(tree);
 
+    /**
+     * What this render makes goes into one drop, as in the first render.
+     *
+     * The old children leave `this` only when the destroy queue runs.
+     * If the new children were direct children of `this`,
+     * that removal would reorder them, and so their destroy order.
+     *
+     * The drop belongs to `this` before the render runs,
+     * so a render that throws is destroyed with `this` too.
+     */
+    associateDestroyableChild(this, vm.drop);
+
     let children = (this.children = []);
 
-    let result = vm.execute((vm) => {
+    vm.executeBlock((vm) => {
       vm.updateWith(this);
       vm.pushUpdating(children);
     });
-
-    associateDestroyableChild(this, result.drop);
   }
 }
 
@@ -364,15 +374,14 @@ export class ListBlockOpcode extends BlockOpcode {
       nextSibling,
     });
 
-    let vm = state.evaluate(elementStack);
+    let vm = state.evaluate(elementStack, this);
 
-    vm.execute((vm) => {
+    vm.executeBlock((vm) => {
       let opcode = vm.enterItem(item);
 
       opcode.index = children.length;
       children.push(opcode);
       opcodeMap.set(key, opcode);
-      associateDestroyableChild(this, opcode);
     });
   }
 

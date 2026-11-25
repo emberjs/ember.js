@@ -21,6 +21,13 @@ export interface RenderResult extends Bounds, ExceptionHandler {
 }
 
 export interface TemplateIterator {
+  /**
+   * The root destroyable of the render.
+   * It exists before the render runs, so a caller can own it
+   * even when the render throws and makes no render result.
+   */
+  readonly drop: object;
+
   next(): RichIteratorResult<null, RenderResult>;
   sync(): RenderResult;
 }

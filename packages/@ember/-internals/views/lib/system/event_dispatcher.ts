@@ -293,23 +293,17 @@ export default class EventDispatcher extends EmberObject {
   }
 
   destroy() {
-    if (this._didSetup === false) {
-      return;
-    }
-
     let rootElement = this._sanitizedRootElement;
 
-    if (!rootElement) {
-      return;
+    if (this._didSetup && rootElement) {
+      for (let event in this._eventHandlers) {
+        rootElement.removeEventListener(event, this._eventHandlers[event]);
+      }
+
+      rootElement.classList.remove(ROOT_ELEMENT_CLASS);
     }
 
-    for (let event in this._eventHandlers) {
-      rootElement.removeEventListener(event, this._eventHandlers[event]);
-    }
-
-    rootElement.classList.remove(ROOT_ELEMENT_CLASS);
-
-    return this._super(...arguments);
+    return super.destroy();
   }
 
   toString() {
