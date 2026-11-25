@@ -2,7 +2,7 @@ import Route from '@ember/routing/route';
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import { getOwner } from '@ember/owner';
-import { isDestroyed } from '@ember/destroyable';
+import { isDestroyed, registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import {
   AbstractTestCase,
@@ -10,7 +10,6 @@ import {
   buildOwner,
   moduleFor,
   runDestroy,
-  runTask,
 } from 'internal-test-helpers';
 
 /*
@@ -54,13 +53,13 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
         runDestroy(owner);
       }
 
-      ['@test willDestroy runs once when the owner is destroyed'](assert) {
+      ['@test a destructor runs once when the owner is destroyed'](assert) {
         let owner = buildOwner();
 
         class IndexRoute extends Route {
-          willDestroy() {
-            super.willDestroy(...arguments);
-            assert.step('willDestroy');
+          constructor(owner) {
+            super(owner);
+            registerDestructor(this, () => assert.step('destructor'));
           }
         }
 
@@ -72,22 +71,16 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         runDestroy(owner);
 
-        assert.verifySteps(['willDestroy']);
+        assert.verifySteps(['destructor']);
         assert.true(isDestroyed(route));
       }
 
-      ['@test willDestroy runs once when destroy is called before the owner is destroyed'](assert) {
+      ['@test the container does not call willDestroy'](assert) {
         let owner = buildOwner();
 
         class IndexRoute extends Route {
           willDestroy() {
-            super.willDestroy(...arguments);
             assert.step('willDestroy');
-          }
-
-          /* The test owner has no running router to render outlets. */
-          teardownViews() {
-            assert.step('teardownViews');
           }
         }
 
@@ -95,17 +88,23 @@ if (import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
 
         let route = owner.lookup('route:index');
 
-        runTask(() => route.destroy());
-
-        assert.verifySteps(['teardownViews', 'willDestroy']);
-        assert.true(isDestroyed(route));
-
         runDestroy(owner);
 
         assert.verifySteps([]);
+        assert.true(isDestroyed(route));
       }
 
-      ['@test the willDestroy of Route tears down the views'](assert) {
+      ['@test a route has no destroy method'](assert) {
+        let owner = buildOwner();
+
+        owner.register('route:index', class extends Route {});
+
+        assert.false('destroy' in owner.lookup('route:index'));
+
+        runDestroy(owner);
+      }
+
+      ['@test destroying a route tears down the views'](assert) {
         let owner = buildOwner();
 
         class IndexRoute extends Route {

@@ -11,7 +11,7 @@ import {
 } from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
+import { isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import type { default as BucketCache } from './lib/cache';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -287,8 +287,11 @@ interface Route<Model = unknown> extends InternalActionHandler {
   is set. It extends no other class.
 
   The owner passes itself to the constructor. A route without an owner is
-  allowed, as on the classic class. `destroy()` destroys the route, and
-  `willDestroy()` is the teardown hook, as on the classic class.
+  allowed, as on the classic class.
+
+  The container destroys the route with `@ember/destroyable`, and a
+  destructor tears down the views. Teardown in subclasses goes in a
+  destructor that `registerDestructor` adds.
 */
 class PlainRouteBase {
   /** The container creates instances only through `create`. */
@@ -301,16 +304,8 @@ class PlainRouteBase {
       setOwner(this, owner);
     }
 
-    if (this.willDestroy !== PlainRouteBase.prototype.willDestroy) {
-      registerDestructor(this, () => this.willDestroy());
-    }
+    registerDestructor(this, () => (this as unknown as Route).teardownViews());
   }
-
-  destroy(): void {
-    destroy(this);
-  }
-
-  willDestroy(): void {}
 }
 
 const ClassicRouteBase = EmberObject.extend(InternalActionHandler);
