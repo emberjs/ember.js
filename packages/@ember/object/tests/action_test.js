@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
-import EmberObject, { action } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { action } from '@ember/object';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';

@@ -1,6 +1,7 @@
 import Controller, { inject as injectController } from '@ember/controller';
 import Service, { service } from '@ember/service';
-import EmberObject, { get } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { get } from '@ember/object';
 import { setOwner } from '@ember/-internals/owner';
 import {
   runDestroy,

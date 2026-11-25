@@ -1,4 +1,4 @@
-import CoreObject from '@ember/object/core';
+import CoreObject from '@ember/object/lib/core-object';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 export type TypeName =
@@ -67,7 +67,7 @@ const { toString } = Object.prototype;
   ```javascript
   import { A } from '@ember/array';
   import { typeOf } from '@ember/utils';
-  import EmberObject from '@ember/object';
+  import EmberObject from '@ember/object/lib/ember-object';
 
   typeOf();                       // 'undefined'
   typeOf(null);                   // 'null'

@@ -1,7 +1,8 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
 import { isArray, A as emberA } from '@ember/array';
-import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
+import { defineProperty, get, set, computed, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 

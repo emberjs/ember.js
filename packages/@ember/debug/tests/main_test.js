@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { HANDLERS } from '../lib/handlers';
 import {
   registerHandler,

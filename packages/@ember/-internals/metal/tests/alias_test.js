@@ -8,7 +8,7 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { A } from '@ember/array';
 import {
   moduleFor,

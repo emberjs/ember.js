@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import { set, setProperties, computed } from '@ember/object';
 import { setComponentManager } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';

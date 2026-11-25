@@ -1,6 +1,6 @@
 import { classify, dasherize } from '@ember/-internals/string';
-import EmberObject from '@ember/object';
-import CoreObject from '@ember/object/core';
+import EmberObject from '@ember/object/lib/ember-object';
+import CoreObject from '@ember/object/lib/core-object';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { Resolver } from '@ember/-internals/owner';

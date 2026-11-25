@@ -15,7 +15,7 @@ import { tagForProperty } from '@ember/-internals/metal/lib/tags';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { isObject } from '@ember/-internals/utils/lib/spec';
-import EmberObject from '@ember/object';
+import EmberObject from '@ember/object/lib/ember-object';
 import type EmberArray from '@ember/array';
 import type { NativeArray } from '@ember/array';
 import type MutableArray from '@ember/array/mutable';
