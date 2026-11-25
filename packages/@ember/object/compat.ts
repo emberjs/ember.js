@@ -114,17 +114,14 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
                                              classic classes)
   @return {PropertyDecorator} property decorator instance
  */
-export function dependentKeyCompat(
-  value: (this: any) => any,
-  context: ClassGetterDecoratorContext
-): void;
-export function dependentKeyCompat(
+function dependentKeyCompat(value: (this: any) => any, context: ClassGetterDecoratorContext): void;
+function dependentKeyCompat(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
-export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
-export function dependentKeyCompat(
+function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
+function dependentKeyCompat(
   ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
 ): PropertyDescriptor | ExtendedMethodDecorator | void {
   if (isElementDescriptor(args)) {
@@ -197,3 +194,9 @@ export function dependentKeyCompat(
 }
 
 setClassicDecorator(dependentKeyCompat);
+
+const ExportedDependentKeyCompat = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? undefined : dependentKeyCompat
+) as typeof dependentKeyCompat;
+
+export { ExportedDependentKeyCompat as dependentKeyCompat };

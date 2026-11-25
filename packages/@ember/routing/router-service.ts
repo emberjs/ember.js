@@ -3,7 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { dependentKeyCompat } from '@ember/object/compat';
+import { dependentKeyCompat as classicDependentKeyCompat } from '@ember/object/compat';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -20,6 +20,15 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal/lib/events';
+
+/**
+  Without the `EMBER_DROP_CLASSIC_FEATURES` build flag, `@computed` properties
+  can depend on these getters. With the flag, `dependentKeyCompat` does not
+  exist, and the getters stay plain.
+*/
+const dependentKeyCompat = (
+  import.meta.env?.EMBER_DROP_CLASSIC_FEATURES ? () => undefined : classicDependentKeyCompat
+) as typeof classicDependentKeyCompat;
 
 export const ROUTER = Symbol('ROUTER');
 
