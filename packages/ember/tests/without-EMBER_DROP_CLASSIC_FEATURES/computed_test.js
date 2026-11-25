@@ -46,6 +46,9 @@ if (!import.meta.env?.EMBER_DROP_CLASSIC_FEATURES) {
           }
         }
 
+        /* Stable decorators set up the descriptor when the first instance is created. */
+        new Person();
+
         assert.ok(descriptorForProperty(Person.prototype, 'name') instanceof ComputedProperty);
       }
 
