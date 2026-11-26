@@ -1687,8 +1687,6 @@ class Component<S = unknown>
 
   // End ViewMixin
 
-  static isComponentFactory = true;
-
   static toString() {
     return '@ember/component';
   }

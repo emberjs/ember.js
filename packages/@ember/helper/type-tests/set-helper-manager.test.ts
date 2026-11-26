@@ -16,8 +16,6 @@ class Wrapper<T = unknown, P extends unknown[] = unknown[], N extends Dict<unkno
       }>
     >
 {
-  readonly isHelperFactory = true;
-
   constructor(public compute: (positional: P, named: N) => T) {}
 
   create() {

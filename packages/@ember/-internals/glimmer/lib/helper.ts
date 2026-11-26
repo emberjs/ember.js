@@ -34,9 +34,8 @@ type Named<S> = GetOr<Args<S>, 'Named', object>;
 
 type Return<S> = GetOr<S, 'Return', unknown>;
 
-// Implements Ember's `Factory` interface and tags it for narrowing/checking.
+// Implements Ember's `Factory` interface.
 export interface HelperFactory<T> {
-  isHelperFactory: true;
   create(): T;
 }
 
@@ -126,7 +125,6 @@ export default interface Helper<S = unknown> {
   compute(positional: Positional<S>, named: Named<S>): Return<S>;
 }
 export default class Helper<S = unknown> extends FrameworkObject {
-  static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
   // `packages/ember/index.js` was setting `Helper.helper`. This seems like
@@ -272,8 +270,6 @@ setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
 ///////////
 
 class Wrapper<S = unknown> implements HelperFactory<SimpleHelper<S>> {
-  readonly isHelperFactory = true;
-
   constructor(public compute: (positional: Positional<S>, named: Named<S>) => Return<S>) {}
 
   create(): SimpleHelper<S> {

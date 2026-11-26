@@ -288,8 +288,6 @@ class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
     metaFor(this.prototype).addMixin(Evented);
   }
 
-  static isRouteFactory = true;
-
   /** @internal */
   context = {} as Model;
   /** @internal */
