@@ -128,8 +128,6 @@ class CoreView extends FrameworkObject.extend(InternalActionHandler) {
   has(name: string) {
     return typeof (this as any)[name] === 'function' || eventedHas(this, name);
   }
-
-  static isViewFactory = true;
 }
 
 // Declare on the prototype to have a single shared value.
